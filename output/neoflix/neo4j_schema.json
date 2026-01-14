@@ -1,0 +1,1381 @@
+{
+  "node_props": {
+    "Movie": [
+      {
+        "property": "average_vote",
+        "type": "FLOAT",
+        "values": [
+          "7.7",
+          "6.9",
+          "6.5",
+          "6.1",
+          "5.7"
+        ]
+      },
+      {
+        "property": "overview",
+        "type": "STRING",
+        "values": [
+          "Led by Woody, Andy's toys live happily in his room",
+          "When siblings Judy and Peter discover an enchanted",
+          "A family wedding reignites the ancient feud betwee",
+          "Cheated on, mistreated and stepped on, the women a",
+          "Just when George Banks has recovered from his daug"
+        ]
+      },
+      {
+        "property": "revenue",
+        "type": "FLOAT",
+        "values": [
+          "3.73554033E8",
+          "2.62797249E8",
+          "0.0",
+          "8.1452156E7",
+          "7.6578911E7"
+        ]
+      },
+      {
+        "property": "vote_count",
+        "type": "INTEGER",
+        "values": [
+          "5415",
+          "2413",
+          "92",
+          "34",
+          "173"
+        ]
+      },
+      {
+        "property": "tagline",
+        "type": "STRING",
+        "values": [
+          "Roll the dice and unleash the excitement!",
+          "Still Yelling. Still Fighting. Still Ready for Lov",
+          "Friends are the people who let you be yourself... ",
+          "Just When His World Is Back To Normal... He's In F"
+        ]
+      },
+      {
+        "property": "budget",
+        "type": "INTEGER",
+        "values": [
+          "30000000",
+          "65000000",
+          "0",
+          "16000000"
+        ]
+      },
+      {
+        "property": "title",
+        "type": "STRING",
+        "values": [
+          "Toy Story",
+          "Jumanji",
+          "Grumpier Old Men",
+          "Waiting to Exhale",
+          "Father of the Bride Part II"
+        ]
+      },
+      {
+        "property": "poster_path",
+        "type": "STRING",
+        "values": [
+          "/rhIRbceoE9lR4veEXuwCC2wARtG.jpg",
+          "/vzmL6fP7aPKNKPRTFnZmiUfciyV.jpg",
+          "/6ksm1sjKMFLbO7UY2i6G1ju9SML.jpg",
+          "/16XOMpEaLWkrcPqSQqhTmeJuqQl.jpg",
+          "/e64sOI48hQXyru7naBFyssKFxVd.jpg"
+        ]
+      },
+      {
+        "property": "imdb_id",
+        "type": "STRING",
+        "values": [
+          "tt0114709",
+          "tt0113497",
+          "tt0113228",
+          "tt0114885",
+          "tt0113041"
+        ]
+      },
+      {
+        "property": "status",
+        "type": "STRING",
+        "values": [
+          "Released"
+        ]
+      },
+      {
+        "property": "runtime",
+        "type": "FLOAT",
+        "values": [
+          "81.0",
+          "104.0",
+          "101.0",
+          "127.0",
+          "106.0"
+        ]
+      },
+      {
+        "property": "popularity",
+        "type": "FLOAT",
+        "values": [
+          "21.946943",
+          "17.015539",
+          "11.7129",
+          "3.859495",
+          "8.387519"
+        ]
+      },
+      {
+        "property": "homepage",
+        "type": "STRING",
+        "values": [
+          "http://toystory.disney.com/toy-story"
+        ]
+      },
+      {
+        "property": "release_date",
+        "type": "DATE",
+        "values": [
+          "1995-10-30",
+          "1995-12-15",
+          "1995-12-22",
+          "1995-02-10"
+        ]
+      },
+      {
+        "property": "id",
+        "type": "INTEGER",
+        "min": "862",
+        "max": "31357",
+        "distinct_count": 5
+      },
+      {
+        "property": "original_title",
+        "type": "STRING",
+        "values": [
+          "Toy Story",
+          "Jumanji",
+          "Grumpier Old Men",
+          "Waiting to Exhale",
+          "Father of the Bride Part II"
+        ]
+      },
+      {
+        "property": "original_language",
+        "type": "STRING",
+        "values": [
+          "en"
+        ]
+      }
+    ],
+    "Language": [
+      {
+        "property": "id",
+        "type": "STRING",
+        "values": [
+          "en",
+          "fr",
+          "zh",
+          "it",
+          "fa",
+          "nl",
+          "de",
+          "cn",
+          "ar",
+          "es"
+        ],
+        "distinct_count": 133
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "",
+          "Gaeilge",
+          "Kiswahili",
+          "Az\u0259rbaycan",
+          "Somali",
+          "\u0431\u0435\u043b\u0430\u0440\u0443\u0441\u043a\u0430\u044f \u043c\u043e\u0432\u0430",
+          "Fulfulde",
+          "Hausa"
+        ],
+        "distinct_count": 8
+      }
+    ],
+    "Country": [
+      {
+        "property": "id",
+        "type": "STRING",
+        "values": [
+          "US",
+          "DE",
+          "GB",
+          "FR",
+          "IT",
+          "ES",
+          "CN",
+          "AU",
+          "ZA",
+          "CA"
+        ],
+        "distinct_count": 161
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "United States of America",
+          "Germany",
+          "United Kingdom",
+          "France",
+          "Italy",
+          "Spain",
+          "China",
+          "Australia",
+          "South Africa",
+          "Canada"
+        ],
+        "distinct_count": 160
+      }
+    ],
+    "Genre": [
+      {
+        "property": "id",
+        "type": "INTEGER",
+        "min": "12",
+        "max": "10770",
+        "distinct_count": 20
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Animation",
+          "Comedy",
+          "Family",
+          "Adventure",
+          "Fantasy",
+          "Romance",
+          "Drama",
+          "Action",
+          "Crime",
+          "Thriller"
+        ],
+        "distinct_count": 20
+      }
+    ],
+    "ProductionCompany": [
+      {
+        "property": "id",
+        "type": "INTEGER",
+        "min": "3",
+        "max": "10201",
+        "distinct_count": 5
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Pixar Animation Studios",
+          "TriStar Pictures",
+          "Teitler Film",
+          "Interscope Communications",
+          "Warner Bros."
+        ]
+      }
+    ],
+    "Collection": [
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Toy Story Collection",
+          "Grumpy Old Men Collection",
+          "Father of the Bride Collection",
+          "James Bond Collection",
+          "Balto Collection",
+          "Ace Ventura Collection",
+          "Chili Palmer Collection",
+          "Babe Collection",
+          "Mortal Kombat Collection",
+          "Pocahontas Collection"
+        ],
+        "distinct_count": 1695
+      },
+      {
+        "property": "id",
+        "type": "INTEGER",
+        "min": "10",
+        "max": "480160",
+        "distinct_count": 1695
+      },
+      {
+        "property": "backdrop_path",
+        "type": "STRING",
+        "values": [
+          "/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg",
+          "/hypTnLot2z8wpFS7qwsQHW1uV8u.jpg",
+          "/7qwE57OVZmMJChBpLEbJEmzUydk.jpg",
+          "/6VcVl48kNKvdXOZfJPdarlUGOsk.jpg",
+          "/9VM5LiJV0bGb1st1KyHA3cVnO2G.jpg",
+          "/bswWgdDsLu0fhWMYUzLF8XgiK4h.jpg",
+          "/uWaANGQeoSs5vSP1CWtlkDrkqei.jpg",
+          "/zRWuGdIlkWqXMQcs1t3sPy1XQ6x.jpg",
+          "/qD3efz57VGNywAN4lTvgz3FHnBb.jpg",
+          "/qqeOxNmtAW7WXdbrmQftgluvve7.jpg"
+        ],
+        "distinct_count": 1122
+      },
+      {
+        "property": "poster_path",
+        "type": "STRING",
+        "values": [
+          "/7G9915LfUQ2lVfwMEEhDsn3kT4B.jpg",
+          "/nLvUdqgPgm3F85NMCii9gVFUcet.jpg",
+          "/nts4iOmNnq7GNicycMJ9pSAn204.jpg",
+          "/HORpg5CSkmeQlAolx3bKMrKgfi.jpg",
+          "/w0ZgH6Lgxt2bQYnf1ss74UvYftm.jpg",
+          "/qCxH543pScFed1CycwJ1nVgrkOc.jpg",
+          "/ae3smJDdWrMJ77tDpYOrpo4frKq.jpg",
+          "/jgnah0k4AumfcZE4HHMJywYHvG6.jpg",
+          "/nauCllomdtyciLCRcVrSJKcJQbn.jpg",
+          "/s4RkDe4AjwyrlltdF6Ui7INlME6.jpg"
+        ],
+        "distinct_count": 1403
+      }
+    ],
+    "Person": [
+      {
+        "property": "gender",
+        "type": "INTEGER",
+        "values": [
+          "2"
+        ]
+      },
+      {
+        "property": "profile_path",
+        "type": "STRING",
+        "values": [
+          "/pQFoyx7rp09CJTAb932F2g8Nlho.jpg",
+          "/uX2xVf6pMmPepxnvFWyBtjexzgY.jpg",
+          "/h5BcaDMPRVLHLDzbQavec4xfSdt.jpg",
+          "/eIo2jVVXYgjDtaHoF19Ll9vtW7h.jpg",
+          "/oGE6JqPP2xH4tNORKNqxbNPYi7u.jpg"
+        ]
+      },
+      {
+        "property": "id",
+        "type": "INTEGER",
+        "min": "31",
+        "max": "12900",
+        "distinct_count": 5
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Tom Hanks",
+          "Tim Allen",
+          "Don Rickles",
+          "Jim Varney",
+          "Wallace Shawn"
+        ]
+      }
+    ],
+    "User": [
+      {
+        "property": "id",
+        "type": "INTEGER",
+        "min": "27490cf6-22eb-495d-9dd6-902c0f89c627",
+        "max": "4",
+        "distinct_count": 5
+      }
+    ],
+    "Keyword": [
+      {
+        "property": "id",
+        "type": "INTEGER",
+        "min": "931",
+        "max": "9713",
+        "distinct_count": 5
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "jealousy",
+          "toy",
+          "boy",
+          "friendship",
+          "friends"
+        ]
+      }
+    ],
+    "Video": [
+      {
+        "property": "tagline",
+        "type": "STRING",
+        "values": [
+          "Fresh Fish. Mixed Vegetables.",
+          "What really happened on 9/11?",
+          "Spring break... Love Hina Style!!",
+          "The awesomeness begins",
+          "The truth is always the truth, a lie is always a l",
+          "Discover A Magical New Land",
+          "Spend Father's Day with who really raised you... S",
+          "On Halloween night five filmmakers enter a haunted",
+          "\u201cFather of Indian Unrest\u201d (Bal Gangadhar Tilak)",
+          "Every super hero has his nemesis - and this time F"
+        ],
+        "distinct_count": 25
+      },
+      {
+        "property": "average_vote",
+        "type": "FLOAT",
+        "min": "0.0",
+        "max": "10.0",
+        "distinct_count": 45
+      },
+      {
+        "property": "overview",
+        "type": "STRING",
+        "values": [
+          "Get ready as Bob the Tomato, Larry the Cucumber an",
+          "What if...September 11th was not a surprise attack",
+          "A short film in which Quran verses are shown along",
+          "The tests have come, and Keitaro can only hope to ",
+          "Ahoy, matey! Your Favorite Playmobil toys have com",
+          "Experience why America has fallen in love with Ter",
+          "Some of the boys in South Park elementary find the",
+          "Behind every breakthrough in the progression of cl",
+          "The legendary YES line-up of Jon Anderson, Chris S",
+          "In April 2009, a group of University of Michigan s"
+        ],
+        "distinct_count": 88
+      },
+      {
+        "property": "revenue",
+        "type": "FLOAT",
+        "min": "0.0",
+        "max": "0.0",
+        "distinct_count": 1
+      },
+      {
+        "property": "poster_path",
+        "type": "STRING",
+        "values": [
+          "/iWahPsY3hsKOizZHgzQcAxv4O3B.jpg",
+          "/isRGTPFiX8IwM1dNXQ1SUoticvY.jpg",
+          "/2xZIYEyp6jUfB8ZMiqvtXRD6tSX.jpg",
+          "/pO535dqMmvatuqbgvpOIA1bQw3R.jpg",
+          "/affnnZunHbXQGxlOGNo2QsGUqnC.jpg",
+          "/dklQFjCKxu6WNpAQqaBkWHopUf2.jpg",
+          "/kuGKdb5PyX8J6khl4j3XPLbIH1J.jpg",
+          "/t8YuLmK3NIeeRQ3zjsuJ8v0KMSi.jpg",
+          "/sDNI6jED4yBmFopBEQYznp3wr7f.jpg",
+          "/8GcoqIPxjFqfW2VhG9OcQyftzXC.jpg"
+        ],
+        "distinct_count": 91
+      },
+      {
+        "property": "vote_count",
+        "type": "INTEGER",
+        "min": "0",
+        "max": "115",
+        "distinct_count": 27
+      },
+      {
+        "property": "title",
+        "type": "STRING",
+        "values": [
+          "Jonah: A VeggieTales Movie",
+          "Loose Change: 2nd Edition",
+          "Fitna",
+          "Love Hina Spring Special - I Wish Your Dream",
+          "Playmobil: The Secret of Pirate Island",
+          "Terry Fator: Live from Las Vegas",
+          "South Park: Imaginationland",
+          "Progression",
+          "Yes: 9012 live",
+          "A Very Potter Musical"
+        ],
+        "distinct_count": 93
+      },
+      {
+        "property": "release_date",
+        "type": "DATE",
+        "min": "1973-01-12",
+        "max": "2017-03-17",
+        "distinct_count": 85
+      },
+      {
+        "property": "status",
+        "type": "STRING",
+        "values": [
+          "Released"
+        ],
+        "distinct_count": 1
+      },
+      {
+        "property": "budget",
+        "type": "INTEGER",
+        "min": "0",
+        "max": "2219684",
+        "distinct_count": 6
+      },
+      {
+        "property": "popularity",
+        "type": "FLOAT",
+        "min": "0.0",
+        "max": "9.22546",
+        "distinct_count": 93
+      },
+      {
+        "property": "imdb_id",
+        "type": "STRING",
+        "values": [
+          "tt0298388",
+          "tt0831315",
+          "tt1198399",
+          "tt0416938",
+          "tt1512792",
+          "tt1489246",
+          "tt1308667",
+          "tt1530970",
+          "tt0204116",
+          "tt2033193"
+        ],
+        "distinct_count": 93
+      },
+      {
+        "property": "original_title",
+        "type": "STRING",
+        "values": [
+          "Jonah: A VeggieTales Movie",
+          "Loose Change: 2nd Edition",
+          "Fitna",
+          "\u30e9\u30d6\u3072\u306a \u6625\u30b9\u30da\u30b7\u30e3\u30eb \uff5e\u30ad\u30df\u30b5\u30af\u30e9\u30c1\u30eb\u30ca\u30ab\u30ec!!\uff5e",
+          "Playmobil: The Secret of Pirate Island",
+          "Terry Fator: Live from Las Vegas",
+          "South Park: Imaginationland",
+          "Progression",
+          "Yes: 9012 live",
+          "A Very Potter Musical"
+        ],
+        "distinct_count": 93
+      },
+      {
+        "property": "id",
+        "type": "INTEGER",
+        "min": "13284",
+        "max": "461088",
+        "distinct_count": 93
+      },
+      {
+        "property": "runtime",
+        "type": "FLOAT",
+        "min": "0.0",
+        "max": "583.0",
+        "distinct_count": 61
+      },
+      {
+        "property": "original_language",
+        "type": "STRING",
+        "values": [
+          "en",
+          "ja",
+          "it",
+          "cn",
+          "th",
+          "de",
+          "ab",
+          "fr",
+          "el",
+          "ko"
+        ],
+        "distinct_count": 13
+      },
+      {
+        "property": "homepage",
+        "type": "STRING",
+        "values": [
+          "http://www.loosechange911.com/",
+          "http://www.sonypictures.com/familyzone/playmobil/",
+          "http://www.terryfator.com/",
+          "http://www.bigupproductions.com/#/films/Progressio",
+          "http://www.teamstarkid.com/avpm.html",
+          "http://www.teamstarkid.com/avps.html",
+          "http://www.911inplanesite.com/",
+          "http://ntlive.nationaltheatre.org.uk/productions/1",
+          "http://www.thewho.com/listening-to-you-the-who-liv",
+          "http://www.toddbarry.com/"
+        ],
+        "distinct_count": 28
+      }
+    ],
+    "Adult": [
+      {
+        "property": "average_vote",
+        "type": "FLOAT",
+        "min": "0.0",
+        "max": "6.3",
+        "distinct_count": 9
+      },
+      {
+        "property": "overview",
+        "type": "STRING",
+        "values": [
+          "A sailor takes an American businessman and his gir",
+          "The FBI and Texas police make ready to storm the h",
+          "Electrical Girl centers around a horny young woman",
+          "\u00c1gata suffers from a psychological disorder which ",
+          "Shane Ryan's sequel to the disturbing Amateur Porn",
+          "Australian film about a fictional sub-par Australi",
+          "Olaf and his mother run a boarding house and a whi",
+          "A man who returns home to find his wife cheating o",
+          "An American scientific research facility opens a p"
+        ],
+        "distinct_count": 9
+      },
+      {
+        "property": "revenue",
+        "type": "FLOAT",
+        "min": "0.0",
+        "max": "0.0",
+        "distinct_count": 1
+      },
+      {
+        "property": "poster_path",
+        "type": "STRING",
+        "values": [
+          "/tzVK7nTnzUiVeFSZhOAIHmrgXUS.jpg",
+          "/1VzwIa8HTykNiCCW8PBaJnyTvO8.jpg",
+          "/yTfqRQlJMTAuTNDG01XjNg5KPPg.jpg",
+          "/oP2WvKIWxqSBVHjfYAizFHOqBLG.jpg",
+          "/zpycBSiBFp5Uib6gWJpgEvfOgdn.jpg",
+          "/e7CAc8OadcUoKNPIX86SEPSX7f.jpg",
+          "/jjncR0vECvXVrBvr0A1vLghL4pN.jpg",
+          "/pJLmZBruOmn2c9mYWe3h1xcXaA0.jpg",
+          "/3uv9oaqOJkkdZiQp6r9lf24tkHW.jpg"
+        ],
+        "distinct_count": 9
+      },
+      {
+        "property": "vote_count",
+        "type": "INTEGER",
+        "min": "0",
+        "max": "16",
+        "distinct_count": 8
+      },
+      {
+        "property": "title",
+        "type": "STRING",
+        "values": [
+          "Erotic Nights of the Living Dead",
+          "Standoff",
+          "Electrical Girl",
+          "Diet of Sex",
+          "Amateur Porn Star Killer 2",
+          "The Band",
+          "The Sinful Dwarf",
+          "Adulterers",
+          "Half -Life"
+        ],
+        "distinct_count": 9
+      },
+      {
+        "property": "release_date",
+        "type": "DATE",
+        "min": "1973-12-20",
+        "max": "2016-01-05",
+        "distinct_count": 8
+      },
+      {
+        "property": "status",
+        "type": "STRING",
+        "values": [
+          "Released",
+          "In Production"
+        ],
+        "distinct_count": 2
+      },
+      {
+        "property": "budget",
+        "type": "INTEGER",
+        "min": "0",
+        "max": "750000",
+        "distinct_count": 2
+      },
+      {
+        "property": "popularity",
+        "type": "FLOAT",
+        "min": "0.001803",
+        "max": "6.889832",
+        "distinct_count": 9
+      },
+      {
+        "property": "imdb_id",
+        "type": "STRING",
+        "values": [
+          "tt0079642",
+          "tt0119931",
+          "tt0322232",
+          "tt3094816",
+          "tt1161951",
+          "tt1153101",
+          "tt0070696",
+          "tt4044464",
+          "tt2697688"
+        ],
+        "distinct_count": 9
+      },
+      {
+        "property": "original_title",
+        "type": "STRING",
+        "values": [
+          "Le notti erotiche dei morti viventi",
+          "Standoff",
+          "\u767c\u96fb\u6084\u5b0c\u5a03",
+          "Diet of Sex",
+          "Amateur Porn Star Killer 2",
+          "The Band",
+          "Dv\u00e6rgen",
+          "Adulterers",
+          "Half -Life"
+        ],
+        "distinct_count": 9
+      },
+      {
+        "property": "id",
+        "type": "INTEGER",
+        "min": "5422",
+        "max": "448290",
+        "distinct_count": 9
+      },
+      {
+        "property": "runtime",
+        "type": "FLOAT",
+        "min": "0.0",
+        "max": "112.0",
+        "distinct_count": 8
+      },
+      {
+        "property": "original_language",
+        "type": "STRING",
+        "values": [
+          "it",
+          "en",
+          "cn",
+          "es",
+          "da"
+        ],
+        "distinct_count": 5
+      },
+      {
+        "property": "tagline",
+        "type": "STRING",
+        "values": [
+          "Trust Will Get You Killed",
+          "Comedy, food, drama and sex, a lot of sex",
+          "Humiliation. Rape. Murder. You know the drill.",
+          "Sex, drugs and Rock 'n Roll",
+          "The Mother of all Dwarfsploitation films!",
+          "Love. Betrayal. Vengeance"
+        ],
+        "distinct_count": 6
+      },
+      {
+        "property": "homepage",
+        "type": "STRING",
+        "values": [
+          "http://www.imdb.com/title/tt0119931/",
+          "http://www.dietofsex.com/"
+        ],
+        "distinct_count": 2
+      }
+    ],
+    "Package": [
+      {
+        "property": "price",
+        "type": "FLOAT",
+        "min": "0.0",
+        "max": "99.99",
+        "distinct_count": 7
+      },
+      {
+        "property": "duration",
+        "type": "DURATION"
+      },
+      {
+        "property": "id",
+        "type": "INTEGER",
+        "min": "0",
+        "max": "6",
+        "distinct_count": 7
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Childrens",
+          "Bronze",
+          "Silver",
+          "Gold",
+          "Platinum",
+          "Ultimate",
+          "Free Trial"
+        ],
+        "distinct_count": 7
+      }
+    ],
+    "Subscription": [
+      {
+        "property": "expiresAt",
+        "type": "DATE_TIME",
+        "min": "2020-08-23T16:20:52.383Z",
+        "max": "2020-08-23T16:20:52.383Z",
+        "distinct_count": 1
+      },
+      {
+        "property": "id",
+        "type": "STRING",
+        "values": [
+          "e74f7163-eace-4169-8043-41627f1fe236"
+        ],
+        "distinct_count": 1
+      }
+    ]
+  },
+  "rel_props": {
+    "CAST_FOR": [
+      {
+        "property": "credit_id",
+        "type": "STRING",
+        "values": [
+          "52fe4459c3a36847f8090d7d",
+          "547200b79251411752000075",
+          "52fe4360c3a36847f804faaf",
+          "52fe4283c3a36847f8024aef",
+          "52fe450ec3a36847f80b9ba3"
+        ]
+      },
+      {
+        "property": "order",
+        "type": "INTEGER",
+        "values": [
+          "0",
+          "5",
+          "2"
+        ]
+      },
+      {
+        "property": "character",
+        "type": "STRING",
+        "values": [
+          "Charlie Wilson",
+          "Mr. Macauley",
+          "Allen Bauer",
+          "Captain John H. Miller",
+          "Mr. White"
+        ]
+      },
+      {
+        "property": "cast_id",
+        "type": "INTEGER",
+        "values": [
+          "12",
+          "14",
+          "1",
+          "10",
+          "5"
+        ]
+      }
+    ],
+    "CREW_FOR": [
+      {
+        "property": "credit_id",
+        "type": "STRING",
+        "values": [
+          "55e4f0abc3a368140800047e",
+          "52fe44a2c3a36847f80a14ed",
+          "52fe499dc3a36847f81a3b4f",
+          "54009d31c3a36806030016d9",
+          "54ad733cc3a36856c20000c0"
+        ]
+      },
+      {
+        "property": "job",
+        "type": "STRING",
+        "values": [
+          "Producer",
+          "Screenplay",
+          "Executive Producer"
+        ]
+      },
+      {
+        "property": "department",
+        "type": "STRING",
+        "values": [
+          "Production",
+          "Writing"
+        ]
+      }
+    ],
+    "RATED": [
+      {
+        "property": "timestamp",
+        "type": "DATE_TIME",
+        "values": [
+          "2015-03-09T22:49:42Z",
+          "2015-03-09T22:53:21Z",
+          "2015-03-09T22:52:09Z",
+          "2015-03-09T22:48:33Z",
+          "2015-03-09T23:00:07Z"
+        ]
+      },
+      {
+        "property": "rating",
+        "type": "FLOAT",
+        "values": [
+          "5.0",
+          "4.0",
+          "1.0",
+          "3.5"
+        ]
+      }
+    ]
+  },
+  "relationships": [
+    {
+      "start": "Movie",
+      "type": "ORIGINAL_LANGUAGE",
+      "end": "Language"
+    },
+    {
+      "start": "Movie",
+      "type": "SPOKEN_IN_LANGUAGE",
+      "end": "Language"
+    },
+    {
+      "start": "Movie",
+      "type": "PRODUCED_IN_COUNTRY",
+      "end": "Country"
+    },
+    {
+      "start": "Movie",
+      "type": "IN_GENRE",
+      "end": "Genre"
+    },
+    {
+      "start": "Movie",
+      "type": "PRODUCED_BY",
+      "end": "ProductionCompany"
+    },
+    {
+      "start": "Movie",
+      "type": "HAS_KEYWORD",
+      "end": "Keyword"
+    },
+    {
+      "start": "Movie",
+      "type": "IN_COLLECTION",
+      "end": "Collection"
+    },
+    {
+      "start": "Person",
+      "type": "CAST_FOR",
+      "end": "Movie"
+    },
+    {
+      "start": "Person",
+      "type": "CREW_FOR",
+      "end": "Movie"
+    },
+    {
+      "start": "Person",
+      "type": "CREW_FOR",
+      "end": "Video"
+    },
+    {
+      "start": "User",
+      "type": "RATED",
+      "end": "Movie"
+    },
+    {
+      "start": "User",
+      "type": "RATED",
+      "end": "Video"
+    },
+    {
+      "start": "Video",
+      "type": "ORIGINAL_LANGUAGE",
+      "end": "Language"
+    },
+    {
+      "start": "Video",
+      "type": "SPOKEN_IN_LANGUAGE",
+      "end": "Language"
+    },
+    {
+      "start": "Video",
+      "type": "PRODUCED_IN_COUNTRY",
+      "end": "Country"
+    },
+    {
+      "start": "Video",
+      "type": "IN_GENRE",
+      "end": "Genre"
+    },
+    {
+      "start": "Video",
+      "type": "PRODUCED_BY",
+      "end": "ProductionCompany"
+    },
+    {
+      "start": "Video",
+      "type": "HAS_KEYWORD",
+      "end": "Keyword"
+    },
+    {
+      "start": "Video",
+      "type": "IN_COLLECTION",
+      "end": "Collection"
+    },
+    {
+      "start": "Adult",
+      "type": "ORIGINAL_LANGUAGE",
+      "end": "Language"
+    },
+    {
+      "start": "Adult",
+      "type": "SPOKEN_IN_LANGUAGE",
+      "end": "Language"
+    },
+    {
+      "start": "Adult",
+      "type": "PRODUCED_IN_COUNTRY",
+      "end": "Country"
+    },
+    {
+      "start": "Adult",
+      "type": "IN_GENRE",
+      "end": "Genre"
+    },
+    {
+      "start": "Adult",
+      "type": "PRODUCED_BY",
+      "end": "ProductionCompany"
+    },
+    {
+      "start": "Adult",
+      "type": "HAS_KEYWORD",
+      "end": "Keyword"
+    },
+    {
+      "start": "Package",
+      "type": "PROVIDES_ACCESS_TO",
+      "end": "Genre"
+    },
+    {
+      "start": "Subscription",
+      "type": "FOR_PACKAGE",
+      "end": "Package"
+    }
+  ],
+  "metadata": {
+    "constraint": [
+      {
+        "id": 41,
+        "name": "constraint_3a764435",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Movie"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_3a764435",
+        "propertyType": null
+      },
+      {
+        "id": 39,
+        "name": "constraint_3a8336b6",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "User"
+        ],
+        "properties": [
+          "email"
+        ],
+        "ownedIndex": "constraint_3a8336b6",
+        "propertyType": null
+      },
+      {
+        "id": 49,
+        "name": "constraint_47e7f15d",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "User"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_47e7f15d",
+        "propertyType": null
+      },
+      {
+        "id": 27,
+        "name": "constraint_50656458",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Person"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_50656458",
+        "propertyType": null
+      },
+      {
+        "id": 43,
+        "name": "constraint_56e99879",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Subscription"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_56e99879",
+        "propertyType": null
+      },
+      {
+        "id": 35,
+        "name": "constraint_5ad5c639",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Country"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_5ad5c639",
+        "propertyType": null
+      },
+      {
+        "id": 45,
+        "name": "constraint_5cf79cea",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Package"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_5cf79cea",
+        "propertyType": null
+      },
+      {
+        "id": 33,
+        "name": "constraint_860aead3",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Genre"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_860aead3",
+        "propertyType": null
+      },
+      {
+        "id": 31,
+        "name": "constraint_9a791beb",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "ProductionCompany"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_9a791beb",
+        "propertyType": null
+      },
+      {
+        "id": 37,
+        "name": "constraint_c2951f31",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Language"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_c2951f31",
+        "propertyType": null
+      },
+      {
+        "id": 29,
+        "name": "constraint_cf4b0437",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Collection"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_cf4b0437",
+        "propertyType": null
+      },
+      {
+        "id": 47,
+        "name": "constraint_db0e1c22",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Keyword"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_db0e1c22",
+        "propertyType": null
+      }
+    ],
+    "index": [
+      {
+        "label": "Collection",
+        "properties": [
+          "id"
+        ],
+        "size": 1695,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 1695.0
+      },
+      {
+        "label": "Country",
+        "properties": [
+          "id"
+        ],
+        "size": 161,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 161.0
+      },
+      {
+        "label": "Genre",
+        "properties": [
+          "id"
+        ],
+        "size": 20,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 20.0
+      },
+      {
+        "label": "Keyword",
+        "properties": [
+          "id"
+        ],
+        "size": 19956,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 19956.0
+      },
+      {
+        "label": "Language",
+        "properties": [
+          "id"
+        ],
+        "size": 133,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 133.0
+      },
+      {
+        "label": "Movie",
+        "properties": [
+          "id"
+        ],
+        "size": 45433,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 45433.0
+      },
+      {
+        "label": "Package",
+        "properties": [
+          "id"
+        ],
+        "size": 7,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 7.0
+      },
+      {
+        "label": "Person",
+        "properties": [
+          "id"
+        ],
+        "size": 353343,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 353343.0
+      },
+      {
+        "label": "ProductionCompany",
+        "properties": [
+          "id"
+        ],
+        "size": 23693,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 23693.0
+      },
+      {
+        "label": "Subscription",
+        "properties": [
+          "id"
+        ],
+        "size": 1,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 1.0
+      },
+      {
+        "label": "User",
+        "properties": [
+          "email"
+        ],
+        "size": 1,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 1.0
+      },
+      {
+        "label": "User",
+        "properties": [
+          "id"
+        ],
+        "size": 265918,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 265918.0
+      }
+    ]
+  }
+}

@@ -1,0 +1,94 @@
+You are an expert at converting Neo4j graph schemas to TypeDB 3.x TypeQL schemas.
+
+## Task
+Convert the following Neo4j schema to a valid TypeQL schema definition.
+
+## Neo4j Schema (JSON format)
+```json
+{NEO4J_SCHEMA}
+```
+
+## TypeQL Schema Rules
+
+### Attributes
+- Define attributes with value types: `attribute name value string;`
+- Value types: string, integer, double, boolean, datetime
+- Neo4j STRING -> string, INTEGER/LONG -> integer, FLOAT/DOUBLE -> double, BOOLEAN -> boolean, DATE/DATETIME -> datetime
+- Neo4j LIST types should be modeled as multi-valued attributes (no special syntax needed)
+
+### Entities
+- Define entities that own attributes: `entity person, owns name, owns age;`
+- Use `@key` for unique identifier attributes: `owns email @key`
+- Entities play roles in relations: `plays friendship:friend`
+
+### Relations
+- Relations connect entities via roles: `relation acted_in, relates actor, relates film;`
+- Choose meaningful role names (not just "source"/"target")
+- Relations can own attributes: `relation acted_in, relates actor, relates film, owns role_name;`
+
+### Naming Conventions
+- Use snake_case for all type names (entities, relations, attributes)
+- Convert PascalCase node labels to snake_case: Person -> person, MovieGenre -> movie_genre
+- Convert SCREAMING_SNAKE_CASE relationship types to snake_case: ACTED_IN -> acted_in
+- Property names: camelCase -> snake_case: firstName -> first_name
+
+### Reserved Keywords (AVOID these as type names)
+These are TypeQL reserved words - rename if encountered:
+- in -> contained_in
+- or, and, not -> prefix with the entity context (e.g., logic_or)
+- match, define, insert, delete, fetch -> add prefix/suffix
+- role -> character_role or actor_role (IMPORTANT: 'role' is reserved!)
+- type -> item_type or category_type
+- value -> attr_value
+- plays -> game_play or plays_game (IMPORTANT: 'plays' is a keyword!)
+- owns -> ownership or has_ownership
+- relates -> relationship or connection
+
+### Subtyping
+- Use subtyping when there's clear inheritance: `entity actor sub person`
+- Only create subtypes when the Neo4j schema shows clear hierarchical relationships
+
+## Output Format
+Return ONLY the TypeQL schema definition, starting with `define` and no markdown code blocks.
+The schema must be syntactically valid TypeQL that can be executed directly.
+
+## Example
+
+Input Neo4j schema:
+```json
+{
+  "node_props": {
+    "Person": [{"property": "name", "type": "STRING"}, {"property": "born", "type": "INTEGER"}],
+    "Movie": [{"property": "title", "type": "STRING"}, {"property": "released", "type": "INTEGER"}]
+  },
+  "rel_props": {
+    "ACTED_IN": [{"property": "roles", "type": "LIST"}]
+  },
+  "relationships": [
+    {"start": "Person", "type": "ACTED_IN", "end": "Movie"}
+  ]
+}
+```
+
+Output TypeQL schema:
+define
+  attribute name value string;
+  attribute born value integer;
+  attribute title value string;
+  attribute released value integer;
+  attribute roles value string;
+
+  entity person,
+    owns name @key,
+    owns born,
+    plays acted_in:actor;
+
+  entity movie,
+    owns title @key,
+    owns released,
+    plays acted_in:film;
+
+  relation acted_in,
+    relates actor,
+    relates film,
+    owns roles;

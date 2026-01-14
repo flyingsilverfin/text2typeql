@@ -1,0 +1,150 @@
+define
+  attribute name value string;
+  attribute person_id value string;
+  attribute summary value string;
+  attribute revenue value double;
+  attribute motto value string;
+  attribute nbr_employees value integer;
+  attribute is_dissolved value boolean;
+  attribute organization_id value string;
+  attribute is_public value boolean;
+  attribute industry_category_name value string;
+  attribute industry_category_id value string;
+  attribute city_id value string;
+  attribute city_summary value string;
+  attribute city_name value string;
+  attribute country_name value string;
+  attribute country_id value string;
+  attribute country_summary value string;
+  attribute article_id value string;
+  attribute sentiment value double;
+  attribute author value string;
+  attribute site_name value string;
+  attribute article_summary value string;
+  attribute date value datetime;
+  attribute title value string;
+  attribute text value string;
+  attribute embedding value string;
+  attribute embedding_google value string;
+  attribute question value string;
+  attribute cypher value string;
+  attribute fewshot_id value integer;
+
+  entity person,
+    owns name,
+    owns person_id @key,
+    owns summary,
+    plays parent_child:parent,
+    plays parent_child:child,
+    plays ceo_leadership:ceo,
+    plays investment:investor,
+    plays board_membership:board_member;
+
+  entity organization,
+    owns name,
+    owns organization_id @key,
+    owns summary,
+    owns revenue,
+    owns motto,
+    owns nbr_employees,
+    owns is_dissolved,
+    owns is_public,
+    plays location:located_org,
+    plays ceo_leadership:led_org,
+    plays categorization:categorized_org,
+    plays subsidiary:parent_org,
+    plays subsidiary:subsidiary_org,
+    plays supply:supplier_org,
+    plays supply:supplied_org,
+    plays investment:invested_org,
+    plays board_membership:governed_org,
+    plays competition:competitor,
+    plays mention:mentioned_org;
+
+  entity industry_category,
+    owns industry_category_name,
+    owns industry_category_id @key,
+    plays categorization:category;
+
+  entity city,
+    owns city_id @key,
+    owns city_summary,
+    owns city_name,
+    plays location:location_city,
+    plays country_location:located_city;
+
+  entity country,
+    owns country_name,
+    owns country_id @key,
+    owns country_summary,
+    plays country_location:location_country;
+
+  entity article,
+    owns article_id @key,
+    owns sentiment,
+    owns author,
+    owns site_name,
+    owns article_summary,
+    owns date,
+    owns title,
+    plays chunk_relation:parent_article,
+    plays mention:mentioning_article;
+
+  entity chunk,
+    owns text,
+    owns embedding,
+    owns embedding_google,
+    plays chunk_relation:child_chunk;
+
+  entity fewshot,
+    owns question,
+    owns cypher,
+    owns fewshot_id @key,
+    owns embedding;
+
+  relation parent_child,
+    relates parent,
+    relates child;
+
+  relation location,
+    relates located_org,
+    relates location_city;
+
+  relation ceo_leadership,
+    relates led_org,
+    relates ceo;
+
+  relation categorization,
+    relates categorized_org,
+    relates category;
+
+  relation subsidiary,
+    relates parent_org,
+    relates subsidiary_org;
+
+  relation supply,
+    relates supplier_org,
+    relates supplied_org;
+
+  relation investment,
+    relates invested_org,
+    relates investor;
+
+  relation board_membership,
+    relates governed_org,
+    relates board_member;
+
+  relation competition,
+    relates competitor;
+
+  relation country_location,
+    relates located_city,
+    relates location_country;
+
+  relation chunk_relation,
+    relates parent_article,
+    relates child_chunk;
+
+  relation mention,
+    relates mentioning_article,
+    relates mentioned_org;

@@ -1,0 +1,1221 @@
+index,question,cypher,typeql,attempts,error_message
+0,List the top 5 organizations where the number of employees is greater than 1000.,"MATCH (o:Organization)
+WHERE o.nbrEmployees > 1000
+RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees
+ORDER BY o.nbrEmployees DESC
+LIMIT 5","match $o isa organization, has nbr_employees $emp; $emp > 1000; fetch { ""organization"": $o.name, ""numberOfEmployees"": $o.nbr_employees }; sort ""numberOfEmployees"" desc; limit 5;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:138:
+--> match $o isa organization, has nbr_employees $emp; $emp > 1000; fetch { ""organization"": $o.name, ""numberOfEmployees"": $o.nbr_employees }; sort ""numberOfEmployees"" desc; limit 5;
+                                                                                                                                              ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+1,Who are the CEOs of the first 3 public companies?,"MATCH (o:Organization)-[:HAS_CEO]->(p:Person)
+WHERE o.isPublic IS NOT NULL AND o.isPublic = true
+RETURN o.name AS company, p.name AS ceo
+LIMIT 3","match $o isa organization, has is_public true; $r (led_org: $o, ceo: $p) isa ceo_leadership; $p isa person; fetch { ""company"": $o.name, ""ceo"": $p.name }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:154:
+--> match $o isa organization, has is_public true; $r (led_org: $o, ceo: $p) isa ceo_leadership; $p isa person; fetch { ""company"": $o.name, ""ceo"": $p.name }; limit 3;
+                                                                                                                                                              ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+2,Find the top 5 articles with the highest sentiment score.,"MATCH (a:Article)
+RETURN a.title, a.sentiment
+ORDER BY a.sentiment DESC
+LIMIT 5","match $a isa article; fetch { ""title"": $a.title, ""sentiment"": $a.sentiment }; sort ""sentiment"" desc; limit 5;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:78:
+--> match $a isa article; fetch { ""title"": $a.title, ""sentiment"": $a.sentiment }; sort ""sentiment"" desc; limit 5;
+                                                                                  ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+3,Which cities are home to organizations that have more than 500 employees?,"MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.nbrEmployees > 500
+RETURN DISTINCT c.name AS city","match $o isa organization, has nbr_employees $emp; $emp > 500; $r (located_org: $o, location_city: $c) isa location; $c isa city; fetch { ""city"": $c.city_name }; group ""city""; limit 1 per group;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:162:
+--> match $o isa organization, has nbr_employees $emp; $emp > 500; $r (located_org: $o, location_city: $c) isa location; $c isa city; fetch { ""city"": $c.city_name }; group ""city""; limit 1 per group;
+                                                                                                                                                                      ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+4,List the first 3 organizations dissolved and their cities.,"MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.isDissolved = true
+RETURN o.name AS organization, c.name AS city
+LIMIT 3","match $o isa organization, has is_dissolved true; $r (located_org: $o, location_city: $c) isa location; $c isa city; fetch { ""organization"": $o.name, ""city"": $c.city_name }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:174:
+--> match $o isa organization, has is_dissolved true; $r (located_org: $o, location_city: $c) isa location; $c isa city; fetch { ""organization"": $o.name, ""city"": $c.city_name }; limit 3;
+                                                                                                                                                                                  ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+5,Who are the board members of the first 5 organizations listed by revenue in descending order?,"MATCH (o:Organization)
+WITH o
+ORDER BY o.revenue DESC
+LIMIT 5
+MATCH (o)-[:HAS_BOARD_MEMBER]->(p:Person)
+RETURN o.name AS organization, p.name AS board_member","match $o isa organization; fetch { ""org"": $o, ""revenue"": $o.revenue }; sort ""revenue"" desc; limit 5; match $r (governed_org: $org, board_member: $p) isa board_membership; $p isa person; fetch { ""organization"": $org.name, ""board_member"": $p.name };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:71:
+--> match $o isa organization; fetch { ""org"": $o, ""revenue"": $o.revenue }; sort ""revenue"" desc; limit 5; match $r (governed_org: $org, board_member: $p) isa board_membership; $p isa person; fetch { ""organization"": $org.name, ""board_member"": $p.name };
+                                                                           ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+6,Find the top 3 countries with the most cities hosting public organizations.,"MATCH (c:Country)<-[:IN_COUNTRY]-(city:City)<-[:IN_CITY]-(o:Organization)
+WHERE o.isPublic IS NOT NULL AND o.isPublic = true
+WITH c, count(DISTINCT city) AS numCities
+RETURN c.name AS country, numCities
+ORDER BY numCities DESC
+LIMIT 3","match $o isa organization, has is_public true; $r1 (located_org: $o, location_city: $city) isa location; $r2 (located_city: $city, location_country: $c) isa country_location; $c isa country; fetch { ""country"": $c.country_name, ""cities"": count($city) }; group ""country""; sort count desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:253:
+--> match $o isa organization, has is_public true; $r1 (located_org: $o, location_city: $city) isa location; $r2 (located_city: $city, location_country: $c) isa country_location; $c isa country; fetch { ""country"": $c.country_name, ""cities"": count($city) }; group ""country""; sort count desc; limit 3;
+                                                                                                                                                                                                                                                                 ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+7,Which organizations have 'Accenture' as an investor?,"MATCH (o:Organization)<-[:HAS_INVESTOR]-(investor:Organization {name: 'Accenture'})
+RETURN o.name AS organization, o.summary AS summary","match $investor isa organization, has name ""Accenture""; $r (invested_org: $o, investor: $investor) isa investment; $o isa organization; fetch { ""organization"": $o.name, ""summary"": $o.summary };",1,"
+[INF11] Type-inference was unable to find compatible types for the pair of variables 'investor' & '_anonymous' across a 'links' constraint. Types were:
+- investor: [organization]
+- _anonymous: [investment:investor]
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query.
+Near 1:79
+-----
+--> match $investor isa organization, has name ""Accenture""; $r (invested_org: $o, investor: $investor) isa investment; $o isa organization; fetch { ""organization"": $o.name, ""summary"": $o.summary };
+                                                                                  ^
+-----"
+8,List the names of the first 3 organizations that are competitors of 'Accenture'.,"MATCH (a:Organization {name: 'Accenture'})-[:HAS_COMPETITOR]->(c:Organization)
+RETURN c.name
+LIMIT 3","match $a isa organization, has name ""Accenture""; $r (competitor: $a, competitor: $c) isa competition; $c isa organization; fetch { ""name"": $c.name }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:150:
+--> match $a isa organization, has name ""Accenture""; $r (competitor: $a, competitor: $c) isa competition; $c isa organization; fetch { ""name"": $c.name }; limit 3;
+                                                                                                                                                          ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+9,List the top 3 industries mentioned in articles about 'Accenture'.,"MATCH (a:Article)-[:MENTIONS]->(:Organization {name: 'Accenture'})
+MATCH (a)-[:HAS_CHUNK]->(c:Chunk)
+MATCH (o:Organization)-[:HAS_CATEGORY]->(ic:IndustryCategory)
+WHERE c.text CONTAINS o.name
+RETURN ic.name AS industry, count(*) AS mentions
+ORDER BY mentions DESC
+LIMIT 3","match $accenture isa organization, has name ""Accenture""; $r1 (mentioning_article: $a, mentioned_org: $accenture) isa mention; $r2 (parent_article: $a, child_chunk: $chunk) isa chunk_relation; $chunk isa chunk, has text $text; $o isa organization; $r3 (categorized_org: $o, category: $ic) isa categorization; $ic isa industry_category; $o has name $org_name; $text like "".*"" + $org_name + "".*""; fetch { ""industry"": $ic.industry_category_name }; group ""industry""; sort count desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:444:
+--> match $accenture isa organization, has name ""Accenture""; $r1 (mentioning_article: $a, mentioned_org: $accenture) isa mention; $r2 (parent_article: $a, child_chunk: $chunk) isa chunk_relation; $chunk isa chunk, has text $text; $o isa organization; $r3 (categorized_org: $o, category: $ic) isa categorization; $ic isa industry_category; $o has name $org_name; $text like "".*"" + $org_name + "".*""; fetch { ""industry"": $ic.industry_category_name }; group ""industry""; sort count desc; limit 3;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+10,What are the names of the first 3 cities that have organizations with more than 100 employees?,"MATCH (c:City)<-[:IN_CITY]-(o:Organization)
+WHERE o.nbrEmployees > 100
+RETURN c.name
+LIMIT 3","match $c isa city, has city_name $name; $o isa organization, has nbr_employees $emp; $l(located_org: $o, location_city: $c) isa location; $emp > 100; fetch { ""name"": $name }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:175:
+--> match $c isa city, has city_name $name; $o isa organization, has nbr_employees $emp; $l(located_org: $o, location_city: $c) isa location; $emp > 100; fetch { ""name"": $name }; limit 3;
+                                                                                                                                                                                   ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+11,Who are the authors of the first 5 articles that mention any organization headquartered in 'Seattle'?,"MATCH (o:Organization)-[:IN_CITY]->(:City {name: 'Seattle'})
+MATCH (a:Article)-[:MENTIONS]->(o)
+WITH a
+ORDER BY a.date DESC
+LIMIT 5
+RETURN a.author AS author","match $o isa organization; $c isa city, has city_name ""Seattle""; $l1(located_org: $o, location_city: $c) isa location; $a isa article, has author $author, has date $date; $m(mentioning_article: $a, mentioned_org: $o) isa mention; fetch { ""author"": $author }; sort $date desc; limit 5;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:259:
+--> match $o isa organization; $c isa city, has city_name ""Seattle""; $l1(located_org: $o, location_city: $c) isa location; $a isa article, has author $author, has date $date; $m(mentioning_article: $a, mentioned_org: $o) isa mention; fetch { ""author"": $author }; sort $date desc; limit 5;
+                                                                                                                                                                                                                                                                       ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+12,List the names of the first 3 organizations that have subsidiaries.,"MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(:Organization)
+RETURN o.name
+LIMIT 3","match $o isa organization, has name $name; $sub isa organization; $s(parent_org: $o, subsidiary_org: $sub) isa subsidiary; fetch { ""name"": $name }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:148:
+--> match $o isa organization, has name $name; $sub isa organization; $s(parent_org: $o, subsidiary_org: $sub) isa subsidiary; fetch { ""name"": $name }; limit 3;
+                                                                                                                                                        ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+13,List the first 3 organizations mentioned in articles published in 2022.,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.date >= date(""2022-01-01"") AND a.date < date(""2023-01-01"")
+RETURN o.name
+LIMIT 3","match $a isa article, has date $date; $o isa organization, has name $name; $m(mentioning_article: $a, mentioned_org: $o) isa mention; $date >= 2022-01-01T00:00:00; $date < 2023-01-01T00:00:00; fetch { ""name"": $name }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:218:
+--> match $a isa article, has date $date; $o isa organization, has name $name; $m(mentioning_article: $a, mentioned_org: $o) isa mention; $date >= 2022-01-01T00:00:00; $date < 2023-01-01T00:00:00; fetch { ""name"": $name }; limit 3;
+                                                                                                                                                                                                                              ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+14,Find the top 5 organizations by revenue that are not dissolved.,"MATCH (o:Organization)
+WHERE o.isDissolved IS NOT NULL AND NOT o.isDissolved
+RETURN o.name AS organization, o.revenue AS revenue
+ORDER BY o.revenue DESC
+LIMIT 5","match $o isa organization, has name $name, has revenue $revenue, has is_dissolved $dissolved; $dissolved == false; fetch { ""organization"": $name, ""revenue"": $revenue }; sort $revenue desc; limit 5;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:169:
+--> match $o isa organization, has name $name, has revenue $revenue, has is_dissolved $dissolved; $dissolved == false; fetch { ""organization"": $name, ""revenue"": $revenue }; sort $revenue desc; limit 5;
+                                                                                                                                                                             ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+15,List the top 3 people who are investors in more than one organization.,"MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization)
+WITH p, count(o) as num_orgs
+WHERE num_orgs > 1
+RETURN p.name as person, num_orgs as number_of_organizations_invested_in
+ORDER BY num_orgs DESC
+LIMIT 3","match $p isa person, has name $name; $i(investor: $p, invested_org: $o) isa investment; $o isa organization; get $p, $name; group $p; aggregate count; ?num_orgs > 1; fetch { ""person"": $name, ""number_of_organizations_invested_in"": $num_orgs }; sort $num_orgs desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:113:
+--> match $p isa person, has name $name; $i(investor: $p, invested_org: $o) isa investment; $o isa organization; get $p, $name; group $p; aggregate count; ?num_orgs > 1; fetch { ""person"": $name, ""number_of_organizations_invested_in"": $num_orgs }; sort $num_orgs desc; limit 3;
+                                                                                                                     ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+17,Who are the first 3 persons mentioned as CEOs of organizations in the technology industry?,"MATCH (p:Person)<-[:HAS_CEO]-(o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory)
+WHERE c.name CONTAINS 'Technology'
+RETURN p.name AS name
+LIMIT 3","match $p isa person, has name $name; $o isa organization; $cat isa industry_category, has industry_category_name $cat_name; $ceo(ceo: $p, led_org: $o) isa ceo_leadership; $categorization(categorized_org: $o, category: $cat) isa categorization; $cat_name contains ""Technology""; fetch { ""name"": $name }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:302:
+--> match $p isa person, has name $name; $o isa organization; $cat isa industry_category, has industry_category_name $cat_name; $ceo(ceo: $p, led_org: $o) isa ceo_leadership; $categorization(categorized_org: $o, category: $cat) isa categorization; $cat_name contains ""Technology""; fetch { ""name"": $name }; limit 3;
+                                                                                                                                                                                                                                                                                                                  ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+18,List the top 3 most recent articles about organizations in the 'Electronic Products Manufacturers' industry.,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Electronic Products Manufacturers'})
+RETURN a.title AS title, a.date AS date, o.name AS organization
+ORDER BY a.date DESC
+LIMIT 3","match $a isa article, has title $title, has date $date; $o isa organization, has name $org_name; $cat isa industry_category, has industry_category_name ""Electronic Products Manufacturers""; $m(mentioning_article: $a, mentioned_org: $o) isa mention; $categorization(categorized_org: $o, category: $cat) isa categorization; fetch { ""title"": $title, ""date"": $date, ""organization"": $org_name }; sort $date desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:390:
+--> match $a isa article, has title $title, has date $date; $o isa organization, has name $org_name; $cat isa industry_category, has industry_category_name ""Electronic Products Manufacturers""; $m(mentioning_article: $a, mentioned_org: $o) isa mention; $categorization(categorized_org: $o, category: $cat) isa categorization; fetch { ""title"": $title, ""date"": $date, ""organization"": $org_name }; sort $date desc; limit 3;
+                                                                                                                                                                                                                                                                                                                                                                                                          ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+19,What are the titles of the first 5 articles that mention organizations in 'Rome'?,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City {name: 'Rome'})
+RETURN a.title
+LIMIT 5","match $a isa article, has title $title; $o isa organization; $c isa city, has city_name ""Rome""; $m(mentioning_article: $a, mentioned_org: $o) isa mention; $l(located_org: $o, location_city: $c) isa location; fetch { ""title"": $title }; limit 5;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:235:
+--> match $a isa article, has title $title; $o isa organization; $c isa city, has city_name ""Rome""; $m(mentioning_article: $a, mentioned_org: $o) isa mention; $l(located_org: $o, location_city: $c) isa location; fetch { ""title"": $title }; limit 5;
+                                                                                                                                                                                                                                               ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+20,List the names of the first 3 organizations that have suppliers.,"MATCH (o:Organization)-[:HAS_SUPPLIER]->(:Organization)
+RETURN o.name
+LIMIT 3","match $o isa organization; $s (supplier_org: $supplier, supplied_org: $o) isa supply; fetch $o: name; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected fetch_object
+Near 1:92:
+--> match $o isa organization; $s (supplier_org: $supplier, supplied_org: $o) isa supply; fetch $o: name; limit 3;
+                                                                                                ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+22,List the first 3 organizations that were dissolved but mentioned in recent articles.,"MATCH (o:Organization {isDissolved: true})<-[:MENTIONS]-(a:Article)
+WHERE a.date >= datetime() - duration('P1Y')
+RETURN o.name AS organization, a.title AS article
+ORDER BY a.date DESC
+LIMIT 3","match $o isa organization, has is_dissolved true; $m (mentioning_article: $a, mentioned_org: $o) isa mention; $a has date $date; $date >= 2023-01-01T00:00:00; $o has name $org_name; $a has title $article_title; fetch { ""organization"": $org_name, ""article"": $article_title }; sort $date desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:275:
+--> match $o isa organization, has is_dissolved true; $m (mentioning_article: $a, mentioned_org: $o) isa mention; $a has date $date; $date >= 2023-01-01T00:00:00; $o has name $org_name; $a has title $article_title; fetch { ""organization"": $org_name, ""article"": $article_title }; sort $date desc; limit 3;
+                                                                                                                                                                                                                                                                                       ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+23,List the first 3 organizations that have a revenue greater than $100 million but fewer than 500 employees.,"MATCH (o:Organization)
+WHERE o.revenue > 1E8 AND o.nbrEmployees < 500
+RETURN o.name, o.revenue, o.nbrEmployees
+LIMIT 3","match $o isa organization, has revenue $r, has nbr_employees $e; $r > 100000000.0; $e < 500; $o has name $name; fetch { ""name"": $name, ""revenue"": $r, ""nbrEmployees"": $e }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:172:
+--> match $o isa organization, has revenue $r, has nbr_employees $e; $r > 100000000.0; $e < 500; $o has name $name; fetch { ""name"": $name, ""revenue"": $r, ""nbrEmployees"": $e }; limit 3;
+                                                                                                                                                                                ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+24,Who are the first 3 board members of organizations that are public?,"MATCH (o:Organization {isPublic: true})-[:HAS_BOARD_MEMBER]->(p:Person)
+RETURN p.name AS boardMember, o.name AS organization
+LIMIT 3","match $o isa organization, has is_public true; $bm (governed_org: $o, board_member: $p) isa board_membership; $p has name $board_member_name; $o has name $org_name; fetch { ""boardMember"": $board_member_name, ""organization"": $org_name }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:237:
+--> match $o isa organization, has is_public true; $bm (governed_org: $o, board_member: $p) isa board_membership; $p has name $board_member_name; $o has name $org_name; fetch { ""boardMember"": $board_member_name, ""organization"": $org_name }; limit 3;
+                                                                                                                                                                                                                                                 ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+25,What are the names of the first 3 organizations with the most competitors?,"MATCH (o:Organization)-[:HAS_COMPETITOR]->(c:Organization)
+WITH o, count(c) AS numCompetitors
+ORDER BY numCompetitors DESC
+LIMIT 3
+RETURN o.name AS organization, numCompetitors","match $o isa organization; $comp (competitor: $o, competitor: $c) isa competition; fetch $o: name; group $o; count $c; sort count desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected fetch_object
+Near 1:89:
+--> match $o isa organization; $comp (competitor: $o, competitor: $c) isa competition; fetch $o: name; group $o; count $c; sort count desc; limit 3;
+                                                                                             ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+26,List the first 3 organizations that have a city as their headquarters and are also public.,"MATCH (o:Organization)-[:IN_CITY]->(:City)
+WHERE o.isPublic IS NOT NULL AND o.isPublic = true
+RETURN o.name AS organization
+LIMIT 3","match $o isa organization, has is_public true; $loc (located_org: $o, location_city: $city) isa location; $o has name $org_name; fetch { ""organization"": $org_name }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:166:
+--> match $o isa organization, has is_public true; $loc (located_org: $o, location_city: $city) isa location; $o has name $org_name; fetch { ""organization"": $org_name }; limit 3;
+                                                                                                                                                                          ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+27,Find the first 3 people who have the role of CEO in more than one organization.,"MATCH (p:Person)-[:HAS_CEO]->(o:Organization)
+WITH p, count(o) as num_ceo_roles
+WHERE num_ceo_roles > 1
+RETURN p.name as person, num_ceo_roles as number_of_ceo_roles
+ORDER BY num_ceo_roles DESC
+LIMIT 3","match $p isa person; $ceo (led_org: $o, ceo: $p) isa ceo_leadership; fetch $p: name; group $p; count $o; ?num_roles > 1; sort count desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected fetch_object
+Near 1:75:
+--> match $p isa person; $ceo (led_org: $o, ceo: $p) isa ceo_leadership; fetch $p: name; group $p; count $o; ?num_roles > 1; sort count desc; limit 3;
+                                                                               ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+28,List the names and IDs of the top 5 cities by the number of public organizations located in them.,"MATCH (c:City)<-[:IN_CITY]-(o:Organization)
+WHERE o.isPublic = true
+WITH c, count(o) as orgCount
+ORDER BY orgCount DESC
+LIMIT 5
+RETURN c.name as cityName, c.id as cityId","match $c isa city; $loc (located_org: $o, location_city: $c) isa location; $o has is_public true; fetch $c: city_name, city_id; group $c; count $o; sort count desc; limit 5;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected fetch_object
+Near 1:104:
+--> match $c isa city; $loc (located_org: $o, location_city: $c) isa location; $o has is_public true; fetch $c: city_name, city_id; group $c; count $o; sort count desc; limit 5;
+                                                                                                            ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+29,Who are the authors of the first 3 articles that negatively mention any organization?,"MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk), (a)-[:MENTIONS]->(o:Organization)
+WHERE a.sentiment < 0
+WITH a, o
+ORDER BY a.date DESC
+LIMIT 3
+RETURN a.author AS author, a.title AS title, o.name AS organization","match $a isa article, has sentiment $sentiment; $sentiment < 0; $chunk_rel (parent_article: $a, child_chunk: $chunk) isa chunk_relation; $m (mentioning_article: $a, mentioned_org: $o) isa mention; $a has date $date; $a has author $author; $a has title $title; $o has name $org_name; fetch { ""author"": $author, ""title"": $title, ""organization"": $org_name }; sort $date desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:356:
+--> match $a isa article, has sentiment $sentiment; $sentiment < 0; $chunk_rel (parent_article: $a, child_chunk: $chunk) isa chunk_relation; $m (mentioning_article: $a, mentioned_org: $o) isa mention; $a has date $date; $a has author $author; $a has title $title; $o has name $org_name; fetch { ""author"": $author, ""title"": $title, ""organization"": $org_name }; sort $date desc; limit 3;
+                                                                                                                                                                                                                                                                                                                                                                        ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+30,List the names of the first 3 organizations that have had articles with a sentiment higher than 0.8.,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.sentiment > 0.8
+RETURN o.name
+LIMIT 3","match $a isa article, has sentiment $s; $m (mentioning_article: $a, mentioned_org: $o) isa mention; $o isa organization, has name $n; $s > 0.8; fetch { ""name"": $n }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:166:
+--> match $a isa article, has sentiment $s; $m (mentioning_article: $a, mentioned_org: $o) isa mention; $o isa organization, has name $n; $s > 0.8; fetch { ""name"": $n }; limit 3;
+                                                                                                                                                                          ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+31,Which organizations have been mentioned in articles dated before 2020?,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.date < date(""2020-01-01"")
+RETURN DISTINCT o","match $a isa article, has date $d; $m (mentioning_article: $a, mentioned_org: $o) isa mention; $o isa organization; $d < 2020-01-01T00:00:00; fetch $o.*;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected fetch_object
+Near 1:148:
+--> match $a isa article, has date $d; $m (mentioning_article: $a, mentioned_org: $o) isa mention; $o isa organization; $d < 2020-01-01T00:00:00; fetch $o.*;
+                                                                                                                                                        ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+32,What are the names of the first 3 organizations that have a motto containing 'world'?,"MATCH (o:Organization)
+WHERE o.motto CONTAINS 'world'
+RETURN o.name
+LIMIT 3","match $o isa organization, has motto $m, has name $n; $m contains ""world""; fetch { ""name"": $n }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:97:
+--> match $o isa organization, has motto $m, has name $n; $m contains ""world""; fetch { ""name"": $n }; limit 3;
+                                                                                                     ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+33,List the first 3 organizations that are suppliers to more than one organization.,"MATCH (o:Organization)-[:HAS_SUPPLIER]->(s:Organization)
+WITH s, count(o) as num_orgs
+WHERE num_orgs > 1
+RETURN s.name as supplier, num_orgs as number_of_organizations
+ORDER BY num_orgs DESC
+LIMIT 3","match $s (supplier_org: $supplier, supplied_org: $o) isa supply; $supplier isa organization, has name $sn; get $supplier, $sn; group $supplier; aggregate count; ?supplier_count > 1; fetch { ""supplier"": $sn, ""number_of_organizations"": $supplier_count }; sort $supplier_count desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:111:
+--> match $s (supplier_org: $supplier, supplied_org: $o) isa supply; $supplier isa organization, has name $sn; get $supplier, $sn; group $supplier; aggregate count; ?supplier_count > 1; fetch { ""supplier"": $sn, ""number_of_organizations"": $supplier_count }; sort $supplier_count desc; limit 3;
+                                                                                                                   ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+35,What are the names of the first 3 organizations and their CEOs where the organization is not public?,"MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)
+WHERE o.isPublic IS NOT NULL AND NOT o.isPublic
+RETURN o.name AS organization, ceo.name AS ceo
+LIMIT 3","match $c (led_org: $o, ceo: $ceo) isa ceo_leadership; $o isa organization, has is_public $pub, has name $on; $ceo isa person, has name $cn; not { $pub == true; }; fetch { ""organization"": $on, ""ceo"": $cn }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:206:
+--> match $c (led_org: $o, ceo: $ceo) isa ceo_leadership; $o isa organization, has is_public $pub, has name $on; $ceo isa person, has name $cn; not { $pub == true; }; fetch { ""organization"": $on, ""ceo"": $cn }; limit 3;
+                                                                                                                                                                                                                  ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+36,List the first 3 cities that have more than three organizations based in them.,"MATCH (c:City)<-[:IN_CITY]-(o:Organization)
+WITH c, count(o) AS orgCount
+WHERE orgCount > 3
+RETURN c.name AS city
+ORDER BY orgCount DESC
+LIMIT 3","match $l (located_org: $o, location_city: $c) isa location; $c isa city, has city_name $cn; get $c, $cn; group $c; aggregate count; ?org_count > 3; fetch { ""city"": $cn }; sort $org_count desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:96:
+--> match $l (located_org: $o, location_city: $c) isa location; $c isa city, has city_name $cn; get $c, $cn; group $c; aggregate count; ?org_count > 3; fetch { ""city"": $cn }; sort $org_count desc; limit 3;
+                                                                                                    ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+37,Who are the first 3 authors of articles mentioning organizations with revenues over $50 million?,"MATCH (article:Article)-[:MENTIONS]->(org:Organization)
+WHERE org.revenue > 5e7
+RETURN DISTINCT article.author AS author
+LIMIT 3","match $m (mentioning_article: $a, mentioned_org: $o) isa mention; $a isa article, has author $au; $o isa organization, has revenue $r; $r > 50000000.0; fetch { ""author"": $au }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:177:
+--> match $m (mentioning_article: $a, mentioned_org: $o) isa mention; $a isa article, has author $au; $o isa organization, has revenue $r; $r > 50000000.0; fetch { ""author"": $au }; limit 3;
+                                                                                                                                                                                     ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+38,List the top 3 cities where organizations are based that have at least 100 employees.,"MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.nbrEmployees >= 100
+RETURN c.name AS city, count(o) AS numOrganizations
+ORDER BY numOrganizations DESC
+LIMIT 3","match $l (located_org: $o, location_city: $c) isa location; $o isa organization, has nbr_employees $e; $c isa city, has city_name $cn; $e >= 100; get $c, $cn; group $c; aggregate count; fetch { ""city"": $cn, ""numOrganizations"": count }; sort count desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:150:
+--> match $l (located_org: $o, location_city: $c) isa location; $o isa organization, has nbr_employees $e; $c isa city, has city_name $cn; $e >= 100; get $c, $cn; group $c; aggregate count; fetch { ""city"": $cn, ""numOrganizations"": count }; sort count desc; limit 3;
+                                                                                                                                                          ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+39,Which organizations have a revenue greater than $50 million and are not dissolved?,"MATCH (o:Organization)
+WHERE o.revenue > 5E7 AND o.isDissolved IS NOT NULL AND NOT o.isDissolved
+RETURN o","match $o isa organization, has revenue $r, has is_dissolved $d; $r > 50000000.0; not { $d == true; }; fetch $o.*;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected fetch_object
+Near 1:108:
+--> match $o isa organization, has revenue $r, has is_dissolved $d; $r > 50000000.0; not { $d == true; }; fetch $o.*;
+                                                                                                                ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+40,Find all organizations that are public and have a CEO named 'Julie Spellman Sweet'.,"MATCH (o:Organization {isPublic: true})-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'})
+RETURN o","match $o isa organization, has is_public true; $rel(led_org: $o, ceo: $p) isa ceo_leadership; $p isa person, has name ""Julie Spellman Sweet""; fetch { ""organization"": $o.* };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected identifier
+Near 1:169:
+--> match $o isa organization, has is_public true; $rel(led_org: $o, ceo: $p) isa ceo_leadership; $p isa person, has name ""Julie Spellman Sweet""; fetch { ""organization"": $o.* };
+                                                                                                                                                                             ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+41,What are the names of the top 5 organizations with the most employees?,"MATCH (o:Organization)
+WHERE o.nbrEmployees IS NOT NULL
+RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees
+ORDER BY o.nbrEmployees DESC
+LIMIT 5","match $o isa organization, has nbr_employees $employees, has name $name; fetch { ""organization"": $name, ""numberOfEmployees"": $employees }; sort $employees desc; limit 5;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:139:
+--> match $o isa organization, has nbr_employees $employees, has name $name; fetch { ""organization"": $name, ""numberOfEmployees"": $employees }; sort $employees desc; limit 5;
+                                                                                                                                               ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+42,Identify the top 3 articles with the highest sentiment that mention a public organization.,"MATCH (a:Article)-[:MENTIONS]->(o:Organization {isPublic: true})
+WITH a, o
+ORDER BY a.sentiment DESC
+LIMIT 3
+RETURN a.title AS article, a.sentiment AS sentiment, o.name AS organization","match $a isa article, has sentiment $sentiment, has title $title; $rel(mentioning_article: $a, mentioned_org: $o) isa mention; $o isa organization, has is_public true, has name $org_name; fetch { ""article"": $title, ""sentiment"": $sentiment, ""organization"": $org_name }; sort $sentiment desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:269:
+--> match $a isa article, has sentiment $sentiment, has title $title; $rel(mentioning_article: $a, mentioned_org: $o) isa mention; $o isa organization, has is_public true, has name $org_name; fetch { ""article"": $title, ""sentiment"": $sentiment, ""organization"": $org_name }; sort $sentiment desc; limit 3;
+                                                                                                                                                                                                                                                                                 ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+45,Which countries have cities that are home to more than three organizations?,"MATCH (c:Country)<-[:IN_COUNTRY]-(city:City)<-[:IN_CITY]-(o:Organization)
+WITH c, city, count(o) AS orgCount
+WHERE orgCount > 3
+RETURN c.name AS country, collect(city.name) AS cities","match $country isa country, has country_name $country_name; $country_rel(location_country: $country, located_city: $city) isa country_location; $city isa city, has city_name $city_name; $loc_rel(location_city: $city, located_org: $o) isa location; $o isa organization; fetch { ""country"": $country_name, ""city"": $city_name, ""orgCount"": count($o) }; group $country_name, $city_name; count > 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:348:
+--> match $country isa country, has country_name $country_name; $country_rel(location_country: $country, located_city: $city) isa country_location; $city isa city, has city_name $city_name; $loc_rel(location_city: $city, located_org: $o) isa location; $o isa organization; fetch { ""country"": $country_name, ""city"": $city_name, ""orgCount"": count($o) }; group $country_name, $city_name; count > 3;
+                                                                                                                                                                                                                                                                                                                                                                ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+46,Which organizations are competitors of the 'New Energy Group'?,"MATCH (o:Organization {name: 'New Energy Group'})-[:HAS_COMPETITOR]->(competitor:Organization)
+RETURN competitor","match $o isa organization, has name ""New Energy Group""; $rel(competitor: $o, competitor: $competitor) isa competition; fetch { ""competitor"": $competitor.* };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected identifier
+Near 1:153:
+--> match $o isa organization, has name ""New Energy Group""; $rel(competitor: $o, competitor: $competitor) isa competition; fetch { ""competitor"": $competitor.* };
+                                                                                                                                                             ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+47,Find the top 3 organizations that have a motto and are located in Seattle.,"MATCH (o:Organization)-[:IN_CITY]->(:City {name: 'Seattle'})
+WHERE o.motto IS NOT NULL
+RETURN o.name AS organization, o.motto AS motto
+ORDER BY o.name
+LIMIT 3","match $o isa organization, has name $org_name, has motto $motto; $rel(located_org: $o, location_city: $city) isa location; $city isa city, has city_name ""Seattle""; fetch { ""organization"": $org_name, ""motto"": $motto }; sort $org_name asc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:218:
+--> match $o isa organization, has name $org_name, has motto $motto; $rel(located_org: $o, location_city: $city) isa location; $city isa city, has city_name ""Seattle""; fetch { ""organization"": $org_name, ""motto"": $motto }; sort $org_name asc; limit 3;
+                                                                                                                                                                                                                              ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+48,What articles published in 2022 mention organizations based in Rome?,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City {name: 'Rome'})
+WHERE a.date.year = 2022
+RETURN a.title, a.siteName, a.date, o.name","match $a isa article, has title $title, has site_name $site_name, has date $date; $rel(mentioning_article: $a, mentioned_org: $o) isa mention; $o isa organization, has name $org_name; $loc_rel(located_org: $o, location_city: $city) isa location; $city isa city, has city_name ""Rome""; $date >= 2022-01-01T00:00:00, < 2023-01-01T00:00:00; fetch { ""title"": $title, ""siteName"": $site_name, ""date"": $date, ""organization"": $org_name };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected PLUS, MINUS, TIMES, DIVIDE, POWER, MODULO, or iso8601_timezone_offset
+Near 1:312:
+--> match $a isa article, has title $title, has site_name $site_name, has date $date; $rel(mentioning_article: $a, mentioned_org: $o) isa mention; $o isa organization, has name $org_name; $loc_rel(located_org: $o, location_city: $city) isa location; $city isa city, has city_name ""Rome""; $date >= 2022-01-01T00:00:00, < 2023-01-01T00:00:00; fetch { ""title"": $title, ""siteName"": $site_name, ""date"": $date, ""organization"": $org_name };
+                                                                                                                                                                                                                                                                                                                            ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+53,Identify organizations that are both suppliers and investors to other organizations.,"MATCH (o:Organization)-[:HAS_SUPPLIER]->(s:Organization) 
+WHERE EXISTS {(s)-[:HAS_INVESTOR]->(o)}
+RETURN o.name AS organization, s.name AS supplier_investor","match $o isa organization, has name $org_name; $s isa organization, has name $supplier_name; $supply_rel (supplier_org: $s, supplied_org: $o) isa supply; $invest_rel (investor: $s, invested_org: $o) isa investment; fetch { ""organization"": $org_name, ""supplier_investor"": $supplier_name };",1,"
+[INF11] Type-inference was unable to find compatible types for the pair of variables 's' & '_anonymous' across a 'links' constraint. Types were:
+- s: [organization]
+- _anonymous: [investment:investor]
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query.
+Near 1:168
+-----
+--> match $o isa organization, has name $org_name; $s isa organization, has name $supplier_name; $supply_rel (supplier_org: $s, supplied_org: $o) isa supply; $invest_rel (investor: $s, invested_org: $o) isa investment; fetch { ""organization"": $org_name, ""supplier_investor"": $supplier_name };
+                                                                                                                                                                           ^
+-----"
+55,Which organizations have a CEO with the summary 'CEO at Accenture'?,"MATCH (o:Organization)-[:HAS_CEO]->(p:Person)
+WHERE p.summary = 'CEO at Accenture'
+RETURN o","match $o isa organization; $rel (led_org: $o, ceo: $p) isa ceo_leadership; $p isa person, has summary ""CEO at Accenture""; fetch { ""organization"": $o.* };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected identifier
+Near 1:149:
+--> match $o isa organization; $rel (led_org: $o, ceo: $p) isa ceo_leadership; $p isa person, has summary ""CEO at Accenture""; fetch { ""organization"": $o.* };
+                                                                                                                                                         ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+56,"Find the top 5 organizations with a summary containing 'based in Dublin, Ireland'.","MATCH (o:Organization)
+WHERE o.summary CONTAINS 'based in Dublin, Ireland'
+RETURN o.name AS organization, o.summary AS summary
+ORDER BY o.name
+LIMIT 5","match $o isa organization, has name $name, has summary $summary; $summary contains ""based in Dublin, Ireland""; fetch { ""organization"": $name, ""summary"": $summary }; sort $name asc; limit 5;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:165:
+--> match $o isa organization, has name $name, has summary $summary; $summary contains ""based in Dublin, Ireland""; fetch { ""organization"": $name, ""summary"": $summary }; sort $name asc; limit 5;
+                                                                                                                                                                         ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+57,Which organizations are public and have more than 300 employees?,"MATCH (o:Organization)
+WHERE o.isPublic = true AND o.nbrEmployees > 300
+RETURN o","match $o isa organization, has is_public $public, has nbr_employees $emp; $public == true; $emp > 300; fetch { ""organization"": $o.* };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected identifier
+Near 1:130:
+--> match $o isa organization, has is_public $public, has nbr_employees $emp; $public == true; $emp > 300; fetch { ""organization"": $o.* };
+                                                                                                                                      ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+58,List the top 5 organizations by revenue that are based in Rome.,"MATCH (o:Organization)-[:IN_CITY]->(:City {name: 'Rome'})
+WHERE o.revenue IS NOT NULL
+RETURN o.name AS organization, o.revenue AS revenue
+ORDER BY o.revenue DESC
+LIMIT 5","match $o isa organization, has name $org_name, has revenue $rev; $rel (located_org: $o, location_city: $c) isa location; $c isa city, has city_name ""Rome""; not { $rev == $null; }; fetch { ""organization"": $org_name, ""revenue"": $rev }; sort $rev desc; limit 5;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:234:
+--> match $o isa organization, has name $org_name, has revenue $rev; $rel (located_org: $o, location_city: $c) isa location; $c isa city, has city_name ""Rome""; not { $rev == $null; }; fetch { ""organization"": $org_name, ""revenue"": $rev }; sort $rev desc; limit 5;
+                                                                                                                                                                                                                                              ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+59,What are the names of the organizations dissolved and were founded in Sydney?,"MATCH (o:Organization)-[:IN_CITY]->(c:City {name: 'Sydney'})
+WHERE o.isDissolved IS NOT NULL AND o.isDissolved = true
+RETURN o.name","match $o isa organization, has name $name, has is_dissolved $dissolved; $rel (located_org: $o, location_city: $c) isa location; $c isa city, has city_name ""Sydney""; not { $dissolved == $null; }; $dissolved == true; fetch { ""name"": $name };",1,"
+[REP25] Invalid query containing unbound concept variable null.
+Caused: [QEX7] Error in provided query.
+Near 1:186
+-----
+--> match $o isa organization, has name $name, has is_dissolved $dissolved; $rel (located_org: $o, location_city: $c) isa location; $c isa city, has city_name ""Sydney""; not { $dissolved == $null; }; $dissolved == true; fetch { ""name"": $name };
+                                                                                                                                                                                             ^
+-----"
+60,Which organizations have a revenue greater than 100 million and are not public?,"MATCH (o:Organization)
+WHERE o.revenue > 1E8 AND o.isPublic IS NOT NULL AND NOT o.isPublic
+RETURN o","match $o isa organization, has revenue $r, has is_public $pub; $r > 1E8; $pub == false; fetch { ""organization"": $o.* };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected PLUS, MINUS, TIMES, DIVIDE, POWER, or MODULO
+Near 1:69:
+--> match $o isa organization, has revenue $r, has is_public $pub; $r > 1E8; $pub == false; fetch { ""organization"": $o.* };
+                                                                         ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+62,Which organizations are competitors of 'New Energy Group'?,"MATCH (o:Organization {name: 'New Energy Group'})-[:HAS_COMPETITOR]->(competitor:Organization)
+RETURN competitor","match $o isa organization, has name ""New Energy Group""; $comp (competitor: $o, competitor: $competitor) isa competition; fetch { ""competitor"": $competitor.* };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected identifier
+Near 1:155:
+--> match $o isa organization, has name ""New Energy Group""; $comp (competitor: $o, competitor: $competitor) isa competition; fetch { ""competitor"": $competitor.* };
+                                                                                                                                                               ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+69,List the articles that mention both public and private organizations.,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE o.isPublic = true AND 
+      EXISTS {(a)-[:MENTIONS]->(:Organization {isPublic: false})}
+RETURN a","match $a isa article; $men1 (mentioning_article: $a, mentioned_org: $o1) isa mention; $men2 (mentioning_article: $a, mentioned_org: $o2) isa mention; $o1 has is_public true; $o2 has is_public false; fetch { ""article"": $a.* };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected identifier
+Near 1:221:
+--> match $a isa article; $men1 (mentioning_article: $a, mentioned_org: $o1) isa mention; $men2 (mentioning_article: $a, mentioned_org: $o2) isa mention; $o1 has is_public true; $o2 has is_public false; fetch { ""article"": $a.* };
+                                                                                                                                                                                                                                 ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+70,Which organizations have foreign investors (investors from a different country)?,"MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c1:Country),
+      (o)<-[:HAS_INVESTOR]-(investor:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c2:Country)
+WHERE c1 <> c2
+RETURN o.name AS organization, c1.name AS organization_country,
+       investor.name AS investor, c2.name AS investor_country","match $o isa organization; $c1 isa country; $c2 isa country; $investor isa organization; $loc1 (located_org: $o, location_city: $city1) isa location; $country_loc1 (located_city: $city1, location_country: $c1) isa country_location; $inv (invested_org: $o, investor: $investor) isa investment; $loc2 (located_org: $investor, location_city: $city2) isa location; $country_loc2 (located_city: $city2, location_country: $c2) isa country_location; not { $c1 is $c2; }; fetch $o: name; $c1: country_name; $investor: name; $c2: country_name;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected fetch_object
+Near 1:470:
+--> match $o isa organization; $c1 isa country; $c2 isa country; $investor isa organization; $loc1 (located_org: $o, location_city: $city1) isa location; $country_loc1 (located_city: $city1, location_country: $c1) isa country_location; $inv (invested_org: $o, investor: $investor) isa investment; $loc2 (located_org: $investor, location_city: $city2) isa location; $country_loc2 (located_city: $city2, location_country: $c2) isa country_location; not { $c1 is $c2; }; fetch $o: name; $c1: country_name; $investor: name; $c2: country_name;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+71,List the organizations that have a CEO named 'Julie Spellman Sweet'.,"MATCH (o:Organization)-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'})
+RETURN o.name AS organization","match $o isa organization; $p isa person, has name ""Julie Spellman Sweet""; $ceo (led_org: $o, ceo: $p) isa ceo_leadership; fetch $o: name;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected fetch_object
+Near 1:129:
+--> match $o isa organization; $p isa person, has name ""Julie Spellman Sweet""; $ceo (led_org: $o, ceo: $p) isa ceo_leadership; fetch $o: name;
+                                                                                                                                     ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+72,Who are the board members of organizations that have more than 1000 employees?,"MATCH (o:Organization)-[:HAS_BOARD_MEMBER]->(p:Person)
+WHERE o.nbrEmployees > 1000
+RETURN o.name AS organization, p.name AS board_member","match $o isa organization, has nbr_employees $emp; $p isa person; $board (governed_org: $o, board_member: $p) isa board_membership; $emp > 1000; fetch $o: name; $p: name;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected fetch_object
+Near 1:151:
+--> match $o isa organization, has nbr_employees $emp; $p isa person; $board (governed_org: $o, board_member: $p) isa board_membership; $emp > 1000; fetch $o: name; $p: name;
+                                                                                                                                                           ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+73,Which organizations have their headquarters in a city that is also the country's capital?,"MATCH (o:Organization)-[:IN_CITY]->(c:City)-[:IN_COUNTRY]->(country:Country)
+WHERE c.name = country.name
+RETURN o.name AS organization, c.name AS capital","match $o isa organization; $c isa city, has city_name $city_name; $country isa country, has country_name $country_name; $loc (located_org: $o, location_city: $c) isa location; $country_loc (located_city: $c, location_country: $country) isa country_location; $city_name == $country_name; fetch $o: name; $c: city_name;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected fetch_object
+Near 1:293:
+--> match $o isa organization; $c isa city, has city_name $city_name; $country isa country, has country_name $country_name; $loc (located_org: $o, location_city: $c) isa location; $country_loc (located_city: $c, location_country: $country) isa country_location; $city_name == $country_name; fetch $o: name; $c: city_name;
+                                                                                                                                                                                                                                                                                                         ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+74,List the organizations that are mentioned in the most articles.,"MATCH (o:Organization)<-[:MENTIONS]-(a:Article)
+WITH o, count(a) AS mentionCount
+RETURN o.name AS organization, mentionCount
+ORDER BY mentionCount DESC","match $o isa organization; $a isa article; $mention (mentioning_article: $a, mentioned_org: $o) isa mention; get $o, count($a); sort count($a) desc; fetch $o: name; ""mentionCount"": count($a);",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:113:
+--> match $o isa organization; $a isa article; $mention (mentioning_article: $a, mentioned_org: $o) isa mention; get $o, count($a); sort count($a) desc; fetch $o: name; ""mentionCount"": count($a);
+                                                                                                                     ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+75,Which organizations have a revenue decrease mentioned in any articles?,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.sentiment < 0 AND exists {
+  (a)-[:HAS_CHUNK]->(c:Chunk)
+  WHERE c.text CONTAINS 'revenue decrease' OR c.text CONTAINS 'revenue declined'
+}
+RETURN DISTINCT o.name AS organization","match $a isa article, has sentiment $sent; $o isa organization; $c isa chunk, has text $text; $mention (mentioning_article: $a, mentioned_org: $o) isa mention; $chunk_rel (parent_article: $a, child_chunk: $c) isa chunk_relation; $sent < 0; { $text contains ""revenue decrease""; } or { $text contains ""revenue declined""; }; get $o; distinct; fetch $o: name;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:326:
+--> match $a isa article, has sentiment $sent; $o isa organization; $c isa chunk, has text $text; $mention (mentioning_article: $a, mentioned_org: $o) isa mention; $chunk_rel (parent_article: $a, child_chunk: $c) isa chunk_relation; $sent < 0; { $text contains ""revenue decrease""; } or { $text contains ""revenue declined""; }; get $o; distinct; fetch $o: name;
+                                                                                                                                                                                                                                                                                                                                          ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+76,Who are the children of persons who are CEOs of public organizations?,"MATCH (ceo:Person)<-[:HAS_CEO]-(org:Organization {isPublic: true}),
+      (ceo)-[:HAS_CHILD]->(child:Person)
+RETURN ceo.name AS CEO, org.name AS Organization, child.name AS Child","match $ceo isa person; $org isa organization, has is_public true; $child isa person; $ceo_rel (led_org: $org, ceo: $ceo) isa ceo_leadership; $parent_child_rel (parent: $ceo, child: $child) isa parent_child; fetch $ceo: name; $org: name; $child: name;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected fetch_object
+Near 1:213:
+--> match $ceo isa person; $org isa organization, has is_public true; $child isa person; $ceo_rel (led_org: $org, ceo: $ceo) isa ceo_leadership; $parent_child_rel (parent: $ceo, child: $child) isa parent_child; fetch $ceo: name; $org: name; $child: name;
+                                                                                                                                                                                                                         ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+77,List the organizations that are investors in more than one other organization.,"MATCH (o:Organization)-[:HAS_INVESTOR]->(investor:Organization)
+WITH investor, count(o) as num_investments
+WHERE num_investments > 1
+RETURN investor.name as investor_name, num_investments","match $o isa organization; $investor isa organization; $inv (invested_org: $o, investor: $investor) isa investment; get $investor, count($o); count($o) > 1; fetch $investor: name; ""num_investments"": count($o);",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:120:
+--> match $o isa organization; $investor isa organization; $inv (invested_org: $o, investor: $investor) isa investment; get $investor, count($o); count($o) > 1; fetch $investor: name; ""num_investments"": count($o);
+                                                                                                                            ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+78,Which organizations have subsidiaries in more than three different cities?,"MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(sub:Organization)
+WHERE sub.name IS NOT NULL
+WITH o, count(DISTINCT sub.name) AS num_subsidiaries, collect(DISTINCT sub) AS subsidiaries
+WHERE num_subsidiaries > 3
+UNWIND subsidiaries AS s
+MATCH (s)-[:IN_CITY]->(city:City)
+RETURN o.name AS organization, collect(DISTINCT city.name) AS subsidiary_cities","match $o isa organization; $sub isa organization, has name $sub_name; $city isa city; $subsidiary_rel (parent_org: $o, subsidiary_org: $sub) isa subsidiary; $loc (located_org: $sub, location_city: $city) isa location; not { $sub_name == """"; }; get $o, $city; group $o; fetch $o: name; ""subsidiary_cities"": { $city: city_name };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:248:
+--> match $o isa organization; $sub isa organization, has name $sub_name; $city isa city; $subsidiary_rel (parent_org: $o, subsidiary_org: $sub) isa subsidiary; $loc (located_org: $sub, location_city: $city) isa location; not { $sub_name == """"; }; get $o, $city; group $o; fetch $o: name; ""subsidiary_cities"": { $city: city_name };
+                                                                                                                                                                                                                                                            ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+79,List the persons who are both investors and board members in the same organization.,"MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization)<-[:HAS_BOARD_MEMBER]-(p)
+RETURN p.name AS person, o.name AS organization","match $p isa person; $o isa organization; $inv (invested_org: $o, investor: $p) isa investment; $board (governed_org: $o, board_member: $p) isa board_membership; fetch $p: name; $o: name;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected fetch_object
+Near 1:168:
+--> match $p isa person; $o isa organization; $inv (invested_org: $o, investor: $p) isa investment; $board (governed_org: $o, board_member: $p) isa board_membership; fetch $p: name; $o: name;
+                                                                                                                                                                            ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+80,Which organizations have changed their CEO in the last 5 years according to articles?,"MATCH (article:Article)-[:MENTIONS]->(org:Organization)
+WHERE article.date > datetime() - duration('P5Y') 
+  AND article.title CONTAINS 'CEO'
+WITH org, collect(article) as articles
+MATCH (org)-[:HAS_CEO]->(ceo:Person)
+RETURN org.name as Organization, ceo.name as CEO, 
+       [article IN articles | article.title] as RelevantArticles","match $article isa article, has date $date, has title $title; $org isa organization; $mention (mentioning_article: $article, mentioned_org: $org) isa mention; $ceo_rel (led_org: $org, ceo: $ceo) isa ceo_leadership; $ceo isa person, has name $ceo_name; $org has name $org_name; ?date > 2019-01-01T00:00:00; ?title contains ""CEO""; fetch { ""organization"": $org_name, ""ceo"": $ceo_name, ""title"": $title };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI, query_stage, pattern, FETCH, or END
+Near 1:277:
+--> match $article isa article, has date $date, has title $title; $org isa organization; $mention (mentioning_article: $article, mentioned_org: $org) isa mention; $ceo_rel (led_org: $org, ceo: $ceo) isa ceo_leadership; $ceo isa person, has name $ceo_name; $org has name $org_name; ?date > 2019-01-01T00:00:00; ?title contains ""CEO""; fetch { ""organization"": $org_name, ""ceo"": $ceo_name, ""title"": $title };
+                                                                                                                                                                                                                                                                                         ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+81,List the organizations that have a summary mentioning 'software' and are in the tech industry category.,"MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory)
+WHERE toLower(o.summary) CONTAINS 'software' AND c.name CONTAINS 'tech'
+RETURN o.name AS organization, o.summary AS summary","match $o isa organization, has summary $summary, has name $org_name; $cat_rel (categorized_org: $o, category: $c) isa categorization; $c isa industry_category, has industry_category_name $cat_name; ?summary contains ""software""; ?cat_name contains ""tech""; fetch { ""organization"": $org_name, ""summary"": $summary };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI, query_stage, pattern, FETCH, or END
+Near 1:198:
+--> match $o isa organization, has summary $summary, has name $org_name; $cat_rel (categorized_org: $o, category: $c) isa categorization; $c isa industry_category, has industry_category_name $cat_name; ?summary contains ""software""; ?cat_name contains ""tech""; fetch { ""organization"": $org_name, ""summary"": $summary };
+                                                                                                                                                                                                          ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+82,Which organizations have a parent organization with a higher revenue?,"MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(sub:Organization)
+WHERE o.revenue > sub.revenue
+RETURN o.name AS ParentOrganization, o.revenue AS ParentRevenue, 
+       sub.name AS Subsidiary, sub.revenue AS SubsidiaryRevenue","match $parent isa organization, has revenue $parent_revenue, has name $parent_name; $sub isa organization, has revenue $sub_revenue, has name $sub_name; $sub_rel (parent_org: $parent, subsidiary_org: $sub) isa subsidiary; ?parent_revenue > ?sub_revenue; fetch { ""parent_organization"": $parent_name, ""parent_revenue"": $parent_revenue, ""subsidiary"": $sub_name, ""subsidiary_revenue"": $sub_revenue };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI, query_stage, pattern, FETCH, or END
+Near 1:222:
+--> match $parent isa organization, has revenue $parent_revenue, has name $parent_name; $sub isa organization, has revenue $sub_revenue, has name $sub_name; $sub_rel (parent_org: $parent, subsidiary_org: $sub) isa subsidiary; ?parent_revenue > ?sub_revenue; fetch { ""parent_organization"": $parent_name, ""parent_revenue"": $parent_revenue, ""subsidiary"": $sub_name, ""subsidiary_revenue"": $sub_revenue };
+                                                                                                                                                                                                                                  ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+83,List the top 5 cities by the number of organizations based there.,"MATCH (c:City)<-[:IN_CITY]-(o:Organization)
+WITH c, count(o) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 5
+RETURN c.name AS city, orgCount","match $c isa city, has city_name $city_name; $o isa organization; $loc (located_org: $o, location_city: $c) isa location; fetch { ""city"": $city_name, ""org_count"": count($o) };",1,"
+[FER9] Function 'count' was not found.
+Caused: [REP23] Error building representation of fetch stage.
+Caused: [QEX7] Error in provided query."
+84,List the organizations that have been mentioned in articles about environmental issues.,"MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk)
+WHERE c.text CONTAINS 'environment'
+WITH a
+MATCH (a)-[:MENTIONS]->(o:Organization)
+RETURN DISTINCT o.name AS organization","match $a isa article; $chunk_rel (parent_article: $a, child_chunk: $chunk) isa chunk_relation; $chunk isa chunk, has text $text; $mention_rel (mentioning_article: $a, mentioned_org: $o) isa mention; $o isa organization, has name $org_name; ?text contains ""environment""; fetch { ""organization"": $org_name };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI, query_stage, pattern, FETCH, or END
+Near 1:240:
+--> match $a isa article; $chunk_rel (parent_article: $a, child_chunk: $chunk) isa chunk_relation; $chunk isa chunk, has text $text; $mention_rel (mentioning_article: $a, mentioned_org: $o) isa mention; $o isa organization, has name $org_name; ?text contains ""environment""; fetch { ""organization"": $org_name };
+                                                                                                                                                                                                                                                    ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+85,Which organizations are involved in legal disputes according to articles?,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.summary CONTAINS 'legal' OR a.summary CONTAINS 'lawsuit' OR a.summary CONTAINS 'dispute'
+RETURN DISTINCT o.name AS organization","match $a isa article, has article_summary $summary; $mention_rel (mentioning_article: $a, mentioned_org: $o) isa mention; $o isa organization, has name $org_name; { ?summary contains ""legal""; } or { ?summary contains ""lawsuit""; } or { ?summary contains ""dispute""; }; fetch { ""organization"": $org_name };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected pattern
+Near 1:165:
+--> match $a isa article, has article_summary $summary; $mention_rel (mentioning_article: $a, mentioned_org: $o) isa mention; $o isa organization, has name $org_name; { ?summary contains ""legal""; } or { ?summary contains ""lawsuit""; } or { ?summary contains ""dispute""; }; fetch { ""organization"": $org_name };
+                                                                                                                                                                         ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+86,Who are the investors in organizations that have a motto mentioning 'innovation'?,"MATCH (o:Organization)<-[:HAS_INVESTOR]-(investor)
+WHERE o.motto IS NOT NULL AND o.motto CONTAINS 'innovation'
+RETURN o.name AS organization, investor.name AS investor","match $o isa organization, has motto $motto, has name $org_name; $inv_rel (invested_org: $o, investor: $investor) isa investment; $investor has name $investor_name; ?motto contains ""innovation""; fetch { ""organization"": $org_name, ""investor"": $investor_name };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI, query_stage, pattern, FETCH, or END
+Near 1:165:
+--> match $o isa organization, has motto $motto, has name $org_name; $inv_rel (invested_org: $o, investor: $investor) isa investment; $investor has name $investor_name; ?motto contains ""innovation""; fetch { ""organization"": $org_name, ""investor"": $investor_name };
+                                                                                                                                                                         ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+87,List the organizations that have a subsidiary that was dissolved.,"MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(s:Organization)
+WHERE s.isDissolved = true
+RETURN o.name AS organization, s.name AS dissolved_subsidiary","match $o isa organization, has name $org_name; $s isa organization, has name $sub_name, has is_dissolved $dissolved; $sub_rel (parent_org: $o, subsidiary_org: $s) isa subsidiary; ?dissolved == true; fetch { ""organization"": $org_name, ""dissolved_subsidiary"": $sub_name };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI, query_stage, pattern, FETCH, or END
+Near 1:179:
+--> match $o isa organization, has name $org_name; $s isa organization, has name $sub_name, has is_dissolved $dissolved; $sub_rel (parent_org: $o, subsidiary_org: $s) isa subsidiary; ?dissolved == true; fetch { ""organization"": $org_name, ""dissolved_subsidiary"": $sub_name };
+                                                                                                                                                                                       ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+90,Which organizations have a female CEO and are in the healthcare industry category?,"MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person), 
+      (o)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Healthcare'})
+WHERE ceo.name =~ '.*(Mrs\\.|Ms\\.|Miss).*'
+RETURN o.name AS organization, ceo.name AS ceo","match $o isa organization; $ceo isa person; $c isa industry_category, has industry_category_name ""Healthcare""; $ceo_rel (led_org: $o, ceo: $ceo) isa ceo_leadership; $cat_rel (categorized_org: $o, category: $c) isa categorization; $ceo has name $ceo_name; $ceo_name like "".*(?:Mrs\.|Ms\.|Miss).*""; $o has name $org_name; fetch { ""organization"": $org_name, ""ceo"": $ceo_name };",1,"
+[TQL0] [TQL06] TypeQL Error: Encountered invalid escape sequence ""\\*"" while parsing "".*(?:Mrs\\.|Ms\\.|Miss).*"".
+Caused: Error in usage of TypeQL.
+Caused: [LIT5] Cannot unescape string literal: '"".*(?:Mrs\.|Ms\.|Miss).*""'.
+Caused: [REP12] Error parsing literal '"".*(?:Mrs\.|Ms\.|Miss).*""'.
+Caused: [QEX7] Error in provided query.
+Near 1:271
+-----
+--> match $o isa organization; $ceo isa person; $c isa industry_category, has industry_category_name ""Healthcare""; $ceo_rel (led_org: $o, ceo: $ceo) isa ceo_leadership; $cat_rel (categorized_org: $o, category: $c) isa categorization; $ceo has name $ceo_name; $ceo_name like "".*(?:Mrs\.|Ms\.|Miss).*""; $o has name $org_name; fetch { ""organization"": $org_name, ""ceo"": $ceo_name };
+                                                                                                                                                                                                                                                                                  ^
+-----"
+91,List the organizations that have undergone a merger or acquisition according to articles.,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.title CONTAINS 'merger' OR a.title CONTAINS 'acquisition'
+RETURN DISTINCT o.name AS organization","match $a isa article; $o isa organization; $mention_rel (mentioning_article: $a, mentioned_org: $o) isa mention; $a has title $title; { $title like "".*merger.*""; } or { $title like "".*acquisition.*""; }; $o has name $org_name; fetch { ""organization"": $org_name }; group $org_name;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:263:
+--> match $a isa article; $o isa organization; $mention_rel (mentioning_article: $a, mentioned_org: $o) isa mention; $a has title $title; { $title like "".*merger.*""; } or { $title like "".*acquisition.*""; }; $o has name $org_name; fetch { ""organization"": $org_name }; group $org_name;
+                                                                                                                                                                                                                                                                           ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+92,List organizations that have a philanthropic foundation as an investor.,"MATCH (o:Organization)-[:HAS_INVESTOR]->(investor:Organization)
+WHERE investor.name CONTAINS 'Foundation'
+RETURN o.name AS organization, investor.name AS investor","match $o isa organization; $investor isa organization; $inv_rel (invested_org: $o, investor: $investor) isa investment; $investor has name $investor_name; $investor_name like "".*Foundation.*""; $o has name $org_name; fetch { ""organization"": $org_name, ""investor"": $investor_name };",1,"
+[INF11] Type-inference was unable to find compatible types for the pair of variables 'investor' & '_anonymous' across a 'links' constraint. Types were:
+- investor: [organization]
+- _anonymous: [investment:investor]
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query.
+Near 1:84
+-----
+--> match $o isa organization; $investor isa organization; $inv_rel (invested_org: $o, investor: $investor) isa investment; $investor has name $investor_name; $investor_name like "".*Foundation.*""; $o has name $org_name; fetch { ""organization"": $org_name, ""investor"": $investor_name };
+                                                                                       ^
+-----"
+94,Which organizations have Julie Spellman Sweet as their CEO?,"MATCH (p:Person {name: ""Julie Spellman Sweet""})<-[:HAS_CEO]-(o:Organization)
+RETURN o","match $p isa person, has name ""Julie Spellman Sweet""; $o isa organization; $ceo_rel (led_org: $o, ceo: $p) isa ceo_leadership; fetch $o;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected fetch_object
+Near 1:133:
+--> match $p isa person, has name ""Julie Spellman Sweet""; $o isa organization; $ceo_rel (led_org: $o, ceo: $p) isa ceo_leadership; fetch $o;
+                                                                                                                                         ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+95,List the top 3 cities where organizations with a revenue of more than 100 million are located.,"MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.revenue > 1E8
+RETURN c.name AS city, count(*) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 3","match $o isa organization; $c isa city; $loc_rel (located_org: $o, location_city: $c) isa location; $o has revenue $rev; $rev > 100000000; $c has city_name $city_name; get $city_name; group $city_name; count; sort count desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:172:
+--> match $o isa organization; $c isa city; $loc_rel (located_org: $o, location_city: $c) isa location; $o has revenue $rev; $rev > 100000000; $c has city_name $city_name; get $city_name; group $city_name; count; sort count desc; limit 3;
+                                                                                                                                                                                ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+96,What are the names of the first 5 organizations dissolved and publicly traded?,"MATCH (o:Organization)
+WHERE o.isDissolved = true AND o.isPublic = true
+RETURN o.name
+LIMIT 5","match $o isa organization, has is_dissolved true, has is_public true; $o has name $name; fetch { ""name"": $name }; limit 5;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:114:
+--> match $o isa organization, has is_dissolved true, has is_public true; $o has name $name; fetch { ""name"": $name }; limit 5;
+                                                                                                                      ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+98,Can you name 3 people who are both investors and CEOs of different organizations?,"MATCH (p:Person)
+WHERE EXISTS {(p)-[:HAS_CEO]->(:Organization)}
+  AND EXISTS {(p)-[:HAS_INVESTOR]->(:Organization)}
+WITH p LIMIT 3
+RETURN p.name AS name","match $p isa person; $ceo_rel (led_org: $org1, ceo: $p) isa ceo_leadership; $inv_rel (invested_org: $org2, investor: $p) isa investment; not { $org1 is $org2; }; $p has name $name; fetch { ""name"": $name }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:206:
+--> match $p isa person; $ceo_rel (led_org: $org1, ceo: $p) isa ceo_leadership; $inv_rel (invested_org: $org2, investor: $p) isa investment; not { $org1 is $org2; }; $p has name $name; fetch { ""name"": $name }; limit 3;
+                                                                                                                                                                                                                  ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+99,What are the industry categories for the first 5 organizations with more than 100 employees?,"MATCH (o:Organization)
+WHERE o.nbrEmployees > 100
+WITH o
+LIMIT 5
+MATCH (o)-[:HAS_CATEGORY]->(c:IndustryCategory)
+RETURN o.name AS organization, c.name AS category","match $o isa organization; $o has nbr_employees $emp; $emp > 100; limit 5; $c isa industry_category; $cat_rel (categorized_org: $o, category: $c) isa categorization; $o has name $org_name; $c has industry_category_name $cat_name; fetch { ""organization"": $org_name, ""category"": $cat_name };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI, query_stage, FETCH, or END
+Near 1:75:
+--> match $o isa organization; $o has nbr_employees $emp; $emp > 100; limit 5; $c isa industry_category; $cat_rel (categorized_org: $o, category: $c) isa categorization; $o has name $org_name; $c has industry_category_name $cat_name; fetch { ""organization"": $org_name, ""category"": $cat_name };
+                                                                               ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+110,Which countries are mentioned in the latest 5 articles about organizations in the electronic products industry?,"MATCH (ic:IndustryCategory {name: 'Electronic Products Manufacturers'})<-[:HAS_CATEGORY]-(o:Organization)<-[:MENTIONS]-(a:Article)-[:HAS_CHUNK]->(:Chunk)
+WITH a
+ORDER BY a.date DESC
+LIMIT 5
+MATCH (a)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country)
+RETURN DISTINCT c.name","match $ic isa industry_category, has industry_category_name ""Electronic Products Manufacturers""; $cat (categorized_org: $o, category: $ic) isa categorization; $men (mentioning_article: $a, mentioned_org: $o) isa mention; $chunk_rel (parent_article: $a, child_chunk: $chunk) isa chunk_relation; $chunk isa chunk; get $a; sort $a.date desc; limit 5; match $men2 (mentioning_article: $a, mentioned_org: $o2) isa mention; $loc (located_org: $o2, location_city: $city) isa location; $country_loc (located_city: $city, location_country: $c) isa country_location; get $c.country_name;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:316:
+--> match $ic isa industry_category, has industry_category_name ""Electronic Products Manufacturers""; $cat (categorized_org: $o, category: $ic) isa categorization; $men (mentioning_article: $a, mentioned_org: $o) isa mention; $chunk_rel (parent_article: $a, child_chunk: $chunk) isa chunk_relation; $chunk isa chunk; get $a; sort $a.date desc; limit 5; match $men2 (mentioning_article: $a, mentioned_org: $o2) isa mention; $loc (located_org: $o2, location_city: $city) isa location; $country_loc (located_city: $city, location_country: $c) isa country_location; get $c.country_name;
+                                                                                                                                                                                                                                                                                                                                ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+111,Name the first 3 cities in which organizations with more than 1000 employees are located.,"MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.nbrEmployees > 1000
+RETURN c.name
+LIMIT 3","match $o isa organization, has nbr_employees $emp; $emp > 1000; $loc (located_org: $o, location_city: $c) isa location; get $c.city_name; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:124:
+--> match $o isa organization, has nbr_employees $emp; $emp > 1000; $loc (located_org: $o, location_city: $c) isa location; get $c.city_name; limit 3;
+                                                                                                                                ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+112,Who are the first 3 people mentioned as board members in organizations headquartered in the United States of America?,"MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country {name: 'United States of America'})
+MATCH (o)-[:HAS_BOARD_MEMBER]->(p:Person)
+RETURN p.name AS boardMember
+LIMIT 3","match $c isa country, has country_name ""United States of America""; $country_loc (located_city: $city, location_country: $c) isa country_location; $loc (located_org: $o, location_city: $city) isa location; $board (governed_org: $o, board_member: $p) isa board_membership; get $p.name; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:275:
+--> match $c isa country, has country_name ""United States of America""; $country_loc (located_city: $city, location_country: $c) isa country_location; $loc (located_org: $o, location_city: $city) isa location; $board (governed_org: $o, board_member: $p) isa board_membership; get $p.name; limit 3;
+                                                                                                                                                                                                                                                                                       ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+113,List the first 3 articles mentioning organizations with a revenue less than 5 million.,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE o.revenue < 5000000
+RETURN a.title, a.summary, a.date
+LIMIT 3","match $men (mentioning_article: $a, mentioned_org: $o) isa mention; $o has revenue $rev; $rev < 5000000; get $a.title, $a.article_summary, $a.date; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:109:
+--> match $men (mentioning_article: $a, mentioned_org: $o) isa mention; $o has revenue $rev; $rev < 5000000; get $a.title, $a.article_summary, $a.date; limit 3;
+                                                                                                                 ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+114,What are the names of the first 3 organizations that have the same investor?,"MATCH (o1:Organization)<-[:HAS_INVESTOR]-(investor)-[:HAS_INVESTOR]->(o2:Organization)
+WHERE o1 <> o2
+WITH investor, collect(o1) + collect(o2) AS orgs
+UNWIND orgs AS org
+RETURN DISTINCT investor.name AS investor, collect(org.name)[..3] AS organizations
+LIMIT 1","match $inv1 (invested_org: $o1, investor: $investor) isa investment; $inv2 (invested_org: $o2, investor: $investor) isa investment; not { $o1 is $o2; }; get $investor.name, $o1.name, $o2.name; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:157:
+--> match $inv1 (invested_org: $o1, investor: $investor) isa investment; $inv2 (invested_org: $o2, investor: $investor) isa investment; not { $o1 is $o2; }; get $investor.name, $o1.name, $o2.name; limit 3;
+                                                                                                                                                                 ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+115,Which organizations have subsidiaries and are located in Paris?,"MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(:Organization)
+WHERE (o)-[:IN_CITY]->(:City {name: 'Paris'})
+RETURN o","match $sub (parent_org: $o, subsidiary_org: $subsidiary) isa subsidiary; $city isa city, has city_name ""Paris""; $loc (located_org: $o, location_city: $city) isa location; get $o;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:175:
+--> match $sub (parent_org: $o, subsidiary_org: $subsidiary) isa subsidiary; $city isa city, has city_name ""Paris""; $loc (located_org: $o, location_city: $city) isa location; get $o;
+                                                                                                                                                                                   ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+116,What are the top 3 industries with the most organizations in them?,"MATCH (ic:IndustryCategory)<-[:HAS_CATEGORY]-(o:Organization)
+RETURN ic.name AS industry, count(o) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 3","match $cat (categorized_org: $o, category: $ic) isa categorization; get $ic.industry_category_name; group $ic.industry_category_name; count; sort count desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:72:
+--> match $cat (categorized_org: $o, category: $ic) isa categorization; get $ic.industry_category_name; group $ic.industry_category_name; count; sort count desc; limit 3;
+                                                                            ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+117,Who are the first 3 CEOs of organizations that are dissolved?,"MATCH (o:Organization)-[:HAS_CEO]->(p:Person)
+WHERE o.isDissolved = true
+RETURN p.name AS ceoName, o.name AS orgName
+LIMIT 3","match $ceo_rel (led_org: $o, ceo: $p) isa ceo_leadership; $o has is_dissolved true; get $p.name, $o.name; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:88:
+--> match $ceo_rel (led_org: $o, ceo: $p) isa ceo_leadership; $o has is_dissolved true; get $p.name, $o.name; limit 3;
+                                                                                            ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+118,Which cities are the headquarters for the top 5 organizations by number of employees?,"MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.nbrEmployees IS NOT NULL
+RETURN c.name AS city, o.name AS organization, o.nbrEmployees AS employees
+ORDER BY o.nbrEmployees DESC
+LIMIT 5","match $loc (located_org: $o, location_city: $c) isa location; $o has nbr_employees $emp; not { $emp == $null; }; get $c.city_name, $o.name, $emp; sort $emp desc; limit 5;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:117:
+--> match $loc (located_org: $o, location_city: $c) isa location; $o has nbr_employees $emp; not { $emp == $null; }; get $c.city_name, $o.name, $emp; sort $emp desc; limit 5;
+                                                                                                                         ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+119,Name the first 3 organizations that have investments from Julie Spellman Sweet.,"MATCH (p:Person {name: ""Julie Spellman Sweet""})-[:HAS_INVESTOR]->(o:Organization)
+RETURN o.name
+LIMIT 3","match $p isa person, has name ""Julie Spellman Sweet""; $inv (invested_org: $o, investor: $p) isa investment; get $o.name; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:112:
+--> match $p isa person, has name ""Julie Spellman Sweet""; $inv (invested_org: $o, investor: $p) isa investment; get $o.name; limit 3;
+                                                                                                                    ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+120,List the first 3 countries where organizations with a public status are located.,"MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country)
+WHERE o.isPublic IS NOT NULL AND o.isPublic = true
+RETURN DISTINCT c.name
+LIMIT 3","match $o isa organization, has is_public true; $o (located_org: $o, location_city: $c1) isa location; $c1 (located_city: $c1, location_country: $c2) isa country_location; $c2 has country_name $name; fetch { ""name"": $name }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:224:
+--> match $o isa organization, has is_public true; $o (located_org: $o, location_city: $c1) isa location; $c1 (located_city: $c1, location_country: $c2) isa country_location; $c2 has country_name $name; fetch { ""name"": $name }; limit 3;
+                                                                                                                                                                                                                                    ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+121,What are the names of the first 3 organizations that have been dissolved but still mentioned in recent articles?,"MATCH (o:Organization {isDissolved: true})<-[:MENTIONS]-(a:Article)
+WHERE a.date >= datetime() - duration('P1Y')
+RETURN o.name
+LIMIT 3","match $o isa organization, has is_dissolved true; $a isa article, has date $d; $a (mentioning_article: $a, mentioned_org: $o) isa mention; $o has name $name; fetch { ""name"": $name }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:183:
+--> match $o isa organization, has is_dissolved true; $a isa article, has date $d; $a (mentioning_article: $a, mentioned_org: $o) isa mention; $o has name $name; fetch { ""name"": $name }; limit 3;
+                                                                                                                                                                                           ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+122,Who are the parents of the first 3 persons listed as CEOs in publicly traded companies?,"MATCH (p:Person)<-[:HAS_CEO]-(o:Organization {isPublic: true})
+WITH p
+ORDER BY p.name
+LIMIT 3
+MATCH (parent:Person)<-[:HAS_PARENT]-(p)
+RETURN p.name AS CEO, parent.name AS Parent","match $p isa person, has name $pname; $o isa organization, has is_public true; $o (led_org: $o, ceo: $p) isa ceo_leadership; $parent isa person, has name $parent_name; $rel (parent: $parent, child: $p) isa parent_child; fetch { ""CEO"": $pname, ""Parent"": $parent_name }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:269:
+--> match $p isa person, has name $pname; $o isa organization, has is_public true; $o (led_org: $o, ceo: $p) isa ceo_leadership; $parent isa person, has name $parent_name; $rel (parent: $parent, child: $p) isa parent_child; fetch { ""CEO"": $pname, ""Parent"": $parent_name }; limit 3;
+                                                                                                                                                                                                                                                                                 ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+123,Which organizations are mentioned in articles with a sentiment higher than 0.5 and are based in Belgium?,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country {name: 'Belgium'})
+WHERE a.sentiment > 0.5
+RETURN DISTINCT o","match $a isa article, has sentiment $s; $s > 0.5; $o isa organization; $c1 isa city; $c2 isa country, has country_name ""Belgium""; $a (mentioning_article: $a, mentioned_org: $o) isa mention; $o (located_org: $o, location_city: $c1) isa location; $c1 (located_city: $c1, location_country: $c2) isa country_location; fetch { ""organization"": $o.* };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected identifier
+Near 1:341:
+--> match $a isa article, has sentiment $s; $s > 0.5; $o isa organization; $c1 isa city; $c2 isa country, has country_name ""Belgium""; $a (mentioning_article: $a, mentioned_org: $o) isa mention; $o (located_org: $o, location_city: $c1) isa location; $c1 (located_city: $c1, location_country: $c2) isa country_location; fetch { ""organization"": $o.* };
+                                                                                                                                                                                                                                                                                                                                                         ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+124,Which organizations have a CEO named 'Julie Spellman Sweet'?,"MATCH (o:Organization)-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'})
+RETURN o.name AS organization","match $o isa organization, has name $org_name; $p isa person, has name ""Julie Spellman Sweet""; $o (led_org: $o, ceo: $p) isa ceo_leadership; fetch { ""organization"": $org_name };",1,"
+[REP1] The variable 'o' cannot be declared as both a 'ThingType' and as a 'Object'.
+Caused: [QEX7] Error in provided query."
+125,List the top 5 industries where the organizations are based in 'Seattle'.,"MATCH (c:City {name: 'Seattle'})<-[:IN_CITY]-(o:Organization)-[:HAS_CATEGORY]->(ic:IndustryCategory)
+RETURN ic.name AS industry, count(*) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 5","match $c isa city, has city_name ""Seattle""; $o isa organization; $ic isa industry_category, has industry_category_name $industry; $o (located_org: $o, location_city: $c) isa location; $o (categorized_org: $o, category: $ic) isa categorization; fetch { ""industry"": $industry }; limit 5;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:277:
+--> match $c isa city, has city_name ""Seattle""; $o isa organization; $ic isa industry_category, has industry_category_name $industry; $o (located_org: $o, location_city: $c) isa location; $o (categorized_org: $o, category: $ic) isa categorization; fetch { ""industry"": $industry }; limit 5;
+                                                                                                                                                                                                                                                                                         ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+126,What are the names of the first 3 organizations dissolved and have revenue greater than 10000000?,"MATCH (o:Organization)
+WHERE o.isDissolved = true AND o.revenue > 10000000
+RETURN o.name
+LIMIT 3","match $o isa organization, has is_dissolved true, has revenue $r, has name $name; $r > 10000000.0; fetch { ""name"": $name }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:124:
+--> match $o isa organization, has is_dissolved true, has revenue $r, has name $name; $r > 10000000.0; fetch { ""name"": $name }; limit 3;
+                                                                                                                                ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+127,Identify the first 3 organizations that are public and have more than 1000 employees.,"MATCH (o:Organization)
+WHERE o.isPublic = true AND o.nbrEmployees > 1000
+RETURN o.name, o.nbrEmployees
+LIMIT 3","match $o isa organization, has is_public true, has nbr_employees $emp, has name $name; $emp > 1000; fetch { ""name"": $name, ""nbrEmployees"": $emp }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:147:
+--> match $o isa organization, has is_public true, has nbr_employees $emp, has name $name; $emp > 1000; fetch { ""name"": $name, ""nbrEmployees"": $emp }; limit 3;
+                                                                                                                                                       ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+128,Who are the board members of 'New Energy Group'?,"MATCH (o:Organization {name: 'New Energy Group'})-[:HAS_BOARD_MEMBER]->(p:Person)
+RETURN p.name AS boardMember","match $o isa organization, has name ""New Energy Group""; $p isa person, has name $board_member; $o (governed_org: $o, board_member: $p) isa board_membership; fetch { ""boardMember"": $board_member };",1,"
+[REP1] The variable 'o' cannot be declared as both a 'ThingType' and as a 'Object'.
+Caused: [QEX7] Error in provided query."
+129,List the top 3 cities where 'Electronic Products Manufacturers' organizations are located.,"MATCH (c:City)<-[:IN_CITY]-(o:Organization)-[:HAS_CATEGORY]->(ic:IndustryCategory {name: 'Electronic Products Manufacturers'})
+RETURN c.name AS city, count(o) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 3","match $c isa city, has city_name $city; $o isa organization; $ic isa industry_category, has industry_category_name ""Electronic Products Manufacturers""; $o (located_org: $o, location_city: $c) isa location; $o (categorized_org: $o, category: $ic) isa categorization; fetch { ""city"": $city }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:291:
+--> match $c isa city, has city_name $city; $o isa organization; $ic isa industry_category, has industry_category_name ""Electronic Products Manufacturers""; $o (located_org: $o, location_city: $c) isa location; $o (categorized_org: $o, category: $ic) isa categorization; fetch { ""city"": $city }; limit 3;
+                                                                                                                                                                                                                                                                                                       ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+130,Which 5 articles mention 'Accenture' and have a sentiment score above 0.8?,"MATCH (a:Article)-[:MENTIONS]->(o:Organization {name: 'Accenture'})
+WHERE a.sentiment > 0.8
+RETURN a.title, a.sentiment, a.siteName, a.date
+LIMIT 5","match $a isa article, has sentiment $s, has title $t, has site_name $sn, has date $d; $m (mentioning_article: $a, mentioned_org: $o) isa mention; $o isa organization, has name ""Accenture""; $s > 0.8; fetch { ""title"": $t, ""sentiment"": $s, ""site_name"": $sn, ""date"": $d }; limit 5;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:269:
+--> match $a isa article, has sentiment $s, has title $t, has site_name $sn, has date $d; $m (mentioning_article: $a, mentioned_org: $o) isa mention; $o isa organization, has name ""Accenture""; $s > 0.8; fetch { ""title"": $t, ""sentiment"": $s, ""site_name"": $sn, ""date"": $d }; limit 5;
+                                                                                                                                                                                                                                                                                 ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+131,Find the top 5 organizations that are competitors of 'Accenture'.,"MATCH (a:Organization {name: 'Accenture'})-[:HAS_COMPETITOR]->(c:Organization)
+RETURN c.name AS competitor, c.revenue AS revenue
+ORDER BY revenue DESC
+LIMIT 5","match $a isa organization, has name ""Accenture""; $comp (competitor: $a, competitor: $c) isa competition; $c has name $cn, has revenue $r; fetch { ""competitor"": $cn, ""revenue"": $r }; sort $r desc; limit 5;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:182:
+--> match $a isa organization, has name ""Accenture""; $comp (competitor: $a, competitor: $c) isa competition; $c has name $cn, has revenue $r; fetch { ""competitor"": $cn, ""revenue"": $r }; sort $r desc; limit 5;
+                                                                                                                                                                                          ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+132,What are the names of the first 3 people who are investors in organizations based in 'Seattle'?,"MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization)-[:IN_CITY]->(:City {name: 'Seattle'})
+RETURN p.name
+LIMIT 3","match $p isa person, has name $pn; $inv (investor: $p, invested_org: $o) isa investment; $loc (located_org: $o, location_city: $city) isa location; $city isa city, has city_name ""Seattle""; fetch { ""name"": $pn }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:212:
+--> match $p isa person, has name $pn; $inv (investor: $p, invested_org: $o) isa investment; $loc (located_org: $o, location_city: $city) isa location; $city isa city, has city_name ""Seattle""; fetch { ""name"": $pn }; limit 3;
+                                                                                                                                                                                                                        ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+134,Who are the first 3 CEOs of public organizations?,"MATCH (o:Organization)-[:HAS_CEO]->(p:Person)
+WHERE o.isPublic IS NOT NULL AND o.isPublic = true
+RETURN p.name AS ceoName, o.name AS orgName
+LIMIT 3","match $o isa organization, has is_public $ip, has name $on; $ceo_rel (led_org: $o, ceo: $p) isa ceo_leadership; $p has name $pn; $ip == true; fetch { ""ceo_name"": $pn, ""org_name"": $on }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:186:
+--> match $o isa organization, has is_public $ip, has name $on; $ceo_rel (led_org: $o, ceo: $p) isa ceo_leadership; $p has name $pn; $ip == true; fetch { ""ceo_name"": $pn, ""org_name"": $on }; limit 3;
+                                                                                                                                                                                              ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+135,List the first 3 organizations mentioned in articles authored by 'David Correa'.,"MATCH (a:Article {author: 'David Correa'})-[:HAS_CHUNK]->(c:Chunk)
+MATCH (a)-[:MENTIONS]->(o:Organization)
+RETURN o.name
+LIMIT 3","match $a isa article, has author ""David Correa""; $cr (parent_article: $a, child_chunk: $c) isa chunk_relation; $m (mentioning_article: $a, mentioned_org: $o) isa mention; $o has name $on; fetch { ""name"": $on }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:211:
+--> match $a isa article, has author ""David Correa""; $cr (parent_article: $a, child_chunk: $c) isa chunk_relation; $m (mentioning_article: $a, mentioned_org: $o) isa mention; $o has name $on; fetch { ""name"": $on }; limit 3;
+                                                                                                                                                                                                                       ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+138,What are the first 3 organizations that have subsidiaries and more than 500 employees?,"MATCH (o:Organization)
+WHERE o.nbrEmployees > 500 AND EXISTS {
+  (o)-[:HAS_SUBSIDIARY]->(:Organization)
+}
+RETURN o.name AS organization, o.nbrEmployees AS employees
+ORDER BY o.nbrEmployees DESC
+LIMIT 3","match $o isa organization, has name $on, has nbr_employees $ne; $sub (parent_org: $o, subsidiary_org: $s) isa subsidiary; $ne > 500; fetch { ""organization"": $on, ""employees"": $ne }; sort $ne desc; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:182:
+--> match $o isa organization, has name $on, has nbr_employees $ne; $sub (parent_org: $o, subsidiary_org: $s) isa subsidiary; $ne > 500; fetch { ""organization"": $on, ""employees"": $ne }; sort $ne desc; limit 3;
+                                                                                                                                                                                          ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+139,Who are the first 3 board members of organizations with more than 100 million in revenue?,"MATCH (o:Organization)-[:HAS_BOARD_MEMBER]->(p:Person)
+WHERE o.revenue > 1E8
+RETURN p.name AS boardMember, o.name AS organization
+LIMIT 3","match $o isa organization, has name $on, has revenue $r; $board (governed_org: $o, board_member: $p) isa board_membership; $p has name $pn; $r > 100000000.0; fetch { ""board_member"": $pn, ""organization"": $on }; limit 3;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI or END
+Near 1:210:
+--> match $o isa organization, has name $on, has revenue $r; $board (governed_org: $o, board_member: $p) isa board_membership; $p has name $pn; $r > 100000000.0; fetch { ""board_member"": $pn, ""organization"": $on }; limit 3;
+                                                                                                                                                                                                                      ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+141,Identify the top 3 countries with the most organizations in the 'Electronic Products Manufacturers' category.,"MATCH (c:Country)<-[:IN_COUNTRY]-(city:City)<-[:IN_CITY]-(o:Organization)-[:HAS_CATEGORY]->(cat:IndustryCategory {name: 'Electronic Products Manufacturers'})
+WITH c.name AS country, count(o) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 3
+RETURN country, orgCount","match $country isa country, has country_name $country_name; $city isa city; $o isa organization; $cat isa industry_category, has industry_category_name ""Electronic Products Manufacturers""; (location_country: $country, located_city: $city) isa country_location; (located_org: $o, location_city: $city) isa location; (categorized_org: $o, category: $cat) isa categorization; get $country_name, $o; group $country_name; count;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:377:
+--> match $country isa country, has country_name $country_name; $city isa city; $o isa organization; $cat isa industry_category, has industry_category_name ""Electronic Products Manufacturers""; (location_country: $country, located_city: $city) isa country_location; (located_org: $o, location_city: $city) isa location; (categorized_org: $o, category: $cat) isa categorization; get $country_name, $o; group $country_name; count;
+                                                                                                                                                                                                                                                                                                                                                                                             ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+145,Which organizations have a motto containing 'security' and have a CEO named 'Julie Spellman Sweet'?,"MATCH (o:Organization)
+WHERE o.motto CONTAINS 'security'
+  AND (o)-[:HAS_CEO]->(:Person {name: 'Julie Spellman Sweet'})
+RETURN o","match $o isa organization, has motto $motto; $ceo isa person, has name ""Julie Spellman Sweet""; (led_org: $o, ceo: $ceo) isa ceo_leadership; $motto contains ""security""; fetch { ""organization"": $o.* };",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected identifier
+Near 1:195:
+--> match $o isa organization, has motto $motto; $ceo isa person, has name ""Julie Spellman Sweet""; (led_org: $o, ceo: $ceo) isa ceo_leadership; $motto contains ""security""; fetch { ""organization"": $o.* };
+                                                                                                                                                                                                       ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+147,Who are the first 3 investors in 'Accenture' and what other organizations do they invest in?,"MATCH (a:Organization {name: 'Accenture'})<-[:HAS_INVESTOR]-(investor)
+WITH investor
+LIMIT 3
+MATCH (investor)-[:HAS_INVESTOR]->(other:Organization)
+RETURN investor.name AS investor, collect(other.name) AS other_investments","match $accenture isa organization, has name ""Accenture""; $investor isa person, has name $investor_name; (invested_org: $accenture, investor: $investor) isa investment; limit 3; match $other isa organization, has name $other_name; (invested_org: $other, investor: $investor) isa investment; get $investor_name, $other_name; group $investor_name;",1,"
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base or relation
+Near 1:294:
+--> match $accenture isa organization, has name ""Accenture""; $investor isa person, has name $investor_name; (invested_org: $accenture, investor: $investor) isa investment; limit 3; match $other isa organization, has name $other_name; (invested_org: $other, investor: $investor) isa investment; get $investor_name, $other_name; group $investor_name;
+                                                                                                                                                                                                                                                                                                          ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+187,List the first 3 organizations with CEOs who have been mentioned in the most articles.,"MATCH (o:Organization)<-[:CEO_OF]-(p:Person), (o)<-[:MENTIONS]-(a:Article) RETURN o.name, COUNT(a) AS article_count ORDER BY article_count DESC LIMIT 3",,"TypeQL 3.x does not support GROUP BY with aggregation (COUNT) and ORDER BY in the same query. The Cypher query requires grouping organizations by name, counting articles per organization, then sorting by count - this pattern cannot be directly translated to TypeQL fetch queries. Would require a reduce clause which returns only the aggregate, not grouped results."
+188,Which organizations have investors from 'Seattle'?,"MATCH (i:Investor)-[:INVESTED_IN]->(o:Organization), (i)-[:LOCATED_IN]->(c:City {name: 'Seattle'}) RETURN o.name",,"Schema mismatch: The TypeQL schema has a 'location' relation between organizations and cities (located_org, location_city roles), but not between persons (investors) and cities. Persons do not have a location relationship in the schema, so investors cannot be filtered by city location. The Cypher query assumes investors can be located in cities which is not supported by the TypeQL schema."
+273,Which person has the most direct connections to other persons within the graph?,"MATCH (p:Person)
+WITH p, size((p)-[:HAS_PARENT|HAS_CHILD]-()) AS num_connections
+ORDER BY num_connections DESC
+LIMIT 1
+RETURN p.name AS person, num_connections",,"TypeQL does not support counting arbitrary relation patterns like Cypher's size() function. The query would require matching all parent_child relations for each person and aggregating, but TypeQL's reduce/group cannot express this pattern directly without a different query structure."
+281,Find all parent companies and the total number of employees across all their subsidiaries.,"MATCH (p:Organization)-[:HAS_SUBSIDIARY]->(s:Organization) RETURN p.name AS parent_company, SUM(s.nbrEmployees) AS total_subsidiary_employees","match $p isa organization, has name $parent_name; $s isa organization, has nbr_employees $emp; (parent_org: $p, subsidiary_org: $s) isa subsidiary; reduce $total_employees = sum($emp); fetch { ""parent_company"": $parent_name, ""total_subsidiary_employees"": $total_employees };","TypeQL 3.x does not support GROUP BY aggregation with sum per group. The reduce clause aggregates over all matches, not per parent company."
+285,Which CEOs lead organizations that have subsidiaries in more than 3 different countries?,"MATCH (p:Person)-[:CEO_OF]->(o:Organization)-[:HAS_SUBSIDIARY]->(s:Organization)-[:LOCATED_IN]->(city:City)-[:IN_COUNTRY]->(country:Country) WITH p, o, COUNT(DISTINCT country) AS country_count WHERE country_count > 3 RETURN p.name AS ceo_name, o.name AS organization, country_count","match $p isa person, has name $ceo_name; $o isa organization, has name $org_name; $s isa organization; $city isa city; $country isa country; (ceo: $p, led_org: $o) isa ceo_leadership; (parent_org: $o, subsidiary_org: $s) isa subsidiary; (located_org: $s, location_city: $city) isa location; (located_city: $city, location_country: $country) isa country_location; fetch { ""ceo_name"": $ceo_name, ""organization"": $org_name };",TypeQL 3.x does not support COUNT(DISTINCT) with GROUP BY and HAVING equivalent. The query cannot filter by country_count > 3 per CEO/organization group.
+307,List the top 5 articles that mention organizations based in cities with more than 1 million population,MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:LOCATED_IN]->(city:City) WHERE city.population > 1000000 RETURN a.title AS articleTitle LIMIT 5,,"Schema mismatch: The Cypher query references 'city.population' attribute, but the TypeQL schema for 'companies' database does not have a 'population' attribute on the 'city' entity. Available city attributes are: city_id, city_summary, city_name. The query cannot be faithfully converted without the required attribute."

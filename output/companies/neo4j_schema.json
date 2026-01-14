@@ -1,0 +1,612 @@
+{
+  "node_props": {
+    "Person": [
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Julie Spellman Sweet",
+          "Arun Sarin",
+          "Gilles P\u00e9lisson",
+          "Murthy Renduchintala",
+          "Tracey T. Travis",
+          "Nancy McKinstry",
+          "MJ Petroni",
+          "Frank Riemensperger",
+          "Lulu O'Sullivan",
+          "Paula A. Price"
+        ],
+        "distinct_count": 7987
+      },
+      {
+        "property": "id",
+        "type": "STRING",
+        "values": [
+          "Eaf0bpz6NNoqLVUCqNZPAew",
+          "EiBXh7ntpMfOdhqFJDmDw4A",
+          "EPXfNzMUGMfygOTJrdzjq-g",
+          "EljONz8D7O1KqbcjUzj3JqQ",
+          "EzoEIxWzONMK1Ghq3_ML0jA",
+          "EAuEaRjfqPxSgrzlBwzIt6w",
+          "EyDMiBt8_MdaZ8guOJF8mVQ",
+          "E9UHcgulCOKW5yeP9GTQ1TA",
+          "ESoimY_42NteM2fqHqvYdMg",
+          "Ep8aw6WCKPsuHvEZ2o7lgCQ"
+        ],
+        "distinct_count": 8064
+      },
+      {
+        "property": "summary",
+        "type": "STRING",
+        "values": [
+          "CEO at Accenture",
+          "American businessman",
+          "French businessman",
+          "Board Member at Accenture",
+          "CFO at Estee Lauder Companies",
+          "CEO at CLM Matrix",
+          "CEO at Causeit",
+          "Chairman at Accenture",
+          "CEO at GiftsDirect",
+          "Vice President at CVS Pharmacy"
+        ],
+        "distinct_count": 6401
+      }
+    ],
+    "Organization": [
+      {
+        "property": "revenue",
+        "type": "FLOAT",
+        "values": [
+          "1.2E8",
+          "4600000.0",
+          "5.9E7"
+        ]
+      },
+      {
+        "property": "motto",
+        "type": "STRING",
+        "values": [
+          "",
+          "Securing the most prolific technologies in the wor",
+          "Supply Chain Management & Advanced Data Analytics."
+        ]
+      },
+      {
+        "property": "nbrEmployees",
+        "type": "INTEGER",
+        "values": [
+          "375",
+          "30",
+          "175",
+          "102"
+        ]
+      },
+      {
+        "property": "isDissolved",
+        "type": "BOOLEAN"
+      },
+      {
+        "property": "id",
+        "type": "STRING",
+        "values": [
+          "E0ZU8eCc5OaqS1LU9qE3n3w",
+          "E91iaB3VQN3K-0YIMTmJjRw",
+          "Ep4YdYe6nPdaQnvOFxKB_qQ",
+          "EyQvESab5O3aLu1zpcfgs1w",
+          "Ey6c5KMaiObKflzgTRFx28Q"
+        ]
+      },
+      {
+        "property": "isPublic",
+        "type": "BOOLEAN"
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "New Energy Group",
+          "Deja vu Security",
+          "Clarity Insights",
+          "Icon Integration",
+          "Exton Consulting"
+        ]
+      },
+      {
+        "property": "summary",
+        "type": "STRING",
+        "values": [
+          "Software company based in Rome, Metropolitan City ",
+          "Software company based in Seattle, Washington, Uni",
+          "Software company based in Chicago, Illinois, Unite",
+          "Software company based in Sydney, New South Wales,",
+          "Financial services company based in Neuilly-sur-Se"
+        ]
+      }
+    ],
+    "IndustryCategory": [
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Electronic Products Manufacturers",
+          "Enterprise Software Companies",
+          "Computer Hardware Companies",
+          "Business Software Companies",
+          "Mobile Phone Manufacturers",
+          "Cloud Computing Providers",
+          "Manufacturing Companies",
+          "CRM Software Companies",
+          "Software Companies",
+          "Open Source Software Organizations"
+        ],
+        "distinct_count": 258
+      },
+      {
+        "property": "id",
+        "type": "STRING",
+        "values": [
+          "EUNd__O4zMNW81lAXNK2GNw",
+          "Efc_gAH4HM_SKwiKysIzA1w",
+          "EqFeVtLRWOUqTdzVhcYwBBQ",
+          "EK3MjPEGOPKatcFLr-zk_xg",
+          "EzqlzZ9UDNMOEq3ifB84Wcw",
+          "EbBgmU7WYPLm6DpLFV5chFg",
+          "E0bLvnJ6_OzqexMbWjOEekg",
+          "EAVUnGH_nPFunkNS-6VEf_w",
+          "EM3QovH3_NZCnZTu7zweSQQ",
+          "E0mRRD4ZpPKiybXtFYk5aFw"
+        ],
+        "distinct_count": 258
+      }
+    ],
+    "City": [
+      {
+        "property": "id",
+        "type": "STRING",
+        "values": [
+          "EZHWv2xKgN92oYDKSjhJ2gw",
+          "E_FZVnahVPq64PwoufmS6oA",
+          "ENFWeK7YSOSyL8SWvT14yEw",
+          "EuIfIxXqHPyCqFkUqzuM3JA",
+          "EBq4L4QZJNPmY523kMjfZIg",
+          "Efsd1HzRPP02EPZJnOZPfQA",
+          "EcMmgf99wMQ6XYnbChv5HiQ",
+          "EuaBmENEpOj-Jn4zhhh1rFg",
+          "EKrUKh2IuN2eDkhiICg1qZw",
+          "ECb_0DzYePbSvY2dXusB-Ag"
+        ],
+        "distinct_count": 9131
+      },
+      {
+        "property": "summary",
+        "type": "STRING",
+        "values": [
+          "City in and county seat of King County, Washington",
+          "Capital and largest city of Italy",
+          "Major city in Greater Manchester, England, UK",
+          "Village in Beekdaelen, Netherlands",
+          "Capital of Argentina",
+          "City and county seat of Cook County, Illinois, Uni",
+          "Most populous city in the United States of America",
+          "City in San Mateo County, California, United State",
+          "Capital city of New South Wales, Australia",
+          "City on the North Island New Zealand"
+        ],
+        "distinct_count": 4368
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Seattle",
+          "Rome",
+          "Manchester",
+          "Schimmert",
+          "Buenos Aires",
+          "Chicago",
+          "New York City",
+          "Redwood City",
+          "Sydney",
+          "Auckland"
+        ],
+        "distinct_count": 8387
+      }
+    ],
+    "Country": [
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "United States of America",
+          "Italy",
+          "United Kingdom",
+          "Australia",
+          "Netherlands",
+          "Argentina",
+          "New Zealand",
+          "France",
+          "Germany",
+          "Spain"
+        ],
+        "distinct_count": 119
+      },
+      {
+        "property": "id",
+        "type": "STRING",
+        "values": [
+          "E01d4EK33MmCosgI2KXa4-A",
+          "Es0LZKHtaPf2VSixCSIlcEg",
+          "EnI6g1AI9NcC6yCohEYEb2A",
+          "EFMlRRXcoPwu5uHO8umFWJg",
+          "EEu52SSGQONeAXzy30yKmBg",
+          "EJquW74SGMmKlsMubKzh3Ag",
+          "EDtTr-FLEN_WtNqEV9Awolg",
+          "EF-T5rsSIMVOAK-HK7eoXBw",
+          "EIcwjrVugPfi33BsXUpWVQA",
+          "EVgMpO16yNySigGdSXQEyZQ"
+        ],
+        "distinct_count": 119
+      },
+      {
+        "property": "summary",
+        "type": "STRING",
+        "values": [
+          "Country in North America",
+          "Country in Southern Europe",
+          "Country in north-west Europe",
+          "Country in Oceania",
+          "Country in Northwestern Europe with territories in",
+          "Sovereign state in South America",
+          "Island country in the southwest Pacific Ocean",
+          "Country in Western Europe",
+          "Country in Central Europe",
+          "Country in southwestern Europe with territories in"
+        ],
+        "distinct_count": 71
+      }
+    ],
+    "Article": [
+      {
+        "property": "id",
+        "type": "STRING",
+        "values": [
+          "ART176872705964",
+          "ART207354016827",
+          "ART266798609405",
+          "ART119872457792",
+          "ART49144589301"
+        ]
+      },
+      {
+        "property": "sentiment",
+        "type": "FLOAT",
+        "values": [
+          "0.856",
+          "0.908",
+          "0.866",
+          "0.693",
+          "NaN"
+        ]
+      },
+      {
+        "property": "author",
+        "type": "STRING",
+        "values": [
+          "David Correa",
+          "Meha Agarwal",
+          "Tyler Cowen"
+        ]
+      },
+      {
+        "property": "siteName",
+        "type": "STRING",
+        "values": [
+          "MrWeb",
+          "EIN Presswire",
+          "Inc42 Media",
+          "Marginal REVOLUTION",
+          "SBWire"
+        ]
+      },
+      {
+        "property": "summary",
+        "type": "STRING",
+        "values": [
+          "Boston and Mumbai-based consumer behavior analyses",
+          "Market is driven by factors such as perpetually gr",
+          "Pitney Bowes, a global technology company has sele",
+          "Praveen Mishra\nPraveen Mishra when he was 16 start",
+          "Free Sample Report + All Related Graphs & Charts @"
+        ]
+      },
+      {
+        "property": "date",
+        "type": "DATE_TIME",
+        "values": [
+          "2022-03-10T00:00:00Z",
+          "2021-12-03T13:14:00Z",
+          "2020-08-03T00:00:00Z",
+          "2020-07-30T00:36:00Z",
+          "2019-02-18T00:00:00Z"
+        ]
+      },
+      {
+        "property": "title",
+        "type": "STRING",
+        "values": [
+          "Funds for Consumer Behavior Specialist Infinite An",
+          "AI in Retail Market is Expected to Witness a Susta",
+          "Pitney Bowes Global Accelerator Programme Names Si",
+          "Emergent Ventures India, second cohort of winners",
+          "Recommendation Engine Market to Witness Huge Growt"
+        ]
+      }
+    ],
+    "Chunk": [
+      {
+        "property": "text",
+        "type": "STRING",
+        "values": [
+          "Boston and Mumbai-based consumer behavior analyses",
+          "Market is driven by factors such as perpetually gr",
+          "Pitney Bowes, a global technology company has sele",
+          "Praveen Mishra\nPraveen Mishra when he was 16 start",
+          "s history. Nilay has also spoken at TEDx New York "
+        ]
+      },
+      {
+        "property": "embedding",
+        "type": "LIST",
+        "max_size": 1536,
+        "min_size": 1536
+      },
+      {
+        "property": "embedding_google",
+        "type": "LIST",
+        "max_size": 768,
+        "min_size": 768
+      }
+    ],
+    "Fewshot": [
+      {
+        "property": "Question",
+        "type": "STRING",
+        "values": [
+          "How is Emil Eifrem connected to Michael Hunger?\n",
+          "What are the latest news regarding Google?\n",
+          "Are there any news regarding return to office poli",
+          "What is Microsoft policy regarding to the return t",
+          "How many levels of subsidiaries does Blackstone ha",
+          "How many Telecommunications Companies are from Mal"
+        ],
+        "distinct_count": 6
+      },
+      {
+        "property": "Cypher",
+        "type": "STRING",
+        "values": [
+          "MATCH (p1:Person {{name:\"Emil Eifrem\"}}), (p2:Pers",
+          "MATCH (o:Organization {{name:\"Google\"}})<-[:MENTIO",
+          "CALL apoc.ml.openai.embedding([\"Are there any news",
+          "CALL apoc.ml.openai.embedding([\"What is Microsoft ",
+          "MATCH p=(o:Organization {name:\"Blackstone\"})-[:HAS",
+          "MATCH (o:Organization)\nWHERE EXISTS {(o)-[:HAS_CAT"
+        ],
+        "distinct_count": 6
+      },
+      {
+        "property": "id",
+        "type": "INTEGER",
+        "min": "2",
+        "max": "7",
+        "distinct_count": 6
+      },
+      {
+        "property": "embedding",
+        "type": "LIST",
+        "max_size": 1536,
+        "min_size": 1536
+      }
+    ]
+  },
+  "rel_props": {},
+  "relationships": [
+    {
+      "start": "Person",
+      "type": "HAS_PARENT",
+      "end": "Person"
+    },
+    {
+      "start": "Person",
+      "type": "HAS_CHILD",
+      "end": "Person"
+    },
+    {
+      "start": "Organization",
+      "type": "IN_CITY",
+      "end": "City"
+    },
+    {
+      "start": "Organization",
+      "type": "HAS_CEO",
+      "end": "Person"
+    },
+    {
+      "start": "Organization",
+      "type": "HAS_CATEGORY",
+      "end": "IndustryCategory"
+    },
+    {
+      "start": "Organization",
+      "type": "HAS_SUBSIDIARY",
+      "end": "Organization"
+    },
+    {
+      "start": "Organization",
+      "type": "HAS_SUPPLIER",
+      "end": "Organization"
+    },
+    {
+      "start": "Organization",
+      "type": "HAS_INVESTOR",
+      "end": "Organization"
+    },
+    {
+      "start": "Organization",
+      "type": "HAS_INVESTOR",
+      "end": "Person"
+    },
+    {
+      "start": "Organization",
+      "type": "HAS_BOARD_MEMBER",
+      "end": "Person"
+    },
+    {
+      "start": "Organization",
+      "type": "HAS_COMPETITOR",
+      "end": "Organization"
+    },
+    {
+      "start": "City",
+      "type": "IN_COUNTRY",
+      "end": "Country"
+    },
+    {
+      "start": "Article",
+      "type": "HAS_CHUNK",
+      "end": "Chunk"
+    },
+    {
+      "start": "Article",
+      "type": "MENTIONS",
+      "end": "Organization"
+    }
+  ],
+  "metadata": {
+    "constraint": [
+      {
+        "id": 10,
+        "name": "constraint_ecc04354",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Article"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_ecc04354",
+        "propertyType": null
+      },
+      {
+        "id": 15,
+        "name": "constraint_f7832722",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "_Bloom_Perspective_"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_f7832722",
+        "propertyType": null
+      },
+      {
+        "id": 8,
+        "name": "industry_category_id",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "IndustryCategory"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "industry_category_id",
+        "propertyType": null
+      },
+      {
+        "id": 6,
+        "name": "organization_id",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Organization"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "organization_id",
+        "propertyType": null
+      },
+      {
+        "id": 4,
+        "name": "person_id",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Person"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "person_id",
+        "propertyType": null
+      }
+    ],
+    "index": [
+      {
+        "label": "Article",
+        "properties": [
+          "id"
+        ],
+        "size": 64191,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 64191.0
+      },
+      {
+        "label": "IndustryCategory",
+        "properties": [
+          "id"
+        ],
+        "size": 253,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 253.0
+      },
+      {
+        "label": "Organization",
+        "properties": [
+          "id"
+        ],
+        "size": 45156,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 45156.0
+      },
+      {
+        "label": "Person",
+        "properties": [
+          "id"
+        ],
+        "size": 7909,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 7909.0
+      },
+      {
+        "label": "_Bloom_Perspective_",
+        "properties": [
+          "id"
+        ],
+        "size": 1,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 1.0
+      }
+    ]
+  }
+}

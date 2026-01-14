@@ -135,13 +135,13 @@ python main.py convert-queries movies
 - [x] Virtual environment created
 - [x] requirements.txt created
 - [x] .gitignore created
-- [ ] Clone Neo4j dataset
-- [ ] Create CLAUDE.md with TypeDB reference
-- [ ] Create src/config.py
-- [ ] Create src/neo4j_parser.py
-- [ ] Create src/typedb_validator.py
-- [ ] Create prompts/schema_conversion.txt
-- [ ] Create prompts/query_conversion.txt
-- [ ] Create src/schema_converter.py
-- [ ] Create src/query_converter.py
-- [ ] Create main.py CLI
+- [ ] Clone Neo4j dataset (run `python main.py setup`)
+- [x] Create CLAUDE.md with TypeDB reference
+- [x] Create src/config.py
+- [x] Create src/neo4j_parser.py
+- [x] Create src/typedb_validator.py
+- [x] Create prompts/schema_conversion.txt
+- [x] Create prompts/query_conversion.txt
+- [x] Create src/schema_converter.py
+- [x] Create src/query_converter.py
+- [x] Create main.py CLI

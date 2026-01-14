@@ -110,8 +110,8 @@ define
 
 ```typeql
 # Simple match + fetch
-match $p isa person, has name "Alice";
-fetch { "person": $p.* };
+match $p isa person, has name "Alice", has age $a;
+fetch { "name": "Alice", "age": $a };
 
 # Fetch specific attributes
 match $p isa person, has name $n, has age $a;
@@ -125,24 +125,24 @@ match
 fetch { "actor": $n, "movie": $t };
 
 # Filtering with comparison
-match $m isa movie, has released $r; $r > 2000;
-fetch { "movie": $m.* };
+match $m isa movie, has released $r, has title $t; $r > 2000;
+fetch { "title": $t, "released": $r };
 
 # Negation
 match
-  $p isa person;
+  $p isa person, has name $n;
   not { (actor: $p) isa acted_in; };
-fetch { "non_actors": $p.* };
+fetch { "non_actor": $n };
 
 # Aggregation
 match $m isa movie;
 reduce $count = count($m);
 
 # Sorting and limiting
-match $p isa person, has age $a;
+match $p isa person, has age $a, has name $n;
 sort $a desc;
 limit 10;
-fetch { "person": $p.* };
+fetch { "name": $n, "age": $a };
 ```
 
 ### Cypher to TypeQL Pattern Mapping
@@ -153,7 +153,7 @@ fetch { "person": $p.* };
 | `MATCH (n {prop: 'val'})` | `match $n isa type, has prop 'val'` |
 | `MATCH (a)-[:REL]->(b)` | `match (role1: $a, role2: $b) isa rel` |
 | `RETURN n.prop` | `fetch { "prop": $n.prop }` |
-| `RETURN n` | `fetch { "n": $n.* }` |
+| `RETURN n` | `fetch { "attr1": $n.attr1, "attr2": $n.attr2 }` (list attributes explicitly) |
 | `WHERE n.prop > 5` | `$n has prop $p; $p > 5;` |
 | `COUNT(n)` | `reduce $count = count($n)` |
 | `ORDER BY n.prop` | `sort $p asc;` |

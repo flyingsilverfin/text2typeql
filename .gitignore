@@ -26,8 +26,9 @@ Thumbs.db
 # Data (cloned repos)
 data/text2cypher/
 
-# Output (generated datasets)
-output/
+# TypeDB binaries
+typedb-all-*/
+*.tar.gz
 
 # Logs
 *.log

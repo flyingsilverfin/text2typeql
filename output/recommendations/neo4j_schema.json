@@ -1,0 +1,908 @@
+{
+  "node_props": {
+    "Movie": [
+      {
+        "property": "url",
+        "type": "STRING",
+        "values": [
+          "https://themoviedb.org/movie/862",
+          "https://themoviedb.org/movie/8844",
+          "https://themoviedb.org/movie/15602",
+          "https://themoviedb.org/movie/31357",
+          "https://themoviedb.org/movie/11862",
+          "https://themoviedb.org/movie/949",
+          "https://themoviedb.org/movie/11860",
+          "https://themoviedb.org/movie/45325",
+          "https://themoviedb.org/movie/9091",
+          "https://themoviedb.org/movie/710"
+        ],
+        "distinct_count": 9117
+      },
+      {
+        "property": "runtime",
+        "type": "INTEGER",
+        "min": "2",
+        "max": "910",
+        "distinct_count": 230
+      },
+      {
+        "property": "revenue",
+        "type": "INTEGER",
+        "min": "1",
+        "max": "2787965087",
+        "distinct_count": 4956
+      },
+      {
+        "property": "plotEmbedding",
+        "type": "LIST",
+        "max_size": 1536,
+        "min_size": 1536
+      },
+      {
+        "property": "posterEmbedding",
+        "type": "LIST",
+        "max_size": 512,
+        "min_size": 512
+      },
+      {
+        "property": "imdbRating",
+        "type": "FLOAT",
+        "min": "1.6",
+        "max": "9.6",
+        "distinct_count": 77
+      },
+      {
+        "property": "released",
+        "type": "STRING",
+        "values": [
+          "1995-11-22",
+          "1995-12-15",
+          "1995-12-22",
+          "1995-12-08",
+          "1995-11-17",
+          "1996-01-05",
+          "1996-01-26",
+          "1995-12-25",
+          "1995-11-10",
+          "1995-10-20"
+        ],
+        "distinct_count": 4824
+      },
+      {
+        "property": "countries",
+        "type": "LIST",
+        "max_size": 16,
+        "min_size": 1
+      },
+      {
+        "property": "languages",
+        "type": "LIST",
+        "max_size": 19,
+        "min_size": 1
+      },
+      {
+        "property": "plot",
+        "type": "STRING",
+        "values": [
+          "A cowboy doll is profoundly threatened and jealous",
+          "When two kids find and play a magical board game, ",
+          "John and Max resolve to save their beloved bait sh",
+          "Based on Terry McMillan's novel, this film follows",
+          "In this sequel, George Banks deals not only with t",
+          "A group of professional bank robbers start to feel",
+          "An ugly duckling having undergone a remarkable cha",
+          "Tom and Huck witness Injun Joe's killing of Doc Ro",
+          "A former fireman takes on a group of terrorists ho",
+          "James Bond teams up with the lone survivor of a de"
+        ],
+        "distinct_count": 9072
+      },
+      {
+        "property": "imdbVotes",
+        "type": "INTEGER",
+        "min": "13",
+        "max": "1626900",
+        "distinct_count": 8190
+      },
+      {
+        "property": "imdbId",
+        "type": "STRING",
+        "values": [
+          "0114709",
+          "0113497",
+          "0113228",
+          "0114885",
+          "0113041",
+          "0113277",
+          "0114319",
+          "0112302",
+          "0114576",
+          "0113189"
+        ],
+        "distinct_count": 9125
+      },
+      {
+        "property": "year",
+        "type": "INTEGER",
+        "min": "1902",
+        "max": "2016",
+        "distinct_count": 103
+      },
+      {
+        "property": "poster",
+        "type": "STRING",
+        "values": [
+          "https://image.tmdb.org/t/p/w440_and_h660_face/uXDf",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/vgpX",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/1FSX",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/4wjG",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/lf9R",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/rrBu",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/z1oN",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/lOnb",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/4Sni",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/z0lj"
+        ],
+        "distinct_count": 8971
+      },
+      {
+        "property": "movieId",
+        "type": "STRING",
+        "values": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "distinct_count": 9125
+      },
+      {
+        "property": "tmdbId",
+        "type": "STRING",
+        "values": [
+          "862",
+          "8844",
+          "15602",
+          "31357",
+          "11862",
+          "949",
+          "11860",
+          "45325",
+          "9091",
+          "710"
+        ],
+        "distinct_count": 9121
+      },
+      {
+        "property": "title",
+        "type": "STRING",
+        "values": [
+          "Toy Story",
+          "Jumanji",
+          "Grumpier Old Men",
+          "Waiting to Exhale",
+          "Father of the Bride Part II",
+          "Heat",
+          "Sabrina",
+          "Tom and Huck",
+          "Sudden Death",
+          "GoldenEye"
+        ],
+        "distinct_count": 8893
+      },
+      {
+        "property": "budget",
+        "type": "INTEGER",
+        "min": "1",
+        "max": "380000000",
+        "distinct_count": 662
+      }
+    ],
+    "Genre": [
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Adventure",
+          "Animation",
+          "Children",
+          "Comedy",
+          "Fantasy",
+          "Romance",
+          "Drama",
+          "Action",
+          "Crime",
+          "Thriller"
+        ],
+        "distinct_count": 20
+      }
+    ],
+    "User": [
+      {
+        "property": "userId",
+        "type": "STRING",
+        "values": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "distinct_count": 671
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Omar Huffman",
+          "Mr. Jason Love",
+          "Angela Thompson",
+          "Jessica Sherman",
+          "Oscar Harmon",
+          "Jessica Wilson",
+          "Kyle Bailey",
+          "John Henderson",
+          "Tracey Irwin",
+          "Margaret Allen"
+        ],
+        "distinct_count": 669
+      }
+    ],
+    "Actor": [
+      {
+        "property": "url",
+        "type": "STRING",
+        "values": [
+          "https://themoviedb.org/person/1271225",
+          "https://themoviedb.org/person/1602569",
+          "https://themoviedb.org/person/8828",
+          "https://themoviedb.org/person/8829",
+          "https://themoviedb.org/person/8830"
+        ]
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Fran\u00e7ois Lallement",
+          "Jules-Eug\u00e8ne Legris",
+          "Lillian Gish",
+          "Mae Marsh",
+          "Henry B. Walthall"
+        ]
+      },
+      {
+        "property": "tmdbId",
+        "type": "STRING",
+        "values": [
+          "1271225",
+          "1602569",
+          "8828",
+          "8829",
+          "8830"
+        ]
+      },
+      {
+        "property": "bornIn",
+        "type": "STRING",
+        "values": [
+          "France",
+          "Springfield, Ohio, USA",
+          "Madrid, New Mexico Territory , USA",
+          "Shelby County, Alabama, USA"
+        ]
+      },
+      {
+        "property": "bio",
+        "type": "STRING",
+        "values": [
+          "\u200bFrom Wikipedia, the free encyclopedia\n\nLillian Di",
+          "Mae Marsh (born Mary Wayne Marsh, November 9, 1894",
+          "\u200bFrom Wikipedia, the free encyclopedia\n\nHenry Braz"
+        ]
+      },
+      {
+        "property": "died",
+        "type": "DATE",
+        "values": [
+          "1954-01-01",
+          "1926-01-01",
+          "1993-02-27",
+          "1968-02-13",
+          "1936-06-17"
+        ]
+      },
+      {
+        "property": "born",
+        "type": "DATE",
+        "values": [
+          "1877-02-04",
+          "1862-01-01",
+          "1893-10-14",
+          "1894-11-09",
+          "1878-03-16"
+        ]
+      },
+      {
+        "property": "imdbId",
+        "type": "STRING",
+        "values": [
+          "2083046",
+          "6170115",
+          "0001273",
+          "0550615",
+          "0910400"
+        ]
+      },
+      {
+        "property": "poster",
+        "type": "STRING",
+        "values": [
+          "https://image.tmdb.org/t/p/w440_and_h660_face/6DCW",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/wEHH",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/5RZt"
+        ]
+      }
+    ],
+    "Director": [
+      {
+        "property": "url",
+        "type": "STRING",
+        "values": [
+          "https://themoviedb.org/person/88953",
+          "https://themoviedb.org/person/29123",
+          "https://themoviedb.org/person/8635",
+          "https://themoviedb.org/person/143998",
+          "https://themoviedb.org/person/13953",
+          "https://themoviedb.org/person/14481",
+          "https://themoviedb.org/person/8841",
+          "https://themoviedb.org/person/2106",
+          "https://themoviedb.org/person/13355",
+          "https://themoviedb.org/person/10921"
+        ],
+        "distinct_count": 4091
+      },
+      {
+        "property": "bornIn",
+        "type": "STRING",
+        "values": [
+          "Burchard, Nebraska, USA",
+          "Arnoldsdorf, West Prussia, Germany [now Jarantowic",
+          "Piqua, Kansas, USA",
+          "Los Angeles, California, USA",
+          "Kenosha, Wisconsin, USA",
+          "Colorado Springs, Colorado, USA",
+          "Bow, London, England, UK",
+          "Hermosa, Chicago, Illinois, USA",
+          "West Newton, Massachusetts, United States",
+          "Scarborough, North Riding of Yorkshire, England, U"
+        ],
+        "distinct_count": 1606
+      },
+      {
+        "property": "born",
+        "type": "DATE",
+        "min": "1861-12-08",
+        "max": "2018-05-01",
+        "distinct_count": 2574
+      },
+      {
+        "property": "died",
+        "type": "DATE",
+        "min": "1930-08-26",
+        "max": "2976-09-29",
+        "distinct_count": 733
+      },
+      {
+        "property": "tmdbId",
+        "type": "STRING",
+        "values": [
+          "88953",
+          "29123",
+          "8635",
+          "143998",
+          "13953",
+          "14481",
+          "8841",
+          "2106",
+          "13355",
+          "10921"
+        ],
+        "distinct_count": 4091
+      },
+      {
+        "property": "imdbId",
+        "type": "STRING",
+        "values": [
+          "0516001",
+          "0917467",
+          "0000036",
+          "0820461",
+          "0166836",
+          "0151606",
+          "0187981",
+          "0000370",
+          "0674019",
+          "0001452"
+        ],
+        "distinct_count": 3988
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Harold Lloyd",
+          "Paul Wegener",
+          "Buster Keaton",
+          "Malcolm St. Clair",
+          "Edward F. Cline",
+          "Lon Chaney",
+          "Donald Crisp",
+          "Walt Disney",
+          "Osgood Perkins",
+          "Charles Laughton"
+        ],
+        "distinct_count": 4070
+      },
+      {
+        "property": "poster",
+        "type": "STRING",
+        "values": [
+          "https://image.tmdb.org/t/p/w440_and_h660_face/er4Z",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/6D04",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/kEyb",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/eeTY",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/6lNC",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/3wZ0",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/rZHp",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/rucT",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/tU3s",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/eRTD"
+        ],
+        "distinct_count": 2029
+      },
+      {
+        "property": "bio",
+        "type": "STRING",
+        "values": [
+          "Harold Lloyd has been called the cinema\u2019s \u201cfirst m",
+          "Paul Wegener was a German actor known for his pion",
+          "Buster Keaton was an American comic actor, filmmak",
+          "Edward F.  Cline was an American screenwriter, act",
+          "Lon Chaney (born Leonidas Frank Chaney) - nickname",
+          "Donald Crisp was born George William Crisp at the ",
+          "\u200bFrom Wikipedia, the free encyclopedia.  \u00a0\n\nWalter",
+          "\u200bFrom Wikipedia, the free encyclopedia.  \u00a0\n\nOsgood",
+          "From Wikipedia, the free encyclopedia. \n\nCharles L",
+          "Marion Mitchell Morrison (born Marion Robert Morri"
+        ],
+        "distinct_count": 2641
+      }
+    ],
+    "Person": [
+      {
+        "property": "url",
+        "type": "STRING",
+        "values": [
+          "https://themoviedb.org/person/1271225",
+          "https://themoviedb.org/person/1602569",
+          "https://themoviedb.org/person/8828",
+          "https://themoviedb.org/person/8829",
+          "https://themoviedb.org/person/8830"
+        ]
+      },
+      {
+        "property": "died",
+        "type": "DATE",
+        "values": [
+          "1954-01-01",
+          "1926-01-01",
+          "1993-02-27",
+          "1968-02-13",
+          "1936-06-17"
+        ]
+      },
+      {
+        "property": "bornIn",
+        "type": "STRING",
+        "values": [
+          "France",
+          "Springfield, Ohio, USA",
+          "Madrid, New Mexico Territory , USA",
+          "Shelby County, Alabama, USA"
+        ]
+      },
+      {
+        "property": "born",
+        "type": "DATE",
+        "values": [
+          "1877-02-04",
+          "1862-01-01",
+          "1893-10-14",
+          "1894-11-09",
+          "1878-03-16"
+        ]
+      },
+      {
+        "property": "imdbId",
+        "type": "STRING",
+        "values": [
+          "2083046",
+          "6170115",
+          "0001273",
+          "0550615",
+          "0910400"
+        ]
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Fran\u00e7ois Lallement",
+          "Jules-Eug\u00e8ne Legris",
+          "Lillian Gish",
+          "Mae Marsh",
+          "Henry B. Walthall"
+        ]
+      },
+      {
+        "property": "poster",
+        "type": "STRING",
+        "values": [
+          "https://image.tmdb.org/t/p/w440_and_h660_face/6DCW",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/wEHH",
+          "https://image.tmdb.org/t/p/w440_and_h660_face/5RZt"
+        ]
+      },
+      {
+        "property": "tmdbId",
+        "type": "STRING",
+        "values": [
+          "1271225",
+          "1602569",
+          "8828",
+          "8829",
+          "8830"
+        ]
+      },
+      {
+        "property": "bio",
+        "type": "STRING",
+        "values": [
+          "\u200bFrom Wikipedia, the free encyclopedia\n\nLillian Di",
+          "Mae Marsh (born Mary Wayne Marsh, November 9, 1894",
+          "\u200bFrom Wikipedia, the free encyclopedia\n\nHenry Braz"
+        ]
+      }
+    ]
+  },
+  "rel_props": {
+    "RATED": [
+      {
+        "property": "rating",
+        "type": "FLOAT",
+        "values": [
+          "2.0",
+          "2.5",
+          "1.0",
+          "3.0",
+          "4.0"
+        ]
+      },
+      {
+        "property": "timestamp",
+        "type": "INTEGER",
+        "values": [
+          "1260759108",
+          "1260759113",
+          "1260759200",
+          "1260759117",
+          "1260759191"
+        ]
+      }
+    ],
+    "ACTED_IN": [
+      {
+        "property": "role",
+        "type": "STRING",
+        "values": [
+          "Officer of the Marines (uncredited)",
+          "Parade Leader (uncredited)",
+          "Rachel Cooper",
+          "Hetty Seibert",
+          "The Woman Who Rocks the Cradle"
+        ]
+      }
+    ],
+    "DIRECTED": [
+      {
+        "property": "role",
+        "type": "STRING",
+        "values": []
+      }
+    ]
+  },
+  "relationships": [
+    {
+      "start": "Movie",
+      "type": "IN_GENRE",
+      "end": "Genre"
+    },
+    {
+      "start": "User",
+      "type": "RATED",
+      "end": "Movie"
+    },
+    {
+      "start": "Actor",
+      "type": "ACTED_IN",
+      "end": "Movie"
+    },
+    {
+      "start": "Actor",
+      "type": "DIRECTED",
+      "end": "Movie"
+    },
+    {
+      "start": "Director",
+      "type": "DIRECTED",
+      "end": "Movie"
+    },
+    {
+      "start": "Director",
+      "type": "ACTED_IN",
+      "end": "Movie"
+    },
+    {
+      "start": "Person",
+      "type": "ACTED_IN",
+      "end": "Movie"
+    },
+    {
+      "start": "Person",
+      "type": "DIRECTED",
+      "end": "Movie"
+    }
+  ],
+  "metadata": {
+    "constraint": [
+      {
+        "id": 76,
+        "name": "constraint_3b27b0",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "User"
+        ],
+        "properties": [
+          "userId"
+        ],
+        "ownedIndex": "constraint_3b27b0",
+        "propertyType": null
+      },
+      {
+        "id": 75,
+        "name": "constraint_3d5fcb7f",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Movie"
+        ],
+        "properties": [
+          "movieId"
+        ],
+        "ownedIndex": "constraint_3d5fcb7f",
+        "propertyType": null
+      },
+      {
+        "id": 73,
+        "name": "constraint_4499eae9",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Person"
+        ],
+        "properties": [
+          "tmdbId"
+        ],
+        "ownedIndex": "constraint_4499eae9",
+        "propertyType": null
+      },
+      {
+        "id": 77,
+        "name": "constraint_737d9c1d",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Movie"
+        ],
+        "properties": [
+          "tmdbId"
+        ],
+        "ownedIndex": "constraint_737d9c1d",
+        "propertyType": null
+      },
+      {
+        "id": 3,
+        "name": "constraint_f7832722",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "_Bloom_Perspective_"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_f7832722",
+        "propertyType": null
+      },
+      {
+        "id": 74,
+        "name": "constraint_f8689281",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Genre"
+        ],
+        "properties": [
+          "name"
+        ],
+        "ownedIndex": "constraint_f8689281",
+        "propertyType": null
+      }
+    ],
+    "index": [
+      {
+        "label": "Genre",
+        "properties": [
+          "name"
+        ],
+        "size": 20,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 20.0
+      },
+      {
+        "label": "Movie",
+        "properties": [
+          "title"
+        ],
+        "size": 9125,
+        "type": "RANGE",
+        "valuesSelectivity": 0.9745753424657534,
+        "distinctValues": 8893.0
+      },
+      {
+        "label": "Movie",
+        "properties": [
+          "tagline"
+        ],
+        "size": 0,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 0.0
+      },
+      {
+        "label": "Movie",
+        "properties": [
+          "year"
+        ],
+        "size": 9096,
+        "type": "RANGE",
+        "valuesSelectivity": 0.011323658751099384,
+        "distinctValues": 103.0
+      },
+      {
+        "label": "Movie",
+        "properties": [
+          "imdbRating"
+        ],
+        "size": 9058,
+        "type": "RANGE",
+        "valuesSelectivity": 0.008500772797527048,
+        "distinctValues": 77.0
+      },
+      {
+        "label": "Movie",
+        "properties": [
+          "released"
+        ],
+        "size": 9041,
+        "type": "RANGE",
+        "valuesSelectivity": 0.5335692954319212,
+        "distinctValues": 4824.0
+      },
+      {
+        "label": "Movie",
+        "properties": [
+          "imdbId"
+        ],
+        "size": 9125,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 9125.0
+      },
+      {
+        "label": "Movie",
+        "properties": [
+          "movieId"
+        ],
+        "size": 9125,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 9125.0
+      },
+      {
+        "label": "Movie",
+        "properties": [
+          "tmdbId"
+        ],
+        "size": 9121,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 9121.0
+      },
+      {
+        "label": "Person",
+        "properties": [
+          "name"
+        ],
+        "size": 19047,
+        "type": "RANGE",
+        "valuesSelectivity": 0.99826744369192,
+        "distinctValues": 19014.0
+      },
+      {
+        "label": "Person",
+        "properties": [
+          "tmdbId"
+        ],
+        "size": 19047,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 19047.0
+      },
+      {
+        "label": "User",
+        "properties": [
+          "userId"
+        ],
+        "size": 671,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 671.0
+      },
+      {
+        "label": "User",
+        "properties": [
+          "name"
+        ],
+        "size": 671,
+        "type": "RANGE",
+        "valuesSelectivity": 0.9970193740685543,
+        "distinctValues": 669.0
+      },
+      {
+        "label": "_Bloom_Perspective_",
+        "properties": [
+          "id"
+        ],
+        "size": 1,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 1.0
+      }
+    ]
+  }
+}

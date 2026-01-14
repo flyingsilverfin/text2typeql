@@ -1,0 +1,59 @@
+define
+  attribute name value string;
+  attribute born value integer;
+  attribute title value string;
+  attribute votes value integer;
+  attribute tagline value string;
+  attribute released value integer;
+  attribute roles value string;
+  attribute summary value string;
+  attribute rating value integer;
+
+  entity person,
+    owns name @key,
+    owns born,
+    plays acted_in:actor,
+    plays directed:director,
+    plays produced:producer,
+    plays wrote:writer,
+    plays follows:follower,
+    plays follows:followed,
+    plays reviewed:reviewer;
+
+  entity movie,
+    owns title @key,
+    owns votes,
+    owns tagline,
+    owns released,
+    plays acted_in:film,
+    plays directed:film,
+    plays produced:film,
+    plays wrote:film,
+    plays reviewed:film;
+
+  relation acted_in,
+    relates actor,
+    relates film,
+    owns roles;
+
+  relation directed,
+    relates director,
+    relates film;
+
+  relation produced,
+    relates producer,
+    relates film;
+
+  relation wrote,
+    relates writer,
+    relates film;
+
+  relation follows,
+    relates follower,
+    relates followed;
+
+  relation reviewed,
+    relates reviewer,
+    relates film,
+    owns summary,
+    owns rating;

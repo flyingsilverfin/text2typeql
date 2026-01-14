@@ -1,0 +1,153 @@
+You are an expert at converting Cypher queries to TypeDB 3.x TypeQL queries.
+
+## Task
+Convert the following Cypher query to a valid TypeQL query.
+
+## Context
+
+### TypeQL Schema
+```typeql
+{TYPEQL_SCHEMA}
+```
+
+### Original Neo4j Schema (for reference)
+```json
+{NEO4J_SCHEMA}
+```
+
+### Natural Language Question
+{QUESTION}
+
+### Cypher Query to Convert
+```cypher
+{CYPHER_QUERY}
+```
+
+## TypeQL Query Syntax Reference
+
+### Basic Pattern Matching
+```typeql
+# Match entity by type
+match $p isa person;
+
+# Match with attribute filter
+match $p isa person, has name "Alice";
+
+# Match with variable attribute
+match $p isa person, has name $n;
+
+# Multiple attribute conditions
+match $p isa person, has name $n, has age $a;
+```
+
+### Relation Matching
+```typeql
+# Match relation (role: $variable)
+match (actor: $p, film: $m) isa acted_in;
+
+# With entity constraints
+match
+  $p isa person, has name "Tom Hanks";
+  (actor: $p, film: $m) isa acted_in;
+  $m has title $t;
+```
+
+### Filtering and Comparisons
+```typeql
+# Comparison operators: <, >, <=, >=, ==, !=
+match $m isa movie, has released $r; $r > 2000;
+
+# String contains (use like with %)
+match $p isa person, has name $n; $n like "%Smith%";
+
+# Multiple conditions
+match $p isa person, has age $a; $a >= 18; $a <= 65;
+```
+
+### Negation
+```typeql
+# NOT pattern
+match
+  $p isa person;
+  not { (actor: $p) isa acted_in; };
+```
+
+### Fetch (Return Results)
+```typeql
+# Fetch specific attribute values (PREFERRED - most reliable)
+fetch { "name": $n, "age": $a };
+
+# Fetch attribute from entity using dot notation
+fetch { "title": $m.title, "released": $m.released };
+
+# Fetch with custom labels
+fetch { "actor_name": $n, "movie_title": $t };
+
+# IMPORTANT: Do NOT use $var.* syntax - it's not supported!
+# Instead, explicitly list the attributes you want to return
+```
+
+### Aggregation
+```typeql
+# Count
+match $m isa movie;
+reduce $count = count($m);
+
+# Other aggregates: sum, max, min, mean
+match $p isa person, has age $a;
+reduce $avg_age = mean($a);
+```
+
+### Sorting and Limiting
+```typeql
+# Sort ascending then fetch
+match $p isa person, has age $a, has name $n;
+sort $a asc;
+fetch { "name": $n, "age": $a };
+
+# Sort descending with limit
+match $m isa movie, has released $r, has title $t;
+sort $r desc;
+limit 10;
+fetch { "title": $t, "released": $r };
+
+# Query order MUST be: match -> sort -> limit -> fetch
+```
+
+### Cypher to TypeQL Mapping
+
+| Cypher | TypeQL |
+|--------|--------|
+| `MATCH (n:Label)` | `match $n isa label;` |
+| `MATCH (n {prop: 'val'})` | `match $n isa type, has prop "val";` |
+| `MATCH (a)-[:REL]->(b)` | `match (role1: $a, role2: $b) isa rel;` |
+| `MATCH (a)-[:REL]-(b)` | `match (role1: $a, role2: $b) isa rel;` (same - TypeQL relations are undirected) |
+| `WHERE n.prop = 'val'` | `$n has prop "val";` or `has prop $p; $p == "val";` |
+| `WHERE n.prop > 5` | `$n has prop $p; $p > 5;` |
+| `WHERE n.prop CONTAINS 'x'` | `$n has prop $p; $p like "%x%";` |
+| `WHERE n.prop STARTS WITH 'x'` | `$n has prop $p; $p like "x%";` |
+| `WHERE n.prop IS NOT NULL` | (attribute exists by default if matched) |
+| `WHERE NOT (pattern)` | `not { pattern };` |
+| `RETURN n.prop` | `fetch { "prop": $n.prop };` or bind to variable first |
+| `RETURN n` | Fetch each attribute explicitly: `fetch { "name": $n.name, "age": $n.age };` |
+| `RETURN count(n)` | `reduce $count = count($n);` |
+| `RETURN DISTINCT n.prop` | (use reduce or deduplicate in post-processing) |
+| `ORDER BY n.prop` | `sort $p asc;` (need variable for attribute) |
+| `ORDER BY n.prop DESC` | `sort $p desc;` |
+| `LIMIT 10` | `limit 10;` |
+| `SKIP 5` | `offset 5;` |
+| `OPTIONAL MATCH` | (not directly supported - may need restructuring) |
+
+## Important Notes
+
+1. **Variable naming**: Use descriptive variable names with $ prefix ($person, $movie, $name)
+2. **String quotes**: Use double quotes for strings in TypeQL, not single quotes
+3. **Attribute access**: To filter/sort by attribute, bind it to a variable: `has age $a; $a > 30;`
+4. **Role names**: Use the exact role names from the schema
+5. **Relation direction**: TypeQL relations are undirected - no need to worry about -> vs <-
+6. **NULL handling**: TypeQL doesn't have NULL - missing attributes simply don't match
+7. **Aggregation**: reduce replaces Cypher's aggregation functions
+
+## Output Format
+Return ONLY the TypeQL query, no markdown code blocks or explanations.
+The query must be syntactically valid TypeQL that can be executed directly against the schema.

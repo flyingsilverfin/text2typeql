@@ -1,0 +1,9 @@
+{
+  "database": "recommendations",
+  "success": true,
+  "attempts": 2,
+  "errors": [
+    "\n[SVL42] Cannot redeclare inherited capability 'plays directed:director' from 'person' on subtype 'actor' without specialisation.\nCaused: [COW4] Concept write failed due to a schema validation error.\nCaused: [SCT2] Schema commit error.\nCaused: [TSV6] Schema transaction commit failed."
+  ],
+  "approved": true
+}

@@ -1,0 +1,123 @@
+define
+  attribute betweenness value double;
+  attribute location value string;
+  attribute followers value integer;
+  attribute following value integer;
+  attribute profile_image_url value string;
+  attribute screen_name value string;
+  attribute name value string;
+  attribute url value string;
+  attribute statuses value integer;
+  attribute created_at value datetime;
+  attribute tweet_id value integer;
+  attribute id_str value string;
+  attribute text value string;
+  attribute favorites value integer;
+  attribute import_method value string;
+  attribute hashtag_name value string;
+  attribute link_url value string;
+  attribute source_name value string;
+  attribute score value double;
+
+  entity user,
+    owns betweenness,
+    owns location,
+    owns followers,
+    owns following,
+    owns profile_image_url,
+    owns screen_name @key,
+    owns name,
+    owns url,
+    owns statuses,
+    plays follows:follower,
+    plays follows:followed,
+    plays posts:author,
+    plays interacts_with:interactor,
+    plays interacts_with:target,
+    plays similar_to:source_user,
+    plays similar_to:similar_user,
+    plays mentions:mentioned_user,
+    plays rt_mentions:mentioned_user,
+    plays amplifies:amplified_user;
+
+  entity me sub user,
+    plays rt_mentions:mentioner,
+    plays amplifies:amplifier;
+
+  entity tweet,
+    owns created_at,
+    owns tweet_id @key,
+    owns id_str,
+    owns text,
+    owns favorites,
+    owns import_method,
+    plays posts:content,
+    plays mentions:source_tweet,
+    plays using:tweet_content,
+    plays tags:tagged_tweet,
+    plays contains:containing_tweet,
+    plays retweets:original_tweet,
+    plays retweets:retweeting_tweet,
+    plays reply_to:original_tweet,
+    plays reply_to:replying_tweet;
+
+  entity hashtag,
+    owns hashtag_name @key,
+    plays tags:tag;
+
+  entity link,
+    owns link_url @key,
+    plays contains:contained_link;
+
+  entity source,
+    owns source_name @key,
+    plays using:platform;
+
+  relation follows,
+    relates follower,
+    relates followed;
+
+  relation posts,
+    relates author,
+    relates content;
+
+  relation interacts_with,
+    relates interactor,
+    relates target;
+
+  relation similar_to,
+    relates source_user,
+    relates similar_user,
+    owns score;
+
+  relation mentions,
+    relates source_tweet,
+    relates mentioned_user;
+
+  relation rt_mentions,
+    relates mentioner,
+    relates mentioned_user;
+
+  relation amplifies,
+    relates amplifier,
+    relates amplified_user;
+
+  relation using,
+    relates tweet_content,
+    relates platform;
+
+  relation tags,
+    relates tagged_tweet,
+    relates tag;
+
+  relation contains,
+    relates containing_tweet,
+    relates contained_link;
+
+  relation retweets,
+    relates original_tweet,
+    relates retweeting_tweet;
+
+  relation reply_to,
+    relates original_tweet,
+    relates replying_tweet;

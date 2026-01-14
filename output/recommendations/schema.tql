@@ -1,0 +1,94 @@
+define
+  attribute url value string;
+  attribute runtime value integer;
+  attribute revenue value integer;
+  attribute plot_embedding value string;
+  attribute poster_embedding value string;
+  attribute imdb_rating value double;
+  attribute released value string;
+  attribute countries value string;
+  attribute languages value string;
+  attribute plot value string;
+  attribute imdb_votes value integer;
+  attribute imdb_id value string;
+  attribute year value integer;
+  attribute poster value string;
+  attribute movie_id value string;
+  attribute tmdb_id value string;
+  attribute title value string;
+  attribute budget value integer;
+  attribute name value string;
+  attribute user_id value string;
+  attribute born_in value string;
+  attribute bio value string;
+  attribute died value datetime;
+  attribute born value datetime;
+  attribute rating value double;
+  attribute timestamp value integer;
+  attribute character_role value string;
+
+  entity movie,
+    owns url,
+    owns runtime,
+    owns revenue,
+    owns plot_embedding,
+    owns poster_embedding,
+    owns imdb_rating,
+    owns released,
+    owns countries,
+    owns languages,
+    owns plot,
+    owns imdb_votes,
+    owns imdb_id,
+    owns year,
+    owns poster,
+    owns movie_id @key,
+    owns tmdb_id,
+    owns title,
+    owns budget,
+    plays in_genre:film,
+    plays rated:film,
+    plays acted_in:film,
+    plays directed:film;
+
+  entity genre,
+    owns name @key,
+    plays in_genre:genre;
+
+  entity user,
+    owns user_id @key,
+    owns name,
+    plays rated:user;
+
+  entity person,
+    owns url,
+    owns name,
+    owns tmdb_id @key,
+    owns born_in,
+    owns bio,
+    owns died,
+    owns born,
+    owns imdb_id,
+    owns poster,
+    plays acted_in:actor,
+    plays directed:director;
+
+  relation in_genre,
+    relates film,
+    relates genre;
+
+  relation rated,
+    relates user,
+    relates film,
+    owns rating,
+    owns timestamp;
+
+  relation acted_in,
+    relates actor,
+    relates film,
+    owns character_role;
+
+  relation directed,
+    relates director,
+    relates film,
+    owns character_role;

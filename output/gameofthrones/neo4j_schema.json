@@ -1,0 +1,217 @@
+{
+  "node_props": {
+    "Character": [
+      {
+        "property": "centrality",
+        "type": "FLOAT",
+        "min": "0.0",
+        "max": "1.0",
+        "distinct_count": 81
+      },
+      {
+        "property": "book45PageRank",
+        "type": "FLOAT",
+        "min": "0.15000000000000002",
+        "max": "11.409916274911177",
+        "distinct_count": 417
+      },
+      {
+        "property": "fastrf_embedding",
+        "type": "LIST",
+        "max_size": 10,
+        "min_size": 10
+      },
+      {
+        "property": "book1BetweennessCentrality",
+        "type": "FLOAT",
+        "min": "0.0",
+        "max": "4638.53495125504",
+        "distinct_count": 91
+      },
+      {
+        "property": "book1PageRank",
+        "type": "FLOAT",
+        "min": "0.15000000000000002",
+        "max": "8.164174336296284",
+        "distinct_count": 161
+      },
+      {
+        "property": "louvain",
+        "type": "INTEGER",
+        "min": "0",
+        "max": "10",
+        "distinct_count": 11
+      },
+      {
+        "property": "community",
+        "type": "INTEGER",
+        "min": "504",
+        "max": "795",
+        "distinct_count": 222
+      },
+      {
+        "property": "degree",
+        "type": "FLOAT",
+        "min": "0.0",
+        "max": "300.0",
+        "distinct_count": 61
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Addam-Marbrand",
+          "Aegon-Frey-(son-of-Stevron)",
+          "Aegon-I-Targaryen",
+          "Aegon-Targaryen-(son-of-Rhaegar)",
+          "Aegon-V-Targaryen",
+          "Aemon-Targaryen-(Dragonknight)",
+          "Aemon-Targaryen-(Maester-Aemon)",
+          "Aenys-Frey",
+          "Aeron-Greyjoy",
+          "Aerys-I-Targaryen"
+        ],
+        "distinct_count": 796
+      },
+      {
+        "property": "pagerank",
+        "type": "FLOAT",
+        "min": "0.15000000000000002",
+        "max": "9.473142454730429",
+        "distinct_count": 441
+      }
+    ]
+  },
+  "rel_props": {
+    "INTERACTS": [
+      {
+        "property": "weight",
+        "type": "INTEGER",
+        "min": "3",
+        "max": "334",
+        "distinct_count": 107
+      }
+    ],
+    "INTERACTS1": [
+      {
+        "property": "weight",
+        "type": "INTEGER",
+        "min": "3",
+        "max": "291",
+        "distinct_count": 57
+      },
+      {
+        "property": "book",
+        "type": "INTEGER",
+        "min": "1",
+        "max": "1",
+        "distinct_count": 1
+      }
+    ],
+    "INTERACTS2": [
+      {
+        "property": "weight",
+        "type": "INTEGER",
+        "min": "3",
+        "max": "92",
+        "distinct_count": 46
+      },
+      {
+        "property": "book",
+        "type": "INTEGER",
+        "min": "2",
+        "max": "2",
+        "distinct_count": 1
+      }
+    ],
+    "INTERACTS3": [
+      {
+        "property": "weight",
+        "type": "INTEGER",
+        "min": "3",
+        "max": "95",
+        "distinct_count": 51
+      },
+      {
+        "property": "book",
+        "type": "INTEGER",
+        "min": "3",
+        "max": "3",
+        "distinct_count": 1
+      }
+    ],
+    "INTERACTS45": [
+      {
+        "property": "weight",
+        "type": "INTEGER",
+        "min": "3",
+        "max": "96",
+        "distinct_count": 53
+      },
+      {
+        "property": "book",
+        "type": "INTEGER",
+        "min": "45",
+        "max": "45",
+        "distinct_count": 1
+      }
+    ]
+  },
+  "relationships": [
+    {
+      "start": "Character",
+      "type": "INTERACTS45",
+      "end": "Character"
+    },
+    {
+      "start": "Character",
+      "type": "INTERACTS",
+      "end": "Character"
+    },
+    {
+      "start": "Character",
+      "type": "INTERACTS1",
+      "end": "Character"
+    },
+    {
+      "start": "Character",
+      "type": "INTERACTS3",
+      "end": "Character"
+    },
+    {
+      "start": "Character",
+      "type": "INTERACTS2",
+      "end": "Character"
+    }
+  ],
+  "metadata": {
+    "constraint": [
+      {
+        "id": 7,
+        "name": "constraint_36fbcdfc",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Character"
+        ],
+        "properties": [
+          "name"
+        ],
+        "ownedIndex": "constraint_36fbcdfc",
+        "propertyType": null
+      }
+    ],
+    "index": [
+      {
+        "label": "Character",
+        "properties": [
+          "name"
+        ],
+        "size": 796,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 796.0
+      }
+    ]
+  }
+}

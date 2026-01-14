@@ -1,0 +1,64 @@
+define
+  attribute centrality value double;
+  attribute book45_page_rank value double;
+  attribute fastrf_embedding value double;
+  attribute book1_betweenness_centrality value double;
+  attribute book1_page_rank value double;
+  attribute louvain value integer;
+  attribute community value integer;
+  attribute degree value double;
+  attribute name value string;
+  attribute pagerank value double;
+  attribute weight value integer;
+  attribute book value integer;
+
+  entity character,
+    owns centrality,
+    owns book45_page_rank,
+    owns fastrf_embedding,
+    owns book1_betweenness_centrality,
+    owns book1_page_rank,
+    owns louvain,
+    owns community,
+    owns degree,
+    owns name @key,
+    owns pagerank,
+    plays interacts45:character1,
+    plays interacts45:character2,
+    plays interacts:character1,
+    plays interacts:character2,
+    plays interacts1:character1,
+    plays interacts1:character2,
+    plays interacts3:character1,
+    plays interacts3:character2,
+    plays interacts2:character1,
+    plays interacts2:character2;
+
+  relation interacts45,
+    relates character1,
+    relates character2,
+    owns weight,
+    owns book;
+
+  relation interacts,
+    relates character1,
+    relates character2,
+    owns weight;
+
+  relation interacts1,
+    relates character1,
+    relates character2,
+    owns weight,
+    owns book;
+
+  relation interacts3,
+    relates character1,
+    relates character2,
+    owns weight,
+    owns book;
+
+  relation interacts2,
+    relates character1,
+    relates character2,
+    owns weight,
+    owns book;
