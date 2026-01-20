@@ -1,0 +1,12 @@
+original_index,question,cypher,typeql,review_reason
+123,Identify the streams that have the most moderators.,"MATCH (s:Stream)
+OPTIONAL MATCH (s)-[:MODERATOR]->(m:User)
+WITH s, count(m) AS moderatorCount
+RETURN s.name AS streamName, moderatorCount
+ORDER BY moderatorCount DESC
+LIMIT 10","match
+  $s isa stream, has name $sn;
+  moderation (moderated_channel: $s, moderating_user: $m);
+reduce $moderatorCount = count($m) groupby $sn;
+sort $moderatorCount desc;
+limit 10;",OPTIONAL MATCH not handled - TypeQL requires moderation relation but should include streams with 0 moderators

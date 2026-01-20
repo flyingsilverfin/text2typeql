@@ -3,20 +3,20 @@
 ## Current Status
 
 **Phase**: Query Conversion (Agent-Based)
-**Last Updated**: 2025-01-19
+**Last Updated**: 2026-01-20
 
 ### Conversion Progress
 
-| Database | Converted | Failed | Total | % | Next Index |
-|----------|-----------|--------|-------|---|------------|
-| twitter | 240 | 1 | 493 | 49% | 241 |
-| twitch | 172 | 0 | 561 | 31% | 172 |
-| recommendations | 200 | 0 | 753 | 27% | 200 |
-| movies | 0 | 0 | 729 | 0% | 0 |
-| neoflix | 0 | 0 | 915 | 0% | 0 |
-| companies | 0 | 0 | 933 | 0% | 0 |
-| gameofthrones | 0 | 0 | 392 | 0% | 0 |
-| **Total** | **612** | **1** | **4776** | **13%** | |
+| Database | Converted | Failed | Failed Review | Total | % |
+|----------|-----------|--------|---------------|-------|---|
+| twitter | 473 | 4 | 16 | 493 | 100% |
+| twitch | 362 | 38 | 1 | 561 | 71% |
+| recommendations | 461 | 1 | 0 | 753 | 61% |
+| movies | 18 | 1 | 0 | 729 | 3% |
+| neoflix | 0 | 0 | 0 | 915 | 0% |
+| companies | 0 | 0 | 0 | 933 | 0% |
+| gameofthrones | 0 | 0 | 0 | 392 | 0% |
+| **Total** | **1314** | **44** | **17** | **4776** | **29%** |
 
 ### Completed Setup
 - [x] Project setup and structure
@@ -86,6 +86,8 @@ These are recorded in `failed.csv` with error descriptions.
 | File | Purpose |
 |------|---------|
 | `output/<db>/queries.csv` | Successful conversions |
-| `output/<db>/failed.csv` | Failed after 3 attempts |
+| `output/<db>/failed.csv` | Failed conversions (TypeDB limitations) |
+| `output/<db>/failed_review.csv` | Failed semantic review (TypeQL doesn't match question) |
 | `scripts/get_query.py` | Extract query by index |
+| `scripts/review_helper.py` | Move queries during review |
 | `.claude/skills/convert-query.md` | Conversion skill reference |

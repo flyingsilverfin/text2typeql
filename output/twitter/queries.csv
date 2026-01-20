@@ -421,19 +421,6 @@ contains (containing_tweet: $t, contained_link: $l);
 sort $f desc;
 limit 5;
 fetch { ""tweet_text"": $t.text };"
-49,What are the 3 most common hashtags in tweets that have been retweeted more than 100 times?,"MATCH (t:Tweet)-[:TAGS]->(h:Hashtag)
-WHERE t.favorites > 100
-RETURN h.name AS hashtag, count(*) AS count
-ORDER BY count DESC
-LIMIT 3","match
-$t isa tweet, has favorites $f;
-$h isa hashtag;
-tags (tagged_tweet: $t, tag: $h);
-$f > 100;
-reduce $count = count($t) groupby $h;
-sort $count desc;
-limit 3;
-fetch { ""hashtag"": $h.hashtag_name, ""count"": $count };"
 50,List the tweets containing the link 'https://twitter.com/i/web/status/13718150212657479' and were created in March 2021.,"MATCH (t:Tweet)-[:CONTAINS]->(l:Link {url: 'https://twitter.com/i/web/status/13718150212657479'})
 WHERE t.created_at >= date('2021-03-01') AND t.created_at < date('2021-04-01') 
 RETURN t","match
@@ -680,17 +667,6 @@ reduce $num_users = count($u) groupby $loc;
 sort $num_users desc;
 limit 3;
 fetch { ""location"": $loc, ""num_users"": $num_users };"
-73,List the top 5 tweets that have been retweeted the most times.,"MATCH (t:Tweet)-[:RETWEETS]->(retweet:Tweet)
-RETURN t.text AS tweet_text, count(retweet) AS retweet_count
-ORDER BY retweet_count DESC
-LIMIT 5","match
-$t isa tweet;
-$retweet isa tweet;
-retweets (retweeting_tweet: $t, original_tweet: $retweet);
-reduce $retweet_count = count($retweet) groupby $t;
-sort $retweet_count desc;
-limit 5;
-fetch { ""tweet_text"": $t.text, ""retweet_count"": $retweet_count };"
 74,Which 5 tweets have the most replies?,"MATCH (t:Tweet)
 WHERE exists{ (t)<-[:REPLY_TO]-() }
 RETURN t, count{(t)<-[:REPLY_TO]-()} AS replies
@@ -703,18 +679,6 @@ reduce $replies = count($reply) groupby $t;
 sort $replies desc;
 limit 5;
 fetch { ""text"": $t.text, ""tweet_id"": $t.tweet_id, ""replies"": $replies };"
-75,Identify the top 3 users who have amplified the most tweets.,"MATCH (u:User)<-[:AMPLIFIES]-(me:Me)
-WITH u, count(me) AS amplifications
-ORDER BY amplifications DESC
-LIMIT 3
-RETURN u.name AS user, amplifications","match
-$u isa user;
-$me isa me;
-$a isa amplifies (amplifier: $me, amplified_user: $u);
-reduce $amplifications = count($a) groupby $u;
-sort $amplifications desc;
-limit 3;
-fetch { ""user"": $u.name, ""amplifications"": $amplifications };"
 76,Who are the top 5 users mentioned in the most tweets?,"MATCH (u:User)<-[:MENTIONS]-(t:Tweet)
 RETURN u.name AS user, count(t) AS mentions
 ORDER BY mentions DESC
@@ -771,24 +735,6 @@ $h isa hashtag, has hashtag_name ""education"";
 tags (tagged_tweet: $t, tag: $h);
 limit 5;
 fetch { ""tweet_text"": $t.text };"
-81,"List the top 5 tweets by the total interaction (mentions, retweets, replies).","MATCH (t:Tweet)
-OPTIONAL MATCH (t)<-[:MENTIONS]-(mention)
-OPTIONAL MATCH (t)<-[:RETWEETS]-(retweet) 
-OPTIONAL MATCH (t)<-[:REPLY_TO]-(reply)
-RETURN t.text AS tweet, 
-       count(mention) AS mentions,
-       count(retweet) AS retweets, 
-       count(reply) AS replies,
-       (count(mention) + count(retweet) + count(reply)) AS totalInteractions
-ORDER BY totalInteractions DESC
-LIMIT 5","match
-$t isa tweet;
-$reply isa tweet;
-reply_to (original_tweet: $t, replying_tweet: $reply);
-reduce $replies = count($reply) groupby $t;
-sort $replies desc;
-limit 5;
-fetch { ""tweet"": $t.text, ""replies"": $replies };"
 82,Who are the first 3 users followed by 'Neo4j'?,"MATCH (me:Me {screen_name: 'neo4j'})-[:FOLLOWS]->(followed:User)
 RETURN followed.screen_name
 LIMIT 3","match
@@ -821,15 +767,6 @@ $s isa similar_to (source_user: $me, similar_user: $u), has score $sc;
 sort $sc desc;
 limit 5;
 fetch { ""user"": $u.screen_name, ""similarity"": $sc };"
-85,Which 3 tweets have the highest aggregation of favorites and retweets?,"MATCH (t:Tweet)
-OPTIONAL MATCH (t)-[:RETWEETS]->(r:Tweet)
-RETURN t, t.favorites + count(r) AS score
-ORDER BY score DESC
-LIMIT 3","match
-$t isa tweet, has favorites $f;
-sort $f desc;
-limit 3;
-fetch { ""text"": $t.text, ""tweet_id"": $t.tweet_id, ""favorites"": $f };"
 86,List the top 5 users who mostly tweet about 'education'.,"MATCH (u:User)-[:POSTS]->(t:Tweet)-[:TAGS]->(:Hashtag {name: 'education'})
 WITH u, count(t) AS tweet_count
 ORDER BY tweet_count DESC
@@ -1344,17 +1281,6 @@ posts (author: $me, content: $tweet);
 sort $f desc;
 limit 5;
 fetch { ""text"": $tweet.text, ""favorites"": $f };"
-137,Who are the top 5 users that follow both 'neo4j' and 'Me'?,"MATCH (u:User)-[:FOLLOWS]->(:User {screen_name: 'neo4j'}), 
-      (u)-[:FOLLOWS]->(:Me)
-RETURN u.screen_name AS user, u.followers AS followerCount
-ORDER BY followerCount DESC
-LIMIT 5","match
-$u isa user, has followers $f;
-$me isa me, has screen_name ""neo4j"";
-follows (follower: $u, followed: $me);
-sort $f desc;
-limit 5;
-fetch { ""user"": $u.screen_name, ""followerCount"": $f };"
 138,Find the top 3 tweets that mention 'neo4j' and are tagged with 'education'.,"MATCH (t:Tweet)-[:TAGS]->(:Hashtag {name: 'education'})
 WHERE t.text CONTAINS 'neo4j'
 RETURN t
@@ -1524,14 +1450,6 @@ reduce $follower_count = count($follower) groupby $u;
 sort $follower_count desc;
 limit 5;
 fetch { ""screen_name"": $u.screen_name, ""follower_count"": $follower_count };"
-154,Which three tweets have the highest retweet counts?,"MATCH (t:Tweet)
-RETURN t.text, t.favorites
-ORDER BY t.favorites DESC
-LIMIT 3","match
-$t isa tweet, has favorites $f;
-sort $f desc;
-limit 3;
-fetch { ""text"": $t.text, ""favorites"": $f };"
 155,Identify the top 5 users who are followed by 'Neo4j'.,"MATCH (me:Me {screen_name: 'neo4j'})-[:FOLLOWS]->(followed:User)
 RETURN followed.screen_name AS user, followed.followers AS followerCount
 ORDER BY followerCount DESC
@@ -1701,16 +1619,6 @@ $u isa user, has location ""Graphs Are Everywhere"";
 $me isa me, has screen_name ""neo4j"";
 follows (follower: $u, followed: $me);
 fetch { ""screen_name"": $u.screen_name, ""name"": $u.name, ""location"": $u.location };"
-170,Find the first 3 tweets that have been retweeted more than 100 times.,"MATCH (t:Tweet)
-WHERE t.favorites > 100
-RETURN t
-ORDER BY t.favorites DESC
-LIMIT 3","match
-$t isa tweet, has favorites $f;
-$f > 100;
-sort $f desc;
-limit 3;
-fetch { ""text"": $t.text, ""tweet_id"": $t.tweet_id, ""favorites"": $f };"
 171,Identify the top 5 tweets tagged with the hashtag 'education'.,"MATCH (t:Tweet)-[:TAGS]->(h:Hashtag {name: 'education'})
 RETURN t.text AS tweet_text, t.favorites AS favorites
 ORDER BY t.favorites DESC
@@ -2208,20 +2116,6 @@ reduce $interactions = count($u) groupby $u;
 sort $interactions desc;
 limit 5;
 fetch { ""user"": $u.screen_name, ""location"": $u.location };"
-212,List the top 5 tweets that include a link and were posted by users following 'Neo4j'.,"MATCH (u:User)-[:FOLLOWS]->(:Me {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)-[:CONTAINS]->(l:Link)
-RETURN t.text AS tweet_text, t.favorites AS favorites
-ORDER BY t.favorites DESC
-LIMIT 5","match
-$me isa me, has screen_name ""neo4j"";
-$u isa user;
-$t isa tweet, has favorites $f;
-$l isa link;
-follows (follower: $u, followed: $me);
-posts (author: $me, content: $t);
-contains (containing_tweet: $t, contained_link: $l);
-sort $f desc;
-limit 5;
-fetch { ""tweet_text"": $t.text, ""favorites"": $f };"
 213,What are the first 3 tweets posted by 'Neo4j' that include a source named 'Buffer'?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:USING]->(source:Source {name: 'Buffer'})
 RETURN tweet.text
 ORDER BY tweet.created_at
@@ -2301,18 +2195,6 @@ $ca < 2022-01-01T00:00:00;
 sort $ca asc;
 limit 3;
 fetch { ""text"": $t.text, ""created_at"": $ca };"
-219,List the top 5 users that 'Neo4j' retweeted and who have a following of more than 10000.,"MATCH (me:Me {screen_name: 'neo4j'})-[:AMPLIFIES]->(u:User)
-WHERE u.following > 10000
-RETURN u.screen_name, u.following
-ORDER BY u.following DESC
-LIMIT 5","match
-$me isa me, has screen_name ""neo4j"";
-$u isa user, has following $f;
-amplifies (amplifier: $me, amplified_user: $u);
-$f > 10000;
-sort $f desc;
-limit 5;
-fetch { ""screen_name"": $u.screen_name, ""following"": $f };"
 220,Which users have a profile image URL and follow 'Neo4j'? Show the first 3.,"MATCH (u:User)-[:FOLLOWS]->(:Me {screen_name: 'neo4j'})
 WHERE u.profile_image_url IS NOT NULL
 RETURN u.screen_name, u.profile_image_url
@@ -2926,16 +2808,6 @@ RETURN tweet, user","match
   $followers >= 5000;
   $tweet has text $text, has tweet_id $id;
 fetch { ""tweet_id"": $id, ""text"": $text, ""mentioned_user"": $usn, ""mentioned_name"": $uname };"
-281,Show the first 3 hashtags tagged in tweets that have been retweeted more than 100 times.,"MATCH (t:Tweet)-[:TAGS]->(h:Hashtag)
-WHERE t.favorites > 100
-RETURN h.name
-LIMIT 3","match
-  $t isa tweet, has favorites $favorites;
-  $favorites > 100;
-  tags (tagged_tweet: $t, tag: $h);
-  $h has hashtag_name $name;
-limit 3;
-fetch { ""name"": $name };"
 282,List the top 5 sources used in tweets posted by 'Neo4j'.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:USING]->(source:Source)
 RETURN source.name AS source, count(*) AS tweet_count
 ORDER BY tweet_count DESC
@@ -3460,19 +3332,6 @@ LIMIT 5","match
 sort $following desc;
 limit 5;
 fetch { ""screen_name"": $sn, ""name"": $name };"
-336,What are the top 3 hashtags associated with tweets that have been retweeted more than 50 times?,"MATCH (t:Tweet)-[:TAGS]->(h:Hashtag)
-WHERE t.favorites > 50
-RETURN h.name AS hashtag, count(*) AS count
-ORDER BY count DESC
-LIMIT 3","match
-  $t isa tweet, has favorites $favorites;
-  $favorites > 50;
-  tags (tagged_tweet: $t, tag: $h);
-  $h has hashtag_name $name;
-reduce $count = count($t), groupby $name;
-sort $count desc;
-limit 3;
-fetch { ""hashtag"": $name, ""count"": $count };"
 337,Which tweets have been replied to and have more than 50 favorites?,"MATCH (t:Tweet)-[:REPLY_TO]->(replied_to_tweet:Tweet)
 WHERE t.favorites > 50
 RETURN t, replied_to_tweet","match
@@ -4240,18 +4099,6 @@ reduce $count = count($retweetedTweet), groupby $name;
 sort $count desc;
 limit 5;
 fetch { ""hashtag"": $name, ""count"": $count };"
-414,Find all tweets from users who follow 'neo4j' and list the top 5.,"MATCH (u:User)-[:FOLLOWS]->(:Me {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)
-RETURN t.text, t.favorites
-ORDER BY t.favorites DESC
-LIMIT 5","match
-  $u isa user;
-  $me isa me, has screen_name ""neo4j"";
-  follows (follower: $u, followed: $me);
-  posts (author: $me, content: $t);
-  $t has text $text, has favorites $favorites;
-sort $favorites desc;
-limit 5;
-fetch { ""text"": $text, ""favorites"": $favorites };"
 415,Which users followed by 'neo4j' have a higher status count than 'neo4j'?,"MATCH (me:Me {screen_name: 'neo4j'})-[:FOLLOWS]->(u:User)
 WHERE u.statuses > me.statuses
 RETURN u.screen_name, u.statuses","match
@@ -4402,14 +4249,6 @@ RETURN u","match
   $me isa me, has screen_name ""neo4j"";
   mentions (source_tweet: $t, mentioned_user: $me);
 fetch { ""screen_name"": $sn, ""name"": $name };"
-429,Which tweets by 'neo4j' have been retweeted more than 50 times?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)
-WHERE tweet.favorites > 50
-RETURN tweet.text, tweet.favorites","match
-  $me isa me, has screen_name ""neo4j"";
-  posts (author: $me, content: $tweet);
-  $tweet has text $text, has favorites $favorites;
-  $favorites > 50;
-fetch { ""text"": $text, ""favorites"": $favorites };"
 430,List the first 3 users followed by 'neo4j' who have posted a tweet with more than 50 favorites.,"MATCH (me:Me {screen_name: 'neo4j'})-[:FOLLOWS]->(followed:User)-[:POSTS]->(tweet:Tweet)
 WHERE tweet.favorites > 50
 RETURN followed.screen_name, tweet.text, tweet.favorites
@@ -4438,14 +4277,6 @@ LIMIT 5","match
 sort $favorites desc;
 limit 5;
 fetch { ""text"": $text, ""favorites"": $favorites };"
-432,Find the first 3 users who have amplified tweets posted by 'neo4j'.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)<-[:AMPLIFIES]-(user:User)
-RETURN user.screen_name, user.name
-LIMIT 3","match
-  $me isa me, has screen_name ""neo4j"";
-  amplifies (amplifier: $me, amplified_user: $user);
-  $user has screen_name $sn, has name $name;
-limit 3;
-fetch { ""screen_name"": $sn, ""name"": $name };"
 433,What are the top 5 sources used in tweets that mention 'neo4j'?,"MATCH (t:Tweet)-[:MENTIONS]->(:User {screen_name: 'neo4j'}), 
       (t)-[:USING]->(s:Source)
 RETURN s.name AS source, count(*) AS tweet_count
@@ -4846,18 +4677,6 @@ reduce $count = count($retweetedTweet), groupby $name;
 sort $count desc;
 limit 3;
 fetch { ""hashtag"": $name, ""count"": $count };"
-468,List the top 3 tweets from 'Neo4j' that have been retweeted more than 100 times.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)
-WHERE tweet.favorites > 100
-RETURN tweet.text, tweet.favorites
-ORDER BY tweet.favorites DESC
-LIMIT 3","match
-  $me isa me, has screen_name ""neo4j"";
-  posts (author: $me, content: $tweet);
-  $tweet has text $text, has favorites $favorites;
-  $favorites > 100;
-sort $favorites desc;
-limit 3;
-fetch { ""text"": $text, ""favorites"": $favorites };"
 469,Which users have 'Neo4j' mentioned the most in tweets? List the top 3.,"MATCH (u:User)<-[:MENTIONS]-(t:Tweet)<-[:POSTS]-(:Me {name: 'Neo4j'})
 RETURN u.name AS user, count(t) AS mentions
 ORDER BY mentions DESC

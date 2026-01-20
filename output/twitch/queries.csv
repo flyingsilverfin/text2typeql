@@ -1095,17 +1095,6 @@ RETURN count(s)","match
   $s isa stream, has description $d;
   $d like ""%strategy%"";
 reduce $count = count($s);"
-123,Identify the streams that have the most moderators.,"MATCH (s:Stream)
-OPTIONAL MATCH (s)-[:MODERATOR]->(m:User)
-WITH s, count(m) AS moderatorCount
-RETURN s.name AS streamName, moderatorCount
-ORDER BY moderatorCount DESC
-LIMIT 10","match
-  $s isa stream, has name $sn;
-  moderation (moderated_channel: $s, moderating_user: $m);
-reduce $moderatorCount = count($m) groupby $sn;
-sort $moderatorCount desc;
-limit 10;"
 124,List the games played by streams with the lowest follower counts.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
 WHERE s.followers IS NOT NULL
 WITH g, min(s.followers) AS minFollowers
