@@ -28,20 +28,11 @@ WITH s, count(u) AS vipCount
 RETURN s.name AS streamName, vipCount
 ORDER BY vipCount DESC
 LIMIT 3",Schema mismatch: users do not have followers attribute in TypeQL schema
-187,Which 3 games are played by streams with the highest ratio of followers to total view counts?,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
-WITH g, s.followers * 1.0 / s.total_view_count AS follower_view_ratio
-RETURN g.name AS game, max(follower_view_ratio) AS max_ratio
-ORDER BY max_ratio DESC
-LIMIT 3",TypeQL does not support arithmetic division in expressions
 201,Identify the first 3 streams that have moderators with a follower count over 1000.,"MATCH (s:Stream)<-[:MODERATOR]-(m:User)
 WHERE m.followers > 1000
 RETURN s.name AS stream, m.name AS moderator
 ORDER BY s.createdAt
 LIMIT 3",Schema mismatch: users do not have followers attribute in TypeQL schema
-207,List the first 3 streams that have chatters who are also streams.,"MATCH (s:Stream)<-[:CHATTER]-(chatter:User)
-WHERE exists{ (chatter:Stream) }
-RETURN s.name AS stream, chatter.name AS chatter
-LIMIT 3","Query logic error: chatters are users, not streams - checking if User is also Stream is a type mismatch"
 218,"List the top 5 streams that have chatters with a total view count over 10,000.","MATCH (s:Stream)<-[:CHATTER]-(u:User)
 WHERE u.total_view_count > 10000
 RETURN s.name AS stream_name, s.total_view_count AS stream_views
@@ -52,9 +43,6 @@ WHERE u.followers < 3000
 RETURN s.name AS stream_name, s.url AS stream_url
 ORDER BY s.createdAt
 LIMIT 3",Schema mismatch: users do not have followers attribute in TypeQL schema
-227,Which streams are played by users with a name containing 'doduik' and have a total view count above 3000?,"MATCH (s:Stream)<-[:PLAYS]-(u:User)
-WHERE u.name CONTAINS 'doduik' AND s.total_view_count > 3000
-RETURN s","Cypher query error: PLAYS relationship is Stream->Game, not User->Stream"
 228,Identify the first 3 streams that have a language set to 'ru' and a moderator with a follower count above 5000.,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(:Language {name: 'ru'})
 MATCH (s)-[:MODERATOR]->(m:User)
 WHERE m.followers > 5000
@@ -190,17 +178,9 @@ WHERE s.createdAt < datetime() - duration('P5Y') AND s.followers > 100000
 RETURN s.name AS stream_name, s.createdAt AS created_at, s.followers AS follower_count
 ORDER BY s.createdAt
 LIMIT 5",TypeQL does not support datetime arithmetic with duration
-407,List the names of users who are VIPs in more than 3 streams.,"MATCH (u:User)-[:VIP]->(s:Stream)
-WITH u, count(s) AS vip_count
-WHERE vip_count > 3
-RETURN u.name",Cannot filter on reduce result in same query
 423,"List the streams that have VIP users with less than 10,000 followers.","MATCH (s:Stream)-[:VIP]->(u:User)
 WHERE u.followers < 10000
 RETURN s",Schema mismatch: users do not have followers attribute in TypeQL schema
-437,Show streams that feature more than 3 games.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
-WITH s, count(g) AS gameCount
-WHERE gameCount > 3
-RETURN s",Cannot filter on reduce result in same query
 438,Which users are VIPs for the stream with the highest follower count?,"MATCH (s:Stream)
 WITH s
 ORDER BY s.followers DESC
@@ -212,10 +192,6 @@ WHERE s.description IS NOT NULL
 RETURN s.name, s.description
 ORDER BY size(s.description) DESC
 LIMIT 3",TypeQL does not support size() function for strings
-459,Show the streams that have been moderated by a user more than once.,"MATCH (s:Stream)<-[:MODERATOR]-(u:User)
-WITH s, u, count(*) AS modCount
-WHERE modCount > 1
-RETURN s, u, modCount",Query semantics unclear - moderation relationship is binary and single instance per user-stream pair
 473,Which streams are part of a team with the most streams associated?,"MATCH (t:Team)<-[:HAS_TEAM]-(s:Stream)
 WITH t, count(s) AS stream_count
 ORDER BY stream_count DESC
@@ -233,11 +209,6 @@ MATCH (s:Stream)-[:HAS_TEAM]->(t)
 RETURN s.name AS stream, s.total_view_count AS views
 ORDER BY views DESC
 LIMIT 5",TypeQL does not support subqueries with intermediate aggregation and re-match
-526,Name the streams that are VIPs in the stream named 'itsbigchase'.,"MATCH (s:Stream)-[:VIP]->(stream:Stream {name: 'itsbigchase'})
-RETURN s.name AS stream_name",Schema mismatch: VIP relationship requires User as vip_user - streams cannot be VIPs
-533,List the streams that have the same game played by both itsbigchase and 9linda.,"MATCH (s1:Stream)<-[:CHATTER]-(u1:User {name: 'itsbigchase'})-[:PLAYS]->(g:Game)<-[:PLAYS]-(u2:User {name: '9linda'})-[:CHATTER]->(s2:Stream)
-WHERE s1 = s2
-RETURN s1","Cypher query semantically incorrect: PLAYS relationship is Stream->Game not User->Game"
 535,Name the top 3 users who are moderators in the stream with the highest follower count.,"MATCH (s:Stream)
 WITH s
 ORDER BY s.followers DESC

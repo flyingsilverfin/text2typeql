@@ -68,3 +68,19 @@ RETURN s.description","match
   chat_activity (chatting_channel: $s, chatting_user: $u);
   $s has description $d;
 fetch { ""description"": $d };",Wrong relation direction - question has 'streams that chatted with user' which is semantically backwards
+207,List the first 3 streams that have chatters who are also streams.,"MATCH (s:Stream)<-[:CHATTER]-(chatter:User)
+WHERE exists{ (chatter:Stream) }
+RETURN s.name AS stream, chatter.name AS chatter
+LIMIT 3",,"Query logic error: chatters are users, not streams - checking if User is also Stream is a type mismatch"
+227,Which streams are played by users with a name containing 'doduik' and have a total view count above 3000?,"MATCH (s:Stream)<-[:PLAYS]-(u:User)
+WHERE u.name CONTAINS 'doduik' AND s.total_view_count > 3000
+RETURN s",,"Cypher query error: PLAYS relationship is Stream->Game, not User->Stream"
+459,Show the streams that have been moderated by a user more than once.,"MATCH (s:Stream)<-[:MODERATOR]-(u:User)
+WITH s, u, count(*) AS modCount
+WHERE modCount > 1
+RETURN s, u, modCount",,Query semantics unclear - moderation relationship is binary and single instance per user-stream pair
+526,Name the streams that are VIPs in the stream named 'itsbigchase'.,"MATCH (s:Stream)-[:VIP]->(stream:Stream {name: 'itsbigchase'})
+RETURN s.name AS stream_name",,Schema mismatch: VIP relationship requires User as vip_user - streams cannot be VIPs
+533,List the streams that have the same game played by both itsbigchase and 9linda.,"MATCH (s1:Stream)<-[:CHATTER]-(u1:User {name: 'itsbigchase'})-[:PLAYS]->(g:Game)<-[:PLAYS]-(u2:User {name: '9linda'})-[:CHATTER]->(s2:Stream)
+WHERE s1 = s2
+RETURN s1",,Cypher query semantically incorrect: PLAYS relationship is Stream->Game not User->Game

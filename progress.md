@@ -10,13 +10,13 @@
 | Database | Converted | Failed | Failed Review | Total | % |
 |----------|-----------|--------|---------------|-------|---|
 | twitter | 493 | 0 | 0 | 493 | 100% |
-| twitch | 503 | 50 | 8 | 561 | 100% |
+| twitch | 506 | 42 | 13 | 561 | 100% |
 | recommendations | 555 | 73 | 125 | 753 | 100% |
 | movies | 18 | 1 | 0 | 729 | 3% |
-| neoflix | 0 | 0 | 0 | 915 | 0% |
+| neoflix | 885 | 30 | 0 | 915 | 100% |
 | companies | 0 | 0 | 0 | 933 | 0% |
 | gameofthrones | 0 | 0 | 0 | 392 | 0% |
-| **Total** | **1569** | **124** | **133** | **4776** | **38%** |
+| **Total** | **2457** | **146** | **138** | **4776** | **57%** |
 
 ### Completed Setup
 - [x] Project setup and structure

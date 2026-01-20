@@ -16,7 +16,6 @@ define
   attribute release_date value datetime;
   attribute movie_id value integer;
   attribute original_title value string;
-  attribute original_language_id value string;
   attribute language_id value string;
   attribute language_name value string;
   attribute country_id value string;
@@ -68,16 +67,16 @@ define
     owns release_date,
     owns movie_id @key,
     owns original_title,
-    plays original_language:content,
-    plays spoken_in_language:content,
-    plays produced_in_country:content,
-    plays in_genre:content,
-    plays produced_by:content,
-    plays has_keyword:content,
-    plays in_collection:content,
+    plays original_language:media,
+    plays spoken_in_language:media,
+    plays produced_in_country:media,
+    plays in_genre:media,
+    plays produced_by:media,
+    plays has_keyword:media,
+    plays in_collection:media,
     plays cast_for:film,
-    plays crew_for:production,
-    plays rated:item;
+    plays crew_for:film,
+    plays rated:rated_media;
 
   entity video,
     owns tagline,
@@ -96,15 +95,15 @@ define
     owns movie_id @key,
     owns runtime,
     owns homepage,
-    plays original_language:content,
-    plays spoken_in_language:content,
-    plays produced_in_country:content,
-    plays in_genre:content,
-    plays produced_by:content,
-    plays has_keyword:content,
-    plays in_collection:content,
-    plays crew_for:production,
-    plays rated:item;
+    plays original_language:media,
+    plays spoken_in_language:media,
+    plays produced_in_country:media,
+    plays in_genre:media,
+    plays produced_by:media,
+    plays has_keyword:media,
+    plays in_collection:media,
+    plays crew_for:film,
+    plays rated:rated_media;
 
   entity adult,
     owns average_vote,
@@ -123,29 +122,29 @@ define
     owns runtime,
     owns tagline,
     owns homepage,
-    plays original_language:content,
-    plays spoken_in_language:content,
-    plays produced_in_country:content,
-    plays in_genre:content,
-    plays produced_by:content,
-    plays has_keyword:content;
+    plays original_language:media,
+    plays spoken_in_language:media,
+    plays produced_in_country:media,
+    plays in_genre:media,
+    plays produced_by:media,
+    plays has_keyword:media;
 
   entity language,
     owns language_id @key,
     owns language_name,
-    plays original_language:lang,
-    plays spoken_in_language:lang;
+    plays original_language:language,
+    plays spoken_in_language:language;
 
   entity country,
     owns country_id @key,
     owns country_name,
-    plays produced_in_country:location;
+    plays produced_in_country:country;
 
   entity genre,
     owns genre_id @key,
     owns genre_name,
-    plays in_genre:category,
-    plays provides_access_to:category;
+    plays in_genre:genre,
+    plays provides_access_to:genre;
 
   entity production_company,
     owns production_company_id @key,
@@ -157,7 +156,7 @@ define
     owns collection_id @key,
     owns backdrop_path,
     owns poster_path,
-    plays in_collection:series;
+    plays in_collection:collection;
 
   entity person,
     owns gender,
@@ -174,49 +173,49 @@ define
   entity keyword,
     owns keyword_id @key,
     owns keyword_name,
-    plays has_keyword:tag;
+    plays has_keyword:keyword;
 
   entity package,
     owns package_price,
     owns package_duration,
     owns package_id @key,
     owns package_name,
-    plays provides_access_to:access_provider,
-    plays for_package:subscription_package;
+    plays provides_access_to:package,
+    plays for_package:package;
 
   entity subscription,
     owns expires_at,
     owns subscription_id @key,
-    plays for_package:subscriber;
+    plays for_package:subscription;
 
   # Relations
   relation original_language,
-    relates content,
-    relates lang;
+    relates media,
+    relates language;
 
   relation spoken_in_language,
-    relates content,
-    relates lang;
+    relates media,
+    relates language;
 
   relation produced_in_country,
-    relates content,
-    relates location;
+    relates media,
+    relates country;
 
   relation in_genre,
-    relates content,
-    relates category;
+    relates media,
+    relates genre;
 
   relation produced_by,
-    relates content,
+    relates media,
     relates producer;
 
   relation has_keyword,
-    relates content,
-    relates tag;
+    relates media,
+    relates keyword;
 
   relation in_collection,
-    relates content,
-    relates series;
+    relates media,
+    relates collection;
 
   relation cast_for,
     relates actor,
@@ -228,21 +227,21 @@ define
 
   relation crew_for,
     relates crew_member,
-    relates production,
+    relates film,
     owns credit_id,
     owns job,
     owns department;
 
   relation rated,
     relates reviewer,
-    relates item,
+    relates rated_media,
     owns timestamp,
     owns rating;
 
   relation provides_access_to,
-    relates access_provider,
-    relates category;
+    relates package,
+    relates genre;
 
   relation for_package,
-    relates subscriber,
-    relates subscription_package;
+    relates subscription,
+    relates package;

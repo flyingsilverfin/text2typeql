@@ -1,0 +1,484 @@
+original_index,question,cypher,error
+80,List all movies that have a backdrop path available.,"MATCH (m:Movie)
+WHERE m.backdrop_path IS NOT NULL
+RETURN m.title","
+[INF11] Type-inference was unable to find compatible types for the pair of variables 'm' & 'backdrop_path' across a 'has' constraint. Types were:
+- m: [movie]
+- backdrop_path: [backdrop_path]
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query.
+Near 3:6
+-----
+    match
+      $m isa movie;
+-->   $m has backdrop_path $backdrop_path;
+         ^
+      $m has title $title;
+    fetch {
+-----"
+110,What are the top 5 movies with the most user ratings?,"MATCH (m:Movie)<-[r:RATED]-(:User)
+RETURN m.title, count(r) AS num_ratings
+ORDER BY num_ratings DESC
+LIMIT 5","
+[REP19] The variable 'r' was not available for use in the reduce.
+Caused: [QEX7] Error in provided query.
+Near 4:23
+-----
+      $m isa movie;
+      $m has title $title;
+--> reduce $count = count($r);
+                          ^
+-----"
+225,What are the first 5 movies that have a genre change from their original genre in a collection?,"MATCH (m:Movie)-[:IN_COLLECTION]->(c:Collection)
+WHERE EXISTS {
+  (m)-[:IN_GENRE]->(g1:Genre)
+  WHERE NOT EXISTS {
+    (c)-[:IN_GENRE]->(g2:Genre)
+    WHERE g1.name = g2.name
+  }
+}
+RETURN m.title, c.name
+LIMIT 5","
+[INF11] Type-inference was unable to find compatible types for the pair of variables 'c' & '_anonymous' across a 'links' constraint. Types were:
+- c: [collection]
+- _anonymous: [original_language:media, spoken_in_language:media, produced_in_country:media, in_genre:media, produced_by:media, has_keyword:media, in_collection:media]
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query.
+Near 8:10
+-----
+      $rel0 (media: $m, collection: $c) isa in_collection;
+      $rel1 (media: $m, genre: $g1) isa in_genre;
+-->   $rel2 (media: $c, genre: $g2) isa in_genre;
+             ^
+      $m has title $title_m;
+      $c has collection_name $collection_name_c;
+-----"
+228,List the first 3 movies with a backdrop path that includes '/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg'.,"MATCH (m:Movie)
+WHERE m.backdrop_path IS NOT NULL AND m.backdrop_path CONTAINS '/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg'
+RETURN m.title
+LIMIT 3","
+[INF11] Type-inference was unable to find compatible types for the pair of variables 'm' & 'backdrop_path' across a 'has' constraint. Types were:
+- m: [movie]
+- backdrop_path: [backdrop_path]
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query.
+Near 3:6
+-----
+    match
+      $m isa movie;
+-->   $m has backdrop_path $backdrop_path;
+         ^
+      $m has title $title;
+      $backdrop_path like "".*/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg.*"";
+-----"
+312,Which 3 videos have the most associated cast members?,"MATCH (v:Video)<-[:CAST_FOR]-(p:Person)
+RETURN v.title AS video, count(p) AS cast_members
+ORDER BY cast_members DESC
+LIMIT 3","
+[INF6] Type-inference derived an empty-set for some variable
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query."
+362,Name the top 5 movies that have been produced in more than 3 countries.,"MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(c:Country)
+WITH m, count(c) AS countryCount
+WHERE countryCount > 3
+RETURN m.title
+ORDER BY m.popularity DESC
+LIMIT 5","
+[REP18] The variable 'popularity_m' was not available in the stage.
+Caused: [QEX7] Error in provided query.
+Near 8:6
+-----
+      $m has popularity $popularity_m;
+    reduce $count = count($c);
+--> sort $popularity_m desc;
+         ^
+    limit 5;
+    fetch {
+-----"
+411,Name the top 3 directors who have worked on movies with an average vote greater than 7.5.,"MATCH (p:Person)-[:CREW_FOR {job: 'Director'}]->(m:Movie)
+WHERE m.average_vote > 7.5
+WITH p, count(m) AS num_movies, avg(m.average_vote) AS avg_rating
+ORDER BY avg_rating DESC
+LIMIT 3
+RETURN p.name AS director, num_movies, avg_rating","
+[REP18] The variable 'avg' was not available in the stage.
+Caused: [QEX7] Error in provided query.
+Near 9:6
+-----
+      $average_vote_m > 7.5;
+    reduce $count = count($m);
+--> sort $avg desc;
+         ^
+    limit 3;
+    fetch {
+-----"
+457,Name the first 5 movies that have been rated by at least 50 users.,"MATCH (m:Movie)<-[r:RATED]-(:User)
+WITH m, count(r) AS num_ratings
+WHERE num_ratings >= 50
+RETURN m.title
+ORDER BY num_ratings DESC
+LIMIT 5","
+[REP19] The variable 'r' was not available for use in the reduce.
+Caused: [QEX7] Error in provided query.
+Near 4:23
+-----
+      $m isa movie;
+      $m has title $title;
+--> reduce $count = count($r);
+                          ^
+    limit 5;
+    fetch {
+-----"
+504,Which movies have been produced in the 'United States of America' and have an adult rating?,"MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(:Country {name: 'United States of America'})
+WHERE exists {(u:User)-[:RATED]->(a:Adult)<-[:RATED]-(u)-[:RATED]->(m)} 
+RETURN m.title","
+[INF11] Type-inference was unable to find compatible types for the pair of variables 'a' & '_anonymous' across a 'links' constraint. Types were:
+- a: [adult]
+- _anonymous: [rated:rated_media]
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query.
+Near 5:24
+-----
+      $u isa user;
+      $a isa adult;
+-->   $rel0 (reviewer: $u, rated_media: $a) isa rated;
+                           ^
+      $rel1 (reviewer: $u, rated_media: $m) isa rated;
+      $rel2 (reviewer: $a, reviewer: $u) isa rated;
+-----"
+511,Which movies have been most frequently rated by users?,"MATCH (m:Movie)<-[r:RATED]-(:User)
+RETURN m.title AS movie, count(r) AS num_ratings
+ORDER BY num_ratings DESC
+LIMIT 10","
+[REP19] The variable 'r' was not available for use in the reduce.
+Caused: [QEX7] Error in provided query.
+Near 4:23
+-----
+      $m isa movie;
+      $m has title $title;
+--> reduce $count = count($r);
+                          ^
+-----"
+527,Which movies have a runtime longer than the average runtime of all movies?,"MATCH (m:Movie)
+WITH m, avg(m.runtime) AS avg_runtime
+WHERE m.runtime > avg_runtime
+RETURN m.title, m.runtime
+ORDER BY m.runtime DESC","
+[REP18] The variable 'runtime' was not available in the stage.
+Caused: [QEX7] Error in provided query.
+Near 6:6
+-----
+      $m has title $title;
+    reduce $avg = mean($runtime);
+--> sort $runtime desc;
+         ^
+    fetch {
+      ""avg"": $avg
+-----"
+594,List the first 3 users who rated the adult film titled 'Standoff'.,"MATCH (u:User)-[:RATED]->(a:Adult {title: 'Standoff'})
+RETURN u
+LIMIT 3","
+[INF11] Type-inference was unable to find compatible types for the pair of variables 'a' & '_anonymous' across a 'links' constraint. Types were:
+- a: [adult]
+- _anonymous: [rated:rated_media]
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query.
+Near 4:24
+-----
+      $u isa user;
+      $a isa adult, has title 'Standoff';
+-->   $rel0 (reviewer: $u, rated_media: $a) isa rated;
+                           ^
+    limit 3;
+-----"
+607,"Which 3 production companies are associated with the most number of genres across movies, videos, and adult films?","MATCH (c:ProductionCompany)-[:PRODUCED_BY]-(m)
+WHERE m:Movie OR m:Video OR m:Adult
+WITH c, count(distinct m) AS num_genres
+RETURN c.name AS company, num_genres
+ORDER BY num_genres DESC
+LIMIT 3","
+[REP19] The variable 'm' was not available for use in the reduce.
+Caused: [QEX7] Error in provided query.
+Near 4:23
+-----
+      $c isa production_company;
+      $c has production_company_name $production_company_name;
+--> reduce $count = count($m);
+                          ^
+    limit 3;
+    fetch {
+-----"
+622,Which 3 people have acted in the most number of videos?,"MATCH (p:Person)-[:CAST_FOR]->(v:Video)
+WITH p, count(v) AS videoCount
+ORDER BY videoCount DESC
+LIMIT 3
+RETURN p.name AS person, videoCount","
+[INF6] Type-inference derived an empty-set for some variable
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query."
+666,Which 3 adult films have been rated by the most users?,"MATCH (a:Adult)<-[r:RATED]-(u:User)
+RETURN a.title, count(r) AS num_ratings
+ORDER BY num_ratings DESC
+LIMIT 3","
+[INF11] Type-inference was unable to find compatible types for the pair of variables 'a' & '_anonymous' across a 'links' constraint. Types were:
+- a: [adult]
+- _anonymous: [rated:reviewer]
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query.
+Near 4:7
+-----
+      $a isa adult;
+      $u isa user;
+-->   $r (reviewer: $a, reviewer: $u) isa rated;
+          ^
+      $a has title $title_a;
+    reduce $count = count($r);
+-----"
+742,List the top 3 adult films that have been rated exactly 3 times.,"MATCH (a:Adult)<-[r:RATED]-(u:User)
+WITH a, count(r) AS ratingCount
+WHERE ratingCount = 3
+RETURN a.title AS title, a.release_date AS releaseDate
+ORDER BY a.popularity DESC
+LIMIT 3","
+[REP18] The variable 'popularity_a' was not available in the stage.
+Caused: [QEX7] Error in provided query.
+Near 9:6
+-----
+      $a has popularity $popularity_a;
+    reduce $count = count($r);
+--> sort $popularity_a desc;
+         ^
+    limit 3;
+    fetch {
+-----"
+774,List the first 3 movies that have been rated by the highest number of users.,"MATCH (m:Movie)<-[r:RATED]-(:User)
+WITH m, count(r) AS numRatings
+ORDER BY numRatings DESC
+LIMIT 3
+RETURN m.title AS movie, numRatings","
+[REP19] The variable 'r' was not available for use in the reduce.
+Caused: [QEX7] Error in provided query.
+Near 4:23
+-----
+      $m isa movie;
+      $m has title $title;
+--> reduce $count = count($r);
+                          ^
+    limit 3;
+    fetch {
+-----"
+777,Which 3 languages are most commonly found in movies with a poster path featuring '/9'?,"MATCH (m:Movie)
+WHERE m.poster_path CONTAINS '/9'
+WITH m
+MATCH (m)-[:SPOKEN_IN_LANGUAGE]->(l:Language)
+RETURN l.name AS language, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","
+[REP18] The variable 'count' was not available in the stage.
+Caused: [QEX7] Error in provided query.
+Near 8:6
+-----
+      $l has language_name $language_name_l;
+      $poster_path_m like "".*/9.*"";
+--> sort $count desc;
+         ^
+    limit 3;
+-----"
+787,Who are the first 3 actors by number of roles in adult films?,"MATCH (p:Person)-[:CAST_FOR]->(a:Adult)
+WITH p, count(a) AS roles
+ORDER BY roles DESC
+LIMIT 3
+RETURN p.name AS actor, roles","
+[INF11] Type-inference was unable to find compatible types for the pair of variables 'a' & '_anonymous' across a 'links' constraint. Types were:
+- a: [adult]
+- _anonymous: [cast_for:film, crew_for:film]
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query.
+Near 4:21
+-----
+      $p isa person;
+      $a isa adult;
+-->   $rel0 (actor: $p, film: $a) isa cast_for;
+                        ^
+      $p has person_name $person_name_p;
+    reduce $count = count($a);
+-----"
+809,Who are the first 3 actors by number of roles in videos with a status of 'Released'?,"MATCH (p:Person)-[:CAST_FOR]->(v:Video {status: 'Released'})
+RETURN p.name AS actor, count(*) AS num_roles
+ORDER BY num_roles DESC
+LIMIT 3","
+[INF6] Type-inference derived an empty-set for some variable
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query."
+826,Which 3 languages are spoken in the most films with a poster featuring '/rh'?,"MATCH (m:Movie)
+WHERE m.poster_path CONTAINS '/rh'
+WITH m
+MATCH (m)-[:SPOKEN_IN_LANGUAGE]->(l:Language)
+RETURN l.name AS language, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","
+[REP18] The variable 'count' was not available in the stage.
+Caused: [QEX7] Error in provided query.
+Near 8:6
+-----
+      $l has language_name $language_name_l;
+      $poster_path_m like "".*/rh.*"";
+--> sort $count desc;
+         ^
+    limit 3;
+-----"
+833,Who are the first 3 actors with the most roles in videos released after 2010?,"MATCH (p:Person)-[:CAST_FOR]->(v:Video)
+WHERE v.release_date > date('2010-01-01')
+WITH p, count(v) AS roles
+ORDER BY roles DESC
+LIMIT 3
+RETURN p.name AS actor, roles","
+[INF6] Type-inference derived an empty-set for some variable
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query."
+843,Who are the first 3 directors with movies in at least three different genres?,"MATCH (p:Person)-[:CREW_FOR {job: 'Director'}]->(m:Movie)
+WITH p, count(distinct m.id) AS num_movies, collect(distinct m.id) AS movie_ids
+WHERE num_movies >= 3
+WITH p, num_movies, movie_ids
+UNWIND movie_ids AS movie_id
+MATCH (m:Movie {id: movie_id})-[:IN_GENRE]->(g:Genre)
+WITH p, num_movies, collect(distinct g.name) AS genres
+WHERE size(genres) >= 3
+RETURN p.name AS director, num_movies, genres
+ORDER BY num_movies DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected comparator, expression_base, or var
+Near 3:29:
+    match
+      $p isa person;
+-->   $m isa movie, has movie_id movie_id;
+                                 ^
+      $g isa genre;
+      $rel0 (crew_member: $p, film: $m) isa crew_for;
+      $rel1 (media: $m, genre: $g) isa in_genre;
+      $p has person_name $person_name_p;
+      $m has movie_id $movie_id_m;
+    limit 3;
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+848,List the first 3 movies with the highest number of directors.,"MATCH (m:Movie)<-[:CREW_FOR]-(p:Person)
+WHERE p.job = 'Director'
+WITH m, count(p) AS num_directors
+ORDER BY num_directors DESC
+RETURN m.title AS movie, num_directors
+LIMIT 3","
+[REP18] The variable 'title_m' was not available in the stage.
+Caused: [QEX7] Error in provided query.
+Near 9:6
+-----
+      $job_p == ""Director"";
+    reduce $count = count($p);
+--> sort $title_m asc;
+         ^
+    limit 3;
+    fetch {
+-----"
+853,List the first 3 actors who have appeared in at least three movies with different original languages.,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
+WITH p, count(DISTINCT m.original_language) AS num_languages
+WHERE num_languages >= 3
+RETURN p.name
+LIMIT 3","
+[INF11] Type-inference was unable to find compatible types for the pair of variables 'm' & 'original_language_m' across a 'has' constraint. Types were:
+- m: [movie]
+- original_language_m: [original_language]
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query.
+Near 6:6
+-----
+      $rel0 (actor: $p, film: $m) isa cast_for;
+      $p has person_name $person_name_p;
+-->   $m has original_language $original_language_m;
+         ^
+    limit 3;
+-----"
+854,What are the top 5 genres with the most movies having a poster path that starts with '/rh'?,"MATCH (g:Genre)<-[:IN_GENRE]-(m:Movie)
+WHERE m.poster_path STARTS WITH '/rh'
+RETURN g.name AS genre, count(m) AS movie_count
+ORDER BY movie_count DESC
+LIMIT 5","
+[REP18] The variable 'count' was not available in the stage.
+Caused: [QEX7] Error in provided query.
+Near 7:6
+-----
+      $g has genre_name $genre_name_g;
+      $m has poster_path $poster_path_m;
+--> sort $count desc;
+         ^
+    limit 5;
+-----"
+855,Who are the first 3 directors to have made both adult films and videos?,"MATCH (p:Person)-[:CREW_FOR]->(a:Adult), (p)-[:CREW_FOR]->(v:Video)
+WHERE a.id IS NOT NULL AND v.id IS NOT NULL
+WITH p, count(DISTINCT a) AS numAdult, count(DISTINCT v) AS numVideo
+WHERE numAdult > 0 AND numVideo > 0
+RETURN p.name
+LIMIT 3","
+[INF11] Type-inference was unable to find compatible types for the pair of variables 'a' & '_anonymous' across a 'links' constraint. Types were:
+- a: [adult]
+- _anonymous: [cast_for:film, crew_for:film]
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query.
+Near 5:27
+-----
+      $a isa adult;
+      $v isa video;
+-->   $rel0 (crew_member: $p, film: $a) isa crew_for;
+                              ^
+      $rel1 (crew_member: $p, film: $v) isa crew_for;
+      $p has person_name $person_name_p;
+-----"
+879,What are the top 3 actors who have played in the most number of adult films?,"MATCH (p:Person)-[:CAST_FOR]->(a:Adult)
+WITH p, count(a) AS num_adult_films
+ORDER BY num_adult_films DESC
+LIMIT 3
+RETURN p.name AS actor, num_adult_films","
+[INF11] Type-inference was unable to find compatible types for the pair of variables 'a' & '_anonymous' across a 'links' constraint. Types were:
+- a: [adult]
+- _anonymous: [cast_for:film, crew_for:film]
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query.
+Near 4:21
+-----
+      $p isa person;
+      $a isa adult;
+-->   $rel0 (actor: $p, film: $a) isa cast_for;
+                        ^
+      $p has person_name $person_name_p;
+    reduce $count = count($a);
+-----"
+897,List the top 3 actors who have appeared in both movies and videos.,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
+WITH p, count(m) AS numMovies
+WHERE numMovies > 0
+MATCH (p)-[:CAST_FOR]->(v:Video) 
+WITH p, numMovies, count(v) AS numVideos
+WHERE numVideos > 0
+RETURN p.name AS actor, numMovies, numVideos
+ORDER BY numMovies + numVideos DESC
+LIMIT 3","
+[INF6] Type-inference derived an empty-set for some variable
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query."
+902,"List the top 5 movies with the most diverse cast, measured by the number of different countries actors come from.","MATCH (m:Movie)<-[:CAST_FOR]-(p:Person)
+WITH m, size(collect(distinct p.country)) AS num_countries
+ORDER BY num_countries DESC
+LIMIT 5
+RETURN m.title AS movie, num_countries AS number_of_countries","
+[INF11] Type-inference was unable to find compatible types for the pair of variables 'p' & 'country_p' across a 'has' constraint. Types were:
+- p: [person]
+- country_p: [country]
+Caused: [QUA1] Type inference error while compiling query annotations.
+Caused: [QEX8] Error analysing query.
+Near 6:6
+-----
+      $rel0 (film: $m, actor: $p) isa cast_for;
+      $m has title $title_m;
+-->   $p has country $country_p;
+         ^
+    limit 5;
+    fetch {
+-----"
