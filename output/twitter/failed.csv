@@ -19,3 +19,46 @@ RETURN u.screen_name AS user,
        toFloat(u.following) / u.followers AS followingToFollowerRatio
 ORDER BY followingToFollowerRatio DESC
 LIMIT 10","TypeDB 3.0 does not support arithmetic division for computed sort values"
+49,What are the 3 most common hashtags in tweets that have been retweeted more than 100 times?,"MATCH (t:Tweet)-[:TAGS]->(h:Hashtag)
+WHERE t.favorites > 100
+RETURN h.name AS hashtag, count(*) AS count
+ORDER BY count DESC
+LIMIT 3",Cannot filter on reduce result in same query - TypeQL 3.0 does not support HAVING equivalent to filter tweets by retweet count > 100
+81,"List the top 5 tweets by the total interaction (mentions, retweets, replies).","MATCH (t:Tweet)
+OPTIONAL MATCH (t)<-[:MENTIONS]-(mention)
+OPTIONAL MATCH (t)<-[:RETWEETS]-(retweet) 
+OPTIONAL MATCH (t)<-[:REPLY_TO]-(reply)
+RETURN t.text AS tweet, 
+       count(mention) AS mentions,
+       count(retweet) AS retweets, 
+       count(reply) AS replies,
+       (count(mention) + count(retweet) + count(reply)) AS totalInteractions
+ORDER BY totalInteractions DESC
+LIMIT 5",TypeDB 3.0 does not support arithmetic addition of multiple aggregation results for sorting
+85,Which 3 tweets have the highest aggregation of favorites and retweets?,"MATCH (t:Tweet)
+OPTIONAL MATCH (t)-[:RETWEETS]->(r:Tweet)
+RETURN t, t.favorites + count(r) AS score
+ORDER BY score DESC
+LIMIT 3",TypeDB 3.0 does not support arithmetic addition of attribute value and aggregation result
+170,Find the first 3 tweets that have been retweeted more than 100 times.,"MATCH (t:Tweet)
+WHERE t.favorites > 100
+RETURN t
+ORDER BY t.favorites DESC
+LIMIT 3",Cannot filter on reduce result in same query - TypeQL 3.0 does not support HAVING equivalent to filter tweets by retweet count > 100
+281,Show the first 3 hashtags tagged in tweets that have been retweeted more than 100 times.,"MATCH (t:Tweet)-[:TAGS]->(h:Hashtag)
+WHERE t.favorites > 100
+RETURN h.name
+LIMIT 3",Cannot filter on reduce result in same query - TypeQL 3.0 does not support HAVING equivalent to filter tweets by retweet count > 100
+336,What are the top 3 hashtags associated with tweets that have been retweeted more than 50 times?,"MATCH (t:Tweet)-[:TAGS]->(h:Hashtag)
+WHERE t.favorites > 50
+RETURN h.name AS hashtag, count(*) AS count
+ORDER BY count DESC
+LIMIT 3",Cannot filter on reduce result in same query - TypeQL 3.0 does not support HAVING equivalent to filter tweets by retweet count > 50
+429,Which tweets by 'neo4j' have been retweeted more than 50 times?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)
+WHERE tweet.favorites > 50
+RETURN tweet.text, tweet.favorites",Cannot filter on reduce result in same query - TypeQL 3.0 does not support HAVING equivalent to filter tweets by retweet count > 50
+468,List the top 3 tweets from 'Neo4j' that have been retweeted more than 100 times.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)
+WHERE tweet.favorites > 100
+RETURN tweet.text, tweet.favorites
+ORDER BY tweet.favorites DESC
+LIMIT 3",Cannot filter on reduce result in same query - TypeQL 3.0 does not support HAVING equivalent to filter tweets by retweet count > 100

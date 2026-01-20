@@ -117,20 +117,49 @@ TypeDB databases are prefixed: `text2typeql_<database>`
 - `text2typeql_recommendations`
 - `text2typeql_companies`
 
+## Semantic Review Process
+
+After conversion, review queries to verify TypeQL matches the English question:
+
+### Review Checklist
+1. **Correct entity returned** - Does the question ask for users/tweets/movies? Does query return that?
+2. **Relation direction** - "has been retweeted" (passive) vs "retweets" (active)
+3. **All conditions present** - "X AND Y" must have both constraints
+4. **Correct property** - "retweeted 100 times" should count retweets, not check favorites
+5. **OPTIONAL MATCH** - Must use `try { }` for left-join semantics
+
+### Key Files for Review
+- **Full guidance**: `docs/semantic_review_notes.md`
+- **Move helper**: `python3 scripts/review_helper.py <database> <index1> [index2...] --reason "reason"`
+
+### Common Semantic Mismatches
+| Question Pattern | Common Mistake | Correct Approach |
+|------------------|----------------|------------------|
+| "retweeted X times" | Using `favorites` property | Count `retweets` relation |
+| "tweets that have been retweeted" | Tweet as `retweeting_tweet` | Tweet as `original_tweet` |
+| "users who amplified" | Wrong direction | Check `amplifier` vs `amplified_user` roles |
+| "tweets from followers" | Tweets by Me | Tweets by users who follow Me |
+| OPTIONAL MATCH | Require relation | Use `try { relation; }` |
+
 ## File Structure
 
 ```
 output/<database>/
-  schema.tql        # TypeQL schema
-  neo4j_schema.json # Original Neo4j schema
-  queries.csv       # Successful conversions (original_index,question,cypher,typeql)
-  failed.csv        # Failed after 3 attempts (original_index,question,cypher,error)
+  schema.tql          # TypeQL schema
+  neo4j_schema.json   # Original Neo4j schema
+  queries.csv         # Successful conversions (original_index,question,cypher,typeql)
+  failed.csv          # Failed - TypeDB limitations (original_index,question,cypher,error)
+  failed_review.csv   # Failed semantic review (original_index,question,cypher,typeql,review_reason)
 
 scripts/
-  get_query.py      # Get query by database and index
+  get_query.py        # Get query by database and index
+  review_helper.py    # Move queries during review
+
+docs/
+  semantic_review_notes.md  # Full review guidance
 
 .claude/skills/
-  convert-query.md  # Skill for single query conversion
+  convert-query.md    # Skill with TypeQL 3.0 reference (comprehensive)
 ```
 
 ## Query Counts by Database
