@@ -1,0 +1,5 @@
+original_index,question,cypher,error
+10,Which people have directed more than one movie?,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)
+WITH p, count(m) AS num_directed
+WHERE num_directed > 1
+RETURN p.name AS director, num_directed AS movies_directed",TypeQL 3.0 does not support HAVING-like filtering after aggregation (WHERE after WITH count)

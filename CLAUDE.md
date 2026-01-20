@@ -1,20 +1,27 @@
 # Text2TypeQL - Project Notes
 
+## Important: First Steps
+
+Always read the following files when starting a session:
+- `README.md` - Project overview and setup instructions
+- `progress.md` - Current progress and next steps (if it exists)
+- `plan.md` - Implementation plan (if it exists)
+
 ## Project Overview
 
 Pipeline to convert Neo4j text2cypher datasets to TypeQL format for training text-to-TypeQL models.
 
 **Source**: https://github.com/neo4j-labs/text2cypher (datasets/synthetic_opus_demodbs/)
 
+## Available Skills
+
+Use this skill for query conversion (requires TypeDB server running):
+
+- `/convert-query <database> <index>` - Convert a single Cypher query to TypeQL with validation, writes directly to CSV
+
 ## Quick Start
 
 ```bash
-# Activate virtual environment
-source venv/bin/activate
-
-# Set API key
-export ANTHROPIC_API_KEY=your_key
-
 # Start TypeDB server (must be running for validation)
 typedb server --development-mode.enabled=true
 
@@ -22,178 +29,119 @@ typedb server --development-mode.enabled=true
 python main.py setup                      # Clone Neo4j dataset
 python main.py list-schemas               # List available schemas
 python main.py convert-schema movies      # Convert schema
-python main.py convert-queries movies --limit 10  # Convert queries
+
+# Use skill for query conversion (agent-based, no API costs)
+/convert-query movies 0
 ```
 
-## TypeDB 3.x Reference
+## Agent-Based Query Conversion
 
-### Connection (Python Driver)
+The primary method for query conversion uses Claude Code subagents directly (no API costs):
 
-```python
-from typedb.driver import TypeDB, Credentials, DriverOptions, TransactionType
+1. **Get query**: `python3 scripts/get_query.py <database> <index>`
+2. **Load schema**: `output/<database>/schema.tql`
+3. **Convert** using TypeDB 3.0 syntax
+4. **Validate** against TypeDB (`text2typeql_<database>`)
+5. **Write** to `queries.csv` (success) or `failed.csv` (after 3 attempts)
 
-# Connect
-credentials = Credentials(username, password)
-options = DriverOptions(is_tls_enabled=False)
-driver = TypeDB.driver("localhost:1729", credentials, options)
-
-# Create database
-driver.databases.create("my_database")
-
-# Schema transaction
-with driver.transaction("my_database", TransactionType.SCHEMA) as tx:
-    tx.query("define ...").resolve()
-    tx.commit()
-
-# Read transaction
-with driver.transaction("my_database", TransactionType.READ) as tx:
-    result = tx.query("match ... fetch ...").resolve()
-    for doc in result.as_concept_documents():
-        print(doc)
-
-# Write transaction
-with driver.transaction("my_database", TransactionType.WRITE) as tx:
-    tx.query("insert ...").resolve()
-    tx.commit()
-
-# Delete database
-driver.databases.get("my_database").delete()
+To spawn parallel conversion agents:
+```
+Use Task tool with subagent_type=general-purpose
 ```
 
-### TypeQL Schema Syntax
+## TypeDB 3.0 Query Syntax
+
+### Key Rules
+
+1. **Query order**: `match` → `sort` → `limit` → `fetch` (or `reduce`)
+2. **Relations**: `relation_type (role: $var, role: $var);` (NOT `(role: $var) isa type`)
+3. **Fetch directly**: `fetch { "prop": $entity.prop };` - no need to bind
+4. **Double quotes** for strings
+5. **Grouped counts**: `reduce $count = count($var) groupby $group_var;`
+
+### Pattern Examples
 
 ```typeql
-define
-  # Attributes (with value types: string, integer, double, boolean, datetime)
-  attribute name value string;
-  attribute age value integer;
-  attribute score value double;
-  attribute active value boolean;
+# Entity with attribute
+$p isa person, has name "John";
 
-  # Entity with attributes and roles
-  entity person,
-    owns name @key,        # @key = unique identifier
-    owns age,
-    plays friendship:friend,
-    plays employment:employee;
+# Relation (TypeDB 3.0 style - preferred)
+follows (follower: $a, followed: $b);
 
-  # Entity subtyping
-  entity actor sub person,
-    plays acted_in:actor;
+# Relation with variable (when accessing relation attributes)
+$rel isa follows (follower: $a, followed: $b);
+$rel has timestamp $t;
 
-  # Relation with roles
-  relation friendship,
-    relates friend;        # Both participants play same role
+# Fetch directly from entity (preferred)
+fetch { "name": $p.name, "age": $p.age };
 
-  relation employment,
-    relates employee,
-    relates employer;
+# Bind only when filtering/sorting
+$p has age $a; $a > 25;
+sort $a desc;
+fetch { "age": $a };
 
-  relation acted_in,
-    relates actor,
-    relates film,
-    owns role_name;        # Relations can own attributes
-```
-
-### TypeQL Annotations
-
-| Annotation | Purpose | Example |
-|------------|---------|---------|
-| `@key` | Unique identifier | `owns email @key` |
-| `@unique` | Unique but optional | `owns ssn @unique` |
-| `@card(min, max)` | Cardinality constraint | `owns phone @card(0, 3)` |
-| `@abstract` | Abstract type | `entity person @abstract` |
-| `@values(...)` | Allowed values | `@values("A", "B", "C")` |
-| `@range(min, max)` | Value range | `@range(0, 100)` |
-
-### TypeQL Query Syntax
-
-```typeql
-# Simple match + fetch
-match $p isa person, has name "Alice", has age $a;
-fetch { "name": "Alice", "age": $a };
-
-# Fetch specific attributes
-match $p isa person, has name $n, has age $a;
-fetch { "name": $n, "age": $a };
-
-# Relation traversal
-match
-  $p isa person, has name $n;
-  (actor: $p, film: $m) isa acted_in;
-  $m has title $t;
-fetch { "actor": $n, "movie": $t };
-
-# Filtering with comparison
-match $m isa movie, has released $r, has title $t; $r > 2000;
-fetch { "title": $t, "released": $r };
+# Multi-cardinality attributes
+fetch { "emails": [ $p.email ] };
 
 # Negation
-match
-  $p isa person, has name $n;
-  not { (actor: $p) isa acted_in; };
-fetch { "non_actor": $n };
+not { follows (follower: $p, followed: $other); };
 
-# Aggregation
-match $m isa movie;
-reduce $count = count($m);
-
-# Sorting and limiting
-match $p isa person, has age $a, has name $n;
-sort $a desc;
-limit 10;
-fetch { "name": $n, "age": $a };
+# Grouped aggregation
+match $p isa person; acted_in (actor: $p, film: $m);
+reduce $count = count($m) groupby $p;
+sort $count desc;
+limit 5;
 ```
 
-### Cypher to TypeQL Pattern Mapping
+### Cypher → TypeQL Mapping
 
-| Cypher | TypeQL |
-|--------|--------|
-| `MATCH (n:Label)` | `match $n isa label` |
-| `MATCH (n {prop: 'val'})` | `match $n isa type, has prop 'val'` |
-| `MATCH (a)-[:REL]->(b)` | `match (role1: $a, role2: $b) isa rel` |
-| `RETURN n.prop` | `fetch { "prop": $n.prop }` |
-| `RETURN n` | `fetch { "attr1": $n.attr1, "attr2": $n.attr2 }` (list attributes explicitly) |
-| `WHERE n.prop > 5` | `$n has prop $p; $p > 5;` |
-| `COUNT(n)` | `reduce $count = count($n)` |
-| `ORDER BY n.prop` | `sort $p asc;` |
+| Cypher | TypeQL 3.0 |
+|--------|------------|
+| `MATCH (n:Label)` | `match $n isa label;` |
+| `MATCH (a)-[:REL]->(b)` | `match rel (role1: $a, role2: $b);` |
+| `RETURN n.prop` | `fetch { "prop": $n.prop };` |
+| `WHERE n.prop > 5` | `has prop $p; $p > 5;` |
+| `WHERE n.prop CONTAINS 'x'` | `has prop $p; $p like "%x%";` |
+| `ORDER BY n.prop DESC` | `has prop $p; sort $p desc;` |
 | `LIMIT 10` | `limit 10;` |
+| `COUNT(n)` | `reduce $count = count($n);` |
+| `WITH n, count(m) AS c` | `reduce $c = count($m) groupby $n;` |
 
-### Reserved Keywords (avoid as type names)
+## Database Names
 
-`in`, `or`, `and`, `not`, `match`, `define`, `insert`, `delete`, `fetch`
+TypeDB databases are prefixed: `text2typeql_<database>`
+- `text2typeql_twitter`
+- `text2typeql_twitch`
+- `text2typeql_movies`
+- `text2typeql_neoflix`
+- `text2typeql_recommendations`
+- `text2typeql_companies`
 
-If needed, rename: `in` -> `contained_in`, etc.
-
-## Neo4j Dataset Format
-
-**text2cypher_schemas.csv** - JSON per database:
-```json
-{
-  "node_props": { "Movie": [{"property": "title", "type": "STRING"}] },
-  "rel_props": { "ACTED_IN": [{"property": "roles", "type": "LIST"}] },
-  "relationships": [{"start": "Person", "type": "ACTED_IN", "end": "Movie"}]
-}
-```
-
-**text2cypher_claudeopus.csv** - Question/Cypher pairs:
-- `question`: Natural language question
-- `cypher`: Cypher query
-- `database`: Target schema name
-- `syntax_error`, `false_schema`: Quality flags (filter these out)
-
-## Dependencies
+## File Structure
 
 ```
-anthropic>=0.40.0
-typedb-driver>=3.0.0
-click>=8.1.0
-pandas>=2.0.0
+output/<database>/
+  schema.tql        # TypeQL schema
+  neo4j_schema.json # Original Neo4j schema
+  queries.csv       # Successful conversions (original_index,question,cypher,typeql)
+  failed.csv        # Failed after 3 attempts (original_index,question,cypher,error)
+
+scripts/
+  get_query.py      # Get query by database and index
+
+.claude/skills/
+  convert-query.md  # Skill for single query conversion
 ```
 
-## Current Status
+## Query Counts by Database
 
-**Phase**: Initial setup
-**Next**: Clone Neo4j dataset, then implement core modules
-
-See `plan.md` for full implementation plan.
+| Database | Valid Queries |
+|----------|---------------|
+| twitter | 493 |
+| twitch | 561 |
+| movies | 729 |
+| neoflix | 915 |
+| recommendations | 753 |
+| companies | 933 |
+| gameofthrones | 392 |
+| **Total** | **4776** |

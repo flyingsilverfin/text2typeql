@@ -1,0 +1,21 @@
+original_index,question,cypher,error
+136,List the tweets by 'neo4j' that have been retweeted by more than 5 different users.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)
+WHERE count{(tweet)<-[:RETWEETS]-(:Tweet)<-[:POSTS]-(:User)} > 5
+RETURN tweet.text, count{(tweet)<-[:RETWEETS]-(:Tweet)<-[:POSTS]-(:User)} AS retweets",Cannot filter on reduce result in same query - TypeQL limitation
+295,"Show all hashtags that have appeared in more than 5 tweets mentioning 'Neo4j'.","MATCH (t:Tweet)-[:MENTIONS]->(:User {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:TAGS]->(h:Hashtag)
+WITH h, count(tweet) AS tweet_count
+WHERE tweet_count > 5
+RETURN h.name AS hashtag, tweet_count
+ORDER BY tweet_count DESC","TypeDB 3.0 does not support filtering after reduce (HAVING equivalent)"
+296,"List the top 5 users who have a similar betweenness to 'Neo4j'.","MATCH (me:Me {name: 'Neo4j'}), (u:User)
+WHERE u.betweenness IS NOT NULL
+WITH me, u
+ORDER BY abs(me.betweenness - u.betweenness) 
+LIMIT 5
+RETURN u.name AS user, u.betweenness AS betweenness","TypeDB 3.0 does not support abs() function for sorting"
+330,"Which users have the highest following to follower ratio?","MATCH (u:User)
+WHERE u.followers IS NOT NULL AND u.following IS NOT NULL
+RETURN u.screen_name AS user, 
+       toFloat(u.following) / u.followers AS followingToFollowerRatio
+ORDER BY followingToFollowerRatio DESC
+LIMIT 10","TypeDB 3.0 does not support arithmetic division for computed sort values"

@@ -1,0 +1,14 @@
+original_index,question,cypher,error
+218,What are the first 3 genres associated with movies that have been rated by at least 5 different users?,"MATCH (g:Genre)<-[:IN_GENRE]-(m:Movie)<-[r:RATED]-(u:User)
+WITH g, m, count(DISTINCT u) AS userCount
+WHERE userCount >= 5
+RETURN g.name AS genre
+ORDER BY userCount DESC
+LIMIT 3","FAILED: 
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected EOI, query_stage, FETCH, or END
+Near 1:131:
+--> match $g isa genre, has name $n; in_genre (genre: $g, film: $m); rated (film: $m, user: $u); reduce $count = count($u) groupby $n; $count >= 5; sort $count desc; limit 3;
+                                                                                                                                       ^
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
