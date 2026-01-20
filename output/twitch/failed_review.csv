@@ -1,12 +1,70 @@
 original_index,question,cypher,typeql,review_reason
-123,Identify the streams that have the most moderators.,"MATCH (s:Stream)
-OPTIONAL MATCH (s)-[:MODERATOR]->(m:User)
-WITH s, count(m) AS moderatorCount
-RETURN s.name AS streamName, moderatorCount
-ORDER BY moderatorCount DESC
-LIMIT 10","match
-  $s isa stream, has name $sn;
-  moderation (moderated_channel: $s, moderating_user: $m);
-reduce $moderatorCount = count($m) groupby $sn;
-sort $moderatorCount desc;
-limit 10;",OPTIONAL MATCH not handled - TypeQL requires moderation relation but should include streams with 0 moderators
+6,Who are the top 3 VIPs in the stream named 'summit1g'?,"MATCH (s:Stream {name: 'summit1g'})<-[:VIP]-(vip:User)
+RETURN vip.name AS vip, vip.followers AS followers
+ORDER BY followers DESC
+LIMIT 3","match
+  $s isa stream, has name ""summit1g"";
+  vip_status (channel_with_vips: $s, vip_user: $vip);
+  $vip has name $vn;
+limit 3;
+fetch { ""vip"": $vn };",Users don't have followers attribute; cannot sort VIPs by followers as requested
+26,What are the first 5 streams that have been played by more than 5 different users?,"MATCH (s:Stream)<-[:PLAYS]-(u:User)
+WITH s, count(distinct u) as userCount
+WHERE userCount > 5
+RETURN s.name as streamName, s.url as streamUrl, userCount
+ORDER BY userCount DESC
+LIMIT 5","match
+  $s isa stream, has name $sn, has url $su;
+  game_play (streaming_channel: $s, played_game: $g);
+reduce $gameCount = count($g) groupby $sn, $su;
+sort $gameCount desc;
+limit 5;",Nonsensical question - streams don't get played by users; TypeQL counts games instead
+43,Who are the top 3 users who are VIPs in the stream with the name '9linda'?,"MATCH (s:Stream {name: '9linda'})<-[:VIP]-(u:User)
+RETURN u.name AS user, u.followers AS followers
+ORDER BY followers DESC
+LIMIT 3","match
+  $s isa stream, has name ""9linda"";
+  vip_status (channel_with_vips: $s, vip_user: $u);
+  $u has name $un;
+limit 3;
+fetch { ""user"": $un };",Users don't have followers attribute; cannot sort VIPs by followers as requested
+99,Which 3 users have moderated the most streams and users combined?,"MATCH (u:User)-[:MODERATOR]->(s)
+WHERE s:Stream OR s:User
+WITH u, count(s) AS moderations
+RETURN u.name AS user, moderations
+ORDER BY moderations DESC
+LIMIT 3","match
+  $u isa user, has name $un;
+  moderation (moderating_user: $u, moderated_channel: $s);
+reduce $moderations = count($s) groupby $un;
+sort $moderations desc;
+limit 3;","TypeQL only counts moderated streams, not moderated users - doesn't count 'streams and users combined' as asked"
+128,Which streams have chatters who have less than 1000 followers?,"MATCH (s:Stream)<-[:CHATTER]-(u:User)
+WHERE u.followers < 1000
+RETURN s, u","match
+  chat_activity (channel_with_chatters: $s, chatting_user: $u);
+fetch { ""stream"": $s.name, ""user"": $u.name };",Users don't have followers attribute in schema; TypeQL removes the filter entirely
+142,What are the top 5 streams with the longest descriptions?,"MATCH (s:Stream)
+WHERE s.description IS NOT NULL
+RETURN s.name, s.description
+ORDER BY size(s.description) DESC
+LIMIT 5","match
+  $s isa stream, has name $sn, has description $d;
+limit 5;
+fetch { ""name"": $sn, ""description"": $d };",TypeQL doesn't order by description length - just has limit 5 without sorting
+152,Which 3 streams have the highest ratio of followers to total view count?,"MATCH (s:Stream)
+WHERE s.followers IS NOT NULL AND s.total_view_count IS NOT NULL
+RETURN s.name AS stream, toFloat(s.followers) / s.total_view_count AS follower_to_view_ratio
+ORDER BY follower_to_view_ratio DESC
+LIMIT 3","match
+  $s isa stream, has name $sn, has followers $f, has total_view_count $tvc;
+sort $f desc;
+limit 3;
+fetch { ""stream"": $sn, ""followers"": $f, ""total_view_count"": $tvc };","TypeQL just sorts by followers, doesn't compute ratio of followers/views as asked"
+359,Find the descriptions of streams that have chatted with the user '9linda'.,"MATCH (s:Stream)-[:CHATTER]->(:User {name: '9linda'})
+WHERE s.description IS NOT NULL
+RETURN s.description","match
+  $u isa user, has name ""9linda"";
+  chat_activity (chatting_channel: $s, chatting_user: $u);
+  $s has description $d;
+fetch { ""description"": $d };",Wrong relation direction - question has 'streams that chatted with user' which is semantically backwards
