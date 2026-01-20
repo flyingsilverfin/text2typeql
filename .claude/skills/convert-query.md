@@ -342,32 +342,149 @@ If a schema uses reserved words, rename them:
 - `in` → `contained_in`, `located_in`
 - `from` → `source`, `origin`
 
+## Advanced TypeQL Features
+
+### Custom Functions (`with fun`)
+
+Define reusable query logic for complex computations:
+
+```typeql
+# Count distinct users who retweeted a tweet
+with fun retweeting_users($tweet: tweet) -> integer:
+  match
+    retweets (original_tweet: $tweet, retweeting_tweet: $retweet);
+    posts ($user, $retweet);
+  select $user;
+  distinct;
+  return count;
+match
+  $me isa me, has screen_name "neo4j";
+  posts ($me, $tweet);
+  let $count = retweeting_users($tweet);
+  $count > 5;
+fetch { "tweet": $tweet.text, "retweet_count": $count };
+```
+
+```typeql
+# Compute follower/following ratio using functions
+with fun follower_count($user: user) -> integer:
+  match follows (followed: $user);
+  return count;
+with fun follows_count($user: user) -> integer:
+  match follows (follower: $user);
+  return count;
+match
+  $user isa user;
+  let $followers = follower_count($user);
+  let $follows = follows_count($user);
+  $followers > 0;
+  let $ratio = $follows / $followers;
+sort $ratio desc;
+limit 10;
+fetch { "user": $user.name, "ratio": $ratio };
+```
+
+### Chained Reduce Stages (HAVING equivalent)
+
+Use `reduce ... match ...` to filter on aggregation results:
+
+```typeql
+# Find hashtags appearing in more than 100 retweeted tweets
+match
+  $tweet isa tweet;
+  retweets (original_tweet: $tweet, retweeting_tweet: $retweet);
+reduce $count = count groupby $tweet;
+match
+  $count > 100;
+  tags (tagged_tweet: $tweet, tag: $hashtag);
+reduce $hashtag_count = count groupby $hashtag;
+sort $hashtag_count desc;
+limit 3;
+fetch { "hashtag": $hashtag.hashtag_name, "count": $hashtag_count };
+```
+
+```typeql
+# Tweets with favorites + retweet count combined
+match
+  $tweet isa tweet;
+  retweets (original_tweet: $tweet);
+reduce $retweets = count groupby $tweet;
+match
+  $tweet has favorites $favorites;
+  let $total = $favorites + $retweets;
+sort $total desc;
+limit 3;
+fetch { "tweet": $tweet.text, "total": $total };
+```
+
+### Let Expressions
+
+Compute values inline with `let`:
+
+```typeql
+# Compute difference for similarity ranking
+match
+  $neo4j isa me, has betweenness $neo4j_betweenness;
+  $user isa user, has betweenness $betweenness;
+  not { $neo4j is $user; };
+  let $difference = abs($betweenness - $neo4j_betweenness);
+sort $difference asc;
+limit 5;
+fetch { "user": $user.name, "difference": $difference };
+```
+
+### Type Variables (Polymorphic Queries)
+
+Match multiple relation types dynamically:
+
+```typeql
+# Count all interactions (mentions, retweets, replies) on a tweet
+match
+  $tweet isa tweet;
+  $rel isa $t;
+  {
+    $t label mentions;
+    $rel links (source_tweet: $tweet);
+  } or {
+    $t label retweets;
+    $rel links (original_tweet: $tweet);
+  } or {
+    $t label reply_to;
+    $rel links (original_tweet: $tweet);
+  };
+reduce $count = count groupby $tweet;
+sort $count desc;
+limit 5;
+fetch { "tweet": $tweet.text, "interactions": $count };
+```
+
+### Arithmetic Expressions
+
+Supported operations: `+`, `-`, `*`, `/`, `abs()`
+
+```typeql
+let $total = $favorites + $retweets;
+let $ratio = $follows / $followers;
+let $difference = abs($a - $b);
+```
+
+---
+
 ## Known Limitations (TypeDB 3.0)
 
-These Cypher patterns cannot be directly converted:
+These patterns require advanced features shown above:
 
-1. **Filter on aggregation result (HAVING equivalent)**
-   ```cypher
-   -- Cannot convert: filtering after COUNT
-   WITH u, count(m) AS movie_count
-   WHERE movie_count > 5
-   RETURN u
-   ```
-   Record in `failed.csv` with reason: "Cannot filter on reduce result in same query"
+| Cypher Pattern | TypeQL Solution |
+|----------------|-----------------|
+| `WITH x, count(y) WHERE count > N` | Chained reduce: `reduce ... match $count > N;` |
+| `ORDER BY a / b` | Let expression: `let $ratio = $a / $b; sort $ratio;` |
+| `count(DISTINCT ...)` with filter | Custom function with `distinct; return count;` |
+| Multiple OPTIONAL MATCH counts | Type variables with `or` blocks |
 
-2. **Arithmetic in sort/filter**
-   ```cypher
-   -- Cannot convert: computed sort value
-   ORDER BY (a.followers / a.following)
-   ```
-   Record in `failed.csv` with reason: "Arithmetic expressions not supported in sort"
-
-3. **String/list length**
-   ```cypher
-   -- Cannot convert: size() function
-   WHERE size(n.name) > 10
-   ```
-   Record in `failed.csv` with reason: "No size/length function equivalent"
+**Still unsupported:**
+- `size()` for string/list length - Record in `failed.csv`
+- Date arithmetic with duration - Record in `failed.csv`
+- `collect()` and array operations - Record in `failed.csv`
 
 ---
 

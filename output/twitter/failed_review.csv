@@ -1,13 +1,1 @@
 original_index,question,cypher,typeql,review_reason
-75,Identify the top 3 users who have amplified the most tweets.,"MATCH (u:User)<-[:AMPLIFIES]-(me:Me)
-WITH u, count(me) AS amplifications
-ORDER BY amplifications DESC
-LIMIT 3
-RETURN u.name AS user, amplifications","match
-$me isa me;
-$u isa user, has name $n;
-amplifies (amplifier: $me, amplified_user: $u);
-reduce $count = count($me) groupby $n;
-sort $count desc;
-limit 3;
-fetch { ""user"": $n, ""amplifications"": $count };","Schema limitation - only Me can be amplifier, but question asks for users who amplified"

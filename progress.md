@@ -9,14 +9,14 @@
 
 | Database | Converted | Failed | Failed Review | Total | % |
 |----------|-----------|--------|---------------|-------|---|
-| twitter | 480 | 12 | 1 | 493 | 100% |
+| twitter | 493 | 0 | 0 | 493 | 100% |
 | twitch | 503 | 50 | 8 | 561 | 100% |
-| recommendations | 461 | 1 | 0 | 753 | 61% |
+| recommendations | 555 | 73 | 125 | 753 | 100% |
 | movies | 18 | 1 | 0 | 729 | 3% |
 | neoflix | 0 | 0 | 0 | 915 | 0% |
 | companies | 0 | 0 | 0 | 933 | 0% |
 | gameofthrones | 0 | 0 | 0 | 392 | 0% |
-| **Total** | **1462** | **63** | **9** | **4776** | **32%** |
+| **Total** | **1569** | **124** | **133** | **4776** | **38%** |
 
 ### Completed Setup
 - [x] Project setup and structure
@@ -75,9 +75,20 @@ TypeDB 3.0 syntax:
 
 ## Known Limitations
 
-Some Cypher patterns can't be directly converted to TypeQL:
-- `WHERE count{...} > N` - Can't filter on reduce result in same query
+Some Cypher patterns require advanced TypeQL features:
+
+| Cypher Pattern | TypeQL Solution |
+|----------------|-----------------|
+| `WITH x, count(y) WHERE count > N` | Chained reduce: `reduce ... match $count > N;` |
+| `ORDER BY a / b` | Let expression: `let $ratio = $a / $b; sort $ratio;` |
+| `count(DISTINCT ...)` with filter | Custom function with `distinct; return count;` |
+| Multiple OPTIONAL MATCH counts | Type variables with `or` blocks |
+| `abs(a - b)` for sorting | Let expression: `let $diff = abs($a - $b);` |
+
+Patterns that remain unsupported:
 - `size(property)` - No direct equivalent for string/list length
+
+See `docs/suggestions.md` for validated examples of advanced patterns.
 
 These are recorded in `failed.csv` with error descriptions.
 

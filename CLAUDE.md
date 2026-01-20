@@ -93,6 +93,32 @@ sort $count desc;
 limit 5;
 ```
 
+### Advanced Features
+
+```typeql
+# Custom functions - reusable query logic
+with fun follower_count($user: user) -> integer:
+  match follows (followed: $user);
+  return count;
+match $u isa user;
+let $count = follower_count($u);
+fetch { "user": $u.name, "followers": $count };
+
+# Chained reduce - HAVING equivalent (filter on aggregation)
+match $tweet isa tweet; retweets (original_tweet: $tweet);
+reduce $count = count groupby $tweet;
+match $count > 100;  # Filter after aggregation
+fetch { "tweet": $tweet.text, "retweets": $count };
+
+# Let expressions - computed values
+let $ratio = $follows / $followers;
+let $difference = abs($a - $b);
+
+# Type variables - polymorphic queries
+$rel isa $t;
+{ $t label mentions; } or { $t label retweets; };
+```
+
 ### Cypher → TypeQL Mapping
 
 | Cypher | TypeQL 3.0 |
@@ -101,11 +127,13 @@ limit 5;
 | `MATCH (a)-[:REL]->(b)` | `match rel (role1: $a, role2: $b);` |
 | `RETURN n.prop` | `fetch { "prop": $n.prop };` |
 | `WHERE n.prop > 5` | `has prop $p; $p > 5;` |
-| `WHERE n.prop CONTAINS 'x'` | `has prop $p; $p like "%x%";` |
+| `WHERE n.prop CONTAINS 'x'` | `has prop $p; $p like ".*x.*";` |
 | `ORDER BY n.prop DESC` | `has prop $p; sort $p desc;` |
 | `LIMIT 10` | `limit 10;` |
 | `COUNT(n)` | `reduce $count = count($n);` |
 | `WITH n, count(m) AS c` | `reduce $c = count($m) groupby $n;` |
+| `WITH x, count(y) WHERE c > N` | `reduce $c = count groupby $x; match $c > N;` |
+| `ORDER BY a / b` | `let $ratio = $a / $b; sort $ratio;` |
 
 ## Database Names
 
