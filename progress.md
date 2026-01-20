@@ -12,11 +12,11 @@
 | twitter | 493 | 0 | 0 | 493 | 100% |
 | twitch | 506 | 42 | 13 | 561 | 100% |
 | recommendations | 555 | 73 | 125 | 753 | 100% |
-| movies | 18 | 1 | 0 | 729 | 3% |
+| movies | 568 | 161 | 0 | 729 | 100% |
 | neoflix | 885 | 30 | 0 | 915 | 100% |
 | companies | 0 | 0 | 0 | 933 | 0% |
 | gameofthrones | 0 | 0 | 0 | 392 | 0% |
-| **Total** | **2457** | **146** | **138** | **4776** | **57%** |
+| **Total** | **3007** | **306** | **138** | **4776** | **72%** |
 
 ### Completed Setup
 - [x] Project setup and structure
