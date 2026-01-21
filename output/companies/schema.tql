@@ -1,4 +1,5 @@
 define
+  # Attributes
   attribute name value string;
   attribute person_id value string;
   attribute summary value string;
@@ -30,15 +31,16 @@ define
   attribute cypher value string;
   attribute fewshot_id value integer;
 
+  # Entities
   entity person,
     owns name,
     owns person_id @key,
     owns summary,
-    plays parent_child:parent,
-    plays parent_child:child,
-    plays ceo_leadership:ceo,
-    plays investment:investor,
-    plays board_membership:board_member;
+    plays parent_of:parent,
+    plays parent_of:child,
+    plays ceo_of:ceo,
+    plays invested_in:investor,
+    plays board_member_of:member;
 
   entity organization,
     owns name,
@@ -49,35 +51,35 @@ define
     owns nbr_employees,
     owns is_dissolved,
     owns is_public,
-    plays location:located_org,
-    plays ceo_leadership:led_org,
-    plays categorization:categorized_org,
-    plays subsidiary:parent_org,
-    plays subsidiary:subsidiary_org,
-    plays supply:supplier_org,
-    plays supply:supplied_org,
-    plays investment:invested_org,
-    plays board_membership:governed_org,
-    plays competition:competitor,
-    plays mention:mentioned_org;
+    plays located_in:organization,
+    plays ceo_of:organization,
+    plays in_category:organization,
+    plays subsidiary_of:parent,
+    plays subsidiary_of:subsidiary,
+    plays supplies:supplier,
+    plays supplies:customer,
+    plays invested_in:organization,
+    plays board_member_of:organization,
+    plays competes_with:competitor,
+    plays mentions:organization;
 
   entity industry_category,
     owns industry_category_name,
     owns industry_category_id @key,
-    plays categorization:category;
+    plays in_category:category;
 
   entity city,
     owns city_id @key,
     owns city_summary,
     owns city_name,
-    plays location:location_city,
-    plays country_location:located_city;
+    plays located_in:city,
+    plays in_country:city;
 
   entity country,
     owns country_name,
     owns country_id @key,
     owns country_summary,
-    plays country_location:location_country;
+    plays in_country:country;
 
   entity article,
     owns article_id @key,
@@ -87,14 +89,14 @@ define
     owns article_summary,
     owns date,
     owns title,
-    plays chunk_relation:parent_article,
-    plays mention:mentioning_article;
+    plays has_chunk:article,
+    plays mentions:article;
 
   entity chunk,
     owns text,
     owns embedding,
     owns embedding_google,
-    plays chunk_relation:child_chunk;
+    plays has_chunk:chunk;
 
   entity fewshot,
     owns question,
@@ -102,49 +104,50 @@ define
     owns fewshot_id @key,
     owns embedding;
 
-  relation parent_child,
+  # Relations
+  relation parent_of,
     relates parent,
     relates child;
 
-  relation location,
-    relates located_org,
-    relates location_city;
+  relation located_in,
+    relates organization,
+    relates city;
 
-  relation ceo_leadership,
-    relates led_org,
+  relation ceo_of,
+    relates organization,
     relates ceo;
 
-  relation categorization,
-    relates categorized_org,
+  relation in_category,
+    relates organization,
     relates category;
 
-  relation subsidiary,
-    relates parent_org,
-    relates subsidiary_org;
+  relation subsidiary_of,
+    relates parent,
+    relates subsidiary;
 
-  relation supply,
-    relates supplier_org,
-    relates supplied_org;
+  relation supplies,
+    relates supplier,
+    relates customer;
 
-  relation investment,
-    relates invested_org,
+  relation invested_in,
+    relates organization,
     relates investor;
 
-  relation board_membership,
-    relates governed_org,
-    relates board_member;
+  relation board_member_of,
+    relates organization,
+    relates member;
 
-  relation competition,
+  relation competes_with,
     relates competitor;
 
-  relation country_location,
-    relates located_city,
-    relates location_country;
+  relation in_country,
+    relates city,
+    relates country;
 
-  relation chunk_relation,
-    relates parent_article,
-    relates child_chunk;
+  relation has_chunk,
+    relates article,
+    relates chunk;
 
-  relation mention,
-    relates mentioning_article,
-    relates mentioned_org;
+  relation mentions,
+    relates article,
+    relates organization;
