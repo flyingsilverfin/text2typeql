@@ -3752,15 +3752,6 @@ RETURN s","match
   vip_status (channel_with_vips: $s, vip_user: $user);
   $user has name ""itsbigchase"";
 fetch { ""name"": $sn, ""url"": $u, ""followers"": $f, ""total_view_count"": $tvc };"
-454,Identify the top 3 games played by streams with a description containing 'hilarious moments'.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
-WHERE s.description CONTAINS 'hilarious moments'
-RETURN g.name AS game, count(*) AS count
-ORDER BY count DESC
-LIMIT 3","match
-  $s isa stream, has description $d;
-  $d like "".*hilarious moments.*"";
-  (streaming_channel: $s, played_game: $g) isa game_play;
-fetch { ""game"": $g };"
 455,Show the streams that have more than 2 languages associated with them.,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)
 WITH s, count(l) as languageCount
 WHERE languageCount > 2
@@ -4692,14 +4683,6 @@ RETURN u.name AS user, s.name AS stream, s.total_view_count AS views","match
   $tvc > 10000;
   chat_activity (channel_with_chatters: $s, chatting_user: $u);
 fetch { ""user"": $un, ""stream"": $sn, ""views"": $tvc };"
-554,What are the names of the first 3 languages used by streams with a description containing 'strategy'?,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)
-WHERE s.description CONTAINS 'strategy'
-RETURN l.name
-LIMIT 3","match
-  $s isa stream, has description $d;
-  $d like "".*strategy.*"";
-  (channel: $s, used_language: $l) isa language_usage;
-fetch { ""language"": $l };"
 555,Identify the first 3 streams that play 'DayZ' and their respective follower counts.,"MATCH (s:Stream)-[:PLAYS]->(:Game {name: 'DayZ'})
 RETURN s.name AS stream, s.followers AS followerCount
 ORDER BY followerCount DESC

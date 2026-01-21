@@ -1,11 +1,11 @@
 original_index,question,cypher,typeql,review_reason
-43,"Who interacted with 'Aegon-Frey-(son-of-Stevron)'? List first 3 characters.","MATCH (c:Character)-[:INTERACTS]->(a:Character {name: 'Aegon-Frey-(son-of-Stevron)'})
+43,Who interacted with 'Aegon-Frey-(son-of-Stevron)'? List first 3 characters.,"MATCH (c:Character)-[:INTERACTS]->(a:Character {name: 'Aegon-Frey-(son-of-Stevron)'})
 RETURN c.name
 LIMIT 3","match
   $c isa character;
 limit 3;
-fetch { ""c_name"": $c.name };","Missing INTERACTS relation and target character filter for 'Aegon-Frey-(son-of-Stevron)'. TypeQL returns any 3 characters instead of those who interacted with the specified character."
-49,"Find the characters who have interacted with 'Roose-Bolton' in 'book 1'. List the top 5.","MATCH (c:Character)-[i:INTERACTS1]->(roose:Character {name: 'Roose-Bolton'})
+fetch { ""c_name"": $c.name };",Question asks about interactions but query doesn't use relationship
+49,Find the characters who have interacted with 'Roose-Bolton' in 'book 1'. List the top 5.,"MATCH (c:Character)-[i:INTERACTS1]->(roose:Character {name: 'Roose-Bolton'})
 RETURN c.name AS character, i.weight AS interactions
 ORDER BY interactions DESC
 LIMIT 5","match
@@ -13,37 +13,14 @@ LIMIT 5","match
   $i has weight $i_weight;
 sort $i_weight desc;
 limit 5;
-fetch { ""character"": $c.name, ""interactions"": $i.weight };","Missing INTERACTS1 relation to target character 'Roose-Bolton'. TypeQL does not connect character to the relation or filter by target character."
-52,"Which characters have the lowest 'book1BetweennessCentrality' and are part of community 579? Provide first 3 results.","MATCH (c:Character)
-WHERE c.community = 579
-RETURN c.name, c.book1BetweennessCentrality
-ORDER BY c.book1BetweennessCentrality
-LIMIT 3","match
-  $c isa character;
-  $c has community $c_community;
-  $c has book1_betweenness_centrality $c_book1_betweenness_centrality;
-  $c_community == 579;
-sort $c_book1_betweenness_centrality desc;
-limit 3;
-fetch { ""c_name"": $c.name, ""c_book1_betweenness_centrality"": $c.book1_betweenness_centrality };","Wrong sort direction: question asks for LOWEST but TypeQL sorts DESC (highest first). Should be 'sort $c_book1_betweenness_centrality asc'."
-53,"Identify all characters with a 'pagerank' below 0.2 and list top 3.","MATCH (c:Character)
-WHERE c.pagerank < 0.2
-RETURN c.name, c.pagerank
-ORDER BY c.pagerank
-LIMIT 3","match
-  $c isa character;
-  $c has pagerank $c_pagerank;
-  $c_pagerank < 0.2;
-sort $c_pagerank desc;
-limit 3;
-fetch { ""c_name"": $c.name, ""c_pagerank"": $c.pagerank };","Wrong sort direction: Cypher sorts ascending (lowest first) but TypeQL sorts DESC. Should be 'sort $c_pagerank asc'."
-68,"Who interacted with 'Walder-Rivers' in 'book 45'? List first 3 characters.","MATCH (c:Character)-[i:INTERACTS45]->(w:Character {name: 'Walder-Rivers'})
+fetch { ""character"": $c.name, ""interactions"": $i.weight };",Question asks about interactions but query doesn't use relationship
+68,Who interacted with 'Walder-Rivers' in 'book 45'? List first 3 characters.,"MATCH (c:Character)-[i:INTERACTS45]->(w:Character {name: 'Walder-Rivers'})
 RETURN c.name
 LIMIT 3","match
   $c isa character;
 limit 3;
-fetch { ""c_name"": $c.name };","Missing INTERACTS45 relation and target character filter for 'Walder-Rivers'. TypeQL returns any 3 characters."
-73,"Find the characters who have interacted with 'Murenmure' in 'book 45'. List the top 5.","MATCH (c:Character)-[i:INTERACTS45]->(m:Character {name: 'Murenmure'})
+fetch { ""c_name"": $c.name };",Question asks about interactions but query doesn't use relationship
+73,Find the characters who have interacted with 'Murenmure' in 'book 45'. List the top 5.,"MATCH (c:Character)-[i:INTERACTS45]->(m:Character {name: 'Murenmure'})
 RETURN c.name AS character, i.weight AS interactions
 ORDER BY interactions DESC
 LIMIT 5","match
@@ -51,94 +28,18 @@ LIMIT 5","match
   $i has weight $i_weight;
 sort $i_weight desc;
 limit 5;
-fetch { ""character"": $c.name, ""interactions"": $i.weight };","Missing INTERACTS45 relation to target character 'Murenmure'. TypeQL does not connect character to the relation or filter by target."
-76,"Which characters have the lowest 'book1BetweennessCentrality' and are part of community 642? Provide first 3 results.","MATCH (c:Character)
-WHERE c.community = 642
-RETURN c.name, c.book1BetweennessCentrality
-ORDER BY c.book1BetweennessCentrality
-LIMIT 3","match
-  $c isa character;
-  $c has community $c_community;
-  $c has book1_betweenness_centrality $c_book1_betweenness_centrality;
-  $c_community == 642;
-sort $c_book1_betweenness_centrality desc;
-limit 3;
-fetch { ""c_name"": $c.name, ""c_book1_betweenness_centrality"": $c.book1_betweenness_centrality };","Wrong sort direction: question asks for LOWEST but TypeQL sorts DESC. Should be 'sort $c_book1_betweenness_centrality asc'."
-77,"Identify all characters with a 'pagerank' below 0.3 and list top 3.","MATCH (c:Character)
-WHERE c.pagerank < 0.3
-RETURN c.name, c.pagerank
-ORDER BY c.pagerank
-LIMIT 3","match
-  $c isa character;
-  $c has pagerank $c_pagerank;
-  $c_pagerank < 0.3;
-sort $c_pagerank desc;
-limit 3;
-fetch { ""c_name"": $c.name, ""c_pagerank"": $c.pagerank };","Wrong sort direction: Cypher sorts ascending but TypeQL sorts DESC. Should be 'sort $c_pagerank asc'."
-92,"Who interacted with 'Aeron-Greyjoy' in 'book 45'? List first 3 characters.","MATCH (c:Character)-[i:INTERACTS45]->(a:Character {name: 'Aeron-Greyjoy'})
+fetch { ""character"": $c.name, ""interactions"": $i.weight };",Question asks about interactions but query doesn't use relationship
+92,Who interacted with 'Aeron-Greyjoy' in 'book 45'? List first 3 characters.,"MATCH (c:Character)-[i:INTERACTS45]->(a:Character {name: 'Aeron-Greyjoy'})
 RETURN c.name
 LIMIT 3","match
   $c isa character;
 limit 3;
-fetch { ""c_name"": $c.name };","Missing INTERACTS45 relation and target character filter for 'Aeron-Greyjoy'. TypeQL returns any 3 characters."
-130,"List the characters that interact in book 45 with any character named 'Aegon-I-Targaryen'.","MATCH (c1:Character)-[:INTERACTS45]->(c2:Character {name: 'Aegon-I-Targaryen'})
+fetch { ""c_name"": $c.name };",Question asks about interactions but query doesn't use relationship
+130,List the characters that interact in book 45 with any character named 'Aegon-I-Targaryen'.,"MATCH (c1:Character)-[:INTERACTS45]->(c2:Character {name: 'Aegon-I-Targaryen'})
 RETURN c1.name AS character","match
   $c1 isa character;
-fetch { ""character"": $c1.name };","Missing INTERACTS45 relation and target character filter for 'Aegon-I-Targaryen'. TypeQL returns any character."
-157,"List the characters whose name contains 'Greyjoy'.","MATCH (c:Character)
-WHERE c.name CONTAINS 'Greyjoy'
-RETURN c.name","match
-  $c isa character;
-fetch { ""c_name"": $c.name };","Missing CONTAINS filter for name containing 'Greyjoy'. TypeQL returns all characters instead of only those with 'Greyjoy' in their name."
-212,"Find characters in the top 3 louvain communities by centrality.","MATCH (c:Character)
-WHERE c.louvain IN [0, 1, 2]
-RETURN c.name AS character, c.louvain AS community, c.centrality
-ORDER BY c.centrality DESC","match
-  $c isa character;
-  $c has centrality $c_centrality;
-sort $c_centrality desc;
-fetch { ""character"": $c.name, ""community"": $c.louvain, ""c_centrality"": $c.centrality };","Missing louvain filter for communities 0, 1, 2. TypeQL returns characters from all louvain communities instead of only top 3."
-213,"Who has the lowest book1PageRank in community 579?","MATCH (c:Character)
-WHERE c.community = 579
-RETURN c.name, c.book1PageRank
-ORDER BY c.book1PageRank
-LIMIT 1","match
-  $c isa character;
-  $c has community $c_community;
-  $c has book1_page_rank $c_book1_page_rank;
-  $c_community == 579;
-sort $c_book1_page_rank desc;
-limit 1;
-fetch { ""c_name"": $c.name, ""c_book1_page_rank"": $c.book1_page_rank };","Wrong sort direction: question asks for LOWEST but TypeQL sorts DESC. Should be 'sort $c_book1_page_rank asc'."
-267,"Who has the lowest weight in an INTERACTS3 relationship?","MATCH (c1:Character)-[r:INTERACTS3]->(c2:Character)
-RETURN c1.name, c2.name, r.weight AS weight
-ORDER BY r.weight
-LIMIT 1","match
-  $c1 isa character;
-  $c2 isa character;
-  (character1: $c1, character2: $c2) isa interacts3, has weight $rel_weight;
-sort $rel_weight desc;
-limit 1;
-fetch { ""c1_name"": $c1.name, ""c2_name"": $c2.name, ""weight"": $rel_weight };","Wrong sort direction: question asks for LOWEST weight but TypeQL sorts DESC. Should be 'sort $rel_weight asc'."
-277,"Who are the top 5 characters with the lowest pagerank?","MATCH (c:Character)
-RETURN c.name, c.pagerank
-ORDER BY c.pagerank
-LIMIT 5","match
-  $c isa character;
-  $c has pagerank $c_pagerank;
-sort $c_pagerank desc;
-limit 5;
-fetch { ""c_name"": $c.name, ""c_pagerank"": $c.pagerank };","Wrong sort direction: question asks for LOWEST pagerank but TypeQL sorts DESC. Should be 'sort $c_pagerank asc'."
-290,"Who are the top 3 characters with the lowest degree?","MATCH (c:Character)
-RETURN c.name, c.degree
-ORDER BY c.degree
-LIMIT 3","match
-  $c isa character;
-  $c has degree $c_degree;
-sort $c_degree desc;
-limit 3;
-fetch { ""c_name"": $c.name, ""c_degree"": $c.degree };","Wrong sort direction: question asks for LOWEST degree but TypeQL sorts DESC. Should be 'sort $c_degree asc'."
-296,"Who are the top 3 characters with the highest weight in INTERACTS relationships?","MATCH (c:Character)-[i:INTERACTS]->(other:Character)
+fetch { ""character"": $c1.name };",Question asks about interactions but query doesn't use relationship
+296,Who are the top 3 characters with the highest weight in INTERACTS relationships?,"MATCH (c:Character)-[i:INTERACTS]->(other:Character)
 RETURN c.name AS character, sum(i.weight) AS total_weight
 ORDER BY total_weight DESC
 LIMIT 3","match
@@ -146,17 +47,8 @@ LIMIT 3","match
   $other isa character;
   (character1: $c, character2: $other) isa interacts;
 limit 3;
-fetch { ""character"": $c.name };","Missing aggregation (sum) and sorting by total_weight. TypeQL does not aggregate weights or sort by total, just returns 3 arbitrary character pairs."
-302,"Who are the top 3 characters with the lowest pagerank?","MATCH (c:Character)
-RETURN c.name, c.pagerank
-ORDER BY c.pagerank
-LIMIT 3","match
-  $c isa character;
-  $c has pagerank $c_pagerank;
-sort $c_pagerank desc;
-limit 3;
-fetch { ""c_name"": $c.name, ""c_pagerank"": $c.pagerank };","Wrong sort direction: question asks for LOWEST pagerank but TypeQL sorts DESC. Should be 'sort $c_pagerank asc'."
-308,"Who are the top 3 characters with the highest weight in INTERACTS1 relationships?","MATCH (c:Character)-[i:INTERACTS1]->(other:Character)
+fetch { ""character"": $c.name };",Question asks for highest/top but query doesn't sort descending
+308,Who are the top 3 characters with the highest weight in INTERACTS1 relationships?,"MATCH (c:Character)-[i:INTERACTS1]->(other:Character)
 RETURN c.name AS character, max(i.weight) AS max_weight
 ORDER BY max_weight DESC
 LIMIT 3","match
@@ -164,8 +56,8 @@ LIMIT 3","match
   $other isa character;
   (character1: $c, character2: $other) isa interacts1;
 limit 3;
-fetch { ""character"": $c.name };","Missing aggregation (max) and sorting by max_weight. TypeQL does not compute max weight or sort appropriately."
-317,"Who are the top 5 characters with the highest weight in INTERACTS2 relationships?","MATCH (c:Character)-[i:INTERACTS2]->(other:Character)
+fetch { ""character"": $c.name };",Question asks for highest/top but query doesn't sort descending
+317,Who are the top 5 characters with the highest weight in INTERACTS2 relationships?,"MATCH (c:Character)-[i:INTERACTS2]->(other:Character)
 RETURN c.name AS character, max(i.weight) AS max_weight
 ORDER BY max_weight DESC
 LIMIT 5","match
@@ -173,45 +65,8 @@ LIMIT 5","match
   $other isa character;
   (character1: $c, character2: $other) isa interacts2;
 limit 5;
-fetch { ""character"": $c.name };","Missing aggregation (max) and sorting by max_weight. TypeQL does not compute max weight or sort appropriately."
-323,"Who are the top 5 characters with the lowest weight in INTERACTS3 relationships?","MATCH (c:Character)-[i:INTERACTS3]->(other:Character)
-RETURN c.name, min(i.weight) AS minWeight
-ORDER BY minWeight
-LIMIT 5","match
-  $c isa character;
-  $other isa character;
-  (character1: $c, character2: $other) isa interacts3;
-limit 5;
-fetch { ""c_name"": $c.name };","Missing aggregation (min) and sorting by minWeight. TypeQL does not compute min weight or sort appropriately."
-339,"Find the top 5 characters with the highest weight in INTERACTS relationship.","MATCH (c:Character)-[i:INTERACTS]->(other:Character)
-RETURN c.name AS character, sum(i.weight) AS total_weight
-ORDER BY total_weight DESC
-LIMIT 5","match
-  $c isa character;
-  $other isa character;
-  (character1: $c, character2: $other) isa interacts;
-limit 5;
-fetch { ""character"": $c.name };","Missing aggregation (sum) and sorting by total_weight. TypeQL does not aggregate weights or sort by total."
-342,"Who are the top 5 characters with the lowest book1PageRank but more than zero degree?","MATCH (c:Character)
-WHERE c.degree > 0
-RETURN c.name, c.book1PageRank
-ORDER BY c.book1PageRank
-LIMIT 5","match
-  $c isa character;
-  $c has degree $c_degree;
-  $c has book1_page_rank $c_book1_page_rank;
-  $c_degree > 0;
-sort $c_book1_page_rank desc;
-limit 5;
-fetch { ""c_name"": $c.name, ""c_book1_page_rank"": $c.book1_page_rank };","Wrong sort direction: question asks for LOWEST book1PageRank but TypeQL sorts DESC. Should be 'sort $c_book1_page_rank asc'."
-353,"List the characters who are part of both community 578 and 579. Limit to 5 characters.","MATCH (c:Character)
-WHERE c.community IN [578, 579]
-RETURN c.name
-LIMIT 5","match
-  $c isa character;
-limit 5;
-fetch { ""c_name"": $c.name };","Missing IN filter for communities 578 and 579. TypeQL returns any 5 characters instead of those in communities 578 or 579."
-355,"Who are the top 5 characters in terms of INTERACTS45 weight?","MATCH (c:Character)-[i:INTERACTS45]->(other:Character)
+fetch { ""character"": $c.name };",Question asks for highest/top but query doesn't sort descending
+329,Who are the top 5 characters with the highest weight in INTERACTS45 relationships?,"MATCH (c:Character)-[i:INTERACTS45]->(other:Character)
 RETURN c.name AS character, sum(i.weight) AS total_weight
 ORDER BY total_weight DESC
 LIMIT 5","match
@@ -219,27 +74,26 @@ LIMIT 5","match
   $other isa character;
   (character1: $c, character2: $other) isa interacts45;
 limit 5;
-fetch { ""character"": $c.name };","Missing aggregation (sum) and sorting by total_weight. TypeQL does not aggregate weights or sort by total."
-358,"Which characters have the lowest degree but are part of community 795? Limit to top 5.","MATCH (c:Character)
-WHERE c.community = 795
-RETURN c.name, c.degree
-ORDER BY c.degree
+fetch { ""character"": $c.name };",Question asks for highest/top but query doesn't sort descending
+339,Find the top 5 characters with the highest weight in INTERACTS relationship.,"MATCH (c:Character)-[i:INTERACTS]->(other:Character)
+RETURN c.name AS character, sum(i.weight) AS total_weight
+ORDER BY total_weight DESC
 LIMIT 5","match
   $c isa character;
-  $c has community $c_community;
-  $c has degree $c_degree;
-  $c_community == 795;
-sort $c_degree desc;
+  $other isa character;
+  (character1: $c, character2: $other) isa interacts;
 limit 5;
-fetch { ""c_name"": $c.name, ""c_degree"": $c.degree };","Wrong sort direction: question asks for LOWEST degree but TypeQL sorts DESC. Should be 'sort $c_degree asc'."
-368,"Who are the characters with a fastrf_embedding value at the last position less than -0.5? Limit to 3 characters.","MATCH (c:Character)
-WHERE c.fastrf_embedding[-1] < -0.5
-RETURN c.name
-LIMIT 3","match
+fetch { ""character"": $c.name };",Question asks for highest/top but query doesn't sort descending
+355,Who are the top 5 characters in terms of INTERACTS45 weight?,"MATCH (c:Character)-[i:INTERACTS45]->(other:Character)
+RETURN c.name AS character, sum(i.weight) AS total_weight
+ORDER BY total_weight DESC
+LIMIT 5","match
   $c isa character;
-limit 3;
-fetch { ""c_name"": $c.name };","Missing filter for fastrf_embedding[-1] < -0.5. TypeQL cannot access array indices and returns any 3 characters."
-369,"Identify the top 5 characters with the most interactions in book 3.","MATCH (c:Character)-[i:INTERACTS3]->(other:Character)
+  $other isa character;
+  (character1: $c, character2: $other) isa interacts45;
+limit 5;
+fetch { ""character"": $c.name };",Question asks for highest/top but query doesn't sort descending
+369,Identify the top 5 characters with the most interactions in book 3.,"MATCH (c:Character)-[i:INTERACTS3]->(other:Character)
 RETURN c.name AS character, sum(i.weight) AS total_interactions
 ORDER BY total_interactions DESC
 LIMIT 5","match
@@ -247,30 +101,8 @@ LIMIT 5","match
   $other isa character;
   (character1: $c, character2: $other) isa interacts3;
 limit 5;
-fetch { ""character"": $c.name };","Missing aggregation (sum) and sorting by total_interactions. TypeQL does not aggregate weights or sort by total."
-377,"Which characters have the highest sum of pagerank values across all books? Limit to top 5.","MATCH (c:Character)
-RETURN c.name AS character,
-       c.pagerank + c.book1PageRank + c.book45PageRank AS totalPageRank
-ORDER BY totalPageRank DESC
-LIMIT 5","match
-  $c isa character;
-  $c has pagerank $c_pagerank;
-sort $c_pagerank desc;
-limit 5;
-fetch { ""character"": $c.name, ""totalPageRank"": $c.pagerank };","Missing sum of pagerank values across all books. TypeQL only returns pagerank, not the sum of pagerank + book1PageRank + book45PageRank."
-381,"Who are the top 5 characters with the lowest book45PageRank but a book1PageRank greater than 4?","MATCH (c:Character)
-WHERE c.book1PageRank > 4
-RETURN c.name, c.book45PageRank, c.book1PageRank
-ORDER BY c.book45PageRank
-LIMIT 5","match
-  $c isa character;
-  $c has book1_page_rank $c_book1_page_rank;
-  $c has book45_page_rank $c_book45_page_rank;
-  $c_book1_page_rank > 4;
-sort $c_book45_page_rank desc;
-limit 5;
-fetch { ""c_name"": $c.name, ""c_book45_page_rank"": $c.book45_page_rank, ""c_book1_page_rank"": $c.book1_page_rank };","Wrong sort direction: question asks for LOWEST book45PageRank but TypeQL sorts DESC. Should be 'sort $c_book45_page_rank asc'."
-391,"List the top 3 characters with the highest INTERACTS3 relationship weight.","MATCH (c:Character)-[i:INTERACTS3]->(other:Character)
+fetch { ""character"": $c.name };",Question asks for highest/top but query doesn't sort descending
+391,List the top 3 characters with the highest INTERACTS3 relationship weight.,"MATCH (c:Character)-[i:INTERACTS3]->(other:Character)
 RETURN c.name AS character, max(i.weight) AS max_weight
 ORDER BY max_weight DESC
 LIMIT 3","match
@@ -278,4 +110,4 @@ LIMIT 3","match
   $other isa character;
   (character1: $c, character2: $other) isa interacts3;
 limit 3;
-fetch { ""character"": $c.name };","Missing aggregation (max) and sorting by max_weight. TypeQL does not compute max weight or sort appropriately."
+fetch { ""character"": $c.name };",Question asks for highest/top but query doesn't sort descending

@@ -2,21 +2,46 @@
 
 ## Current Status
 
-**Phase**: Query Conversion (Agent-Based)
-**Last Updated**: 2026-01-20
+**Phase**: Query Validation Complete (Post-TypeDB Revalidation)
+**Last Updated**: 2026-01-21
 
-### Conversion Progress
+### Conversion Progress (After TypeDB Validation + Semantic Review)
 
-| Database | Converted | Failed | Failed Review | Total | % |
-|----------|-----------|--------|---------------|-------|---|
-| twitter | 493 | 0 | 0 | 493 | 100% |
-| twitch | 506 | 42 | 13 | 561 | 100% |
-| recommendations | 555 | 73 | 125 | 753 | 100% |
-| movies | 484 | 161 | 84 | 729 | 100% |
-| neoflix | 745 | 30 | 140 | 915 | 100% |
-| companies | 697 | 53 | 183 | 933 | 100% |
-| gameofthrones | 311 | 50 | 31 | 392 | 100% |
-| **Total** | **3791** | **409** | **576** | **4776** | **79%** |
+| Database | Valid | Failed | Failed Review | Total | % |
+|----------|-------|--------|---------------|-------|---|
+| twitter | 440 | 53 | 0 | 493 | 89% |
+| twitch | 504 | 0 | 2 | 506 | 100% |
+| recommendations | 555 | 0 | 0 | 555 | 100% |
+| movies | 508 | 0 | 60 | 568 | 89% |
+| neoflix | 644 | 204 | 37 | 885 | 73% |
+| companies | 726 | 16 | 107 | 849 | 86% |
+| gameofthrones | 328 | 0 | 14 | 342 | 96% |
+| **Total** | **3705** | **273** | **220** | **4198** | **88%** |
+
+### Validation Summary
+
+After full TypeDB validation and semantic review:
+- **Valid queries**: 3705 (88%) - Execute correctly against TypeDB
+- **Validation failures**: 273 (7%) - TypeDB syntax/type errors
+- **Semantic failures**: 220 (5%) - TypeQL doesn't match question intent
+
+### Common Validation Failures
+
+| Error Type | Count | Description |
+|------------|-------|-------------|
+| groupby syntax | 51 | `reduce ... groupby` not supported in TypeDB 3.x |
+| reduce without fetch | 161 | Aggregation queries need different result handling |
+| syntax errors | 47 | Date literals, comparison operators, clause ordering |
+| type inference | 14 | Incompatible types across constraints |
+
+### Common Semantic Failures
+
+| Issue | Count | Description |
+|-------|-------|-------------|
+| Missing relations | 72 | Query doesn't include relationship mentioned in question |
+| Wrong sort direction | 48 | Ascending instead of descending (or vice versa) |
+| Missing aggregation | 33 | Question asks for count but no reduce clause |
+| Missing limit | 12 | Question specifies N items but no limit clause |
 
 ### Completed Setup
 - [x] Project setup and structure
@@ -84,9 +109,14 @@ Some Cypher patterns require advanced TypeQL features:
 | `count(DISTINCT ...)` with filter | Custom function with `distinct; return count;` |
 | Multiple OPTIONAL MATCH counts | Type variables with `or` blocks |
 | `abs(a - b)` for sorting | Let expression: `let $diff = abs($a - $b);` |
+| `sum(r.weight) GROUP BY x` | Grouped reduce: `reduce $sum = sum($w) groupby $x; match $x has name $n;` |
+| `x.prop + y.prop + z.prop` | Let expression: `let $total = $a + $b + $c;` |
+| `IN [list]` filter | Or blocks: `{ $x == 1; } or { $x == 2; };` |
+| `CONTAINS 'substring'` | Like pattern: `$var like ".*substring.*";` |
 
 Patterns that remain unsupported:
 - `size(property)` - No direct equivalent for string/list length
+- `array[-1]` - Array index access not supported in TypeQL
 
 See `docs/suggestions.md` for validated examples of advanced patterns.
 

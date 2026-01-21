@@ -1,31 +1,12 @@
 original_index,question,cypher,typeql,review_reason
-13,"List all people who have produced a movie and acted in another.","MATCH (p:Person)-[:PRODUCED]->(:Movie)
-WHERE exists{ (p)-[:ACTED_IN]->(:Movie) }
-RETURN p.name","match
-  $p isa person;
-  (actor: $p) isa acted_in;
-  $p has name $namep;
-fetch {
-  ""name"": $namep
-};","Missing PRODUCED relation constraint - only checks for acted_in, not produced"
 23,"Find all movies where Nancy Meyers was involved either by acting, directing, producing, or writing.","MATCH (p:Person {name: 'Nancy Meyers'})-[:ACTED_IN|DIRECTED|PRODUCED|WROTE]->(m:Movie)
 RETURN m.title AS movie","match
   $p isa person, has name ""Nancy Meyers"";
   $m has title $titlem;
 fetch {
   ""movie"": $titlem
-};","Missing all four relation constraints (acted_in, directed, produced, wrote) - returns all movies instead of Nancy Meyers' movies"
-24,"What are the first 3 movies with a tagline containing the word 'limits'?","MATCH (m:Movie)
-WHERE m.tagline CONTAINS 'limits'
-RETURN m.title
-LIMIT 3","match
-  $m isa movie;
-  $m has title $titlem;
-limit 3;
-fetch {
-  ""title"": $titlem
-};","Missing tagline filter - CONTAINS 'limits' constraint not applied"
-28,"Which people have produced and also reviewed the same movie?","MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:REVIEWED]-(p)
+};",Question asks about movies but query doesn't match movie entities
+28,Which people have produced and also reviewed the same movie?,"MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:REVIEWED]-(p)
 RETURN p.name AS person, m.title AS movie","match
   $p isa person;
   $m isa movie;
@@ -35,31 +16,8 @@ RETURN p.name AS person, m.title AS movie","match
 fetch {
   ""person"": $namep,
   ""movie"": $titlem
-};","Missing REVIEWED relation constraint - only checks for produced, not both produced AND reviewed by same person"
-29,"List the first 3 people who have directed and written the same movie.","MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:WROTE]-(p)
-RETURN p.name AS person
-LIMIT 3","match
-  $p isa person;
-  $m isa movie;
-  (director: $p, film: $m) isa directed;
-  $p has name $namep;
-limit 3;
-fetch {
-  ""person"": $namep
-};","Missing WROTE relation constraint - only checks for directed, not both directed AND written by same person"
-37,"Which person has acted in, directed, and produced the same movie?","MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:DIRECTED]-(p)
-WHERE exists{ (p)-[:PRODUCED]->(m) }
-RETURN p.name AS person, m.title AS movie","match
-  $p isa person;
-  $m isa movie;
-  (actor: $p, film: $m) isa acted_in;
-  $p has name $namep;
-  $m has title $titlem;
-fetch {
-  ""person"": $namep,
-  ""movie"": $titlem
-};","Missing DIRECTED and PRODUCED relation constraints - only checks for acted_in, not all three relations"
-39,"Who are the persons that have written and also acted in the same movie?","MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:ACTED_IN]-(p)
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+39,Who are the persons that have written and also acted in the same movie?,"MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:ACTED_IN]-(p)
 RETURN p.name AS person, m.title AS movie","match
   $p isa person;
   $m isa movie;
@@ -69,28 +27,8 @@ RETURN p.name AS person, m.title AS movie","match
 fetch {
   ""person"": $namep,
   ""movie"": $titlem
-};","Missing ACTED_IN relation constraint - only checks for wrote, not both wrote AND acted_in by same person"
-48,"Which people have reviewed and also produced the movie titled 'The Matrix Revolutions'?","MATCH (p:Person)-[:REVIEWED]->(m:Movie {title: 'The Matrix Revolutions'})<-[:PRODUCED]-(p)
-RETURN p.name","match
-  $p isa person;
-  $m isa movie, has title ""The Matrix Revolutions"";
-  (reviewer: $p, film: $m) isa reviewed;
-  $p has name $namep;
-fetch {
-  ""name"": $namep
-};","Missing PRODUCED relation constraint - only checks for reviewed, not both reviewed AND produced by same person"
-49,"List the first 3 movies that have been acted in and directed by the same person.","MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:DIRECTED]-(p)
-RETURN m.title
-LIMIT 3","match
-  $p isa person;
-  $m isa movie;
-  (actor: $p, film: $m) isa acted_in;
-  $m has title $titlem;
-limit 3;
-fetch {
-  ""title"": $titlem
-};","Missing DIRECTED relation constraint - only checks for acted_in, not both acted_in AND directed by same person"
-65,"Which movies have been reviewed and also acted in by the same person?","MATCH (p:Person)-[:REVIEWED]->(m:Movie)<-[:ACTED_IN]-(p)
+};",Question about acting but doesn't use acted_in relation
+65,Which movies have been reviewed and also acted in by the same person?,"MATCH (p:Person)-[:REVIEWED]->(m:Movie)<-[:ACTED_IN]-(p)
 RETURN m.title, p.name","match
   $p isa person;
   $m isa movie;
@@ -100,8 +38,8 @@ RETURN m.title, p.name","match
 fetch {
   ""title"": $titlem,
   ""name"": $namep
-};","Missing ACTED_IN relation constraint - only checks for reviewed, not both reviewed AND acted_in by same person"
-66,"List the first 3 people who have directed a movie and also followed someone.","MATCH (p:Person)-[:DIRECTED]->(:Movie)
+};",Question about acting but doesn't use acted_in relation
+66,List the first 3 people who have directed a movie and also followed someone.,"MATCH (p:Person)-[:DIRECTED]->(:Movie)
 WHERE exists{ (p)-[:FOLLOWS]->(:Person) }
 RETURN p.name
 LIMIT 3","match
@@ -111,42 +49,16 @@ LIMIT 3","match
 limit 3;
 fetch {
   ""name"": $namep
-};","Missing DIRECTED relation constraint - only checks for follows, not both directed AND follows"
-72,"Who are the top 5 oldest directors in the database?","MATCH (p:Person)-[:DIRECTED]->(:Movie)
-RETURN p.name, p.born
-ORDER BY p.born
-LIMIT 5","match
-  $p isa person;
-  $p has name $namep;
-  $p has born $bornp;
-sort $bornp asc;
-limit 5;
-fetch {
-  ""name"": $namep,
-  ""born"": $bornp
-};","Missing DIRECTED relation constraint - returns all people sorted by birth year, not just directors"
-74,"Find the first 3 people who have written and directed the same movie.","MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:DIRECTED]-(p)
-RETURN p.name AS person, m.title AS movie
-LIMIT 3","match
-  $p isa person;
-  $m isa movie;
-  (writer: $p, film: $m) isa wrote;
-  $p has name $namep;
-  $m has title $titlem;
-limit 3;
-fetch {
-  ""person"": $namep,
-  ""movie"": $titlem
-};","Missing DIRECTED relation constraint - only checks for wrote, not both wrote AND directed by same person"
-75,"Who are the first 3 actors in the movie with the tagline 'Speed has no limits'?","MATCH (m:Movie {tagline: 'Speed has no limits'})<-[:ACTED_IN]-(p:Person)
+};",Question asks about movies but query doesn't match movie entities
+75,Who are the first 3 actors in the movie with the tagline 'Speed has no limits'?,"MATCH (m:Movie {tagline: 'Speed has no limits'})<-[:ACTED_IN]-(p:Person)
 RETURN p.name
 LIMIT 3","match
   $p has name $namep;
 limit 3;
 fetch {
   ""name"": $namep
-};","Missing movie constraint and ACTED_IN relation - returns any 3 people, not actors in the specific movie"
-78,"List the first 3 movies that have been both acted in and reviewed by the same person.","MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:REVIEWED]-(p)
+};",Question asks about movies but query doesn't match movie entities; Question asks about persons but query doesn't match person entities
+78,List the first 3 movies that have been both acted in and reviewed by the same person.,"MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:REVIEWED]-(p)
 RETURN m.title
 LIMIT 3","match
   $p isa person;
@@ -156,34 +68,8 @@ LIMIT 3","match
 limit 3;
 fetch {
   ""title"": $titlem
-};","Missing REVIEWED relation constraint - only checks for acted_in, not both acted_in AND reviewed by same person"
-83,"Name the first 5 people who directed a movie with a tagline containing the word 'limits'.","MATCH (p:Person)-[:DIRECTED]->(m:Movie)
-WHERE m.tagline CONTAINS 'limits'
-RETURN p.name
-LIMIT 5","match
-  $p isa person;
-  $m isa movie;
-  (director: $p, film: $m) isa directed;
-  $p has name $namep;
-limit 5;
-fetch {
-  ""name"": $namep
-};","Missing tagline CONTAINS 'limits' filter"
-93,"List the first 3 movies reviewed with a summary 'Silly, but fun' and a tagline containing 'world'.","MATCH (m:Movie)<-[:REVIEWED]-(p:Person)
-WHERE m.tagline CONTAINS 'world' AND exists{(p)-[:REVIEWED]->(m) WHERE m.summary = 'Silly, but fun'}
-RETURN m.title
-LIMIT 3","match
-  $m isa movie;
-  $p isa person;
-  (reviewer: $p, film: $m) isa reviewed;
-  $m has tagline $taglinem;
-  $taglinem contains ""world"";
-  $m has title $titlem;
-limit 3;
-fetch {
-  ""title"": $titlem
-};","Missing review summary filter 'Silly, but fun' - only checks for tagline containing 'world'"
-96,"List the first 3 people who wrote and also reviewed the same movie.","MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:REVIEWED]-(p)
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+96,List the first 3 people who wrote and also reviewed the same movie.,"MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:REVIEWED]-(p)
 RETURN p.name AS person, m.title AS movie
 LIMIT 3","match
   $p isa person;
@@ -195,8 +81,8 @@ limit 3;
 fetch {
   ""person"": $namep,
   ""movie"": $titlem
-};","Missing REVIEWED relation constraint - only checks for wrote, not both wrote AND reviewed by same person"
-100,"What are the first 3 movies directed by someone who also reviewed them?","MATCH (d:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(d)
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+100,What are the first 3 movies directed by someone who also reviewed them?,"MATCH (d:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(d)
 RETURN m.title
 LIMIT 3","match
   $d isa person;
@@ -206,55 +92,8 @@ LIMIT 3","match
 limit 3;
 fetch {
   ""title"": $titlem
-};","Missing REVIEWED relation constraint - only checks for directed, not both directed AND reviewed by same person"
-106,"Name the top 5 people who followed and were followed by 'Laurence Fishburne'.","MATCH (p:Person)-[:FOLLOWS]->(laurence:Person {name: 'Laurence Fishburne'})<-[:FOLLOWS]-(p)
-RETURN p.name
-LIMIT 5","match
-  $p isa person;
-  $laurence isa person, has name ""Laurence Fishburne"";
-  (follower: $p, followed: $laurence) isa follows;
-  $p has name $namep;
-limit 5;
-fetch {
-  ""name"": $namep
-};","Missing mutual follow constraint - only checks if p follows Laurence, not if Laurence also follows p"
-107,"What are the first 3 movies where someone born in 1965 directed a person born in 1952?","MATCH (director:Person {born: 1965})-[:DIRECTED]->(movie:Movie)<-[:ACTED_IN]-(actor:Person {born: 1952})
-RETURN movie.title
-LIMIT 3","match
-  $director isa person, has born 1965;
-  $movie isa movie;
-  (director: $director, film: $movie) isa directed;
-  $movie has title $titlemovie;
-limit 3;
-fetch {
-  ""title"": $titlemovie
-};","Missing ACTED_IN constraint and actor born in 1952 filter"
-110,"List the first 3 people who produced and acted in the same movie.","MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:PRODUCED]-(p)
-RETURN p.name AS person, m.title AS movie
-LIMIT 3","match
-  $p isa person;
-  $m isa movie;
-  (actor: $p, film: $m) isa acted_in;
-  $p has name $namep;
-  $m has title $titlem;
-limit 3;
-fetch {
-  ""person"": $namep,
-  ""movie"": $titlem
-};","Missing PRODUCED relation constraint - only checks for acted_in, not both acted_in AND produced by same person"
-112,"Which 3 people born after 1970 reviewed a movie with a summary 'An amazing journey'?","MATCH (p:Person)-[r:REVIEWED]->(m:Movie)
-WHERE p.born > 1970 AND r.summary = 'An amazing journey'
-RETURN p.name
-LIMIT 3","match
-$p isa person, has name $name;
-$m isa movie;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
-$summary == ""An amazing journey"";
-limit 3;
-fetch {
-  ""name"": $name
-};","Missing born > 1970 filter"
-115,"List the top 5 movies directed by someone who also acted in them.","MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:ACTED_IN]-(p)
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+115,List the top 5 movies directed by someone who also acted in them.,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:ACTED_IN]-(p)
 WITH m, p
 ORDER BY m.votes DESC
 LIMIT 5
@@ -270,22 +109,7 @@ limit 5;
 fetch {
   ""movie"": $titlem,
   ""person"": $namep
-};","Missing ACTED_IN relation constraint - only checks for directed, not both directed AND acted_in by same person"
-116,"Who are the first 3 people to review a movie with a summary 'Pretty funny at times'?","MATCH (p:Person)-[r:REVIEWED]->(m:Movie)
-WHERE r.summary = 'Pretty funny at times'
-RETURN p.name
-ORDER BY r.rating DESC
-LIMIT 3","match
-$m isa movie, has title $title;
-$p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary, has rating $rating;
-$summary == ""Pretty funny at times"";
-sort $rating desc;
-limit 3;
-fetch {
-  ""title"": $title,
-  ""rating"": $rating
-};","Returns title and rating instead of person name as requested"
+};",Question about acting but doesn't use acted_in relation
 118,"Which 3 movies reviewed with a summary 'Dark, but compelling' were produced by someone born before 1960?","MATCH (m:Movie)<-[:REVIEWED {summary: 'Dark, but compelling'}]-()
 MATCH (m)<-[:PRODUCED]-(p:Person)
 WHERE p.born < 1960
@@ -299,8 +123,8 @@ LIMIT 3","match
 limit 3;
 fetch {
   ""title"": $titlem
-};","Missing REVIEWED relation with summary 'Dark, but compelling' filter"
-119,"Name the top 5 directors of movies that have a tagline mentioning 'Real World'.","MATCH (m:Movie)
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+119,Name the top 5 directors of movies that have a tagline mentioning 'Real World'.,"MATCH (m:Movie)
 WHERE m.tagline CONTAINS 'Real World'
 WITH m
 MATCH (d:Person)-[:DIRECTED]->(m)
@@ -317,91 +141,8 @@ limit 5;
 fetch {
   ""director"": $named,
   ""num_movies"": $num_movies
-};","Missing DIRECTED relation constraint - $d is not connected to $m"
-121,"List the top 5 movies where the director and the main actor were born in the same decade.","MATCH (actor:Person)-[:ACTED_IN]->(movie:Movie)<-[:DIRECTED]-(director:Person)
-WHERE actor.born / 10 = director.born / 10
-WITH movie, actor, director
-ORDER BY movie.votes DESC
-LIMIT 5
-RETURN movie.title AS movie, actor.name AS actor, director.name AS director","match
-  $actor isa person;
-  $movie isa movie;
-  (actor: $actor, film: $movie) isa acted_in;
-  $movie has title $titlemovie;
-  $actor has name $nameactor;
-  $director has name $namedirector;
-  $movie has votes $votesmovie;
-sort $votesmovie desc;
-limit 5;
-fetch {
-  ""movie"": $titlemovie,
-  ""actor"": $nameactor,
-  ""director"": $namedirector
-};","Missing DIRECTED relation constraint and same decade birth year comparison"
-122,"Who are the first 3 actors born after 1980 who acted in a movie produced by someone born before 1950?","MATCH (a:Person)-[:ACTED_IN]->(m:Movie)<-[:PRODUCED]-(p:Person)
-WHERE a.born > 1980 AND p.born < 1950
-RETURN a.name AS actor, m.title AS movie
-ORDER BY a.born
-LIMIT 3","match
-  $a isa person;
-  $m isa movie;
-  (actor: $a, film: $m) isa acted_in;
-  $a has born $borna;
-  $borna > 1980;
-  $p has born $bornp;
-  $bornp < 1950;
-  $a has name $namea;
-  $m has title $titlem;
-sort $borna asc;
-limit 3;
-fetch {
-  ""actor"": $namea,
-  ""movie"": $titlem
-};","Missing PRODUCED relation constraint - $p is not connected to $m"
-124,"List the first 5 people who followed someone with the same birth year.","MATCH (p1:Person)-[:FOLLOWS]->(p2:Person)
-WHERE p1.born = p2.born
-RETURN p1.name AS follower, p2.name AS followed
-LIMIT 5","match
-  $p1 isa person;
-  $p2 isa person;
-  (follower: $p1, followed: $p2) isa follows;
-  $p1 has name $namep1;
-  $p2 has name $namep2;
-limit 5;
-fetch {
-  ""follower"": $namep1,
-  ""followed"": $namep2
-};","Missing same birth year constraint - p1.born = p2.born filter not applied"
-125,"Which 3 people born before 1950 acted in a movie with a tagline containing 'limits'?","MATCH (p:Person)-[:ACTED_IN]->(m:Movie)
-WHERE p.born < 1950 AND m.tagline CONTAINS 'limits'
-RETURN p.name
-LIMIT 3","match
-  $p isa person;
-  $m isa movie;
-  (actor: $p, film: $m) isa acted_in;
-  $p has born $bornp;
-  $bornp < 1950;
-  $p has name $namep;
-limit 3;
-fetch {
-  ""name"": $namep
-};","Missing tagline CONTAINS 'limits' filter"
-126,"Name the top 5 directors who also reviewed the movies they directed.","MATCH (d:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(d)
-RETURN d.name AS director, count(*) AS num_reviewed
-ORDER BY num_reviewed DESC
-LIMIT 5","match
-  $d isa person;
-  $m isa movie;
-  (director: $d, film: $m) isa directed;
-  $d has name $named;
-reduce $num_reviewed = count($d) groupby $named;
-sort $num_reviewed desc;
-limit 5;
-fetch {
-  ""director"": $named,
-  ""num_reviewed"": $num_reviewed
-};","Missing REVIEWED relation constraint - only checks for directed, not both directed AND reviewed by same person"
-128,"List the top 5 actors who acted in movies reviewed with a summary 'Slapstick redeemed only by the Robin Williams and '.","MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[r:REVIEWED]-(reviewer:Person)
+};",Question asks about persons but query doesn't match person entities
+128,List the top 5 actors who acted in movies reviewed with a summary 'Slapstick redeemed only by the Robin Williams and '.,"MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[r:REVIEWED]-(reviewer:Person)
 WHERE r.summary = 'Slapstick redeemed only by the Robin Williams and '
 RETURN p.name AS actor, count(m) AS movie_count
 ORDER BY movie_count DESC
@@ -416,90 +157,16 @@ limit 5;
 fetch {
   ""actor"": $namep,
   ""movie_count"": $movie_count
-};","Missing REVIEWED relation and summary filter constraint"
-142,"Which movies have been both written and directed by the same person and what are their titles?","MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:DIRECTED]-(p)
-RETURN m.title","match
-  $p isa person;
-  $m isa movie;
-  (writer: $p, film: $m) isa wrote;
-  $m has title $titlem;
-fetch {
-  ""title"": $titlem
-};","Missing DIRECTED relation constraint - only checks for wrote, not both wrote AND directed by same person"
-147,"Who are the top 5 youngest producers in the database?","MATCH (p:Person)-[:PRODUCED]->(:Movie)
-RETURN p.name AS producer, p.born AS birthYear
-ORDER BY p.born DESC
-LIMIT 5","match
-  $p isa person;
-  $p has name $namep;
-  $p has born $bornp;
-sort $bornp desc;
-limit 5;
-fetch {
-  ""producer"": $namep,
-  ""birthYear"": $bornp
-};","Missing PRODUCED relation constraint - returns all people sorted by birth year, not just producers"
-151,"Which people follow Keanu Reeves and have also acted in a movie with him?","MATCH (follower:Person)-[:FOLLOWS]->(keanu:Person {name: 'Keanu Reeves'}),
-      (follower)-[:ACTED_IN]->(movie:Movie)<-[:ACTED_IN]-(keanu)
-RETURN follower.name AS follower, movie.title AS movie","match
-  $follower isa person;
-  $keanu isa person, has name ""Keanu Reeves"";
-  (follower: $follower, followed: $keanu) isa follows;
-  $movie isa movie;
-  (actor: $follower, film: $movie) isa acted_in;
-  $follower has name $namefollower;
-  $movie has title $titlemovie;
-fetch {
-  ""follower"": $namefollower,
-  ""movie"": $titlemovie
-};","Missing keanu also acted in the same movie constraint"
-152,"What are the names of the first 3 people who have produced, directed, and written the same movie?","MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:DIRECTED]-(p)-[:WROTE]->(m)
-RETURN p.name
-LIMIT 3","match
-  $p isa person;
-  $m isa movie;
-  (producer: $p, film: $m) isa produced;
-  $p has name $namep;
-limit 3;
-fetch {
-  ""name"": $namep
-};","Missing DIRECTED and WROTE relation constraints - only checks for produced, not all three relations"
-161,"List the top 5 people who have produced the most number of movies with their birth years.","MATCH (p:Person)-[:PRODUCED]->(m:Movie)
-WHERE p.born IS NOT NULL
-RETURN p.name AS producer, p.born AS birthYear, count(m) AS numberOfMovies
-ORDER BY numberOfMovies DESC
-LIMIT 5","match
-  $p isa person;
-  $m isa movie;
-  (producer: $p, film: $m) isa produced;
-  $p has born $bornp;
-reduce $numberOfMovies = count($m) groupby $bornp;
-sort $numberOfMovies desc;
-limit 5;
-fetch {
-  ""birthYear"": $bornp,
-  ""numberOfMovies"": $numberOfMovies
-};","Returns birthYear only, missing producer name - groupby should be on $namep not $bornp"
-162,"Which movies have been reviewed with a summary 'Fun, but a little far fetched' and what were their ratings?","MATCH (m:Movie)<-[r:REVIEWED]-(p:Person)
-WHERE r.summary = 'Fun, but a little far fetched'
-RETURN m.title AS movie, r.rating AS rating","match
-$m isa movie, has title $title;
-$p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
-$summary == ""Fun, but a little far fetched"";
-
-fetch {
-  ""title"": $title
-};","Missing rating in output - should return both title and rating"
-167,"Which movies have the tagline 'Speed has no limits' and who are the producers?","MATCH (m:Movie {tagline: 'Speed has no limits'})<-[:PRODUCED]-(p:Person)
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+167,Which movies have the tagline 'Speed has no limits' and who are the producers?,"MATCH (m:Movie {tagline: 'Speed has no limits'})<-[:PRODUCED]-(p:Person)
 RETURN m.title AS movie, p.name AS producer","match
   $m has title $titlem;
   $p has name $namep;
 fetch {
   ""movie"": $titlem,
   ""producer"": $namep
-};","Missing movie entity, tagline constraint, and PRODUCED relation - returns all movie-person combinations"
-168,"What are the names of the people who wrote and also acted in the same movie?","MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:ACTED_IN]-(p)
+};",Question asks about movies but query doesn't match movie entities
+168,What are the names of the people who wrote and also acted in the same movie?,"MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:ACTED_IN]-(p)
 RETURN p.name AS person","match
   $p isa person;
   $m isa movie;
@@ -507,49 +174,8 @@ RETURN p.name AS person","match
   $p has name $namep;
 fetch {
   ""person"": $namep
-};","Missing ACTED_IN relation constraint - only checks for wrote, not both wrote AND acted_in by same person"
-170,"What are the top 5 movies with the most actors involved and their release years?","MATCH (m:Movie)<-[:ACTED_IN]-(p:Person)
-WITH m, count(p) AS actorCount, m.released AS releaseYear
-RETURN m.title AS movie, releaseYear, actorCount
-ORDER BY actorCount DESC
-LIMIT 5","match
-  $m isa movie;
-  $p isa person;
-  (actor: $p, film: $m) isa acted_in;
-  $m has title $titlem;
-reduce $actorCount = count($p) groupby $titlem;
-sort $actorCount desc;
-limit 5;
-fetch {
-  ""movie"": $titlem,
-  ""actorCount"": $actorCount
-};","Missing release year in output"
-171,"List the first 3 movies that have been produced and directed by the same person.","MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:DIRECTED]-(p)
-RETURN m.title
-LIMIT 3","match
-  $p isa person;
-  $m isa movie;
-  (producer: $p, film: $m) isa produced;
-  $m has title $titlem;
-limit 3;
-fetch {
-  ""title"": $titlem
-};","Missing DIRECTED relation constraint - only checks for produced, not both produced AND directed by same person"
-172,"What are the roles of Keanu Reeves in movies he reviewed with a rating above 90?","MATCH (p:Person {name: 'Keanu Reeves'})-[r:REVIEWED]->(m:Movie)
-WHERE r.rating > 90
-MATCH (p)-[a:ACTED_IN]->(m)
-RETURN m.title AS movie, a.roles AS roles","match
-  $p isa person, has name ""Keanu Reeves"";
-  $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
-  $ratingr > 90;
-  $m has title $titlem;
-  $a has roles $rolesa;
-fetch {
-  ""movie"": $titlem,
-  ""roles"": $rolesa
-};","Missing ACTED_IN relation - $a is not connected to $p and $m"
-173,"List the movies that have been reviewed and also have a tagline including the word 'journey'.","MATCH (m:Movie)
+};",Question about acting but doesn't use acted_in relation
+173,List the movies that have been reviewed and also have a tagline including the word 'journey'.,"MATCH (m:Movie)
 WHERE m.tagline CONTAINS 'journey' AND exists{(m)<-[:REVIEWED]-()}
 RETURN m.title","match
   $m isa movie;
@@ -558,155 +184,8 @@ RETURN m.title","match
   $m has title $titlem;
 fetch {
   ""title"": $titlem
-};","Missing REVIEWED relation constraint - only checks for tagline, not that movie has been reviewed"
-175,"List the first 3 movies with roles that include 'Captain' and their actors.","MATCH (m:Movie)<-[ai:ACTED_IN]-(p:Person)
-WHERE exists{ (m)<-[ai2:ACTED_IN]-() WHERE any(role IN ai2.roles WHERE role CONTAINS 'Captain') }
-RETURN m.title AS movie, collect(p.name) AS actors
-LIMIT 3","match
-  $m isa movie;
-  $p isa person;
-  $ai (actor: $p, film: $m) isa acted_in;
-  $m has title $titlem;
-  $p has name $namep;
-limit 3;
-fetch {
-  ""movie"": $titlem,
-  ""actors"": $namep
-};","Missing roles CONTAINS 'Captain' filter"
-177,"Who are the first 3 people to have reviewed and also produced the same movie?","MATCH (p:Person)-[:REVIEWED]->(m:Movie)<-[:PRODUCED]-(p)
-RETURN p.name
-LIMIT 3","match
-  $p isa person;
-  $m isa movie;
-  (reviewer: $p, film: $m) isa reviewed;
-  $p has name $namep;
-limit 3;
-fetch {
-  ""name"": $namep
-};","Missing PRODUCED relation constraint - only checks for reviewed, not both reviewed AND produced by same person"
-179,"List the top 3 actors who have acted in movies with a tagline including the word 'limits'.","MATCH (p:Person)-[:ACTED_IN]->(m:Movie)
-WHERE m.tagline CONTAINS 'limits'
-RETURN p.name AS actor, count(*) AS movie_count
-ORDER BY movie_count DESC
-LIMIT 3","match
-  $p isa person;
-  $m isa movie;
-  (actor: $p, film: $m) isa acted_in;
-  $p has name $namep;
-reduce $movie_count = count($p) groupby $namep;
-sort $movie_count desc;
-limit 3;
-fetch {
-  ""actor"": $namep,
-  ""movie_count"": $movie_count
-};","Missing tagline CONTAINS 'limits' filter"
-180,"Which movies have a role listed as 'Hero' and who are the actors?","MATCH (m:Movie)<-[ai:ACTED_IN]-(p:Person)
-WHERE 'Hero' IN ai.roles
-RETURN m.title AS movie, p.name AS actor","match
-  $m isa movie;
-  $p isa person;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $rolesai;
-  $m has title $titlem;
-  $p has name $namep;
-fetch {
-  ""movie"": $titlem,
-  ""actor"": $namep
-};","Missing 'Hero' IN roles filter"
-183,"Who are the first 3 youngest actors to have directed a movie?","MATCH (p:Person)-[:ACTED_IN]->(:Movie)
-WHERE exists{ (p)-[:DIRECTED]->(:Movie) }
-RETURN p.name AS name, p.born AS birthYear
-ORDER BY p.born DESC
-LIMIT 3","match
-  $p isa person;
-  (director: $p) isa directed;
-  $p has name $namep;
-  $p has born $bornp;
-sort $bornp desc;
-limit 3;
-fetch {
-  ""name"": $namep,
-  ""birthYear"": $bornp
-};","Missing ACTED_IN relation constraint - only checks for directed, not both acted_in AND directed"
-184,"What are the first 3 movies where Keanu Reeves and Laurence Fishburne acted together?","MATCH (keanu:Person {name: 'Keanu Reeves'})-[:ACTED_IN]->(movie)<-[:ACTED_IN]-(laurence:Person {name: 'Laurence Fishburne'})
-RETURN movie.title
-LIMIT 3","match
-  $keanu isa person, has name ""Keanu Reeves"";
-  (actor: $keanu, film: $movie) isa acted_in;
-  $movie has title $titlemovie;
-limit 3;
-fetch {
-  ""title"": $titlemovie
-};","Missing Laurence Fishburne acted in same movie constraint"
-191,"Which movies released before 2000 have a person who both acted and directed in them?","MATCH (m:Movie)<-[:ACTED_IN]-(p:Person)-[:DIRECTED]->(m)
-WHERE m.released < 2000
-RETURN m.title AS movie, p.name AS person","match
-  $m isa movie;
-  $p isa person;
-  (actor: $p, film: $m) isa acted_in;
-  $m has released $releasedm;
-  $releasedm < 2000;
-  $m has title $titlem;
-  $p has name $namep;
-fetch {
-  ""movie"": $titlem,
-  ""person"": $namep
-};","Missing DIRECTED relation constraint - only checks for acted_in, not both acted_in AND directed by same person"
-194,"List the first 3 movies with at least one role listed as 'Villain' and their actors.","MATCH (m:Movie)<-[ai:ACTED_IN]-(p:Person)
-WHERE 'Villain' IN ai.roles
-RETURN m.title AS movie, collect(p.name) AS actors
-LIMIT 3","match
-  $m isa movie;
-  $p isa person;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $rolesai;
-  $m has title $titlem;
-  $p has name $namep;
-limit 3;
-fetch {
-  ""movie"": $titlem,
-  ""actors"": $namep
-};","Missing 'Villain' IN roles filter"
-196,"Which movies have been reviewed with a summary 'The coolest football movie ever' and who reviewed them?","MATCH (m:Movie)<-[r:REVIEWED]-(p:Person)
-WHERE r.summary = 'The coolest football movie ever'
-RETURN m.title AS movie, p.name AS reviewer","match
-$m isa movie, has title $title;
-$p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
-$summary == ""The coolest football movie ever"";
-
-fetch {
-  ""title"": $title
-};","Missing reviewer name in output - should return both title and reviewer"
-198,"Who are the first 3 people to have written and directed the same movie and what are those movies?","MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:DIRECTED]-(p)
-RETURN p.name AS person, m.title AS movie
-LIMIT 3","match
-  $p isa person;
-  $m isa movie;
-  (writer: $p, film: $m) isa wrote;
-  $p has name $namep;
-  $m has title $titlem;
-limit 3;
-fetch {
-  ""person"": $namep,
-  ""movie"": $titlem
-};","Missing DIRECTED relation constraint - only checks for wrote, not both wrote AND directed by same person"
-199,"List the top 5 movies with roles including 'Doctor' and the actors who played them.","MATCH (m:Movie)<-[:ACTED_IN]-(p:Person)
-WHERE any(role IN p.roles WHERE role CONTAINS 'Doctor')
-RETURN m.title AS movie, p.name AS actor
-ORDER BY m.votes DESC
-LIMIT 5","match
-  $m isa movie;
-  $p isa person;
-  (actor: $p, film: $m) isa acted_in;
-  $m has title $titlem;
-  $p has name $namep;
-  $m has votes $votesm;
-sort $votesm desc;
-limit 5;
-fetch {
-  ""movie"": $titlem,
-  ""actor"": $namep
-};","Missing roles CONTAINS 'Doctor' filter"
-200,"Which movies have a person who both produced and reviewed them and what are their titles?","MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:REVIEWED]-(p)
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+200,Which movies have a person who both produced and reviewed them and what are their titles?,"MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:REVIEWED]-(p)
 RETURN m.title","match
   $p isa person;
   $m isa movie;
@@ -714,39 +193,8 @@ RETURN m.title","match
   $m has title $titlem;
 fetch {
   ""title"": $titlem
-};","Missing REVIEWED relation constraint - only checks for produced, not both produced AND reviewed by same person"
-201,"What are the first 3 movies where the directors were also actors and their titles?","MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:ACTED_IN]-(p)
-RETURN m.title
-LIMIT 3","match
-  $p isa person;
-  $m isa movie;
-  (director: $p, film: $m) isa directed;
-  $m has title $titlem;
-limit 3;
-fetch {
-  ""title"": $titlem
-};","Missing ACTED_IN relation constraint - only checks for directed, not both directed AND acted_in by same person"
-205,"List the roles of actors in the first 3 movies produced by a person born after 1980.","MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[ai:ACTED_IN]-(a:Person)
-WHERE p.born > 1980
-WITH m, ai
-ORDER BY m.released
-LIMIT 3
-RETURN m.title AS movie, ai.roles AS roles","match
-  $p isa person;
-  $m isa movie;
-  (producer: $p, film: $m) isa produced;
-  $p has born $bornp;
-  $bornp > 1980;
-  $m has title $titlem;
-  $ai has roles $rolesai;
-  $m has released $releasedm;
-sort $releasedm asc;
-limit 3;
-fetch {
-  ""movie"": $titlem,
-  ""roles"": $rolesai
-};","Missing ACTED_IN relation - $ai is not connected to any person and movie"
-211,"List the first 3 people who directed and also acted in the same movie.","MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:ACTED_IN]-(p)
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+211,List the first 3 people who directed and also acted in the same movie.,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:ACTED_IN]-(p)
 RETURN p.name, m.title
 LIMIT 3","match
   $p isa person;
@@ -758,8 +206,8 @@ limit 3;
 fetch {
   ""name"": $namep,
   ""title"": $titlem
-};","Missing ACTED_IN relation constraint - only checks for directed, not both directed AND acted_in by same person"
-213,"Which movies released between 1980 and 1990 have been reviewed with a rating higher than 80?","MATCH (m:Movie)
+};",Question about acting but doesn't use acted_in relation
+213,Which movies released between 1980 and 1990 have been reviewed with a rating higher than 80?,"MATCH (m:Movie)
 WHERE m.released >= 1980 AND m.released <= 1990
 AND EXISTS {
   (m)<-[:REVIEWED]-(r:Person)
@@ -774,8 +222,8 @@ RETURN m.title, m.released","match
 fetch {
   ""title"": $titlem,
   ""released"": $releasedm
-};","Missing REVIEWED relation and rating > 80 filter"
-218,"List the first 3 movies that were both written and reviewed by the same person.","MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:REVIEWED]-(p)
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+218,List the first 3 movies that were both written and reviewed by the same person.,"MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:REVIEWED]-(p)
 RETURN m.title
 LIMIT 3","match
   $p isa person;
@@ -785,27 +233,8 @@ LIMIT 3","match
 limit 3;
 fetch {
   ""title"": $titlem
-};","Missing REVIEWED relation constraint - only checks for wrote, not both wrote AND reviewed by same person"
-220,"What are the first 3 movies produced by persons born before 1960 with a rating over 90?","MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[r:REVIEWED]-(reviewer:Person)
-WHERE p.born < 1960 AND r.rating > 90
-RETURN m.title
-ORDER BY m.released
-LIMIT 3","match
-  $p isa person;
-  $m isa movie;
-  (producer: $p, film: $m) isa produced;
-  $p has born $bornp;
-  $bornp < 1960;
-  $r has rating $ratingr;
-  $ratingr > 90;
-  $m has title $titlem;
-  $m has released $releasedm;
-sort $releasedm asc;
-limit 3;
-fetch {
-  ""title"": $titlem
-};","Missing REVIEWED relation - $r is not connected to the movie"
-222,"Which people have acted in and also reviewed the same movie? List the first 3.","MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:REVIEWED]-(p)
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+222,Which people have acted in and also reviewed the same movie? List the first 3.,"MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:REVIEWED]-(p)
 RETURN p.name AS person, m.title AS movie
 LIMIT 3","match
   $p isa person;
@@ -817,56 +246,57 @@ limit 3;
 fetch {
   ""person"": $namep,
   ""movie"": $titlem
-};","Missing REVIEWED relation constraint - only checks for acted_in, not both acted_in AND reviewed by same person"
-224,"List the first 3 people who have written and directed the same movie released after 2000.","MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:DIRECTED]-(p)
-WHERE m.released > 2000
-RETURN p.name, m.title
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+227,Name the first 3 people who produced a movie that they also acted in.,"MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:ACTED_IN]-(p)
+RETURN p.name
 LIMIT 3","match
   $p isa person;
   $m isa movie;
-  (writer: $p, film: $m) isa wrote;
-  $m has released $releasedm;
-  $releasedm > 2000;
+  (producer: $p, film: $m) isa produced;
   $p has name $namep;
-  $m has title $titlem;
 limit 3;
 fetch {
-  ""name"": $namep,
-  ""title"": $titlem
-};","Missing DIRECTED relation constraint - only checks for wrote, not both wrote AND directed by same person"
-268,"Which movies have a tagline ending with 'world'?","MATCH (m:Movie)
-WHERE m.tagline IS NOT NULL AND m.tagline =~ '.*world$'
-RETURN m.title, m.tagline","match
-  $m isa movie;
-  $m has tagline $taglinem;
-  $m has title $titlem;
-fetch {
-  ""title"": $titlem,
-  ""tagline"": $taglinem
-};","Missing tagline ends with 'world' filter"
-278,"Who has reviewed movies directed by Lana Wachowski?","MATCH (reviewer:Person)-[:REVIEWED]->(movie:Movie)<-[:DIRECTED]-(director:Person {name: 'Lana Wachowski'})
-RETURN reviewer.name AS reviewer, movie.title AS movie","match
-  $reviewer isa person;
-  $movie isa movie;
-  (reviewer: $reviewer, film: $movie) isa reviewed;
-  $reviewer has name $namereviewer;
-  $movie has title $titlemovie;
-fetch {
-  ""reviewer"": $namereviewer,
-  ""movie"": $titlemovie
-};","Missing DIRECTED by Lana Wachowski constraint"
-280,"Which movies have been produced and directed by the same person?","MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:DIRECTED]-(p)
-RETURN m.title, p.name","match
+  ""name"": $namep
+};",Question about acting but doesn't use acted_in relation
+248,"Who has produced, directed, and acted in the same movie?","MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:DIRECTED]-(p)
+WHERE exists{ (p)-[:ACTED_IN]->(m) }
+RETURN p.name AS person, m.title AS movie","match
   $p isa person;
   $m isa movie;
   (producer: $p, film: $m) isa produced;
+  $p has name $namep;
   $m has title $titlem;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};",Question about acting but doesn't use acted_in relation
+252,What are the distinct summaries available for movie reviews?,"MATCH (:Person)-[r:REVIEWED]->(:Movie)
+RETURN DISTINCT r.summary","match
+  $r has summary $summaryr;
+fetch {
+  ""summary"": $summaryr
+};",Question asks about movies but query doesn't match movie entities
+258,Which people have both acted in and reviewed the same movie?,"MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN p.name AS person, m.title AS movie","match
+  $p isa person;
+  $m isa movie;
+  (actor: $p, film: $m) isa acted_in;
+  $p has name $namep;
+  $m has title $titlem;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+259,List all persons who have directed a movie and also follow someone.,"MATCH (p:Person)-[:DIRECTED]->(:Movie)
+WHERE exists{ (p)-[:FOLLOWS]->(:Person) }
+RETURN p.name","match
+  $p isa person;
+  (follower: $p) isa follows;
   $p has name $namep;
 fetch {
-  ""title"": $titlem,
   ""name"": $namep
-};","Missing DIRECTED relation constraint - only checks for produced, not both produced AND directed by same person"
-283,"List all movies that Joel Silver has both produced and reviewed.","MATCH (p:Person {name: 'Joel Silver'})-[:PRODUCED]->(m:Movie)
+};",Question asks about movies but query doesn't match movie entities
+283,List all movies that Joel Silver has both produced and reviewed.,"MATCH (p:Person {name: 'Joel Silver'})-[:PRODUCED]->(m:Movie)
 WHERE EXISTS {(p)-[:REVIEWED]->(m)}
 RETURN m","match
   $p isa person, has name ""Joel Silver"";
@@ -881,8 +311,8 @@ fetch {
   ""votes"": $votesm,
   ""tagline"": $taglinem,
   ""released"": $releasedm
-};","Missing REVIEWED relation constraint - only checks for produced, not both produced AND reviewed"
-284,"Who are the directors of movies with more than 1000 votes?","MATCH (m:Movie)
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+284,Who are the directors of movies with more than 1000 votes?,"MATCH (m:Movie)
 WHERE m.votes > 1000
 MATCH (d:Person)-[:DIRECTED]->(m)
 RETURN d.name AS director, m.title AS movie","match
@@ -894,86 +324,251 @@ RETURN d.name AS director, m.title AS movie","match
 fetch {
   ""director"": $named,
   ""movie"": $titlem
-};","Missing DIRECTED relation - $d is not connected to $m"
-461,"What are the common movies acted in by people who were born in the same decade?","MATCH (p1:Person)-[:ACTED_IN]->(m:Movie)<-[:ACTED_IN]-(p2:Person)
-WHERE p1 <> p2 AND p1.born >= 1920 AND p1.born < 2000 AND p2.born >= 1920 AND p2.born < 2000
-      AND floor(p1.born / 10) = floor(p2.born / 10)
-RETURN p1.name AS person1, p2.name AS person2, collect(m.title) AS common_movies","match
-  $p1 isa person;
-  $m isa movie;
-  (actor: $p1, film: $m) isa acted_in;
-  $p1 has born $bornp1;
-  $bornp1 >= 1920;
-  $bornp1 < 2000;
-  $p2 has born $bornp2;
-  $bornp2 >= 1920;
-  $bornp2 < 2000;
-  $p2 has name $namep2;
-  $m has title $titlem;
-fetch {
-  ""person2"": $namep2,
-  ""common_movies"": $titlem
-};","Missing p2 acted_in same movie constraint, same decade constraint, and p1 != p2 constraint"
-466,"Who are the first 3 people to act in and review the same movie?","MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:REVIEWED]-(p)
-RETURN p.name AS person, m.title AS movie
+};",Question asks about persons but query doesn't match person entities
+312,Name 3 persons who have reviewed a movie and also acted in a different movie.,"MATCH (p:Person)-[:REVIEWED]->(:Movie)
+WHERE exists {
+  (p)-[:ACTED_IN]->(:Movie)
+}
+RETURN p.name
 LIMIT 3","match
+  $p isa person;
+  (actor: $p) isa acted_in;
+  $p has name $namep;
+limit 3;
+fetch {
+  ""name"": $namep
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+337,What are the names of the top 5 people who acted in and also reviewed the same movie?,"MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:REVIEWED]-(p)
+WITH p, count(*) AS count
+ORDER BY count DESC
+LIMIT 5
+RETURN p.name","match
   $p isa person;
   $m isa movie;
   (actor: $p, film: $m) isa acted_in;
   $p has name $namep;
-  $m has title $titlem;
-limit 3;
+reduce $count = count($m) groupby $namep;
+sort $count desc;
+limit 5;
 fetch {
-  ""person"": $namep,
-  ""movie"": $titlem
-};","Missing REVIEWED relation constraint - only checks for acted_in, not both acted_in AND reviewed by same person"
-469,"Name 3 persons who have produced movies but have not directed any.","MATCH (p:Person)-[:PRODUCED]->(m:Movie)
-WHERE NOT EXISTS { (p)-[:DIRECTED]->() }
-RETURN p.name
-LIMIT 3","match
+  ""name"": $namep
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+342,Which top 3 movies have been both produced and reviewed by the same person?,"MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:REVIEWED]-(p)
+WITH m, p
+ORDER BY m.votes DESC
+LIMIT 3
+RETURN m.title AS movie, p.name AS person","match
   $p isa person;
   $m isa movie;
   (producer: $p, film: $m) isa produced;
+  $m has title $titlem;
   $p has name $namep;
+  $m has votes $votesm;
+sort $votesm desc;
 limit 3;
 fetch {
-  ""name"": $namep
-};","Missing NOT DIRECTED negation filter"
-470,"List the names of 3 persons who have the name starting with 'L'.","MATCH (p:Person)
-WHERE p.name STARTS WITH 'L'
-RETURN p.name
+  ""movie"": $titlem,
+  ""person"": $namep
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+343,List the first 5 movies that have been acted in by someone with the role 'Captain' and reviewed with a rating below 60.,"MATCH (m:Movie)<-[:ACTED_IN]-(p:Person)
+WHERE 'Captain' IN p.roles
+WITH m
+MATCH (m)<-[r:REVIEWED]-()
+WHERE r.rating < 60
+RETURN m.title
+LIMIT 5","match
+  $m isa movie;
+  $p isa person;
+  (actor: $p, film: $m) isa acted_in;
+  $m has title $titlem;
+limit 5;
+fetch {
+  ""title"": $titlem
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+353,Who are the top 3 directors of movies that have been reviewed with a summary stating 'Pretty funny at times'?,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(r:Person)
+WHERE r.summary = 'Pretty funny at times'
+RETURN p.name AS director, count(*) AS num_movies
+ORDER BY num_movies DESC
 LIMIT 3","match
   $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  $r has summary ""Pretty funny at times"";
+  $p has name $namep;
+reduce $num_movies = count($p) groupby $namep;
+sort $num_movies desc;
+limit 3;
+fetch {
+  ""director"": $namep,
+  ""num_movies"": $num_movies
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+378,"List top 3 people who have directed, produced, and acted in the same movie.","MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:PRODUCED]-(p)-[:ACTED_IN]->(m)
+WITH p, count(m) AS movieCount
+ORDER BY movieCount DESC
+LIMIT 3
+RETURN p.name AS person, movieCount","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  $p has name $namep;
+reduce $movieCount = count($m) groupby $namep;
+sort $movieCount desc;
+limit 3;
+fetch {
+  ""person"": $namep,
+  ""movieCount"": $movieCount
+};",Question about acting but doesn't use acted_in relation
+403,List all persons who have directed and reviewed the same movie.,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN p.name AS person, m.title AS movie","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  $p has name $namep;
+  $m has title $titlem;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+407,Which directors have also acted in the movies they directed?,"MATCH (director:Person)-[:DIRECTED]->(movie:Movie)<-[:ACTED_IN]-(director)
+RETURN director.name AS director, collect(movie.title) AS movies","match
+  $director isa person;
+  $movie isa movie;
+  (director: $director, film: $movie) isa directed;
+  $director has name $namedirector;
+  $movie has title $titlemovie;
+fetch {
+  ""director"": $namedirector,
+  ""movies"": $titlemovie
+};",Question about acting but doesn't use acted_in relation
+422,Which movies have been reviewed by persons following Keanu Reeves?,"MATCH (follower:Person)-[:FOLLOWS]->(:Person {name: 'Keanu Reeves'}),
+      (follower)-[:REVIEWED]->(movie:Movie)
+RETURN movie.title AS movie, follower.name AS reviewer","match
+  $follower isa person;
+  $movie isa movie;
+  (reviewer: $follower, film: $movie) isa reviewed;
+  $movie has title $titlemovie;
+  $follower has name $namefollower;
+fetch {
+  ""movie"": $titlemovie,
+  ""reviewer"": $namefollower
+};",Question about following but doesn't use follows relation
+423,Who has directed and reviewed the same movie?,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN p.name AS person, m.title AS movie","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  $p has name $namep;
+  $m has title $titlem;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+435,List all movies where the producer has also acted.,"MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:ACTED_IN]-(p)
+RETURN m.title AS movie, p.name AS producer_actor","match
+  $p isa person;
+  $m isa movie;
+  (producer: $p, film: $m) isa produced;
+  $m has title $titlem;
+  $p has name $namep;
+fetch {
+  ""movie"": $titlem,
+  ""producer_actor"": $namep
+};",Question about acting but doesn't use acted_in relation
+438,List the top 5 youngest people who have written a movie.,"MATCH (p:Person)-[:WROTE]->(:Movie)
+RETURN p.name, p.born
+ORDER BY p.born DESC
+LIMIT 5","match
+  $p isa person;
+  $p has name $namep;
+  $p has born $bornp;
+sort $bornp desc;
+limit 5;
+fetch {
+  ""name"": $namep,
+  ""born"": $bornp
+};",Question asks about movies but query doesn't match movie entities
+497,List the titles of 3 movies that have been both acted in and reviewed by the same person.,"MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN m.title
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (actor: $p, film: $m) isa acted_in;
+  $m has title $titlem;
+limit 3;
+fetch {
+  ""title"": $titlem
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+502,What are the 3 most common summaries in the REVIEWED relationship?,"MATCH (:Person)-[r:REVIEWED]->(:Movie)
+RETURN r.summary, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","match
+  $r has summary $summaryr;
+reduce $count = count groupby $summaryr;
+sort $count desc;
+limit 3;
+fetch {
+  ""summary"": $summaryr,
+  ""count"": $count
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+519,Find 3 movies that were both directed and reviewed by the same person.,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN m.title, p.name
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  $m has title $titlem;
   $p has name $namep;
 limit 3;
 fetch {
+  ""title"": $titlem,
   ""name"": $namep
-};","Missing name STARTS WITH 'L' filter"
-475,"Who are the first 3 persons to have directed and acted in the same movie?","MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:DIRECTED]-(p)
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+524,List 3 movies that have been followed by the most persons.,"MATCH (m:Movie)<-[:REVIEWED]-(p:Person)
+RETURN m.title AS movie, count(p) AS followers
+ORDER BY followers DESC
+LIMIT 3","match
+  $m isa movie;
+  $p isa person;
+  (reviewer: $p, film: $m) isa reviewed;
+  $m has title $titlem;
+reduce $followers = count($p) groupby $titlem;
+sort $followers desc;
+limit 3;
+fetch {
+  ""movie"": $titlem,
+  ""followers"": $followers
+};",Question about following but doesn't use follows relation
+546,"Show top 3 persons who directed, produced, and acted in the same movie.","MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:PRODUCED]-(p)-[:ACTED_IN]->(m)
 RETURN p.name AS person, m.title AS movie
 LIMIT 3","match
   $p isa person;
   $m isa movie;
-  (actor: $p, film: $m) isa acted_in;
+  (director: $p, film: $m) isa directed;
   $p has name $namep;
   $m has title $titlem;
 limit 3;
 fetch {
   ""person"": $namep,
   ""movie"": $titlem
-};","Missing DIRECTED relation constraint - only checks for acted_in, not both acted_in AND directed by same person"
-581,"Which persons have acted in and directed the same movie?","MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:DIRECTED]-(p)
-RETURN p.name AS person, m.title AS movie","match
-  $p isa person;
+};",Question about acting but doesn't use acted_in relation
+558,Which movies released between 1990 and 2000 have been reviewed?,"MATCH (m:Movie)
+WHERE m.released >= 1990 AND m.released <= 2000
+AND exists{ (m)<-[:REVIEWED]-() }
+RETURN m","match
   $m isa movie;
-  (actor: $p, film: $m) isa acted_in;
-  $p has name $namep;
+  $m has released $releasedm;
+  $releasedm >= 1990;
+  $releasedm <= 2000;
   $m has title $titlem;
+  $m has votes $votesm;
+  $m has tagline $taglinem;
 fetch {
-  ""person"": $namep,
-  ""movie"": $titlem
-};","Missing DIRECTED relation constraint - only checks for acted_in, not both acted_in AND directed by same person"
-587,"List the top 5 movies that have not been reviewed.","MATCH (m:Movie)
+  ""title"": $titlem,
+  ""votes"": $votesm,
+  ""tagline"": $taglinem,
+  ""released"": $releasedm
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+587,List the top 5 movies that have not been reviewed.,"MATCH (m:Movie)
 WHERE NOT EXISTS { (m)<-[:REVIEWED]-() }
 RETURN m.title
 LIMIT 5","match
@@ -982,7 +577,7 @@ LIMIT 5","match
 limit 5;
 fetch {
   ""title"": $titlem
-};","Missing NOT REVIEWED negation filter - returns any 5 movies, not specifically movies without reviews"
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
 588,"Which persons born after 1980 have acted in, directed, or produced any movies?","MATCH (p:Person)
 WHERE p.born > 1980 AND (
   (p)-[:ACTED_IN]->(:Movie) OR
@@ -997,21 +592,21 @@ RETURN p","match
 fetch {
   ""name"": $namep,
   ""born"": $bornp
-};","Missing any of (acted_in OR directed OR produced) relation constraint"
-590,"List the top 3 pairs of persons who follow each other.","MATCH (p1:Person)-[:FOLLOWS]->(p2:Person)-[:FOLLOWS]->(p1)
-RETURN p1.name AS person1, p2.name AS person2
+};",Question asks about movies but query doesn't match movie entities; Question about acting but doesn't use acted_in relation
+615,Who are the top 3 oldest persons who have reviewed a movie?,"MATCH (p:Person)-[:REVIEWED]->(:Movie)
+RETURN p.name, p.born
+ORDER BY p.born
 LIMIT 3","match
-  $p1 isa person;
-  $p2 isa person;
-  (follower: $p1, followed: $p2) isa follows;
-  $p1 has name $namep1;
-  $p2 has name $namep2;
+  $p isa person;
+  $p has name $namep;
+  $p has born $bornp;
+sort $bornp asc;
 limit 3;
 fetch {
-  ""person1"": $namep1,
-  ""person2"": $namep2
-};","Missing mutual follows constraint - p2 also follows p1"
-682,"List the people who have written and reviewed the same movie.","MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:REVIEWED]-(p)
+  ""name"": $namep,
+  ""born"": $bornp
+};",Question asks about movies but query doesn't match movie entities; Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+642,Who wrote and acted in the same movie?,"MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:ACTED_IN]-(p)
 RETURN p.name AS person, m.title AS movie","match
   $p isa person;
   $m isa movie;
@@ -1021,24 +616,42 @@ RETURN p.name AS person, m.title AS movie","match
 fetch {
   ""person"": $namep,
   ""movie"": $titlem
-};","Missing REVIEWED relation constraint - only checks for wrote, not both wrote AND reviewed by same person"
-687,"Name the people who have the role of both actor and director in the most movies.","MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:DIRECTED]-(p)
-WITH p, count(m) AS num_actor_director_movies
-ORDER BY num_actor_director_movies DESC
-LIMIT 1
-RETURN p.name AS person, num_actor_director_movies","match
+};",Question about acting but doesn't use acted_in relation
+665,List the movies that have been followed by someone born in 1990.,"MATCH (p:Person)-[:FOLLOWS]->(follower:Person)-[:REVIEWED]->(m:Movie)
+WHERE p.born = 1990
+RETURN m.title","match
+  $p isa person;
+  $follower isa person;
+  (follower: $p, followed: $follower) isa follows;
+  $p has born 1990;
+  $m has title $titlem;
+fetch {
+  ""title"": $titlem
+};",Question asks about movies but query doesn't match movie entities
+668,List the people born in the 1960s who have directed a movie.,"MATCH (p:Person)-[:DIRECTED]->(:Movie)
+WHERE p.born >= 1960 AND p.born < 1970
+RETURN p.name AS director, p.born AS birthYear","match
+  $p isa person;
+  $p has born $bornp;
+  $bornp >= 1960;
+  $bornp < 1970;
+  $p has name $namep;
+fetch {
+  ""director"": $namep,
+  ""birthYear"": $bornp
+};",Question asks about movies but query doesn't match movie entities
+682,List the people who have written and reviewed the same movie.,"MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN p.name AS person, m.title AS movie","match
   $p isa person;
   $m isa movie;
-  (actor: $p, film: $m) isa acted_in;
+  (writer: $p, film: $m) isa wrote;
   $p has name $namep;
-reduce $num_actor_director_movies = count($m) groupby $namep;
-sort $num_actor_director_movies desc;
-limit 1;
+  $m has title $titlem;
 fetch {
   ""person"": $namep,
-  ""num_actor_director_movies"": $num_actor_director_movies
-};","Missing DIRECTED relation constraint - only checks for acted_in, not both acted_in AND directed by same person"
-689,"Which movies have been directed by someone who has also acted in them?","MATCH (m:Movie)<-[:DIRECTED]-(p:Person)-[:ACTED_IN]->(m)
+  ""movie"": $titlem
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+689,Which movies have been directed by someone who has also acted in them?,"MATCH (m:Movie)<-[:DIRECTED]-(p:Person)-[:ACTED_IN]->(m)
 RETURN m.title AS movie, p.name AS person","match
   $m isa movie;
   $p isa person;
@@ -1048,19 +661,8 @@ RETURN m.title AS movie, p.name AS person","match
 fetch {
   ""movie"": $titlem,
   ""person"": $namep
-};","Missing ACTED_IN relation constraint - only checks for directed, not both directed AND acted_in by same person"
-691,"Name the first 3 people who have produced and acted in the same movie.","MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:PRODUCED]-(p)
-RETURN p.name
-LIMIT 3","match
-  $p isa person;
-  $m isa movie;
-  (actor: $p, film: $m) isa acted_in;
-  $p has name $namep;
-limit 3;
-fetch {
-  ""name"": $namep
-};","Missing PRODUCED relation constraint - only checks for acted_in, not both acted_in AND produced by same person"
-698,"List the people who have directed and reviewed the same movie.","MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(p)
+};",Question about acting but doesn't use acted_in relation
+698,List the people who have directed and reviewed the same movie.,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(p)
 RETURN p.name AS person, m.title AS movie","match
   $p isa person;
   $m isa movie;
@@ -1070,4 +672,76 @@ RETURN p.name AS person, m.title AS movie","match
 fetch {
   ""person"": $namep,
   ""movie"": $titlem
-};","Missing REVIEWED relation constraint - only checks for directed, not both directed AND reviewed by same person"
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+706,Retrieve the top five movies released in the 2000s that were either directed or produced by the same person.,"MATCH (m:Movie)
+WHERE m.released >= 2000 AND m.released < 2010
+AND EXISTS {
+  (p:Person)-[:DIRECTED]->(m)
+  WHERE (p)-[:PRODUCED]->(m)
+}
+RETURN m.title, m.released
+ORDER BY m.votes DESC
+LIMIT 5","match
+  $m isa movie;
+  $m has released $releasedm;
+  $releasedm >= 2000;
+  $releasedm < 2010;
+  $m has title $titlem;
+  $m has votes $votesm;
+sort $votesm desc;
+limit 5;
+fetch {
+  ""title"": $titlem,
+  ""released"": $releasedm
+};",Question asks about persons but query doesn't match person entities
+715,Find the first three people who produced a movie and have a name starting with 'J'.,"MATCH (p:Person)-[:PRODUCED]->(:Movie)
+WHERE p.name STARTS WITH 'J'
+RETURN p.name
+LIMIT 3","match
+  $p isa person;
+  $p has name $namep;
+limit 3;
+fetch {
+  ""name"": $namep
+};",Question asks about movies but query doesn't match movie entities
+719,Who are the first three people who have directed and reviewed the same movie?,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN p.name
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  $p has name $namep;
+limit 3;
+fetch {
+  ""name"": $namep
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+721,"Find the first three movies that have been reviewed with the summary 'Silly, but fun' and were released in the 1990s.","MATCH (m:Movie)<-[:REVIEWED {summary: 'Silly, but fun'}]-()
+WHERE m.released >= 1990 AND m.released < 2000
+RETURN m.title
+LIMIT 3","match
+  $m isa movie;
+  $m has released $releasedm;
+  $releasedm >= 1990;
+  $releasedm < 2000;
+  $m has title $titlem;
+limit 3;
+fetch {
+  ""title"": $titlem
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute
+725,What are the top five movies that have been both written and reviewed by the same person?,"MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:REVIEWED]-(p)
+WITH m, p
+ORDER BY m.votes DESC
+LIMIT 5
+RETURN m.title AS movie, p.name AS person","match
+  $p isa person;
+  $m isa movie;
+  (writer: $p, film: $m) isa wrote;
+  $m has title $titlem;
+  $p has name $namep;
+  $m has votes $votesm;
+sort $votesm desc;
+limit 5;
+fetch {
+  ""movie"": $titlem,
+  ""person"": $namep
+};",Question about reviews/ratings but doesn't use reviewed relation or rating attribute

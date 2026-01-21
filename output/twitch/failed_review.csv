@@ -1,86 +1,18 @@
 original_index,question,cypher,typeql,review_reason
-6,Who are the top 3 VIPs in the stream named 'summit1g'?,"MATCH (s:Stream {name: 'summit1g'})<-[:VIP]-(vip:User)
-RETURN vip.name AS vip, vip.followers AS followers
-ORDER BY followers DESC
+454,Identify the top 3 games played by streams with a description containing 'hilarious moments'.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
+WHERE s.description CONTAINS 'hilarious moments'
+RETURN g.name AS game, count(*) AS count
+ORDER BY count DESC
 LIMIT 3","match
-  $s isa stream, has name ""summit1g"";
-  vip_status (channel_with_vips: $s, vip_user: $vip);
-  $vip has name $vn;
-limit 3;
-fetch { ""vip"": $vn };",Users don't have followers attribute; cannot sort VIPs by followers as requested
-26,What are the first 5 streams that have been played by more than 5 different users?,"MATCH (s:Stream)<-[:PLAYS]-(u:User)
-WITH s, count(distinct u) as userCount
-WHERE userCount > 5
-RETURN s.name as streamName, s.url as streamUrl, userCount
-ORDER BY userCount DESC
-LIMIT 5","match
-  $s isa stream, has name $sn, has url $su;
-  game_play (streaming_channel: $s, played_game: $g);
-reduce $gameCount = count($g) groupby $sn, $su;
-sort $gameCount desc;
-limit 5;",Nonsensical question - streams don't get played by users; TypeQL counts games instead
-43,Who are the top 3 users who are VIPs in the stream with the name '9linda'?,"MATCH (s:Stream {name: '9linda'})<-[:VIP]-(u:User)
-RETURN u.name AS user, u.followers AS followers
-ORDER BY followers DESC
+  $s isa stream, has description $d;
+  $d like "".*hilarious moments.*"";
+  (streaming_channel: $s, played_game: $g) isa game_play;
+fetch { ""game"": $g };",Question asks for 3 items but no limit clause found
+554,What are the names of the first 3 languages used by streams with a description containing 'strategy'?,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)
+WHERE s.description CONTAINS 'strategy'
+RETURN l.name
 LIMIT 3","match
-  $s isa stream, has name ""9linda"";
-  vip_status (channel_with_vips: $s, vip_user: $u);
-  $u has name $un;
-limit 3;
-fetch { ""user"": $un };",Users don't have followers attribute; cannot sort VIPs by followers as requested
-99,Which 3 users have moderated the most streams and users combined?,"MATCH (u:User)-[:MODERATOR]->(s)
-WHERE s:Stream OR s:User
-WITH u, count(s) AS moderations
-RETURN u.name AS user, moderations
-ORDER BY moderations DESC
-LIMIT 3","match
-  $u isa user, has name $un;
-  moderation (moderating_user: $u, moderated_channel: $s);
-reduce $moderations = count($s) groupby $un;
-sort $moderations desc;
-limit 3;","TypeQL only counts moderated streams, not moderated users - doesn't count 'streams and users combined' as asked"
-128,Which streams have chatters who have less than 1000 followers?,"MATCH (s:Stream)<-[:CHATTER]-(u:User)
-WHERE u.followers < 1000
-RETURN s, u","match
-  chat_activity (channel_with_chatters: $s, chatting_user: $u);
-fetch { ""stream"": $s.name, ""user"": $u.name };",Users don't have followers attribute in schema; TypeQL removes the filter entirely
-142,What are the top 5 streams with the longest descriptions?,"MATCH (s:Stream)
-WHERE s.description IS NOT NULL
-RETURN s.name, s.description
-ORDER BY size(s.description) DESC
-LIMIT 5","match
-  $s isa stream, has name $sn, has description $d;
-limit 5;
-fetch { ""name"": $sn, ""description"": $d };",TypeQL doesn't order by description length - just has limit 5 without sorting
-152,Which 3 streams have the highest ratio of followers to total view count?,"MATCH (s:Stream)
-WHERE s.followers IS NOT NULL AND s.total_view_count IS NOT NULL
-RETURN s.name AS stream, toFloat(s.followers) / s.total_view_count AS follower_to_view_ratio
-ORDER BY follower_to_view_ratio DESC
-LIMIT 3","match
-  $s isa stream, has name $sn, has followers $f, has total_view_count $tvc;
-sort $f desc;
-limit 3;
-fetch { ""stream"": $sn, ""followers"": $f, ""total_view_count"": $tvc };","TypeQL just sorts by followers, doesn't compute ratio of followers/views as asked"
-359,Find the descriptions of streams that have chatted with the user '9linda'.,"MATCH (s:Stream)-[:CHATTER]->(:User {name: '9linda'})
-WHERE s.description IS NOT NULL
-RETURN s.description","match
-  $u isa user, has name ""9linda"";
-  chat_activity (chatting_channel: $s, chatting_user: $u);
-  $s has description $d;
-fetch { ""description"": $d };",Wrong relation direction - question has 'streams that chatted with user' which is semantically backwards
-207,List the first 3 streams that have chatters who are also streams.,"MATCH (s:Stream)<-[:CHATTER]-(chatter:User)
-WHERE exists{ (chatter:Stream) }
-RETURN s.name AS stream, chatter.name AS chatter
-LIMIT 3",,"Query logic error: chatters are users, not streams - checking if User is also Stream is a type mismatch"
-227,Which streams are played by users with a name containing 'doduik' and have a total view count above 3000?,"MATCH (s:Stream)<-[:PLAYS]-(u:User)
-WHERE u.name CONTAINS 'doduik' AND s.total_view_count > 3000
-RETURN s",,"Cypher query error: PLAYS relationship is Stream->Game, not User->Stream"
-459,Show the streams that have been moderated by a user more than once.,"MATCH (s:Stream)<-[:MODERATOR]-(u:User)
-WITH s, u, count(*) AS modCount
-WHERE modCount > 1
-RETURN s, u, modCount",,Query semantics unclear - moderation relationship is binary and single instance per user-stream pair
-526,Name the streams that are VIPs in the stream named 'itsbigchase'.,"MATCH (s:Stream)-[:VIP]->(stream:Stream {name: 'itsbigchase'})
-RETURN s.name AS stream_name",,Schema mismatch: VIP relationship requires User as vip_user - streams cannot be VIPs
-533,List the streams that have the same game played by both itsbigchase and 9linda.,"MATCH (s1:Stream)<-[:CHATTER]-(u1:User {name: 'itsbigchase'})-[:PLAYS]->(g:Game)<-[:PLAYS]-(u2:User {name: '9linda'})-[:CHATTER]->(s2:Stream)
-WHERE s1 = s2
-RETURN s1",,Cypher query semantically incorrect: PLAYS relationship is Stream->Game not User->Game
+  $s isa stream, has description $d;
+  $d like "".*strategy.*"";
+  (channel: $s, used_language: $l) isa language_usage;
+fetch { ""language"": $l };",Question asks for 3 items but no limit clause found

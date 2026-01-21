@@ -1,1 +1,1007 @@
 original_index,question,cypher,error
+242,Identify the top 5 hashtags used in tweets from '2020-12-06'.,"MATCH (t:Tweet)-[:TAGS]->(h:Hashtag)
+WHERE t.created_at >= datetime('2020-12-06') AND t.created_at < datetime('2020-12-07') 
+RETURN h.name AS hashtag, count(*) AS count
+ORDER BY count DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 7:27:
+    match
+      $t isa tweet, has created_at $created_at;
+      $created_at >= 2020-12-06T00:00:00;
+      $created_at < 2020-12-07T00:00:00;
+      tags (tagged_tweet: $t, tag: $h);
+      $h has hashtag_name $name;
+--> reduce $count = count($t), groupby $name;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""hashtag"": $name, ""count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+245,Which users with a location of 'Sweden' follow more than 10 users?,"MATCH (u:User)
+WHERE u.location = 'Sweden' AND count{(u)-[:FOLLOWS]->(:User)} > 10
+RETURN u","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 4:27:
+    match
+      $u isa user, has location ""Sweden"", has screen_name $sn, has name $n;
+      follows (follower: $u, followed: $f);
+--> reduce $count = count($f), groupby $sn, $n;
+                               ^
+    $count > 10;
+    fetch { ""screen_name"": $sn, ""name"": $n };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+248,What are the top 5 links contained in the tweets posted by users with fewer than 100 followers?,"MATCH (u:User)-[:POSTS]->(t:Tweet)-[:CONTAINS]->(l:Link)
+WHERE u.followers < 100
+RETURN l.url, count(*) as count
+ORDER BY count DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 7:27:
+    match
+      $u isa user, has followers $followers;
+      $followers < 100;
+      posts (author: $u, content: $t);
+      contains (containing_tweet: $t, contained_link: $l);
+      $l has link_url $url;
+--> reduce $count = count($t), groupby $url;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""url"": $url, ""count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+254,What are the top 5 hashtags in tweets containing the word 'education'?,"MATCH (t:Tweet)-[:TAGS]->(h:Hashtag)
+WHERE t.text CONTAINS 'education'
+RETURN h.name AS hashtag, count(*) AS count
+ORDER BY count DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:27:
+    match
+      $t isa tweet, has text $text;
+      $text like "".*education.*"";
+      tags (tagged_tweet: $t, tag: $h);
+      $h has hashtag_name $name;
+--> reduce $count = count($t), groupby $name;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""hashtag"": $name, ""count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+264,What are the top 5 sources used in tweets by users located in 'Sweden'?,"MATCH (u:User {location: 'Sweden'})-[:POSTS]->(t:Tweet)-[:USING]->(s:Source)
+RETURN s.name AS source, count(*) AS count
+ORDER BY count DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:27:
+    match
+      $u isa user, has location ""Sweden"";
+      posts (author: $u, content: $t);
+      using (tweet_content: $t, platform: $s);
+      $s has source_name $name;
+--> reduce $count = count($t), groupby $name;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""source"": $name, ""count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+271,Show the top 5 users that 'Neo4j' interacts with based on the number of interactions.,"MATCH (me:Me {screen_name: 'neo4j'})-[i:INTERACTS_WITH]->(u:User)
+RETURN u.screen_name AS user, count(i) AS interactions
+ORDER BY interactions DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 5:27:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      $i (interactor: $me, target: $u) isa interacts_with;
+      $u has screen_name $sn;
+--> reduce $count = count($i), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""user"": $sn, ""interactions"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+282,List the top 5 sources used in tweets posted by 'Neo4j'.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:USING]->(source:Source)
+RETURN source.name AS source, count(*) AS tweet_count
+ORDER BY tweet_count DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:31:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      posts (author: $me, content: $tweet);
+      using (tweet_content: $tweet, platform: $source);
+      $source has source_name $name;
+--> reduce $count = count($tweet), groupby $name;
+                                   ^
+    sort $count desc;
+    limit 5;
+    fetch { ""source"": $name, ""tweet_count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+289,Show the top 5 tweets by 'Neo4j' that were posted from a location outside 'Graphs Are Everywhere'.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)
+WHERE me.location <> 'Graphs Are Everywhere'
+RETURN tweet.text, tweet.created_at
+ORDER BY tweet.favorites DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base, thing_constraint, relation, comparator, list_index, IS, PLUS, MINUS, TIMES, DIVIDE, POWER, or MODULO
+Near 3:13:
+    match
+      $me isa me, has screen_name ""neo4j"", has location $loc;
+-->   not { $loc = ""Graphs Are Everywhere""; };
+                 ^
+      posts (author: $me, content: $tweet);
+      $tweet has text $text, has created_at $created_at, has favorites $favorites;
+    sort $favorites desc;
+    limit 5;
+    fetch { ""text"": $text, ""created_at"": $created_at };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+290,Who are the top 3 users that 'Neo4j' amplifies the most?,"MATCH (me:Me {screen_name: 'neo4j'})-[a:AMPLIFIES]->(u:User)
+RETURN u.screen_name AS user, count(a) AS amplifications
+ORDER BY amplifications DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 5:27:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      $a (amplifier: $me, amplified_user: $u) isa amplifies;
+      $u has screen_name $sn;
+--> reduce $count = count($a), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 3;
+    fetch { ""user"": $sn, ""amplifications"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+301,List all users who have been retweeted by 'Neo4j' at least twice.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:RETWEETS]->(retweeted:Tweet)<-[:POSTS]-(user:User)
+WITH user, count(retweeted) AS retweet_count
+WHERE retweet_count >= 2
+RETURN user.screen_name, retweet_count","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 7:35:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      posts (author: $me, content: $tweet);
+      retweets (retweeting_tweet: $tweet, original_tweet: $retweeted);
+      posts (author: $user, content: $retweeted);
+      $user has screen_name $sn;
+--> reduce $count = count($retweeted), groupby $sn;
+                                       ^
+    $count >= 2;
+    fetch { ""screen_name"": $sn, ""retweet_count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+303,Display the first 3 users who mention 'Neo4j' in their tweets and have a similar profile image.,"MATCH (u:User)-[:POSTS]->(t:Tweet)-[:MENTIONS]->(:Me {name: 'Neo4j'})
+WHERE u.profile_image_url IS NOT NULL
+WITH u, count(t) AS mentions
+ORDER BY mentions DESC
+LIMIT 3
+RETURN u.name, u.screen_name, u.profile_image_url, mentions","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:27:
+    match
+      $u isa user, has name $name, has screen_name $sn, has profile_image_url $img;
+      posts (author: $u, content: $t);
+      $me isa me, has name ""Neo4j"";
+      mentions (source_tweet: $t, mentioned_user: $me);
+--> reduce $count = count($t), groupby $name, $sn, $img;
+                               ^
+    sort $count desc;
+    limit 3;
+    fetch { ""name"": $name, ""screen_name"": $sn, ""profile_image_url"": $img, ""mentions"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+304,Identify all tweets by 'Neo4j' that were posted using a source other than 'Buffer'.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:USING]->(source:Source)
+WHERE source.name <> 'Buffer'
+RETURN tweet","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected type_constraint_base, thing_constraint, relation, comparator, list_index, IS, PLUS, MINUS, TIMES, DIVIDE, POWER, or MODULO
+Near 6:14:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      posts (author: $me, content: $tweet);
+      using (tweet_content: $tweet, platform: $source);
+      $source has source_name $name;
+-->   not { $name = ""Buffer""; };
+                  ^
+      $tweet has text $text, has tweet_id $id;
+    fetch { ""tweet_id"": $id, ""text"": $text };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+320,What are the names of the top 3 hashtags used in tweets?,"MATCH (t:Tweet)-[:TAGS]->(h:Hashtag)
+RETURN h.name AS hashtag, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 5:27:
+    match
+      $t isa tweet;
+      tags (tagged_tweet: $t, tag: $h);
+      $h has hashtag_name $name;
+--> reduce $count = count($t), groupby $name;
+                               ^
+    sort $count desc;
+    limit 3;
+    fetch { ""hashtag"": $name, ""count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+323,What are the top 3 sources used in tweets by 'Neo4j'?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:USING]->(source:Source)
+RETURN source.name AS source, count(*) AS tweet_count
+ORDER BY tweet_count DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:31:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      posts (author: $me, content: $tweet);
+      using (tweet_content: $tweet, platform: $source);
+      $source has source_name $name;
+--> reduce $count = count($tweet), groupby $name;
+                                   ^
+    sort $count desc;
+    limit 3;
+    fetch { ""source"": $name, ""tweet_count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+329,What are the top 3 tweets retweeted by other users?,"MATCH (t:Tweet)<-[:RETWEETS]-(retweeted:Tweet)
+RETURN t, count(retweeted) AS retweets
+ORDER BY retweets DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 4:35:
+    match
+      $t isa tweet, has text $text, has tweet_id $id;
+      retweets (original_tweet: $t, retweeting_tweet: $retweeted);
+--> reduce $count = count($retweeted), groupby $id, $text;
+                                       ^
+    sort $count desc;
+    limit 3;
+    fetch { ""tweet_id"": $id, ""text"": $text, ""retweets"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+332,What are the top 3 locations from where the most tweets originate?,"MATCH (u:User)-[:POSTS]->(t:Tweet)
+WHERE u.location IS NOT NULL
+RETURN u.location, count(t) AS tweet_count
+ORDER BY tweet_count DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 4:27:
+    match
+      $u isa user, has location $location;
+      posts (author: $u, content: $t);
+--> reduce $count = count($t), groupby $location;
+                               ^
+    sort $count desc;
+    limit 3;
+    fetch { ""location"": $location, ""tweet_count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+334,Who are the top 3 users that have interacted with 'Neo4j' the most?,"MATCH (me:Me {screen_name: 'neo4j'})<-[:INTERACTS_WITH]-(u:User)
+RETURN u.screen_name AS user, count(*) AS interactions
+ORDER BY interactions DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 5:27:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      $i (interactor: $u, target: $me) isa interacts_with;
+      $u has screen_name $sn;
+--> reduce $count = count($i), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 3;
+    fetch { ""user"": $sn, ""interactions"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+340,Who are the top 3 users based on the number of users they interact with?,"MATCH (u:User)-[:INTERACTS_WITH]->(other:User)
+WITH u, count(other) AS num_interactions
+ORDER BY num_interactions DESC
+LIMIT 3
+RETURN u.name AS user, num_interactions","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 4:31:
+    match
+      $u isa user, has name $name;
+      interacts_with (interactor: $u, target: $other);
+--> reduce $count = count($other), groupby $name;
+                                   ^
+    sort $count desc;
+    limit 3;
+    fetch { ""user"": $name, ""num_interactions"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+346,Which users have 'Neo4j' mentioned in its tweets the most?,"MATCH (u:User)-[:POSTS]->(t:Tweet)-[:MENTIONS]->(:User {name: 'Neo4j'})
+RETURN u.name AS user, count(t) AS mentions
+ORDER BY mentions DESC
+LIMIT 10","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:27:
+    match
+      $u isa user, has name $name;
+      posts (author: $u, content: $t);
+      $me isa me, has name ""Neo4j"";
+      mentions (source_tweet: $t, mentioned_user: $me);
+--> reduce $count = count($t), groupby $name;
+                               ^
+    sort $count desc;
+    limit 10;
+    fetch { ""user"": $name, ""mentions"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+351,Who are the top 3 users that 'Neo4j' retweets mentions from?,"MATCH (me:Me {screen_name: 'neo4j'})-[:RT_MENTIONS]->(user:User)
+RETURN user.screen_name AS user, count(*) AS mentions
+ORDER BY mentions DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 5:28:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      $rt (mentioner: $me, mentioned_user: $user) isa rt_mentions;
+      $user has screen_name $sn;
+--> reduce $count = count($rt), groupby $sn;
+                                ^
+    sort $count desc;
+    limit 3;
+    fetch { ""user"": $sn, ""mentions"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+354,What are the names of the top 3 sources from tweets retweeted by 'Neo4j'?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet)-[:RETWEETS]->(retweetedTweet)-[:USING]->(source:Source)
+RETURN source.name AS source, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 7:40:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      posts (author: $me, content: $tweet);
+      retweets (retweeting_tweet: $tweet, original_tweet: $retweetedTweet);
+      using (tweet_content: $retweetedTweet, platform: $source);
+      $source has source_name $name;
+--> reduce $count = count($retweetedTweet), groupby $name;
+                                            ^
+    sort $count desc;
+    limit 3;
+    fetch { ""source"": $name, ""count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+355,Who are the 3 users with the most tweets that contain the hashtag 'education'?,"MATCH (u:User)-[:POSTS]->(t:Tweet)-[:TAGS]->(:Hashtag {name: 'education'})
+WITH u, count(t) AS tweet_count
+ORDER BY tweet_count DESC
+LIMIT 3
+RETURN u.name AS user, tweet_count","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:27:
+    match
+      $u isa user, has name $name;
+      posts (author: $u, content: $t);
+      tags (tagged_tweet: $t, tag: $h);
+      $h has hashtag_name ""education"";
+--> reduce $count = count($t), groupby $name;
+                               ^
+    sort $count desc;
+    limit 3;
+    fetch { ""user"": $name, ""tweet_count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+358,Which users from 'Graphs Are Everywhere' have posted the most tweets?,"MATCH (u:User {location: 'Graphs Are Everywhere'})
+MATCH (u)-[:POSTS]->(t:Tweet)
+RETURN u.screen_name AS user, count(t) AS num_tweets
+ORDER BY num_tweets DESC
+LIMIT 10","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 4:27:
+    match
+      $u isa user, has location ""Graphs Are Everywhere"", has screen_name $sn;
+      posts (author: $u, content: $t);
+--> reduce $count = count($t), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 10;
+    fetch { ""user"": $sn, ""num_tweets"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+369,What are the top 3 hashtags used in tweets posted by 'neo4j'?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet)-[:TAGS]->(hashtag)
+RETURN hashtag.name AS hashtag, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:31:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      posts (author: $me, content: $tweet);
+      tags (tagged_tweet: $tweet, tag: $hashtag);
+      $hashtag has hashtag_name $name;
+--> reduce $count = count($tweet), groupby $name;
+                                   ^
+    sort $count desc;
+    limit 3;
+    fetch { ""hashtag"": $name, ""count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+372,What are the top 5 locations from where users have tweeted?,"MATCH (u:User)-[:POSTS]->(t:Tweet)
+WHERE u.location IS NOT NULL
+RETURN u.location, count(t) AS num_tweets
+ORDER BY num_tweets DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 4:27:
+    match
+      $u isa user, has location $location;
+      posts (author: $u, content: $t);
+--> reduce $count = count($t), groupby $location;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""location"": $location, ""num_tweets"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+374,Which users interact most frequently with 'neo4j' and list the top 5?,"MATCH (me:Me {screen_name: 'neo4j'})<-[i:INTERACTS_WITH]-(u:User)
+RETURN u.screen_name AS user, count(i) AS interactions
+ORDER BY interactions DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 5:27:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      $i (interactor: $u, target: $me) isa interacts_with;
+      $u has screen_name $sn;
+--> reduce $count = count($i), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""user"": $sn, ""interactions"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+376,What are the top 3 tweets by number of retweets?,"MATCH (t:Tweet)
+RETURN t.text AS tweet_text, count{(t)<-[:RETWEETS]-(:Tweet)} AS retweets
+ORDER BY retweets DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 4:28:
+    match
+      $t isa tweet, has text $text;
+      retweets (original_tweet: $t, retweeting_tweet: $rt);
+--> reduce $count = count($rt), groupby $text;
+                                ^
+    sort $count desc;
+    limit 3;
+    fetch { ""tweet_text"": $text, ""retweets"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+381,What are the top 3 sources from which 'neo4j' has tweeted?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:USING]->(source:Source)
+RETURN source.name AS source, count(*) AS tweet_count
+ORDER BY tweet_count DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:31:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      posts (author: $me, content: $tweet);
+      using (tweet_content: $tweet, platform: $source);
+      $source has source_name $name;
+--> reduce $count = count($tweet), groupby $name;
+                                   ^
+    sort $count desc;
+    limit 3;
+    fetch { ""source"": $name, ""tweet_count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+388,What are the top 5 most active users in terms of tweeting from 'Graphs Are Everywhere'?,"MATCH (u:User {location: 'Graphs Are Everywhere'})-[:POSTS]->(t:Tweet)
+RETURN u.screen_name AS user, count(t) AS num_tweets
+ORDER BY num_tweets DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 4:27:
+    match
+      $u isa user, has location ""Graphs Are Everywhere"", has screen_name $sn;
+      posts (author: $u, content: $t);
+--> reduce $count = count($t), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""user"": $sn, ""num_tweets"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+392,Which users does 'neo4j' interact with the most and list the top 5?,"MATCH (me:Me {screen_name: 'neo4j'})-[i:INTERACTS_WITH]->(u:User)
+RETURN u.screen_name AS user, count(i) AS interactions
+ORDER BY interactions DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 5:27:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      $i (interactor: $me, target: $u) isa interacts_with;
+      $u has screen_name $sn;
+--> reduce $count = count($i), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""user"": $sn, ""interactions"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+394,Show the top 5 users that have posted tweets using the source 'Buffer'.,"MATCH (u:User)-[:POSTS]->(t:Tweet)-[:USING]->(s:Source {name: 'Buffer'})
+RETURN u.screen_name AS user, count(t) AS tweets
+ORDER BY tweets DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:27:
+    match
+      $u isa user, has screen_name $sn;
+      posts (author: $u, content: $t);
+      using (tweet_content: $t, platform: $s);
+      $s has source_name ""Buffer"";
+--> reduce $count = count($t), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""user"": $sn, ""tweets"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+398,What are the top 5 tweets by 'neo4j' with the most replies?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)
+WHERE exists {(tweet)<-[:REPLY_TO]-(:Tweet)}
+WITH tweet, count{(tweet)<-[:REPLY_TO]-(:Tweet)} AS replies
+RETURN tweet.text AS tweet, replies
+ORDER BY replies DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:31:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      posts (author: $me, content: $tweet);
+      reply_to (replying_tweet: $reply, original_tweet: $tweet);
+      $tweet has text $text;
+--> reduce $count = count($reply), groupby $text;
+                                   ^
+    sort $count desc;
+    limit 5;
+    fetch { ""tweet"": $text, ""replies"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+406,What are the top 5 locations of users who interact with 'neo4j'?,"MATCH (u:User)-[:INTERACTS_WITH]->(me:Me {screen_name: 'neo4j'})
+WHERE u.location IS NOT NULL
+RETURN u.location, count(*) AS num_users
+ORDER BY num_users DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 5:27:
+    match
+      $u isa user, has location $location;
+      $me isa me, has screen_name ""neo4j"";
+      interacts_with (interactor: $u, target: $me);
+--> reduce $count = count($u), groupby $location;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""location"": $location, ""num_users"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+413,What are the top 5 hashtags in tweets retweeted by 'neo4j'?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet)-[:RETWEETS]->(retweetedTweet)-[:TAGS]->(hashtag:Hashtag)
+RETURN hashtag.name AS hashtag, count(*) AS count
+ORDER BY count DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 7:40:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      posts (author: $me, content: $tweet);
+      retweets (retweeting_tweet: $tweet, original_tweet: $retweetedTweet);
+      tags (tagged_tweet: $retweetedTweet, tag: $hashtag);
+      $hashtag has hashtag_name $name;
+--> reduce $count = count($retweetedTweet), groupby $name;
+                                            ^
+    sort $count desc;
+    limit 5;
+    fetch { ""hashtag"": $name, ""count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+421,Who are the top 5 users that 'neo4j' mentions the most in tweets?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:MENTIONS]->(mentioned:User)
+RETURN mentioned.screen_name AS user, count(*) AS mentions
+ORDER BY mentions DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:31:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      posts (author: $me, content: $tweet);
+      mentions (source_tweet: $tweet, mentioned_user: $mentioned);
+      $mentioned has screen_name $sn;
+--> reduce $count = count($tweet), groupby $sn;
+                                   ^
+    sort $count desc;
+    limit 5;
+    fetch { ""user"": $sn, ""mentions"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+423,Which users does 'neo4j' amplify the most and list the top 5?,"MATCH (me:Me {screen_name: 'neo4j'})-[a:AMPLIFIES]->(u:User)
+RETURN u.screen_name AS user, count(a) AS amplifications
+ORDER BY amplifications DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 5:27:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      $a (amplifier: $me, amplified_user: $u) isa amplifies;
+      $u has screen_name $sn;
+--> reduce $count = count($a), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""user"": $sn, ""amplifications"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+426,Who are the top 5 users that 'neo4j' retweets the most?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:RETWEETS]->(retweetedTweet:Tweet)<-[:POSTS]-(retweetedUser:User)
+RETURN retweetedUser.screen_name AS retweeted_user, count(*) AS retweet_count
+ORDER BY retweet_count DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 7:31:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      posts (author: $me, content: $tweet);
+      retweets (retweeting_tweet: $tweet, original_tweet: $retweetedTweet);
+      posts (author: $retweetedUser, content: $retweetedTweet);
+      $retweetedUser has screen_name $sn;
+--> reduce $count = count($tweet), groupby $sn;
+                                   ^
+    sort $count desc;
+    limit 5;
+    fetch { ""retweeted_user"": $sn, ""retweet_count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+433,What are the top 5 sources used in tweets that mention 'neo4j'?,"MATCH (t:Tweet)-[:MENTIONS]->(:User {screen_name: 'neo4j'}), 
+      (t)-[:USING]->(s:Source)
+RETURN s.name AS source, count(*) AS tweet_count
+ORDER BY tweet_count DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 7:27:
+    match
+      $t isa tweet;
+      $me isa me, has screen_name ""neo4j"";
+      mentions (source_tweet: $t, mentioned_user: $me);
+      using (tweet_content: $t, platform: $s);
+      $s has source_name $name;
+--> reduce $count = count($t), groupby $name;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""source"": $name, ""tweet_count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+442,Which users followed by 'neo4j' have tweeted using the source 'Buffer' and list the top 5.,"MATCH (me:Me {screen_name: 'neo4j'})-[:FOLLOWS]->(u:User)-[:POSTS]->(t:Tweet)-[:USING]->(s:Source {name: 'Buffer'})
+RETURN u.screen_name, count(t) AS tweet_count
+ORDER BY tweet_count DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 8:27:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      follows (follower: $me, followed: $u);
+      posts (author: $u, content: $t);
+      using (tweet_content: $t, platform: $s);
+      $s has source_name ""Buffer"";
+      $u has screen_name $sn;
+--> reduce $count = count($t), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""screen_name"": $sn, ""tweet_count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+448,Who are the top 3 users that 'Neo4j' interacts with most frequently?,"MATCH (me:Me {screen_name: 'neo4j'})-[i:INTERACTS_WITH]->(u:User)
+RETURN u.screen_name AS user, count(i) AS interactions
+ORDER BY interactions DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 5:27:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      $i (interactor: $me, target: $u) isa interacts_with;
+      $u has screen_name $sn;
+--> reduce $count = count($i), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 3;
+    fetch { ""user"": $sn, ""interactions"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+449,What are the names of the top 3 hashtags used in tweets by 'Neo4j'?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:TAGS]->(hashtag:Hashtag)
+RETURN hashtag.name AS hashtag, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:31:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      posts (author: $me, content: $tweet);
+      tags (tagged_tweet: $tweet, tag: $hashtag);
+      $hashtag has hashtag_name $name;
+--> reduce $count = count($tweet), groupby $name;
+                                   ^
+    sort $count desc;
+    limit 3;
+    fetch { ""hashtag"": $name, ""count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+453,Who has 'Neo4j' retweeted the most? List the top 3 users.,"MATCH (me:Me)-[:POSTS]->(tweet:Tweet)-[:RETWEETS]->(retweet:Tweet)<-[:POSTS]-(user:User)
+RETURN user.screen_name AS retweeted_user, count(*) AS retweet_count
+ORDER BY retweet_count DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 7:31:
+    match
+      $me isa me;
+      posts (author: $me, content: $tweet);
+      retweets (retweeting_tweet: $tweet, original_tweet: $retweet);
+      posts (author: $user, content: $retweet);
+      $user has screen_name $sn;
+--> reduce $count = count($tweet), groupby $sn;
+                                   ^
+    sort $count desc;
+    limit 3;
+    fetch { ""retweeted_user"": $sn, ""retweet_count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+455,What are the screen names of the top 3 users who have posted the most tweets?,"MATCH (u:User)-[:POSTS]->(t:Tweet)
+WITH u, count(t) AS tweet_count
+ORDER BY tweet_count DESC
+LIMIT 3
+RETURN u.screen_name AS screen_name, tweet_count","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 4:27:
+    match
+      $u isa user, has screen_name $sn;
+      posts (author: $u, content: $t);
+--> reduce $count = count($t), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 3;
+    fetch { ""screen_name"": $sn, ""tweet_count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+456,Which hashtags have been tagged in tweets that have more than 200 favorites? List the top 3.,"MATCH (t:Tweet)-[:TAGS]->(h:Hashtag)
+WHERE t.favorites > 200
+RETURN h.name AS hashtag, count(*) AS tweet_count
+ORDER BY tweet_count DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:27:
+    match
+      $t isa tweet, has favorites $favorites;
+      $favorites > 200;
+      tags (tagged_tweet: $t, tag: $h);
+      $h has hashtag_name $name;
+--> reduce $count = count($t), groupby $name;
+                               ^
+    sort $count desc;
+    limit 3;
+    fetch { ""hashtag"": $name, ""tweet_count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+460,List the profile image URLs of the top 3 users who have mentioned 'Neo4j' in their tweets.,"MATCH (u:User)-[:POSTS]->(t:Tweet)-[:MENTIONS]->(:Me {name: 'Neo4j'})
+WITH u, count(t) AS mentions
+ORDER BY mentions DESC
+LIMIT 3
+RETURN u.profile_image_url","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:27:
+    match
+      $u isa user, has profile_image_url $img;
+      posts (author: $u, content: $t);
+      $me isa me, has name ""Neo4j"";
+      mentions (source_tweet: $t, mentioned_user: $me);
+--> reduce $count = count($t), groupby $img;
+                               ^
+    sort $count desc;
+    limit 3;
+    fetch { ""profile_image_url"": $img };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+464,What are the top 3 locations where users who interact with 'Neo4j' are based?,"MATCH (me:Me {screen_name: 'neo4j'})<-[:INTERACTS_WITH]-(u:User)
+WHERE u.location IS NOT NULL
+RETURN u.location, count(*) AS num_users
+ORDER BY num_users DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 5:27:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      interacts_with (interactor: $u, target: $me);
+      $u has location $location;
+--> reduce $count = count($u), groupby $location;
+                               ^
+    sort $count desc;
+    limit 3;
+    fetch { ""location"": $location, ""num_users"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+465,Which users followed by 'Neo4j' have posted the most about a specific hashtag? List the top 3.,"MATCH (me:Me {screen_name: 'neo4j'})-[:FOLLOWS]->(u:User)-[:POSTS]->(t:Tweet)-[:TAGS]->(h:Hashtag)
+WHERE h.name = 'education'
+WITH u, count(t) AS tweet_count
+ORDER BY tweet_count DESC
+LIMIT 3
+RETURN u.screen_name AS user, tweet_count","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 8:27:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      follows (follower: $me, followed: $u);
+      posts (author: $u, content: $t);
+      tags (tagged_tweet: $t, tag: $h);
+      $h has hashtag_name ""education"";
+      $u has screen_name $sn;
+--> reduce $count = count($t), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 3;
+    fetch { ""user"": $sn, ""tweet_count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+467,What are the top 3 hashtags used in the tweets that have been retweeted by 'Neo4j'?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet)-[:RETWEETS]->(retweetedTweet)-[:TAGS]->(hashtag:Hashtag)
+RETURN hashtag.name AS hashtag, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 7:40:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      posts (author: $me, content: $tweet);
+      retweets (retweeting_tweet: $tweet, original_tweet: $retweetedTweet);
+      tags (tagged_tweet: $retweetedTweet, tag: $hashtag);
+      $hashtag has hashtag_name $name;
+--> reduce $count = count($retweetedTweet), groupby $name;
+                                            ^
+    sort $count desc;
+    limit 3;
+    fetch { ""hashtag"": $name, ""count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+469,Which users have 'Neo4j' mentioned the most in tweets? List the top 3.,"MATCH (u:User)<-[:MENTIONS]-(t:Tweet)<-[:POSTS]-(:Me {name: 'Neo4j'})
+RETURN u.name AS user, count(t) AS mentions
+ORDER BY mentions DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:27:
+    match
+      $me isa me, has name ""Neo4j"";
+      posts (author: $me, content: $t);
+      mentions (source_tweet: $t, mentioned_user: $u);
+      $u has name $name;
+--> reduce $count = count($t), groupby $name;
+                               ^
+    sort $count desc;
+    limit 3;
+    fetch { ""user"": $name, ""mentions"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+479,What are the top 5 hashtags used in tweets by the user named 'Neo4j'?,"MATCH (u:User {name: 'Neo4j'})-[:POSTS]->(t:Tweet)-[:TAGS]->(h:Hashtag)
+RETURN h.name AS hashtag, count(*) AS count
+ORDER BY count DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:27:
+    match
+      $me isa me, has name ""Neo4j"";
+      posts (author: $me, content: $t);
+      tags (tagged_tweet: $t, tag: $h);
+      $h has hashtag_name $name;
+--> reduce $count = count($t), groupby $name;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""hashtag"": $name, ""count"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+481,Who are the top 5 users interacting with 'Neo4j' via the INTERACTS_WITH relationship?,"MATCH (u:User)-[i:INTERACTS_WITH]->(me:Me {screen_name: 'neo4j'})
+RETURN u.screen_name AS user, count(i) AS interactions
+ORDER BY interactions DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 5:27:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      $i (interactor: $u, target: $me) isa interacts_with;
+      $u has screen_name $sn;
+--> reduce $count = count($i), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""user"": $sn, ""interactions"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+486,Who are the top 3 users mentioned in tweets posted by 'Me'?,"MATCH (me:Me)-[:POSTS]->(tweet:Tweet)-[:MENTIONS]->(mentioned:User)
+RETURN mentioned.name AS user, count(*) AS mentions
+ORDER BY mentions DESC
+LIMIT 3","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:31:
+    match
+      $me isa me;
+      posts (author: $me, content: $tweet);
+      mentions (source_tweet: $tweet, mentioned_user: $mentioned);
+      $mentioned has name $name;
+--> reduce $count = count($tweet), groupby $name;
+                                   ^
+    sort $count desc;
+    limit 3;
+    fetch { ""user"": $name, ""mentions"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
+492,Who are the top 5 users that 'Neo4j' interacts with and also follows?,"MATCH (me:Me {screen_name: 'neo4j'})-[:INTERACTS_WITH]->(u:User)
+WHERE (me)-[:FOLLOWS]->(u)
+RETURN u.screen_name as user, count(u) as interactions
+ORDER BY interactions DESC
+LIMIT 5","
+[TQL0] [TQL03] TypeQL Error: There is a syntax error
+parsing error: expected reduce_assignment_var
+Near 6:27:
+    match
+      $me isa me, has screen_name ""neo4j"";
+      $i (interactor: $me, target: $u) isa interacts_with;
+      follows (follower: $me, followed: $u);
+      $u has screen_name $sn;
+--> reduce $count = count($i), groupby $sn;
+                               ^
+    sort $count desc;
+    limit 5;
+    fetch { ""user"": $sn, ""interactions"": $count };
+Caused: Error in usage of TypeQL.
+Caused: [TSV7] Query parsing failed."
