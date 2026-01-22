@@ -9605,3 +9605,258 @@ limit 5;
 fetch {
   ""title"": $title_m, ""popularity"": $popularity_m
 };"
+33,What are the top 5 movies with the shortest runtime?,"MATCH (m:Movie)
+WHERE m.runtime IS NOT NULL
+RETURN m.title, m.runtime
+ORDER BY m.runtime
+LIMIT 5","match
+  $m isa movie;
+  $m has runtime $runtime;
+  $m has title $title;
+sort $runtime asc;
+limit 5;
+fetch {
+  ""title"": $title, ""runtime"": $runtime
+};"
+37,What are the top 5 movies with the lowest revenue?,"MATCH (m:Movie)
+WHERE m.revenue IS NOT NULL
+RETURN m.title, m.revenue
+ORDER BY m.revenue
+LIMIT 5","match
+  $m isa movie;
+  $m has revenue $revenue;
+  $m has title $title;
+sort $revenue asc;
+limit 5;
+fetch {
+  ""title"": $title, ""revenue"": $revenue
+};"
+71,List the top 3 movies with the shortest runtime.,"MATCH (m:Movie)
+WHERE m.runtime IS NOT NULL
+RETURN m.title, m.runtime
+ORDER BY m.runtime
+LIMIT 3","match
+  $m isa movie;
+  $m has runtime $runtime;
+  $m has title $title;
+sort $runtime asc;
+limit 3;
+fetch {
+  ""title"": $title, ""runtime"": $runtime
+};"
+77,Display the top 3 movies with the least popularity.,"MATCH (m:Movie)
+RETURN m.title, m.popularity
+ORDER BY m.popularity
+LIMIT 3","match
+  $m isa movie;
+  $m has title $title;
+  $m has popularity $popularity;
+sort $popularity asc;
+limit 3;
+fetch {
+  ""title"": $title, ""popularity"": $popularity
+};"
+82,Display the top 5 movies with the lowest average vote.,"MATCH (m:Movie)
+WHERE m.average_vote IS NOT NULL
+RETURN m.title, m.average_vote
+ORDER BY m.average_vote
+LIMIT 5","match
+  $m isa movie;
+  $m has average_vote $average_vote;
+  $m has title $title;
+sort $average_vote asc;
+limit 5;
+fetch {
+  ""title"": $title, ""average_vote"": $average_vote
+};"
+194,List the top 3 oldest movies in the database.,"MATCH (m:Movie)
+WHERE m.release_date IS NOT NULL
+RETURN m.title, m.release_date
+ORDER BY m.release_date
+LIMIT 3","match
+  $m isa movie;
+  $m has release_date $release_date;
+  $m has title $title;
+sort $release_date asc;
+limit 3;
+fetch {
+  ""title"": $title, ""release_date"": $release_date
+};"
+243,What are the top 5 adult films with the highest number of votes?,"MATCH (a:Adult)
+WHERE a.vote_count IS NOT NULL
+RETURN a.title, a.vote_count
+ORDER BY a.vote_count DESC
+LIMIT 5","match
+  $a isa adult;
+  $a has vote_count $vote_count;
+  $a has title $title;
+sort $vote_count desc;
+limit 5;
+fetch {
+  ""title"": $title, ""vote_count"": $vote_count
+};"
+250,Name the top 5 oldest movies in the database.,"MATCH (m:Movie)
+WHERE m.release_date IS NOT NULL
+RETURN m.title, m.release_date
+ORDER BY m.release_date
+LIMIT 5","match
+  $m isa movie;
+  $m has release_date $release_date;
+  $m has title $title;
+sort $release_date asc;
+limit 5;
+fetch {
+  ""title"": $title, ""release_date"": $release_date
+};"
+256,List the top 5 movies that made the least revenue.,"MATCH (m:Movie)
+WHERE m.revenue IS NOT NULL
+RETURN m.title, m.revenue
+ORDER BY m.revenue
+LIMIT 5","match
+  $m isa movie;
+  $m has revenue $revenue;
+  $m has title $title;
+sort $revenue asc;
+limit 5;
+fetch {
+  ""title"": $title, ""revenue"": $revenue
+};"
+265,Which 3 movies have the least number of votes?,"MATCH (m:Movie)
+WHERE m.vote_count IS NOT NULL
+RETURN m.title, m.vote_count
+ORDER BY m.vote_count
+LIMIT 3","match
+  $m isa movie;
+  $m has vote_count $vote_count;
+  $m has title $title;
+sort $vote_count asc;
+limit 3;
+fetch {
+  ""title"": $title, ""vote_count"": $vote_count
+};"
+290,Name the top 5 adult videos with the least revenue.,"MATCH (a:Adult)
+WHERE a.revenue IS NOT NULL
+RETURN a.title, a.revenue
+ORDER BY a.revenue
+LIMIT 5","match
+  $a isa adult;
+  $a has revenue $revenue;
+  $a has title $title;
+sort $revenue asc;
+limit 5;
+fetch {
+  ""title"": $title, ""revenue"": $revenue
+};"
+311,List the top 5 videos with the least revenue.,"MATCH (v:Video)
+WHERE v.revenue IS NOT NULL
+RETURN v.title, v.revenue
+ORDER BY v.revenue
+LIMIT 5","match
+  $v isa video;
+  $v has revenue $revenue;
+  $v has title $title;
+sort $revenue asc;
+limit 5;
+fetch {
+  ""title"": $title, ""revenue"": $revenue
+};"
+395,Name the top 5 users who have given the lowest average ratings to movies.,"MATCH (u:User)-[r:RATED]->(m:Movie)
+WITH u, avg(r.rating) AS avg_rating
+ORDER BY avg_rating
+LIMIT 5
+RETURN u.id AS user_id, avg_rating","match
+  $u isa user;
+  $m isa movie;
+  $r (reviewer: $u, rated_media: $m) isa rated, has rating $rating;
+  $u has user_id $user_id_u;
+reduce $avg = mean($rating);
+sort $avg asc;
+limit 5;
+fetch {
+  ""avg"": $avg
+};"
+464,List the top 5 movies that have been part of at least one collection.,"MATCH (m:Movie)-[:IN_COLLECTION]->(:Collection)
+RETURN m.title, m.popularity
+ORDER BY m.popularity DESC
+LIMIT 5","match $m isa movie; $collection isa collection; (media: $m, collection: $collection) isa in_collection; $m has title $title; $m has popularity $popularity; sort $popularity desc; limit 5; fetch { ""title"": $title, ""popularity"": $popularity };"
+547,What are the top 5 movies with the smallest budget?,"MATCH (m:Movie)
+WHERE m.budget IS NOT NULL
+RETURN m.title, m.budget
+ORDER BY m.budget
+LIMIT 5","match
+  $m isa movie;
+  $m has budget $budget;
+  $m has title $title;
+sort $budget asc;
+limit 5;
+fetch {
+  ""title"": $title, ""budget"": $budget
+};"
+623,What are the top 5 movies with the smallest runtime?,"MATCH (m:Movie)
+WHERE m.runtime IS NOT NULL
+RETURN m.title, m.runtime
+ORDER BY m.runtime
+LIMIT 5","match
+  $m isa movie;
+  $m has runtime $runtime;
+  $m has title $title;
+sort $runtime asc;
+limit 5;
+fetch {
+  ""title"": $title, ""runtime"": $runtime
+};"
+635,What are the top 5 oldest movies in the database?,"MATCH (m:Movie)
+RETURN m.title, m.release_date
+ORDER BY m.release_date
+LIMIT 5","match
+  $m isa movie;
+  $m has title $title;
+  $m has release_date $release_date;
+sort $release_date asc;
+limit 5;
+fetch {
+  ""title"": $title, ""release_date"": $release_date
+};"
+674,List the first 3 movies with the highest number of votes.,"MATCH (m:Movie)
+WHERE m.vote_count IS NOT NULL
+RETURN m.title, m.vote_count
+ORDER BY m.vote_count DESC
+LIMIT 3","match
+  $m isa movie;
+  $m has vote_count $vote_count;
+  $m has title $title;
+sort $vote_count desc;
+limit 3;
+fetch {
+  ""title"": $title, ""vote_count"": $vote_count
+};"
+675,What are the top 5 movies with the lowest revenue and are still in 'Released' status?,"MATCH (m:Movie)
+WHERE m.status = 'Released' AND m.revenue IS NOT NULL
+RETURN m.title, m.revenue
+ORDER BY m.revenue
+LIMIT 5","match
+  $m isa movie;
+  $m has status $status;
+  $m has revenue $revenue;
+  $m has title $title;
+  $status == ""Released"";
+sort $revenue asc;
+limit 5;
+fetch {
+  ""title"": $title, ""revenue"": $revenue
+};"
+739,What are the top 5 adult films with the lowest vote count and are still in the 'Released' status?,"MATCH (a:Adult)
+WHERE a.status = 'Released'
+RETURN a.title, a.vote_count
+ORDER BY a.vote_count
+LIMIT 5","match
+  $a isa adult;
+  $a has status $status;
+  $a has title $title;
+  $a has vote_count $vote_count;
+  $status == ""Released"";
+sort $vote_count asc;
+limit 5;
+fetch {
+  ""title"": $title, ""vote_count"": $vote_count
+};"

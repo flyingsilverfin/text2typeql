@@ -5,42 +5,36 @@
 **Phase**: Query Validation Complete (Post-TypeDB Revalidation)
 **Last Updated**: 2026-01-21
 
-### Conversion Progress (After TypeDB Validation + Semantic Review)
+### Conversion Progress (After TypeDB Validation + Semantic Review + Fixes)
 
 | Database | Valid | Failed | Failed Review | Total | % |
 |----------|-------|--------|---------------|-------|---|
 | twitter | 440 | 53 | 0 | 493 | 89% |
-| twitch | 506 | 0 | 0 | 506 | 100% |
-| recommendations | 555 | 0 | 0 | 555 | 100% |
-| movies | 568 | 0 | 0 | 568 | 100% |
-| neoflix | 848 | 0 | 37 | 885 | 95% |
-| companies | 726 | 16 | 107 | 849 | 85% |
-| gameofthrones | 328 | 0 | 14 | 342 | 95% |
-| **Total** | **3971** | **69** | **158** | **4198** | **94%** |
+| twitch | 506 | 55 | 0 | 561 | 90% |
+| recommendations | 555 | 198 | 0 | 753 | 74% |
+| movies | 568 | 161 | 0 | 729 | 78% |
+| neoflix | 868 | 47 | 0 | 915 | 95% |
+| companies | 833 | 100 | 0 | 933 | 89% |
+| gameofthrones | 342 | 50 | 0 | 392 | 87% |
+| **Total** | **4112** | **664** | **0** | **4776** | **86%** |
 
 ### Validation Summary
 
-After full TypeDB validation and semantic review:
-- **Valid queries**: 3971 (94%) - Execute correctly against TypeDB
-- **Validation failures**: 69 (2%) - TypeDB syntax/type errors
-- **Semantic failures**: 158 (4%) - TypeQL doesn't match question intent
+After full TypeDB validation, semantic review, and fixes:
+- **Valid queries**: 4112 (86%) - Execute correctly against TypeDB
+- **Validation failures**: 664 (14%) - TypeDB syntax/type errors or unconverted
+- **Semantic failures**: 0 (all fixed or moved to failed.csv)
 
-### Common Validation Failures
+### Common Validation Failures (in failed.csv)
 
 | Error Type | Count | Description |
 |------------|-------|-------------|
-| syntax errors | 64 | Mostly twitter/companies - clause ordering issues |
-| type inference | 2 | Incompatible types across constraints |
-| other | 3 | Miscellaneous parsing issues |
-
-### Common Semantic Failures
-
-| Issue | Count | Description |
-|-------|-------|-------------|
-| Missing relations | 72 | Query doesn't include relationship mentioned in question |
-| Wrong sort direction | 48 | Ascending instead of descending (or vice versa) |
-| Missing aggregation | 33 | Question asks for count but no reduce clause |
-| Missing limit | 12 | Question specifies N items but no limit clause |
+| Dropped during processing | ~500 | Complex patterns not yet converted |
+| size() function | ~50 | TypeQL lacks string/list length functions |
+| GROUP BY + HAVING | ~30 | TypeQL reduce cannot filter aggregated results |
+| Date arithmetic | ~10 | TypeQL lacks date/duration calculations |
+| Array index access | ~20 | TypeQL doesn't support array[N] syntax |
+| Complex subqueries | ~50 | Multi-step WITH clauses not directly translatable |
 
 ### Completed Setup
 - [x] Project setup and structure

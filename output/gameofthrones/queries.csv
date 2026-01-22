@@ -2819,3 +2819,134 @@ LIMIT 5","match
 sort $c_pagerank desc;
 limit 5;
 fetch { ""c_name"": $c.name };"
+43,Who interacted with 'Aegon-Frey-(son-of-Stevron)'? List first 3 characters.,"MATCH (c:Character)-[:INTERACTS]->(a:Character {name: 'Aegon-Frey-(son-of-Stevron)'})
+RETURN c.name
+LIMIT 3","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Aegon-Frey-(son-of-Stevron)"";
+  (character1: $c, character2: $target) isa interacts;
+limit 3;
+fetch { ""c_name"": $cn };"
+49,Find the characters who have interacted with 'Roose-Bolton' in 'book 1'. List the top 5.,"MATCH (c:Character)-[i:INTERACTS1]->(roose:Character {name: 'Roose-Bolton'})
+RETURN c.name AS character, i.weight AS interactions
+ORDER BY interactions DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Roose-Bolton"";
+  $rel (character1: $c, character2: $target) isa interacts1, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn, ""interactions"": $w };"
+68,Who interacted with 'Walder-Rivers' in 'book 45'? List first 3 characters.,"MATCH (c:Character)-[i:INTERACTS45]->(w:Character {name: 'Walder-Rivers'})
+RETURN c.name
+LIMIT 3","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Walder-Rivers"";
+  (character1: $c, character2: $target) isa interacts45;
+limit 3;
+fetch { ""c_name"": $cn };"
+73,Find the characters who have interacted with 'Murenmure' in 'book 45'. List the top 5.,"MATCH (c:Character)-[i:INTERACTS45]->(m:Character {name: 'Murenmure'})
+RETURN c.name AS character, i.weight AS interactions
+ORDER BY interactions DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Murenmure"";
+  $rel (character1: $c, character2: $target) isa interacts45, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn, ""interactions"": $w };"
+92,Who interacted with 'Aeron-Greyjoy' in 'book 45'? List first 3 characters.,"MATCH (c:Character)-[i:INTERACTS45]->(a:Character {name: 'Aeron-Greyjoy'})
+RETURN c.name
+LIMIT 3","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Aeron-Greyjoy"";
+  (character1: $c, character2: $target) isa interacts45;
+limit 3;
+fetch { ""c_name"": $cn };"
+130,List the characters that interact in book 45 with any character named 'Aegon-I-Targaryen'.,"MATCH (c1:Character)-[:INTERACTS45]->(c2:Character {name: 'Aegon-I-Targaryen'})
+RETURN c1.name AS character","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Aegon-I-Targaryen"";
+  (character1: $c, character2: $target) isa interacts45;
+limit 10;
+fetch { ""c_name"": $cn };"
+296,Who are the top 3 characters with the highest weight in INTERACTS relationships?,"MATCH (c:Character)-[i:INTERACTS]->(other:Character)
+RETURN c.name AS character, sum(i.weight) AS total_weight
+ORDER BY total_weight DESC
+LIMIT 3","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts, has weight $w;
+sort $w desc;
+limit 3;
+fetch { ""character"": $cn };"
+308,Who are the top 3 characters with the highest weight in INTERACTS1 relationships?,"MATCH (c:Character)-[i:INTERACTS1]->(other:Character)
+RETURN c.name AS character, max(i.weight) AS max_weight
+ORDER BY max_weight DESC
+LIMIT 3","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts1, has weight $w;
+sort $w desc;
+limit 3;
+fetch { ""character"": $cn };"
+317,Who are the top 5 characters with the highest weight in INTERACTS2 relationships?,"MATCH (c:Character)-[i:INTERACTS2]->(other:Character)
+RETURN c.name AS character, max(i.weight) AS max_weight
+ORDER BY max_weight DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts2, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn };"
+329,Who are the top 5 characters with the highest weight in INTERACTS45 relationships?,"MATCH (c:Character)-[i:INTERACTS45]->(other:Character)
+RETURN c.name AS character, sum(i.weight) AS total_weight
+ORDER BY total_weight DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts45, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn };"
+339,Find the top 5 characters with the highest weight in INTERACTS relationship.,"MATCH (c:Character)-[i:INTERACTS]->(other:Character)
+RETURN c.name AS character, sum(i.weight) AS total_weight
+ORDER BY total_weight DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn };"
+355,Who are the top 5 characters in terms of INTERACTS45 weight?,"MATCH (c:Character)-[i:INTERACTS45]->(other:Character)
+RETURN c.name AS character, sum(i.weight) AS total_weight
+ORDER BY total_weight DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts45, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn };"
+369,Identify the top 5 characters with the most interactions in book 3.,"MATCH (c:Character)-[i:INTERACTS3]->(other:Character)
+RETURN c.name AS character, sum(i.weight) AS total_interactions
+ORDER BY total_interactions DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts3, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn };"
+391,List the top 3 characters with the highest INTERACTS3 relationship weight.,"MATCH (c:Character)-[i:INTERACTS3]->(other:Character)
+RETURN c.name AS character, max(i.weight) AS max_weight
+ORDER BY max_weight DESC
+LIMIT 3","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts3, has weight $w;
+sort $w desc;
+limit 3;
+fetch { ""character"": $cn };"
