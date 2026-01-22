@@ -8,9 +8,6 @@ def fix_typeql(typeql: str) -> str:
     """Apply schema-related fixes to a TypeQL query."""
     fixed = typeql
 
-    # Fix relation name: in_country -> location-contains
-    # And simultaneously fix the role names within that relation
-
     # Pattern 1: in_country (city: $x, country: $y) -> location-contains (child: $x, parent: $y)
     def replace_in_country_prefix(match):
         content = match.group(1)
@@ -36,36 +33,37 @@ def fix_typeql(typeql: str) -> str:
 
 def main():
     input_file = "output/companies/queries.csv"
-    output_file = "output/companies/queries_fixed.csv"
 
-    with open(input_file, 'r') as f:
+    # Read with proper multi-line handling
+    with open(input_file, 'r', newline='') as f:
         reader = csv.DictReader(f)
         rows = list(reader)
         fieldnames = reader.fieldnames
 
-    fixed_count = 0
-    fixed_rows = []
+    print(f"Read {len(rows)} queries")
 
+    fixed_count = 0
     for row in rows:
         original = row['typeql']
         fixed = fix_typeql(original)
 
         if fixed != original:
             fixed_count += 1
-            print(f"Fixed index {row['original_index']}")
+            row['typeql'] = fixed
 
-        row['typeql'] = fixed
-        fixed_rows.append(row)
-
-    with open(output_file, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+    # Write back to same file with proper quoting
+    with open(input_file, 'w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
         writer.writeheader()
-        writer.writerows(fixed_rows)
+        writer.writerows(rows)
 
-    print(f"\n=== Summary ===")
-    print(f"Total queries: {len(rows)}")
-    print(f"Fixed: {fixed_count}")
-    print(f"Output: {output_file}")
+    print(f"Fixed {fixed_count} queries")
+    print(f"Written back to {input_file}")
+
+    # Verify
+    with open(input_file, 'r', newline='') as f:
+        verify_count = len(list(csv.DictReader(f)))
+    print(f"Verified: {verify_count} queries in file")
 
 if __name__ == "__main__":
     main()
