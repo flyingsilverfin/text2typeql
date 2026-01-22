@@ -186,6 +186,7 @@ reduce $count = count($rel) groupby $comm;  # Works - $rel bound outside disjunc
 | `WITH n, count(m) AS c` | `reduce $c = count($m) groupby $n;` |
 | `WITH a, b, count(*) AS c` | `reduce $c = count groupby $a, $b;` (tuple groupby) |
 | `WITH x, count(y) WHERE c > N` | `reduce $c = count groupby $x; match $c > N;` |
+| `count(DISTINCT x) GROUP BY y` | `select $x, $y; distinct; reduce $c = count groupby $y;` |
 | `ORDER BY a / b` | `let $ratio = $a / $b; sort $ratio;` |
 
 ## Database Names

@@ -425,6 +425,28 @@ limit 10;
 fetch { "user": $user.name, "ratio": $ratio };
 ```
 
+### Select + Distinct (COUNT DISTINCT equivalent)
+
+Use `select` and `distinct` to deduplicate before counting:
+
+```typeql
+# Count DISTINCT cities per country (Cypher: count(DISTINCT city))
+match
+  $c isa country;
+  $city isa city;
+  $o isa organization, has is_public true;
+  location-contains (parent: $c, child: $city);
+  located_in (organization: $o, city: $city);
+select $c, $city;
+distinct;
+reduce $city_count = count groupby $c;
+sort $city_count desc;
+limit 3;
+fetch { "country": $c.country_name, "num_cities": $city_count };
+```
+
+This is cleaner than chained reduces for distinct counting.
+
 ### Chained Reduce Stages (HAVING equivalent)
 
 Use `reduce ... match ...` to filter on aggregation results:
