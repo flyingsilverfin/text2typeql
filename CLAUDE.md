@@ -6,6 +6,7 @@ Always read the following files when starting a session:
 - `README.md` - Project overview and setup instructions
 - `progress.md` - Current progress and next steps (if it exists)
 - `plan.md` - Implementation plan (if it exists)
+- `output/<database>/README.md` - Query counts for each database being worked on
 
 ## Updating Documentation
 
@@ -241,6 +242,33 @@ Each `output/<database>/` folder contains:
    - Created when reviewing queries for intent matching
    - After fixing, queries move to either `queries.csv` (success) or `failed.csv` (unfixable)
    - Should be empty or deleted when review is complete
+
+### Query Count Verification (CRITICAL)
+
+**Before committing any changes**, always verify that the total number of queries is preserved:
+
+```bash
+# Count queries in all CSV files for a database
+python3 -c "
+import csv
+db = 'companies'  # Change as needed
+total = 0
+for f in ['queries.csv', 'failed.csv', 'failed_review.csv']:
+    try:
+        with open(f'output/{db}/{f}') as file:
+            total += len(list(csv.DictReader(file)))
+    except FileNotFoundError:
+        pass
+print(f'Total queries: {total}')
+"
+```
+
+**Rule**: The sum of queries across `queries.csv` + `failed.csv` + `failed_review.csv` MUST equal the total in the original dataset (recorded in `output/<database>/README.md`).
+
+If counts don't match:
+1. Check for CSV parsing issues (multi-line fields need proper quoting)
+2. Check for duplicate entries
+3. Restore from git if queries were lost: `git checkout HEAD -- output/<database>/queries.csv`
 
 ### Retry Workflow
 

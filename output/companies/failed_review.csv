@@ -1,0 +1,2321 @@
+"original_index","question","cypher","typeql","review_reason"
+"6","Find the top 3 countries with the most cities hosting public organizations.","MATCH (c:Country)<-[:IN_COUNTRY]-(city:City)<-[:IN_CITY]-(o:Organization)
+WHERE o.isPublic IS NOT NULL AND o.isPublic = true
+WITH c, count(DISTINCT city) AS numCities
+RETURN c.name AS country, numCities
+ORDER BY numCities DESC
+LIMIT 3","match
+  $c isa country;
+  $city isa city;
+  $o isa organization;
+  (child: $city, parent: $c) isa location-contains;
+  $o has is_public $o_is_public;
+  $o has is_public true;
+  (organization: $o, city: $city) isa located_in;
+limit 3;
+fetch { ""country"": $c.country_name };","TypeQL query is semantically different from the question"
+"9","List the top 3 industries mentioned in articles about 'Accenture'.","MATCH (a:Article)-[:MENTIONS]->(:Organization {name: 'Accenture'})
+MATCH (a)-[:HAS_CHUNK]->(c:Chunk)
+MATCH (o:Organization)-[:HAS_CATEGORY]->(ic:IndustryCategory)
+WHERE c.text CONTAINS o.name
+RETURN ic.name AS industry, count(*) AS mentions
+ORDER BY mentions DESC
+LIMIT 3","match
+  $org isa organization, has name ""Accenture"";
+  $a isa article;
+  (article: $a, organization: $org) isa mentions;
+  $ic isa industry_category, has industry_category_name $industry;
+  (organization: $org, category: $ic) isa in_category;
+limit 3;
+fetch { ""industry"": $industry };","TypeQL missing required aggregation for question"
+"22","List the first 3 organizations that were dissolved but mentioned in recent articles.","MATCH (o:Organization {isDissolved: true})<-[:MENTIONS]-(a:Article)
+WHERE a.date >= datetime() - duration('P1Y')
+RETURN o.name AS organization, a.title AS article
+ORDER BY a.date DESC
+LIMIT 3","match
+  $a isa article;
+  $c isa chunk;
+  (article: $a, chunk: $c) isa has_chunk;
+  $o isa organization, has name ""Accenture"";
+  $ic isa industry_category;
+  (organization: $o, category: $ic) isa in_category;
+limit 3;
+reduce $mentions = count($a);","TypeQL missing required attribute filter for question"
+"25","What are the names of the first 3 organizations with the most competitors?","MATCH (o:Organization)-[:HAS_COMPETITOR]->(c:Organization)
+WITH o, count(c) AS numCompetitors
+ORDER BY numCompetitors DESC
+LIMIT 3
+RETURN o.name AS organization, numCompetitors","match
+  $o1 isa organization;
+  $o2 isa organization;
+  (competitor: $o1, competitor: $o2) isa competes_with;
+limit 3;
+fetch { ""org1"": $o1.name, ""org2"": $o2.name };","TypeQL missing required aggregation for question"
+"26","List the first 3 organizations that have a city as their headquarters and are also public.","MATCH (o:Organization)-[:IN_CITY]->(:City)
+WHERE o.isPublic IS NOT NULL AND o.isPublic = true
+RETURN o.name AS organization
+LIMIT 3","match
+  $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;
+limit 3;
+fetch { ""name"": $o.name };","TypeQL missing required entity type for question"
+"28","List the names and IDs of the top 5 cities by the number of public organizations located in them.","MATCH (c:City)<-[:IN_CITY]-(o:Organization)
+WHERE o.isPublic = true
+WITH c, count(o) as orgCount
+ORDER BY orgCount DESC
+LIMIT 5
+RETURN c.name as cityName, c.id as cityId","match
+  $a isa article, has date $a_date;
+  $o isa organization;
+  (article: $a, organization: $o) isa mentions;
+$a_date < 2023-01-01T00:00:00; limit 3;
+fetch { ""name"": $o.name };","TypeQL missing required entity type for question"
+"29","Who are the authors of the first 3 articles that negatively mention any organization?","MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk), (a)-[:MENTIONS]->(o:Organization)
+WHERE a.sentiment < 0
+WITH a, o
+ORDER BY a.date DESC
+LIMIT 3
+RETURN a.author AS author, a.title AS title, o.name AS organization","match
+  $o isa organization;
+  $o has is_dissolved false;
+  $o has revenue $o_revenue;
+sort $o_revenue desc;
+limit 5;
+fetch { ""organization"": $o.name, ""revenue"": $o.revenue };","TypeQL missing required entity type for question"
+"32","What are the names of the first 3 organizations that have a motto containing 'world'?","MATCH (o:Organization)
+WHERE o.motto CONTAINS 'world'
+RETURN o.name
+LIMIT 3","match
+  $o isa organization;
+  $c isa city;
+  $country isa country, has country_name ""United States of America"";
+  (organization: $o, city: $c) isa located_in;
+  $o has is_public $o_is_public;
+  $o has is_public true;
+(child: $c, parent: $country) isa location-contains; fetch { ""organization"": $o.name, ""city"": $c.city_name };","TypeQL queries public orgs in USA not orgs with motto containing world"
+"33","List the first 3 organizations that are suppliers to more than one organization.","MATCH (o:Organization)-[:HAS_SUPPLIER]->(s:Organization)
+WITH s, count(o) as num_orgs
+WHERE num_orgs > 1
+RETURN s.name as supplier, num_orgs as number_of_organizations
+ORDER BY num_orgs DESC
+LIMIT 3","match
+  $p isa person;
+  $o isa organization;
+  $c isa industry_category;
+  (organization: $o, ceo: $p) isa ceo_of;
+  $c has industry_category_name $c_industry_category_name;
+  $c_industry_category_name contains ""Technology"";
+  (organization: $o, category: $c) isa in_category;
+limit 3;
+fetch { ""name"": $p.name };","TypeQL missing required relation for question"
+"36","List the first 3 cities that have more than three organizations based in them.","MATCH (c:City)<-[:IN_CITY]-(o:Organization)
+WITH c, count(o) AS orgCount
+WHERE orgCount > 3
+RETURN c.name AS city
+ORDER BY orgCount DESC
+LIMIT 3","match
+  $o isa organization;
+  $supplier isa organization; (customer: $o, supplier: $supplier) isa supplies;
+limit 3;
+fetch { ""name"": $o.name };","TypeQL missing required entity type for question"
+"38","List the top 3 cities where organizations are based that have at least 100 employees.","MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.nbrEmployees >= 100
+RETURN c.name AS city, count(o) AS numOrganizations
+ORDER BY numOrganizations DESC
+LIMIT 3","match
+  $o isa organization;
+  $c isa country;
+  $c has country_summary $c_country_summary;
+  $c_country_summary contains ""North America"";
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; fetch { ""organization"": $o.name, ""country"": $c.country_name };","TypeQL query is semantically different from the question"
+"41","What are the names of the top 5 organizations with the most employees?","MATCH (o:Organization)
+WHERE o.nbrEmployees IS NOT NULL
+RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees
+ORDER BY o.nbrEmployees DESC
+LIMIT 5","match
+  $o isa organization;
+  $o has revenue $o_revenue;
+  $o_revenue > 100000000;
+  $o has nbr_employees $o_nbr_employees;
+  $o_nbr_employees < 500;
+limit 3;
+fetch { ""name"": $o.name, ""revenue"": $o.revenue, ""nbr_employees"": $o.nbr_employees };","TypeQL query is semantically different from the question"
+"45","Which countries have cities that are home to more than three organizations?","MATCH (c:Country)<-[:IN_COUNTRY]-(city:City)<-[:IN_CITY]-(o:Organization)
+WITH c, city, count(o) AS orgCount
+WHERE orgCount > 3
+RETURN c.name AS country, collect(city.name) AS cities","match
+  $c isa country, has country_name $cn;
+  $city isa city;
+  $o isa organization;
+  (child: $city, parent: $c) isa location-contains;
+  (organization: $o, city: $city) isa located_in;
+fetch { ""country"": $cn };","TypeQL does not filter cities with 3+ orgs - just fetches countries without HAVING clause"
+"51","Find the organizations that are suppliers to 'New Energy Group' and their number of employees.","MATCH (o:Organization)<-[:HAS_SUPPLIER]-(supplier:Organization {name: 'New Energy Group'})
+WHERE supplier.nbrEmployees IS NOT NULL
+RETURN supplier.name AS supplier, supplier.nbrEmployees AS numberOfEmployees","match
+  $o isa organization;
+  $supplier isa organization, has name ""New Energy Group"";
+  (customer: $supplier, supplier: $o) isa supplies;
+  $supplier has nbr_employees $supplier_nbr_employees;
+fetch { ""supplier"": $supplier.name, ""numberOfEmployees"": $supplier.nbr_employees };","TypeQL returns supplier info not organizations that have suppliers - wrong entity returned"
+"54","List the names and summaries of articles that mention organizations with a revenue of at least $1 million.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE o.revenue >= 1e6
+RETURN a.title AS title, a.summary AS summary","match
+  $a isa article;
+  $o isa organization;
+  (article: $a, organization: $o) isa mentions;
+  $o has revenue $o_revenue;
+  $o_revenue >= 1;
+fetch { ""title"": $a.title, ""summary"": $a.article_summary };","TypeQL filters revenue >= 1 instead of >= 1000000 (1 million)"
+"55","Which organizations have a CEO with the summary 'CEO at Accenture'?","MATCH (o:Organization)-[:HAS_CEO]->(p:Person)
+WHERE p.summary = 'CEO at Accenture'
+RETURN o","match
+  $o isa organization;
+  $o has name ""Accenture"";
+  $p isa person;
+  (organization: $o, ceo: $p) isa ceo_of;
+fetch { ""organization"": $o.name, ""ceo"": $p.name, ""summary"": $o.summary };","TypeQL queries Accenture org not orgs with CEO having summary 'CEO at Accenture'"
+"56","Find the top 5 organizations with a summary containing 'based in Dublin, Ireland'.","MATCH (o:Organization)
+WHERE o.summary CONTAINS 'based in Dublin, Ireland'
+RETURN o.name AS organization, o.summary AS summary
+ORDER BY o.name
+LIMIT 5","match
+  $o isa organization;
+  $o has summary $o_summary;
+  $o_summary contains ""based in Dublin, Ireland"";
+  $o has name $o_name;
+sort $o_name desc;
+limit 5;
+fetch { ""organization"": $o.name, ""summary"": $o.summary };","TypeQL query is semantically different from the question"
+"60","Which organizations have a revenue greater than 100 million and are not public?","MATCH (o:Organization)
+WHERE o.revenue > 1E8 AND o.isPublic IS NOT NULL AND NOT o.isPublic
+RETURN o","match
+  $o isa organization;
+  $o has revenue $o_revenue;
+  $o_revenue > 100000000;
+  $o has is_public $o_is_public;
+fetch { ""o"": $o };","TypeQL missing is_public false constraint - does not filter for non-public orgs"
+"64","Which organizations have 'Electronic Products Manufacturers' as their industry category?","MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Electronic Products Manufacturers'})
+RETURN o.name AS organization","match
+  $article isa article;
+  $org isa organization;
+  (article: $article, organization: $org) isa mentions;
+  $org has revenue $org_revenue;
+  $org_revenue > 50000000;
+limit 3;
+fetch { ""author"": $article.author };","TypeQL query is semantically different from the question"
+"65","What are the names of organizations that have suppliers also mentioned in articles?","MATCH (o:Organization)-[:HAS_SUPPLIER]->(s:Organization)<-[:MENTIONS]-(a:Article)
+RETURN DISTINCT o.name","match
+  $o isa organization;
+  $s isa organization;
+  $a isa article;
+  (customer: $o, supplier: $s) isa supplies;
+(article: $a, organization: $o) isa mentions; fetch { ""name"": $o.name };","TypeQL mentions article for org not supplier - wrong relation checked"
+"67","List the top 5 articles by sentiment that mention organizations based in California.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country {name: 'United States of America'})
+WHERE o.summary CONTAINS 'California'
+RETURN a.title AS article, a.sentiment AS sentiment
+ORDER BY sentiment DESC
+LIMIT 5","match
+  $a isa article;
+  $o isa organization;
+  $c isa country, has country_name ""United States of America"";
+  (article: $a, organization: $o) isa mentions;
+  $o has summary $o_summary;
+  $o_summary contains ""California"";
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; limit 5;
+fetch { ""article"": $a.title, ""sentiment"": $a.sentiment };","TypeQL query is semantically different from the question"
+"69","List the articles that mention both public and private organizations.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE o.isPublic = true AND 
+      EXISTS {(a)-[:MENTIONS]->(:Organization {isPublic: false})}
+RETURN a","match
+  $o isa organization;
+  $o has revenue $o_revenue;
+  $o_revenue > 50000000;
+  $o has is_dissolved false;
+fetch { ""o"": $o };","TypeQL missing required entity type for question"
+"78","Which organizations have subsidiaries in more than three different cities?","MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(sub:Organization)
+WHERE sub.name IS NOT NULL
+WITH o, count(DISTINCT sub.name) AS num_subsidiaries, collect(DISTINCT sub) AS subsidiaries
+WHERE num_subsidiaries > 3
+UNWIND subsidiaries AS s
+MATCH (s)-[:IN_CITY]->(city:City)
+RETURN o.name AS organization, collect(DISTINCT city.name) AS subsidiary_cities","match
+  $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;
+  $ceo isa person;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+fetch { ""organization"": $o.name, ""ceo"": $ceo.name };","TypeQL missing required entity type for question"
+"81","List the organizations that have a summary mentioning 'software' and are in the tech industry category.","MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory)
+WHERE toLower(o.summary) CONTAINS 'software' AND c.name CONTAINS 'tech'
+RETURN o.name AS organization, o.summary AS summary","match
+  $o isa organization;
+  $c isa industry_category;
+  (organization: $o, category: $c) isa in_category;
+  $c has industry_category_name $c_industry_category_name;
+  $c_industry_category_name contains ""tech"";
+fetch { ""organization"": $o.name, ""summary"": $o.summary };","TypeQL missing software in summary constraint - only checks tech industry"
+"85","List the organizations that have been mentioned in articles about environmental issues.","MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk)
+WHERE c.text CONTAINS 'environment'
+WITH a
+MATCH (a)-[:MENTIONS]->(o:Organization)
+RETURN DISTINCT o.name AS organization","match
+  $a isa article;
+  $o isa organization;
+  (article: $a, organization: $o) isa mentions;
+  $city isa city, has city_name ""Rome""; (organization: $o, city: $city) isa located_in;
+fetch { ""title"": $a.title, ""site_name"": $a.site_name, ""date"": $a.date, ""name"": $o.name };","TypeQL queries articles about orgs in Rome not orgs mentioned in articles about environmental issues"
+"89","Which organizations have a supplier based in a different country?","MATCH (o1:Organization)-[:HAS_SUPPLIER]->(o2:Organization),
+       (o1)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c1:Country),
+       (o2)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c2:Country)
+WHERE c1 <> c2
+RETURN o1.name AS Organization, o2.name AS Supplier, c1.name AS OrgCountry, c2.name AS SupplierCountry","match
+  $o1 isa organization;
+  $o2 isa organization;
+  $c1 isa country;
+  $c2 isa country;
+  (customer: $o1, supplier: $o2) isa supplies;
+  $city isa city; (organization: $o1, city: $city) isa located_in;
+(child: $city, parent: $c1) isa location-contains; fetch { ""Organization"": $o1.name, ""Supplier"": $o2.name, ""OrgCountry"": $c1.country_name, ""SupplierCountry"": $c2.country_name };","TypeQL missing supplier country constraint - does not check supplier is in different country"
+"92","Which organizations have a female CEO and are in the healthcare industry category?","MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person), 
+      (o)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Healthcare'})
+WHERE ceo.name =~ '.*(Mrs\\.|Ms\\.|Miss).*'
+RETURN o.name AS organization, ceo.name AS ceo","match
+  $o isa organization;
+  $ceo isa person;
+  $c isa industry_category, has industry_category_name ""Healthcare"";
+  (organization: $o, ceo: $ceo) isa ceo_of;
+  (organization: $o, category: $c) isa in_category;
+fetch { ""organization"": $o.name, ""ceo"": $ceo.name };","TypeQL missing female CEO constraint - just returns all CEOs in healthcare"
+"95","Which organizations are based in cities with a population of more than one million people according to city summaries?","MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE c.summary CONTAINS 'population of more than one million'
+RETURN o.name AS organization, c.name AS city","match
+  $a isa article;
+  $o isa organization;
+  (article: $a, organization: $o) isa mentions;
+  $o has revenue $o_revenue;
+  $o_revenue >= 1;
+fetch { ""title"": $a.title, ""summary"": $a.article_summary };","TypeQL missing required entity type for question"
+"97","List the top 3 cities where organizations with a revenue of more than 100 million are located.","MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.revenue > 1E8
+RETURN c.name AS city, count(*) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 3","match
+  $o isa organization;
+  $c isa city, has city_name $cn;
+  (organization: $o, city: $c) isa located_in;
+  $o has revenue $r;
+  $r > 100000000;
+limit 3;
+fetch { ""city"": $cn };","TypeQL missing required aggregation for question"
+"100","Can you name 3 people who are both investors and CEOs of different organizations?","MATCH (p:Person)
+WHERE EXISTS {(p)-[:HAS_CEO]->(:Organization)}
+  AND EXISTS {(p)-[:HAS_INVESTOR]->(:Organization)}
+WITH p LIMIT 3
+RETURN p.name AS name","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, ceo: $p) isa ceo_of;
+limit 3;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL query is semantically different from the question"
+"108","List the top 5 suppliers of Accenture.","MATCH (a:Organization {name: 'Accenture'})<-[:HAS_SUPPLIER]-(s:Organization)
+RETURN s.name AS supplier, s.summary AS summary
+ORDER BY s.revenue DESC
+LIMIT 5","match
+  $o isa organization;
+  $o has revenue $o_revenue;
+  $o_revenue > 100000000;
+  $o has is_public $o_is_public;
+fetch { ""o"": $o };","TypeQL missing required relation for question"
+"109","What are the names of the first 3 organizations with a motto?","MATCH (o:Organization)
+WHERE o.motto IS NOT NULL
+RETURN o.name
+LIMIT 3","match
+  $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;
+  $ceo isa person;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+fetch { ""organization"": $o.name, ""ceo"": $ceo.name };","TypeQL queries orgs with subsidiaries and CEOs not orgs with a motto"
+"115","List the first 3 articles mentioning organizations with a revenue less than 5 million.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE o.revenue < 5000000
+RETURN a.title, a.summary, a.date
+LIMIT 3","match
+  $o isa organization;
+  $s isa organization;
+  $a isa article;
+  (customer: $o, supplier: $s) isa supplies;
+(article: $a, organization: $o) isa mentions; fetch { ""name"": $o.name };","TypeQL queries orgs with suppliers mentioned in articles not articles mentioning orgs with revenue less than 5M"
+"118","What are the top 3 industries with the most organizations in them?","MATCH (ic:IndustryCategory)<-[:HAS_CATEGORY]-(o:Organization)
+RETURN ic.name AS industry, count(o) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 3","match
+  $a isa article;
+  $o isa organization;
+  $c isa country, has country_name ""United States of America"";
+  (article: $a, organization: $o) isa mentions;
+  $o has summary $o_summary;
+  $o_summary contains ""California"";
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; limit 5;
+fetch { ""article"": $a.title, ""sentiment"": $a.sentiment };","TypeQL query is semantically different from the question"
+"127","List the top 5 industries where the organizations are based in 'Seattle'.","MATCH (c:City {name: 'Seattle'})<-[:IN_CITY]-(o:Organization)-[:HAS_CATEGORY]->(ic:IndustryCategory)
+RETURN ic.name AS industry, count(*) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 5","match
+  $c isa city, has city_name ""Seattle"";
+  $o isa organization;
+  $ic isa industry_category, has industry_category_name $icn;
+  (organization: $o, city: $c) isa located_in;
+  (organization: $o, category: $ic) isa in_category;
+limit 5;
+fetch { ""industry"": $icn };","TypeQL missing required aggregation for question"
+"128","What are the names of the first 3 organizations dissolved and have revenue greater than 10000000?","MATCH (o:Organization)
+WHERE o.isDissolved = true AND o.revenue > 10000000
+RETURN o.name
+LIMIT 3","match
+  $o isa organization;
+  $c isa city;
+  $country isa country;
+  (organization: $o, city: $c) isa located_in;
+(child: $c, parent: $country) isa location-contains; fetch { ""organization"": $o.name, ""capital"": $c.city_name };","TypeQL missing required attribute filter for question"
+"131","List the top 3 cities where 'Electronic Products Manufacturers' organizations are located.","MATCH (c:City)<-[:IN_CITY]-(o:Organization)-[:HAS_CATEGORY]->(ic:IndustryCategory {name: 'Electronic Products Manufacturers'})
+RETURN c.name AS city, count(o) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 3","match
+  $c isa city, has city_name $cn;
+  $o isa organization;
+  $ic isa industry_category, has industry_category_name ""Electronic Products Manufacturers"";
+  (organization: $o, city: $c) isa located_in;
+  (organization: $o, category: $ic) isa in_category;
+limit 3;
+fetch { ""city"": $cn };","TypeQL missing required aggregation for question"
+"132","Which 5 articles mention 'Accenture' and have a sentiment score above 0.8?","MATCH (a:Article)-[:MENTIONS]->(o:Organization {name: 'Accenture'})
+WHERE a.sentiment > 0.8
+RETURN a.title, a.sentiment, a.siteName, a.date
+LIMIT 5","match
+  $ceo isa person;
+  $org isa organization, has is_public true;
+  $child isa person;
+  (organization: $org, ceo: $ceo) isa ceo_of;
+(parent: $ceo, child: $child) isa parent_of; fetch { ""CEO"": $ceo.name, ""Organization"": $org.name, ""Child"": $child.name };","TypeQL missing required entity type for question"
+"139","Which organizations have more than 50 employees and are in the 'Software' industry?","MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Software'})
+WHERE o.nbrEmployees > 50
+RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees","match
+  $o isa organization;
+  $sub isa organization;
+  (parent: $o, subsidiary: $sub) isa subsidiary_of;
+$o has revenue $rev1; $sub has revenue $rev2; $rev1 > $rev2; fetch { ""ParentOrganization"": $o.name, ""ParentRevenue"": $o.revenue };","TypeQL query is semantically different from the question"
+"143","Identify the top 3 countries with the most organizations in the 'Electronic Products Manufacturers' category.","MATCH (c:Country)<-[:IN_COUNTRY]-(city:City)<-[:IN_CITY]-(o:Organization)-[:HAS_CATEGORY]->(cat:IndustryCategory {name: 'Electronic Products Manufacturers'})
+WITH c.name AS country, count(o) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 3
+RETURN country, orgCount","match
+  $c isa country, has country_name $cn;
+  $city isa city;
+  $o isa organization;
+  $ic isa industry_category, has industry_category_name ""Electronic Products Manufacturers"";
+  (child: $city, parent: $c) isa location-contains;
+  (organization: $o, city: $city) isa located_in;
+  (organization: $o, category: $ic) isa in_category;
+limit 3;
+fetch { ""country"": $cn };","TypeQL query is semantically different from the question"
+"144","Which 3 organizations have been dissolved and are mentioned in articles with a sentiment score below 0.5?","MATCH (o:Organization)-[:MENTIONED_IN]->(a:Article)
+WHERE o.isDissolved = true AND a.sentiment < 0.5
+RETURN o.name
+LIMIT 3","match
+  $o isa organization;
+  $a isa article;
+  $o has is_dissolved true;
+  $a has sentiment $a_sentiment;
+  $a_sentiment < 0.5;
+limit 3;
+fetch { ""name"": $o.name };","TypeQL missing mentions relation - does not connect dissolved orgs to articles with sentiment below 0.5"
+"148","Which organizations have a motto containing 'security' and have a CEO named 'Julie Spellman Sweet'?","MATCH (o:Organization)
+WHERE o.motto CONTAINS 'security'
+  AND (o)-[:HAS_CEO]->(:Person {name: 'Julie Spellman Sweet'})
+RETURN o","match
+  $p isa person, has name ""Julie Spellman Sweet"";
+  $o isa organization;
+  (organization: $o, ceo: $p) isa ceo_of;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL missing motto contains security constraint"
+"151","What are the names of organizations with more than 500 employees and have been mentioned in articles with high sentiment scores?","MATCH (o:Organization)
+WHERE o.nbrEmployees > 500 AND EXISTS {
+  (o)<-[:MENTIONS]-(a:Article)
+  WHERE a.sentiment > 0.8
+}
+RETURN o.name","match
+  $o isa organization;
+  $a has sentiment $a_sentiment;
+  $a_sentiment > 0.8;
+fetch { ""name"": $o.name };","TypeQL missing required entity type for question"
+"152","Which 3 organizations are suppliers to 'New Energy Group' and are based in 'United States of America'?","MATCH (o:Organization {name: 'New Energy Group'})<-[:HAS_SUPPLIER]-(supplier:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country {name: 'United States of America'})
+RETURN supplier.name
+LIMIT 3","match
+  $o isa organization, has name ""New Energy Group"";
+  $supplier isa organization;
+  $c isa country, has country_name ""United States of America"";
+  (customer: $supplier, supplier: $o) isa supplies;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; limit 3;
+fetch { ""name"": $supplier.name };","TypeQL has wrong supply direction - supplier should be organization supplying to New Energy Group not vice versa"
+"155","Which 3 organizations have the most subsidiaries within the same country?","MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(sub:Organization),
+      (o)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country),
+      (sub)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c)
+WITH o, count(sub) AS numSubs
+ORDER BY numSubs DESC
+LIMIT 3
+RETURN o.name AS organization, numSubs AS numberOfSubsidiaries","match
+  $o isa organization, has name $on;
+  $sub isa organization;
+  $c isa country;
+  $city1 isa city;
+  $city2 isa city;
+  (parent: $o, subsidiary: $sub) isa subsidiary_of;
+  (organization: $o, city: $city1) isa located_in;
+  (child: $city1, parent: $c) isa location-contains;
+  (organization: $sub, city: $city2) isa located_in;
+  (child: $city2, parent: $c) isa location-contains;
+limit 3;
+fetch { ""organization"": $on };","TypeQL query is semantically different from the question"
+"159","Which organizations have CEOs who are also board members of other organizations?","MATCH (o1:Organization)-[:HAS_CEO]->(p:Person)
+WHERE EXISTS {
+  (p)-[:HAS_BOARD_MEMBER]->(o2:Organization)
+  WHERE o1 <> o2
+}
+RETURN o1.name AS organization, p.name AS ceo_and_board_member","match
+  $o1 isa organization;
+  $p isa person;
+  (organization: $o1, ceo: $p) isa ceo_of;
+(organization: $o1, member: $p) isa board_member_of; fetch { ""organization"": $o1.name, ""ceo_and_board_member"": $p.name };","TypeQL queries CEOs who are also board members in SAME org not DIFFERENT orgs"
+"160","Identify the top 3 cities where the headquarters of organizations with more than 1000 employees are located.","MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.nbrEmployees > 1000
+RETURN c.name AS city, count(*) AS numOrgs
+ORDER BY numOrgs DESC
+LIMIT 3","match
+  $o1 isa organization;
+  $o2 isa organization;
+  $c1 isa country;
+  $c2 isa country;
+  (customer: $o1, supplier: $o2) isa supplies;
+  $city isa city; (organization: $o1, city: $city) isa located_in;
+(child: $city, parent: $c1) isa location-contains; fetch { ""Organization"": $o1.name, ""Supplier"": $o2.name, ""OrgCountry"": $c1.country_name, ""SupplierCountry"": $c2.country_name };","TypeQL query is semantically different from the question"
+"163","Find the first 3 organizations that have been mentioned in articles by 'MrWeb' site.","MATCH (article:Article {siteName: 'MrWeb'})-[:MENTIONS]->(org:Organization)
+RETURN org.name AS organization
+LIMIT 3","match
+  $a isa article;
+  $o isa organization;
+  (article: $a, organization: $o) isa mentions;
+  $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in;
+fetch { ""article"": $a.title, ""organization"": $o.name };","TypeQL queries orgs in Seattle not orgs mentioned in articles from MrWeb site"
+"171","List the first 3 organizations that have a dissolved status and are mentioned in articles authored by 'David Correa'.","MATCH (a:Article {author: 'David Correa'})-[:MENTIONS]->(o:Organization {isDissolved: true})
+RETURN o.name AS organization
+LIMIT 3","match
+  $p isa person, has name ""Julie Spellman Sweet"";
+  $o isa organization;
+  (organization: $o, ceo: $p) isa ceo_of;
+fetch { ""o"": $o };","TypeQL query is semantically different from the question"
+"172","Identify the top 3 organizations that have a public status and are in the 'Healthcare' industry category.","MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Healthcare'})
+WHERE o.isPublic = true
+RETURN o.name AS organization, o.summary AS summary
+ORDER BY o.revenue DESC
+LIMIT 3","match
+  $o isa organization;
+  $c isa city;
+  (organization: $o, city: $c) isa located_in;
+  $o has revenue $o_revenue;
+  $o_revenue > 100000000;
+limit 3;
+reduce $orgCount = count($o);","TypeQL missing required attribute filter for question"
+"173","Who are the first 3 CEOs of organizations that have been mentioned in the most articles?","MATCH (o:Organization)<-[:MENTIONS]-(a:Article)
+WITH o, count(a) AS mentionCount
+ORDER BY mentionCount DESC
+LIMIT 3
+MATCH (o)-[:HAS_CEO]->(ceo:Person)
+RETURN ceo.name AS ceoName, o.name AS orgName, mentionCount","match
+  $o isa organization, has name $on;
+  $ceo isa person, has name $ceon;
+  $a isa article;
+  (article: $a, organization: $o) isa mentions;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+limit 3;
+fetch { ""ceoName"": $ceon, ""orgName"": $on };","TypeQL missing required aggregation for question"
+"175","Which organizations based in 'United States of America' have a CEO named 'Julie Spellman Sweet' and are not dissolved?","MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country {name: 'United States of America'})
+WHERE (o)-[:HAS_CEO]->(:Person {name: 'Julie Spellman Sweet'}) AND o.isDissolved IS NOT NULL AND NOT o.isDissolved
+RETURN o","match
+  $p isa person, has name ""Julie Spellman Sweet"";
+  $o isa organization;
+  (organization: $o, ceo: $p) isa ceo_of;
+  $o has is_dissolved true;
+  $country isa country, has country_name ""United States of America"";
+  $city isa city;
+  (organization: $o, city: $city) isa located_in;
+  (child: $city, parent: $country) isa location-contains;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL has is_dissolved true instead of false - wrong boolean value"
+"177","Identify the first 3 articles where the organizations mentioned have more than 50 employees.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE o.nbrEmployees > 50
+WITH a, o
+ORDER BY a.date DESC
+LIMIT 3
+RETURN a.title AS article, collect(o.name) AS organizations","match
+  $o isa organization, has name ""New Energy Group"";
+  $p isa person;
+  (organization: $o, member: $p) isa board_member_of;
+fetch { ""boardMember"": $p.name };","TypeQL missing required entity type for question"
+"179","List the top 3 organizations that have been mentioned in articles with a sentiment score below 0.3.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.sentiment < 0.3
+WITH o, count(*) as mentionCount
+ORDER BY mentionCount DESC
+LIMIT 3
+RETURN o.name as organization, mentionCount","match
+  $p isa person;
+$invested_org isa organization; (organization: $invested_org, investor: $p) isa invested_in; fetch { ""name"": $p.name };","TypeQL missing required entity type for question"
+"191","Which organizations have investors from 'Seattle'?","MATCH (o:Organization)<-[:HAS_INVESTOR]-(investor)-[:IN_CITY]->(:City {name: 'Seattle'})
+RETURN o.name AS organization, investor.name AS investor","match
+  $o isa organization;
+  (investor: $investor, organization: $o) isa invested_in;
+  $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in;
+fetch { ""organization"": $o.name, ""investor"": $investor.name };","TypeQL checks org location in Seattle not investor location - wrong entity filtered"
+"196","Find the first 3 articles mentioning organizations with a CEO named 'Julie Spellman Sweet' and a revenue above 500 million.","MATCH (article:Article)-[:MENTIONS]->(org:Organization)
+WHERE org.revenue > 5e8 AND (org)-[:HAS_CEO]->(:Person {name: 'Julie Spellman Sweet'})
+RETURN article.title, article.summary, article.date
+LIMIT 3","match
+  $p isa person, has name ""Julie Spellman Sweet"";
+  $o isa organization;
+  (organization: $o, ceo: $p) isa ceo_of;
+limit 3;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL missing required entity type for question"
+"199","List the first 3 articles mentioning organizations with more than 500 employees and a low sentiment score.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE o.nbrEmployees > 500 AND a.sentiment < 0.5
+RETURN a.title, a.sentiment, o.name
+LIMIT 3","match
+  $o isa organization, has name ""New Energy Group"";
+  $competitor isa organization;
+  (competitor: $o, competitor: $competitor) isa competes_with;
+limit 3;
+fetch { ""name"": $competitor.name };","TypeQL missing required entity type for question"
+"202","Identify the top 3 organizations that have a CEO and are based in 'New York City'.","MATCH (o:Organization)-[:HAS_CEO]->(:Person)
+MATCH (o)-[:IN_CITY]->(:City {name: 'New York City'})
+RETURN o.name AS organization, o.summary AS summary
+ORDER BY o.revenue DESC
+LIMIT 3","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, ceo: $p) isa ceo_of;
+  $city isa city, has city_name ""New York City"";
+  (organization: $o, city: $city) isa located_in;
+limit 3;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL query is semantically different from the question"
+"205","Which organizations have a CEO named 'Julie Spellman Sweet' and have subsidiaries named 'Icon Integration'?","MATCH (o:Organization)-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'})
+WHERE EXISTS {
+  (o)-[:HAS_SUBSIDIARY]->(:Organization {name: 'Icon Integration'})  
+}
+RETURN o","match
+  $o isa organization, has name ""Icon Integration""; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;
+  $p isa person, has name ""Julie Spellman Sweet"";
+  (organization: $o, ceo: $p) isa ceo_of;
+fetch { ""o"": $o };","TypeQL has Icon Integration as parent not subsidiary - wrong direction"
+"206","Find the first 3 organizations based in 'Seattle' that have a public status and are not dissolved.","MATCH (o:Organization)-[:IN_CITY]->(:City {name: 'Seattle'})
+WHERE o.isPublic = true AND (o.isDissolved = false OR o.isDissolved IS NULL)
+RETURN o.name, o.summary
+LIMIT 3","match
+  $o isa organization;
+  $o has is_public true;
+  $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in;
+limit 3;
+fetch { ""name"": $o.name, ""summary"": $o.summary };","TypeQL missing required attribute filter for question"
+"209","List the top 3 organizations that have a CEO and have been mentioned in the most recent articles.","MATCH (o:Organization)-[:HAS_CEO]->(:Person)
+MATCH (a:Article)-[:MENTIONS]->(o)
+WITH o, count(a) AS mentionCount, max(a.date) AS latestMentionDate
+ORDER BY latestMentionDate DESC, mentionCount DESC
+RETURN o.name AS organization, latestMentionDate, mentionCount
+LIMIT 3","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, ceo: $p) isa ceo_of;
+limit 3;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL missing required entity type for question"
+"211","Find the first 3 organizations that have CEOs named 'Julie Spellman Sweet' and are mentioned in articles with a sentiment score above 0.5.","MATCH (o:Organization)-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'})
+WHERE EXISTS {
+  (o)<-[:MENTIONS]-(a:Article)
+  WHERE a.sentiment > 0.5
+}
+RETURN o
+LIMIT 3","match
+  $o isa organization;
+  $p isa person, has name ""Julie Spellman Sweet"";
+  (organization: $o, ceo: $p) isa ceo_of;
+  $a has sentiment $a_sentiment;
+  $a_sentiment > 0.5;
+limit 3;
+fetch { ""o"": $o };","TypeQL missing required entity type for question"
+"215","Which organizations have more than 1000 employees and are mentioned in articles with a sentiment score below 0.5?","MATCH (o:Organization)
+WHERE o.nbrEmployees > 1000
+AND EXISTS {
+  (o)<-[:MENTIONS]-(a:Article)
+  WHERE a.sentiment < 0.5
+}
+RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees","match
+  $o isa organization;
+  $a has sentiment $a_sentiment;
+  $a_sentiment < 0.5;
+fetch { ""organization"": $o.name, ""numberOfEmployees"": $o.nbr_employees };","TypeQL missing required entity type for question"
+"216","Find the first 3 organizations based in 'Seattle' that have been mentioned in articles authored by 'David Correa'.","MATCH (o:Organization)-[:IN_CITY]->(:City {name: 'Seattle'})
+WHERE EXISTS {
+  (o)<-[:MENTIONS]-(:Article {author: 'David Correa'})
+}
+RETURN o.name
+LIMIT 3","match
+  $o isa organization;
+  $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in;
+limit 3;
+fetch { ""name"": $o.name };","TypeQL missing required entity type for question"
+"220","Which organizations have a CEO named 'Julie Spellman Sweet' and have been mentioned in articles with a sentiment score above 0.8?","MATCH (o:Organization)-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'})
+WHERE EXISTS {
+  (o)<-[:MENTIONS]-(a:Article)
+  WHERE a.sentiment > 0.8
+}
+RETURN o","match
+  $o isa organization;
+  $p isa person, has name ""Julie Spellman Sweet"";
+  (organization: $o, ceo: $p) isa ceo_of;
+  $a has sentiment $a_sentiment;
+  $a_sentiment > 0.8;
+fetch { ""o"": $o };","TypeQL missing required entity type for question"
+"221","Find the first 3 organizations based in 'Italy' that have a public status and are not dissolved.","MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country {name: 'Italy'})
+WHERE o.isPublic = true AND (o.isDissolved IS NULL OR o.isDissolved = false)
+RETURN o.name AS organization, o.summary AS summary
+LIMIT 3","match
+  $o isa organization;
+  $c isa country, has country_name ""Italy"";
+  $o has is_public true;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; limit 3;
+fetch { ""organization"": $o.name, ""summary"": $o.summary };","TypeQL missing required attribute filter for question"
+"227","Who are the first 3 board members of organizations that have a CEO and are based in 'United States of America'?","MATCH (o:Organization)-[:HAS_CEO]->(:Person)
+WHERE (o)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(:Country {name: 'United States of America'})
+WITH o
+MATCH (o)-[:HAS_BOARD_MEMBER]->(boardMember:Person)
+RETURN boardMember.name
+LIMIT 3","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, ceo: $p) isa ceo_of;
+  $country isa country, has country_name ""United States of America"";
+  $city isa city;
+  (organization: $o, city: $city) isa located_in;
+  (child: $city, parent: $country) isa location-contains;
+limit 3;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL missing required relation for question"
+"231","Identify the top 3 organizations that have been mentioned in articles authored by 'James Blackman'.","MATCH (a:Article {author: 'James Blackman'})-[:MENTIONS]->(o:Organization)
+RETURN o.name AS organization, count(*) AS mentions
+ORDER BY mentions DESC
+LIMIT 3","match
+  $a isa article, has author ""James Blackman"";
+  $o isa organization;
+  (article: $a, organization: $o) isa mentions;
+limit 3;
+reduce $mentions = count($a);","TypeQL query is semantically different from the question"
+"232","Which organizations have a revenue greater than 100 million but less than 500 million?","MATCH (o:Organization)
+WHERE o.revenue > 1E8 AND o.revenue < 5E8
+RETURN o.name AS organization, o.revenue AS revenue","match
+  $o isa organization;
+  $o has revenue $o_revenue;
+  $o_revenue > 100000000;
+  $o_revenue < 5;
+fetch { ""organization"": $o.name, ""revenue"": $o.revenue };","TypeQL has revenue < 5 instead of < 500000000 - wrong revenue threshold"
+"235","What are the top 5 organizations in terms of revenue?","MATCH (o:Organization)
+WHERE o.revenue IS NOT NULL
+RETURN o.name AS organization, o.revenue AS revenue
+ORDER BY o.revenue DESC
+LIMIT 5","match
+  $o isa organization;
+  $c isa country, has country_name ""United States of America"";
+  $p isa person;
+  (organization: $o, member: $p) isa board_member_of;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; limit 3;
+fetch { ""boardMember"": $p.name };","TypeQL query is semantically different from the question"
+"240","What organizations have 'Electronic Products Manufacturers' as their industry category?","MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Electronic Products Manufacturers'})
+RETURN o.name AS organization","match
+  $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;
+  $city isa city, has city_name ""Paris""; (organization: $o, city: $city) isa located_in;
+fetch { ""o"": $o };","TypeQL query is semantically different from the question"
+"244","What are the top 3 articles by sentiment that mention an organization with a revenue of over 1 billion?","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE o.revenue > 1e9
+RETURN a.title AS article, a.sentiment AS sentiment
+ORDER BY sentiment DESC
+LIMIT 3","match
+  $a isa article;
+  $o isa organization;
+  (article: $a, organization: $o) isa mentions;
+  $o has revenue $o_revenue;
+  $o_revenue > 1000000000;
+limit 3;
+fetch { ""article"": $a.title, ""sentiment"": $a.sentiment };","TypeQL missing sort by sentiment - does not find top articles by sentiment"
+"246","What are the first 5 cities by the number of organizations located there?","MATCH (c:City)<-[:IN_CITY]-(o:Organization)
+WITH c, count(o) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 5
+RETURN c.name AS city, orgCount","match
+  $p isa person, has name ""Julie Spellman Sweet"";
+  $o isa organization;
+  (investor: $p, organization: $o) isa invested_in;
+limit 3;
+fetch { ""name"": $o.name };","TypeQL query is semantically different from the question"
+"248","What organizations are mentioned in the article titled 'Funds for Consumer Behavior Specialist Infinite Analytics'?","MATCH (a:Article {title: 'Funds for Consumer Behavior Specialist Infinite An'})-[:MENTIONS]->(o:Organization)
+RETURN o.name AS organization","match
+  $o isa organization;
+  $c isa country;
+  $o has is_public $o_is_public;
+  $o has is_public true;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; limit 3;
+fetch { ""country_name"": $c.country_name };","TypeQL missing required entity type for question"
+"255","Which organizations have a motto containing the word 'technology'?","MATCH (o:Organization)
+WHERE o.motto CONTAINS 'technology'
+RETURN o.name AS organization, o.motto AS motto","match
+  $c isa city, has city_name ""Seattle"";
+  $o isa organization;
+  $ic isa industry_category;
+  (organization: $o, city: $c) isa located_in;
+  (organization: $o, category: $ic) isa in_category;
+limit 5;
+reduce $orgCount = count($c);","TypeQL queries Seattle industries not orgs with motto containing technology"
+"263","List the parents of 'David Correa'.","MATCH (p:Person {name: 'David Correa'})<-[:HAS_CHILD]-(parent:Person)
+RETURN parent.name AS parent","match
+  $p isa person, has name ""David Correa"";
+  $parent isa person;
+(parent: $p, child: $parent) isa parent_of; fetch { ""parent"": $parent.name };","TypeQL has wrong parent_of direction - finds children of David Correa not parents"
+"264","What are the first 3 organizations mentioned in articles from 'MrWeb'?","MATCH (article:Article {siteName: 'MrWeb'})-[:MENTIONS]->(org:Organization)
+RETURN org.name
+LIMIT 3","match
+  $c isa city;
+  $o isa organization;
+  $ic isa industry_category, has industry_category_name ""Electronic Products Manufacturers"";
+  (organization: $o, city: $c) isa located_in;
+  (organization: $o, category: $ic) isa in_category;
+limit 3;
+reduce $orgCount = count($o);","TypeQL missing required entity type for question"
+"268","Which cities have more than two industries represented by organizations within them?","MATCH (c:City)<-[:IN_CITY]-(o:Organization)-[:HAS_CATEGORY]->(i:IndustryCategory)
+WITH c, count(DISTINCT i) AS industryCount
+WHERE industryCount > 2
+RETURN c.name AS city, industryCount","match
+  $c isa city;
+  $o isa organization;
+  $i isa industry_category;
+  (organization: $o, city: $c) isa located_in;
+  (organization: $o, category: $i) isa in_category;
+fetch { ""city"": $c.city_name };","TypeQL missing HAVING clause - does not filter cities with 2+ industries"
+"269","What are the top 3 industries by the number of organizations in each?","MATCH (ic:IndustryCategory)<-[:HAS_CATEGORY]-(o:Organization)
+RETURN ic.name AS industry, count(o) AS numOrganizations
+ORDER BY numOrganizations DESC
+LIMIT 3","match
+  $ic isa industry_category;
+  $o isa organization;
+  (organization: $o, category: $ic) isa in_category;
+limit 3;
+reduce $numOrganizations = count($o);","TypeQL query is semantically different from the question"
+"271","Which organization has the highest revenue and is not public?","MATCH (o:Organization)
+WHERE o.isPublic = false
+RETURN o
+ORDER BY o.revenue DESC
+LIMIT 1","match
+  $p isa person;
+  $o isa organization;
+  (investor: $p, organization: $o) isa invested_in;
+  $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in;
+limit 3;
+fetch { ""name"": $p.name };","TypeQL missing required attribute filter for question"
+"273","Which organizations have more than 10,000 employees and are located in a country outside of 'United States of America'?","MATCH (o:Organization)
+WHERE o.nbrEmployees > 10000 AND EXISTS {
+  (o)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country)
+  WHERE c.name <> 'United States of America'
+}
+RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees","match
+  $o isa organization;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+fetch { ""organization"": $o.name, ""numberOfEmployees"": $o.nbr_employees };","TypeQL missing required entity type for question"
+"277","What are the names of organizations that have at least 2 board members?","MATCH (o:Organization)
+WHERE size([(o)-[:HAS_BOARD_MEMBER]->(:Person) | 1]) >= 2
+RETURN o.name","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, member: $p) isa board_member_of;
+limit 2;
+fetch { ""boardMember"": $p.name, ""organization"": $o.name };","TypeQL missing count constraint - does not filter orgs with at least 2 board members"
+"278","Which countries have organizations with a revenue less than 10 million?","MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country)
+WHERE o.revenue < 1E7
+RETURN DISTINCT c.name","match
+  $o isa organization;
+  $c isa country;
+  $o has revenue $o_revenue;
+  $o_revenue < 1;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; fetch { ""country_name"": $c.country_name };","TypeQL has revenue < 1 instead of < 10000000 - wrong threshold"
+"281","Which articles mention any organizations that are suppliers to 'New Energy Group'?","MATCH (o:Organization {name: 'New Energy Group'})<-[:HAS_SUPPLIER]-(supplier:Organization)<-[:MENTIONS]-(a:Article)
+RETURN a","match
+  $o isa organization, has name ""New Energy Group"";
+  $supplier isa organization;
+  $a isa article;
+  (customer: $supplier, supplier: $o) isa supplies;
+(article: $a, organization: $o) isa mentions; fetch { ""a"": $a };","TypeQL has wrong supplies direction - queries New Energy Group as supplier not as customer"
+"284","List the first 3 organizations that were mentioned in articles with a sentiment less than 0.5.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.sentiment < 0.5
+RETURN o.name
+LIMIT 3","match
+  $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;
+  $o has nbr_employees $o_nbr_employees;
+  $o_nbr_employees > 500;
+sort $o_nbr_employees desc;
+limit 3;
+fetch { ""organization"": $o.name, ""employees"": $o.nbr_employees };","TypeQL missing required entity type for question"
+"285","What is the name of the organization that has the highest number of employees and is headquartered in a city named 'Seattle'?","MATCH (o:Organization)-[:IN_CITY]->(c:City {name: 'Seattle'})
+RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees
+ORDER BY o.nbrEmployees DESC
+LIMIT 1","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, member: $p) isa board_member_of;
+  $o has revenue $o_revenue;
+  $o_revenue > 100000000;
+limit 3;
+fetch { ""boardMember"": $p.name, ""organization"": $o.name };","TypeQL missing required entity type for question"
+"287","Which organizations are headquartered in a city that is not in 'United States of America' and have a revenue of over 100 million?","MATCH (o:Organization)-[:IN_CITY]->(c:City)-[:IN_COUNTRY]->(country:Country)
+WHERE country.name <> 'United States of America' AND o.revenue > 1E8
+RETURN o.name AS organization, c.name AS city, country.name AS country, o.revenue AS revenue","match
+  $o isa organization;
+  $c isa city;
+  $country isa country;
+  (organization: $o, city: $c) isa located_in;
+  $o has revenue $o_revenue;
+  $o_revenue > 100000000;
+(child: $c, parent: $country) isa location-contains; fetch { ""organization"": $o.name, ""city"": $c.city_name, ""country"": $country.country_name, ""revenue"": $o.revenue };","TypeQL query is semantically different from the question"
+"288","List the organizations that are public and have a CEO who is a female.","MATCH (o:Organization {isPublic: true})-[:HAS_CEO]->(ceo:Person)
+WHERE ceo.name IS NOT NULL AND ceo.name =~ "".*\\s(Ms\\.|Mrs\\.|Miss).*""
+RETURN o.name AS organization, ceo.name AS ceo","match
+  $o isa organization, has is_public true;
+  $ceo isa person;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+  $ceo has name $ceo_name;
+fetch { ""organization"": $o.name, ""ceo"": $ceo.name };","TypeQL missing female CEO constraint - returns all CEOs in public orgs"
+"289","Which cities have the most organizations that are dissolved?","MATCH (c:City)<-[:IN_CITY]-(o:Organization)
+WHERE o.isDissolved = true
+RETURN c.name AS city, count(o) AS dissolvedOrgs
+ORDER BY dissolvedOrgs DESC
+LIMIT 1","match
+  $c isa city;
+  $o isa organization;
+  (organization: $o, city: $c) isa located_in;
+  $o has is_dissolved true;
+limit 1;
+reduce $dissolvedOrgs = count($o);","TypeQL query is semantically different from the question"
+"292","List the top 3 organizations by the number of articles mentioning them in 2021.","MATCH (o:Organization)<-[:MENTIONS]-(a:Article)
+WHERE a.date >= date(""2021-01-01"") AND a.date <= date(""2021-12-31"") 
+WITH o, count(a) as mentionCount
+ORDER BY mentionCount DESC
+LIMIT 3
+RETURN o.name as organization, mentionCount","match
+  $o isa organization;
+  $a isa article;
+  (article: $a, organization: $o) isa mentions;
+reduce $mentionCount = count($a) groupby $o;
+sort $mentionCount desc;
+limit 3;
+fetch { ""organization"": $o.name, ""mentionCount"": $mentionCount };","TypeQL missing 2021 date constraint - counts all article mentions"
+"294","Which organizations have a CEO who is also a board member in another organization?","MATCH (o1:Organization)-[:HAS_CEO]->(p:Person)<-[:HAS_BOARD_MEMBER]-(o2:Organization)
+WHERE o1 <> o2
+RETURN o1.name AS org1, p.name AS ceo_board_member, o2.name AS org2","match
+  $o1 isa organization;
+  $p isa person;
+  $o2 isa organization;
+  (organization: $o1, ceo: $p) isa ceo_of;
+(organization: $o1, member: $p) isa board_member_of; fetch { ""org1"": $o1.name, ""ceo_board_member"": $p.name, ""org2"": $o2.name };","TypeQL queries CEO and board member in SAME org not DIFFERENT orgs"
+"296","What are the names of the top 5 organizations with the highest revenue?","MATCH (o:Organization)
+WHERE o.revenue IS NOT NULL
+RETURN o.name AS organization, o.revenue AS revenue
+ORDER BY o.revenue DESC
+LIMIT 5","match
+  $o isa organization;
+  $o has motto $o_motto;
+  $o_motto contains ""security"";
+fetch { ""o"": $o };","TypeQL queries orgs with motto containing security not top 5 orgs by revenue"
+"300","Which 3 organizations have the most employees?","MATCH (o:Organization)
+WHERE o.nbrEmployees IS NOT NULL
+RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees
+ORDER BY o.nbrEmployees DESC
+LIMIT 3","match
+  $o isa organization, has name ""New Energy Group"";
+  $supplier isa organization;
+  $c isa country, has country_name ""United States of America"";
+  (customer: $supplier, supplier: $o) isa supplies;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; limit 3;
+fetch { ""name"": $supplier.name };","TypeQL queries suppliers to New Energy Group in USA not top 3 orgs by employees"
+"301","Name the top 5 articles with the highest sentiment scores.","MATCH (a:Article)
+RETURN a.title AS title, a.sentiment AS sentiment
+ORDER BY a.sentiment DESC
+LIMIT 5","match
+  $accenture isa organization, has name ""Accenture"";
+  $sub isa organization;
+  $ceo isa person;
+  (organization: $sub, ceo: $ceo) isa ceo_of;
+(parent: $accenture, subsidiary: $sub) isa subsidiary_of; limit 3;
+fetch { ""ceoName"": $ceo.name };","TypeQL query is semantically different from the question"
+"302","Can you identify 3 organizations mentioned in articles published in 2022?","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.date.year = 2022
+RETURN DISTINCT o.name
+LIMIT 3","match
+  $a isa article;
+  $o isa organization;
+  (article: $a, organization: $o) isa mentions;
+limit 3;
+fetch { ""name"": $o.name };","TypeQL missing 2022 date constraint"
+"303","What are the names of 3 industry categories that the most organizations belong to?","MATCH (ic:IndustryCategory)<-[:HAS_CATEGORY]-(o:Organization)
+RETURN ic.name AS category, count(o) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 3","match
+  $ic isa industry_category, has industry_category_name $icn;
+  $o isa organization;
+  (organization: $o, category: $ic) isa in_category;
+limit 3;
+fetch { ""category"": $icn };","TypeQL missing required aggregation for question"
+"305","Which 3 cities are mentioned most frequently in articles?","MATCH (a:Article)-[:HAS_CHUNK]->(:Chunk)-[:MENTIONS]->(c:City)
+RETURN c.name AS city, count(*) AS mentions
+ORDER BY mentions DESC
+LIMIT 3","match
+  $a isa article;
+  $c isa city;
+limit 3;
+reduce $mentions = count($a);","TypeQL query is semantically different from the question"
+"312","Which 3 people have the most children listed in the database?","MATCH (p:Person)-[:HAS_CHILD]->(child:Person)
+WITH p, count(child) AS num_children
+ORDER BY num_children DESC
+LIMIT 3
+RETURN p.name AS name, num_children","match
+  $p isa person, has name $pn;
+  $child isa person;
+  (parent: $p, child: $child) isa parent_of;
+limit 3;
+fetch { ""name"": $pn };","TypeQL missing required aggregation for question"
+"313","Name the first 3 organizations that have at least one board member who is also a CEO of another organization.","MATCH (o:Organization)-[:HAS_BOARD_MEMBER]->(p:Person)
+WHERE EXISTS {(p)-[:HAS_CEO]-(:Organization)}
+RETURN o.name
+LIMIT 3","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, member: $p) isa board_member_of;
+(organization: $o, ceo: $p) isa ceo_of; limit 3;
+fetch { ""name"": $o.name };","TypeQL queries board member who is CEO of SAME org not ANOTHER org"
+"314","List the top 5 cities where the headquarters of public organizations are located.","MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.isPublic = true
+RETURN c.name AS city, count(*) AS numPublicOrgs
+ORDER BY numPublicOrgs DESC
+LIMIT 5","match
+  $o1 isa organization;
+  $p isa person;
+  (organization: $o1, ceo: $p) isa ceo_of;
+(organization: $o1, member: $p) isa board_member_of; fetch { ""organization"": $o1.name, ""ceo_and_board_member"": $p.name };","TypeQL missing required entity type for question"
+"316","Name 3 organizations that have been mentioned in articles with a sentiment score above 0.5.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.sentiment > 0.5
+RETURN DISTINCT o.name
+LIMIT 3","match
+  $o isa organization;
+  $o has is_dissolved false;
+  $o has revenue $o_revenue;
+sort $o_revenue desc;
+limit 3;
+fetch { ""organization"": $o.name, ""revenue"": $o.revenue };","TypeQL missing required entity type for question"
+"319","Which 3 organizations have the highest number of investors?","MATCH (o:Organization)<-[:HAS_INVESTOR]-(investor)
+WITH o, count(investor) AS investorCount
+ORDER BY investorCount DESC
+LIMIT 3
+RETURN o.name AS organization, investorCount","match
+  $o isa organization;
+  $investor isa person;
+  (organization: $o, investor: $investor) isa invested_in;
+limit 3;
+fetch { ""investor"": $investor.name, ""organization"": $o.name };","TypeQL query is semantically different from the question"
+"320","Name the first 3 organizations that have been mentioned in articles related to environmental issues.","MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk)
+WHERE c.text CONTAINS 'environment'
+WITH a
+MATCH (a)-[:MENTIONS]->(o:Organization)
+RETURN o.name
+LIMIT 3","match
+  $o isa organization;
+  $a isa article;
+  (article: $a, organization: $o) isa mentions;
+$ceo isa person; (organization: $o, ceo: $ceo) isa ceo_of; limit 3;
+fetch { ""organization"": $o.name };","TypeQL missing environment text constraint - just queries orgs with CEOs mentioned in articles"
+"321","What are the names of 3 organizations that have been dissolved but are still mentioned in recent articles?","MATCH (o:Organization {isDissolved: true})<-[:MENTIONS]-(a:Article)
+WHERE a.date >= datetime() - duration('P1Y')
+RETURN o.name
+LIMIT 3","match
+  $o isa organization;
+  $ceo isa person;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+  $child isa person;
+  $o has revenue $o_revenue;
+  $o_revenue > 500000000;
+(parent: $ceo, child: $child) isa parent_of; limit 3;
+fetch { ""name"": $child.name };","TypeQL missing required entity type for question"
+"322","Which 3 countries are mentioned the most in articles regarding technology advancements?","MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk), (a)-[:MENTIONS]->(o:Organization)-[:HAS_CATEGORY]->(ic:IndustryCategory), (o)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(country:Country)
+WHERE ic.name CONTAINS 'Technology'
+WITH country, count(*) AS mentions
+ORDER BY mentions DESC
+LIMIT 3
+RETURN country.name AS country, mentions","match
+  $a isa article;
+  $c isa chunk;
+  $o isa organization;
+  $ic isa industry_category;
+  $country isa country;
+  (article: $a, chunk: $c) isa has_chunk;
+  (article: $a, organization: $o) isa mentions;
+  $ic has industry_category_name $ic_industry_category_name;
+  $ic_industry_category_name contains ""Technology"";
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $country) isa location-contains;
+  (organization: $o, category: $ic) isa in_category; limit 3;
+fetch { ""country"": $country.country_name };","TypeQL query is semantically different from the question"
+"323","List the top 5 organizations that have a subsidiary in the same city where they are headquartered.","MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(s:Organization), 
+      (o)-[:IN_CITY]->(c:City)<-[:IN_CITY]-(s)
+RETURN o.name AS organization, c.name AS city
+LIMIT 5","match
+  $o isa organization;
+  $s isa organization;
+  $c isa city;
+  (parent: $o, subsidiary: $s) isa subsidiary_of;
+  (organization: $o, city: $c) isa located_in;
+limit 5;
+fetch { ""organization"": $o.name, ""city"": $c.city_name };","TypeQL missing subsidiary city constraint - does not check if subsidiary is in same city"
+"325","Name the top 3 organizations by number of articles mentioning them in 2021.","MATCH (o:Organization)<-[:MENTIONS]-(a:Article)
+WHERE a.date >= date(""2021-01-01"") AND a.date <= date(""2021-12-31"") 
+WITH o, count(a) as mentions
+ORDER BY mentions DESC
+LIMIT 3
+RETURN o.name as organization, mentions","match
+  $o isa organization;
+  $a isa article;
+  (article: $a, organization: $o) isa mentions;
+reduce $mentions = count($a) groupby $o;
+sort $mentions desc;
+limit 3;
+fetch { ""organization"": $o.name, ""mentions"": $mentions };","TypeQL missing 2021 date constraint - counts all article mentions"
+"326","List the first 3 organizations that have a CEO and a board member with the same name.","MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person), 
+      (o)-[:HAS_BOARD_MEMBER]->(board:Person)
+WHERE ceo.name = board.name
+RETURN o.name AS organization, ceo.name AS name
+LIMIT 3","match
+  $o isa organization;
+  $ceo isa person;
+  $board isa person;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+  (organization: $o, member: $board) isa board_member_of;
+limit 3;
+fetch { ""organization"": $o.name, ""name"": $ceo.name };","TypeQL missing same name constraint - does not check if CEO and board member have same name"
+"327","What are the names of organizations that have both a supplier and a subsidiary in Europe?","MATCH (o:Organization)-[:HAS_SUPPLIER]->(s:Organization), 
+      (o)-[:HAS_SUBSIDIARY]->(sub:Organization),
+      (s)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(sc:Country),
+      (sub)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(subc:Country)
+WHERE sc.name IN ['France', 'Germany', 'Spain', 'Italy', 'United Kingdom'] 
+  AND subc.name IN ['France', 'Germany', 'Spain', 'Italy', 'United Kingdom']
+RETURN DISTINCT o.name AS organization","match
+  $o isa organization;
+  $s isa organization;
+  $sub isa organization;
+  $sc isa country;
+  $subc isa country;
+  (customer: $o, supplier: $s) isa supplies;
+  (parent: $o, subsidiary: $sub) isa subsidiary_of;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $sc) isa location-contains; fetch { ""organization"": $o.name };","TypeQL missing subsidiary and supplier country constraints for Europe"
+"328","Which 3 cities are the most frequently mentioned settings in articles about finance?","MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk), (a)-[:MENTIONS]->(o:Organization)-[:HAS_CATEGORY]->(ic:IndustryCategory {name: 'Finance'}), (o)-[:IN_CITY]->(city:City)
+RETURN city.name AS city, count(*) AS mentions
+ORDER BY mentions DESC
+LIMIT 3","match
+  $ic isa industry_category, has industry_category_name ""Finance"";
+  $o isa organization;
+  $a isa article;
+  $city isa city, has city_name $cn;
+  (organization: $o, category: $ic) isa in_category;
+  (article: $a, organization: $o) isa mentions;
+  (organization: $o, city: $city) isa located_in;
+limit 3;
+fetch { ""city"": $cn };","TypeQL missing required aggregation for question"
+"331","Which 3 countries have organizations that are major players in the electronics industry?","MATCH (c:Country)<-[:IN_COUNTRY]-(city:City)<-[:IN_CITY]-(o:Organization)-[:HAS_CATEGORY]->(ic:IndustryCategory {name: 'Electronic Products Manufacturers'})
+RETURN c.name AS country, count(o) AS num_orgs
+ORDER BY num_orgs DESC
+LIMIT 3","match
+  $c isa country, has country_name $cn;
+  $city isa city;
+  $o isa organization;
+  $ic isa industry_category, has industry_category_name ""Electronic Products Manufacturers"";
+  (child: $city, parent: $c) isa location-contains;
+  (organization: $o, city: $city) isa located_in;
+  (organization: $o, category: $ic) isa in_category;
+limit 3;
+fetch { ""country"": $cn };","TypeQL missing groupby count - does not find top countries by electronics org count"
+"332","Name the top 3 articles that discuss organizations with a history of more than 50 years.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE date(o.foundingDate) < date() - duration('P50Y')
+WITH a, o
+ORDER BY a.date DESC
+LIMIT 3
+RETURN a.title AS article, collect(o.name) AS organizations","match
+  $a isa article;
+  $o isa organization;
+  (article: $a, organization: $o) isa mentions;
+  $a has date $a_date;
+sort $a_date desc;
+limit 3;
+fetch { ""article"": $a.title };","TypeQL missing founding date constraint - does not filter for orgs over 50 years old"
+"336","What are the names of 3 organizations that have a CEO who was previously a board member of a competitor?","MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)
+WHERE EXISTS {
+  (ceo)-[:HAS_BOARD_MEMBER]->(competitor:Organization)<-[:HAS_COMPETITOR]-(o)
+}
+RETURN o.name
+LIMIT 3","match
+  $o1 isa organization;
+  $o2 isa organization;
+  (competitor: $o1, competitor: $o2) isa competes_with;
+limit 3;
+fetch { ""org1"": $o1.name, ""org2"": $o2.name };","TypeQL missing required relation for question"
+"341","What are the names of organizations that have a CEO who is younger than 40 years old?","MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)
+WHERE date().year - toInteger(left(ceo.id, 4)) < 40
+RETURN o.name","match
+  $a isa article;
+  $o isa organization;
+  $p isa person, has name ""Julie Spellman Sweet"";
+  (article: $a, organization: $o) isa mentions;
+  $a has sentiment $a_sentiment;
+  $a_sentiment > 0.75;
+(organization: $o, ceo: $p) isa ceo_of; limit 3;
+fetch { ""title"": $a.title, ""site_name"": $a.site_name, ""date"": $a.date };","TypeQL query is semantically different from the question"
+"342","Which 3 organizations have the most board members?","MATCH (o:Organization)-[:HAS_BOARD_MEMBER]->(p:Person)
+WITH o, count(p) AS boardMemberCount
+ORDER BY boardMemberCount DESC
+LIMIT 3
+RETURN o.name AS organization, boardMemberCount","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, member: $p) isa board_member_of;
+limit 3;
+fetch { ""boardMember"": $p.name, ""organization"": $o.name };","TypeQL missing required aggregation for question"
+"344","Name the top 3 organizations in terms of number of times they are mentioned as competitors in different industries.","MATCH (o:Organization)-[:HAS_COMPETITOR]->(competitor:Organization)
+WITH competitor, count(*) AS competitorCount
+RETURN competitor.name AS competitorName, competitorCount
+ORDER BY competitorCount DESC
+LIMIT 3","match
+  $o isa organization;
+  $competitor isa organization;
+  (competitor: $o, competitor: $competitor) isa competes_with;
+limit 3;
+fetch { ""competitorName"": $competitor.name };","TypeQL missing required aggregation for question"
+"345","Which 3 organizations have CEOs who have written articles about their own organizations?","MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)<-[:MENTIONS]-(a:Article)-[:MENTIONS]->(o)
+RETURN o.name AS organization, ceo.name AS ceo
+LIMIT 3","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, ceo: $p) isa ceo_of;
+limit 3;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL missing required entity type for question"
+"346","List the names of 3 organizations that have subsidiaries in more than 3 countries.","MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(sub:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country)
+WITH o, count(DISTINCT c) AS numCountries
+WHERE numCountries > 3
+RETURN o.name
+LIMIT 3","match
+  $o isa organization;
+  $sub isa organization;
+  $c isa country;
+  (parent: $o, subsidiary: $sub) isa subsidiary_of;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; limit 3;
+fetch { ""name"": $o.name };","TypeQL missing country count constraint - does not filter for subsidiaries in 3+ countries"
+"351","Which 3 organizations have the most diverse range of industry categories they belong to?","MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory)
+WITH o, count(distinct c) as categoryCount
+ORDER BY categoryCount DESC
+LIMIT 3
+RETURN o.name as organization, categoryCount","match
+  $o isa organization;
+  $c isa industry_category;
+  (organization: $o, category: $c) isa in_category;
+limit 3;
+fetch { ""organization"": $o.name };","TypeQL missing required aggregation for question"
+"357","List the top 3 articles that focus on the impact of technology on education.","MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk)
+WHERE c.text CONTAINS 'technology' AND c.text CONTAINS 'education'
+WITH a, count(c) AS relevance
+ORDER BY relevance DESC
+LIMIT 3
+RETURN a.title AS article, a.summary AS summary","match
+  $o isa organization;
+  $p isa person, has name ""Julie Spellman Sweet"";
+  (organization: $o, ceo: $p) isa ceo_of;
+  $ic isa industry_category, has industry_category_name ""Software""; (organization: $o, category: $ic) isa in_category;
+fetch { ""o"": $o };","TypeQL query is semantically different from the question"
+"358","Name the first 3 organizations that have both a CEO and a board member from the same family.","MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person),
+      (o)-[:HAS_BOARD_MEMBER]->(board_member:Person),
+      (ceo)-[:HAS_PARENT|HAS_CHILD*]-(board_member)
+RETURN o.name AS organization, ceo.name AS ceo, board_member.name AS board_member
+LIMIT 3","match
+  $o isa organization;
+  $ceo isa person;
+  $board_member isa person;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+  (organization: $o, member: $board_member) isa board_member_of;
+(parent: $ceo, child: $board_member) isa parent_of; limit 3;
+fetch { ""organization"": $o.name, ""ceo"": $ceo.name, ""board_member"": $board_member.name };","TypeQL only checks CEO as parent of board member - not all family relations"
+"360","List the names of the first 3 organizations that have more than 10,000 employees.","MATCH (o:Organization)
+WHERE o.nbrEmployees > 10000
+RETURN o.name
+LIMIT 3","match
+  $c isa city;
+  $o isa organization;
+  $ic isa industry_category, has industry_category_name ""Electronic Products Manufacturers"";
+  (organization: $o, city: $c) isa located_in;
+  (organization: $o, category: $ic) isa in_category;
+reduce $orgCount = count($o) groupby $c;
+sort $orgCount desc;
+limit 3;
+fetch { ""city"": $c.city_name, ""organizationCount"": $orgCount };","TypeQL queries Electronic Products Manufacturers industry not orgs with 10000+ employees"
+"361","Name the top 3 countries by number of organizations that have been mentioned in articles related to healthcare.","MATCH (c:Country)<-[:IN_COUNTRY]-(city:City)<-[:IN_CITY]-(o:Organization)<-[:MENTIONS]-(a:Article)
+WHERE (o)-[:HAS_CATEGORY]->(:IndustryCategory {name: 'Healthcare'})
+RETURN c.name AS country, count(o) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 3","match
+  $c isa country, has country_name $cn;
+  $city isa city;
+  $o isa organization;
+  $a isa article;
+  $ic isa industry_category, has industry_category_name ""Healthcare"";
+  (child: $city, parent: $c) isa location-contains;
+  (organization: $o, city: $city) isa located_in;
+  (article: $a, organization: $o) isa mentions;
+  (organization: $o, category: $ic) isa in_category;
+limit 3;
+fetch { ""country"": $cn };","TypeQL query is semantically different from the question"
+"363","List the names of 3 organizations that have a motto related to sustainability.","MATCH (o:Organization)
+WHERE o.motto CONTAINS 'sustainability' OR o.motto CONTAINS 'sustainable'
+RETURN o.name
+LIMIT 3","match
+  $p isa person, has name ""Julie Spellman Sweet"";
+  $o isa organization;
+  $a isa article;
+  (organization: $o, ceo: $p) isa ceo_of;
+  $a has date $a_date;
+(article: $a, organization: $o) isa mentions; sort $a_date desc;
+limit 3;
+fetch { ""article"": $a.title, ""published"": $a.date };","TypeQL query is semantically different from the question"
+"365","Which 3 cities are most frequently cited in articles about urban development?","MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk), (a)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(city:City)
+WHERE c.text CONTAINS 'urban development'
+RETURN city.name, count(*) as frequency
+ORDER BY frequency DESC
+LIMIT 3","match
+  $o isa organization;
+  $o has is_public $o_is_public;
+  $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in;
+fetch { ""o"": $o };","TypeQL missing required entity type for question"
+"373","Which 3 organizations have the most subsidiaries in different industries?","MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(sub:Organization)
+WHERE sub.id <> o.id
+WITH o, count(DISTINCT sub.id) AS numSubs, collect(DISTINCT sub.id) AS subIds
+WITH o, numSubs, size(apoc.coll.toSet([(sub)-[:HAS_CATEGORY]->(c) | c.name])) AS numIndustries, subIds
+ORDER BY numIndustries DESC
+LIMIT 3
+RETURN o.name AS organization, numSubs, numIndustries, subIds","match
+  $o isa organization;
+  $sub isa organization;
+  (parent: $o, subsidiary: $sub) isa subsidiary_of;
+  $ic isa industry_category; (organization: $o, category: $ic) isa in_category;
+limit 3;
+fetch { ""organization"": $o.name };","TypeQL missing required aggregation for question"
+"375","Name the top 3 organizations with the most mentions in articles about technology innovation.","MATCH (o:Organization)<-[:MENTIONS]-(a:Article)
+WHERE (a)-[:HAS_CHUNK]->(:Chunk)
+WITH o, count(a) AS mentionCount
+ORDER BY mentionCount DESC
+LIMIT 3
+RETURN o.name AS organization, mentionCount","match
+  $o isa organization;
+  (investor: $investor, organization: $o) isa invested_in;
+  $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in;
+fetch { ""organization"": $o.name, ""investor"": $investor.name };","TypeQL missing required entity type for question"
+"382","Name the top 3 articles that mention organizations affected by global economic changes.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.title CONTAINS 'economic'
+RETURN a.title, a.summary
+ORDER BY a.sentiment DESC
+LIMIT 3","match
+  $o isa organization;
+  $p isa person, has name ""Julie Spellman Sweet"";
+  (organization: $o, ceo: $p) isa ceo_of;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+$country isa country, has country_name ""Italy""; (child: $city, parent: $country) isa location-contains; fetch { ""o"": $o };","TypeQL query is semantically different from the question"
+"385","Which 3 organizations have the most diverse geographical distribution of subsidiaries?","MATCH (o:Organization)-[:HAS_SUBSIDIARY*]->(s:Organization)
+WITH o, count(DISTINCT s.id) AS numSubsidiaries, size(collect(DISTINCT s.id)) AS numUniqueSubsidiaries
+WHERE numUniqueSubsidiaries > 1
+RETURN o.name AS organization, numSubsidiaries, numUniqueSubsidiaries
+ORDER BY numUniqueSubsidiaries DESC
+LIMIT 3","match
+  $o isa organization;
+  $s isa organization;
+(parent: $o, subsidiary: $s) isa subsidiary_of; limit 3;
+fetch { ""organization"": $o.name };","TypeQL missing required aggregation for question"
+"387","Name the top 3 organizations in terms of environmental impact according to articles.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WITH o, count(a) AS mentionCount
+RETURN o.name AS organization, mentionCount
+ORDER BY mentionCount DESC
+LIMIT 3","match
+  $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;
+  $ceo isa person;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+  $o has revenue $o_revenue;
+  $o_revenue > 1000000000;
+limit 3;
+fetch { ""ceoName"": $ceo.name, ""orgName"": $o.name };","TypeQL missing required entity type for question"
+"392","List the names of 3 organizations that have been involved in major international trade deals in the past year.","MATCH (o:Organization)<-[:MENTIONS]-(a:Article)
+WHERE a.date >= datetime() - duration('P1Y')
+WITH o, count(a) as mentions
+ORDER BY mentions DESC
+LIMIT 3
+RETURN o.name","match
+  $o isa organization;
+  $p isa person, has name ""Julie Spellman Sweet"";
+  (organization: $o, ceo: $p) isa ceo_of;
+  $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in;
+limit 3;
+fetch { ""o"": $o };","TypeQL query is semantically different from the question"
+"393","Which 3 organizations have been mentioned the most in articles about financial crises?","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.summary CONTAINS 'financial crisis'
+WITH o, count(*) as mentions
+ORDER BY mentions DESC
+LIMIT 3
+RETURN o.name as organization, mentions","match
+  $o isa organization;
+  $o has revenue $o_revenue;
+  $city isa city, has city_name ""New York City""; (organization: $o, city: $city) isa located_in;
+sort $o_revenue desc;
+limit 3;
+fetch { ""organization"": $o.name, ""summary"": $o.summary };","TypeQL missing required entity type for question"
+"398","What are the names of industry categories that have associated organizations with more than 100 employees?","MATCH (ic:IndustryCategory)<-[:HAS_CATEGORY]-(o:Organization)
+WHERE o.nbrEmployees > 100
+RETURN DISTINCT ic.name","match
+  $o isa organization, has name ""Icon Integration""; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;
+  $p isa person, has name ""Julie Spellman Sweet"";
+  (organization: $o, ceo: $p) isa ceo_of;
+fetch { ""o"": $o };","TypeQL query is semantically different from the question"
+"404","Identify articles with a sentiment score above 0.8.","MATCH (a:Article)
+WHERE a.sentiment > 0.8
+RETURN a","match
+  $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;
+  $ceo isa person, has name ""Julie Spellman Sweet"";
+  (organization: $o, ceo: $ceo) isa ceo_of;
+limit 3;
+fetch { ""organization"": $o.name };","TypeQL query is semantically different from the question"
+"410","Name the organizations that are suppliers to 'Accenture'.","MATCH (o:Organization)<-[:HAS_SUPPLIER]-(a:Organization {name: 'Accenture'})
+RETURN o.name AS supplier","match
+  $o isa organization;
+  $c isa country, has country_name ""United States of America"";
+  $o has revenue $o_revenue;
+  $o_revenue < 10000000;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; fetch { ""organization"": $o.name, ""revenue"": $o.revenue };","TypeQL missing required relation for question"
+"412","List the top 5 organizations by number of employees.","MATCH (o:Organization)
+WHERE o.nbrEmployees IS NOT NULL
+RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees
+ORDER BY o.nbrEmployees DESC
+LIMIT 5","match
+  $o isa organization;
+  $p isa person, has name ""Julie Spellman Sweet"";
+  (organization: $o, ceo: $p) isa ceo_of;
+  $a has sentiment $a_sentiment;
+  $a_sentiment > 0.5;
+limit 3;
+fetch { ""o"": $o };","TypeQL query is semantically different from the question"
+"414","Identify the organizations with the highest revenue in the 'Electronic Products Manufacturers' industry.","MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Electronic Products Manufacturers'})
+WHERE o.revenue IS NOT NULL
+RETURN o.name AS organization, o.revenue AS revenue
+ORDER BY o.revenue DESC
+LIMIT 10","match
+  $ceo isa person, has name ""Julie Spellman Sweet"";
+  $org isa organization;
+  $competitor isa organization;
+  (organization: $org, ceo: $ceo) isa ceo_of;
+(competitor: $org, competitor: $competitor) isa competes_with; limit 3;
+fetch { ""name"": $competitor.name };","TypeQL query is semantically different from the question"
+"415","Which articles mention organizations with a revenue less than 10 million?","MATCH (a:Article)-[:MENTIONS]->(o:Organization) WHERE o.revenue < 1E7 RETURN a, o","match
+  $o isa organization;
+  $c isa country, has country_name ""Italy"";
+  $o has is_public true;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; limit 3;
+fetch { ""organization"": $o.name, ""summary"": $o.summary };","TypeQL missing required entity type for question"
+"416","What are the names and summaries of organizations mentioned in articles with a high sentiment score (>0.9)?","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.sentiment > 0.9
+RETURN o.name AS organization, o.summary AS summary","match
+  $o isa organization;
+  $a has sentiment $a_sentiment;
+  $a_sentiment < 0.5;
+fetch { ""organization"": $o.name, ""numberOfEmployees"": $o.nbr_employees };","TypeQL missing required entity type for question"
+"417","List the organizations that have their CEOs also serving as board members in other organizations.","MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person) WHERE EXISTS { (ceo)-[:HAS_BOARD_MEMBER]-(:Organization) } RETURN o.name AS organization, ceo.name AS ceo","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, ceo: $p) isa ceo_of;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL missing required relation for question"
+"418","Name the children of 'Julie Spellman Sweet'.","MATCH (p:Person {name: 'Julie Spellman Sweet'})-[:HAS_CHILD]->(child:Person) RETURN child.name","match
+  $o isa organization;
+  $sub isa organization;
+  $o has name ""Accenture"";
+  $sub has nbr_employees $sub_nbr_employees;
+  $sub_nbr_employees > 100;
+(parent: $o, subsidiary: $sub) isa subsidiary_of; limit 3;
+fetch { ""subsidiary"": $sub.name, ""numEmployees"": $sub.nbr_employees };","TypeQL missing required relation for question"
+"419","Which organizations are based in cities not in the 'United States of America'?","MATCH (o:Organization)-[:IN_CITY]->(c:City)-[:IN_COUNTRY]->(country:Country) WHERE country.name <> 'United States of America' RETURN o.name AS organization, c.name AS city, country.name AS country","match $o isa organization; $c isa city; $country isa country; (organization: $o, city: $c) isa located_in; (child: $c, parent: $country) isa location-contains; fetch { ""organization"": $o.name, ""city"": $c.city_name, ""country"": $country.country_name };","TypeQL query is semantically different from the question"
+"420","Identify all organizations that have a motto containing the word 'security'.","MATCH (o:Organization)
+WHERE o.motto CONTAINS 'security'
+RETURN o","match
+  $o isa organization;
+  $ceo isa person, has name ""Julie Spellman Sweet"";
+  (organization: $o, ceo: $ceo) isa ceo_of;
+  $boardMember isa person;
+  (organization: $o, member: $boardMember) isa board_member_of;
+  $o has revenue $o_revenue;
+  $o_revenue > 500000000;
+limit 3;
+fetch { ""name"": $boardMember.name };","TypeQL query is semantically different from the question"
+"422","Which organizations have the most articles mentioning them?","MATCH (o:Organization)<-[:MENTIONS]-(a:Article)
+WITH o, count(a) as mentionCount
+RETURN o.name as organization, mentionCount
+ORDER BY mentionCount DESC
+LIMIT 10","match
+  $o isa organization;
+  $p isa person, has name ""Julie Spellman Sweet"";
+  (organization: $o, ceo: $p) isa ceo_of;
+  $a has sentiment $a_sentiment;
+  $a_sentiment > 0.8;
+fetch { ""o"": $o };","TypeQL query is semantically different from the question"
+"423","List all the organizations and their respective CEOs who are mentioned in the same article.","MATCH (article:Article)-[:MENTIONS]->(org:Organization), 
+      (org)-[:HAS_CEO]->(ceo:Person)
+RETURN org.name AS organization, ceo.name AS ceo","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, ceo: $p) isa ceo_of;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL missing required entity type for question"
+"424","Name the industry categories that have the most organizations associated with them.","MATCH (ic:IndustryCategory)<-[:HAS_CATEGORY]-(o:Organization)
+WITH ic, count(o) as orgCount
+ORDER BY orgCount DESC
+RETURN ic.name as industryCategory, orgCount
+LIMIT 10","match
+  $ic isa industry_category, has industry_category_name $icn;
+  $o isa organization;
+  (organization: $o, category: $ic) isa in_category;
+limit 10;
+fetch { ""industryCategory"": $icn };","TypeQL missing required aggregation for question"
+"425","Which organizations have been mentioned in the most negative sentiment articles?","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.sentiment IS NOT NULL
+WITH o, min(a.sentiment) AS minSentiment, count(a) AS numMentions
+RETURN o.name AS organization, minSentiment, numMentions
+ORDER BY minSentiment
+LIMIT 10","match
+  $o isa organization, has name $on;
+  $a isa article, has sentiment $s;
+  (article: $a, organization: $o) isa mentions;
+sort $s asc;
+limit 10;
+fetch { ""organization"": $on, ""minSentiment"": $s };","TypeQL missing required aggregation for question"
+"427","What are the names of organizations that have both public and private subsidiaries?","MATCH (o:Organization) WHERE EXISTS { (o)-[:HAS_SUBSIDIARY]->(:Organization {isPublic: true}) } AND EXISTS { (o)-[:HAS_SUBSIDIARY]->(:Organization {isPublic: false}) } RETURN o.name","match
+  $o isa organization;
+  $subsidiary isa organization;
+  (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;
+fetch { ""organization"": $o.name };","TypeQL missing required attribute filter for question"
+"429","List the organizations that have been mentioned in articles related to security threats.","MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk)
+WHERE c.text CONTAINS 'security threats'
+WITH a
+MATCH (a)-[:MENTIONS]->(o:Organization)
+RETURN DISTINCT o.name AS organization","match
+  $o isa organization;
+  $o has nbr_employees $o_nbr_employees;
+  $o_nbr_employees > 1000;
+  $o has is_public $o_is_public;
+  $o has is_public true;
+  $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in;
+fetch { ""o"": $o };","TypeQL missing required entity type for question"
+"432","List the organizations that have the most investors.","MATCH (o:Organization)<-[:HAS_INVESTOR]-(investor)
+WITH o, count(investor) AS investorCount
+RETURN o.name AS organization, investorCount
+ORDER BY investorCount DESC
+LIMIT 10","match
+  $o isa organization;
+  $investor isa person;
+  (organization: $o, investor: $investor) isa invested_in;
+fetch { ""investor"": $investor.name, ""organization"": $o.name };","TypeQL missing required aggregation for question"
+"435","List the organizations that have been mentioned in the most articles.","MATCH (o:Organization)<-[:MENTIONS]-(a:Article)
+WITH o, count(a) AS mentionCount
+RETURN o.name AS organization, mentionCount
+ORDER BY mentionCount DESC","match
+  $o isa organization;
+  $p isa person, has name ""Julie Spellman Sweet"";
+  (organization: $o, ceo: $p) isa ceo_of;
+  $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in;
+limit 3;
+fetch { ""o"": $o };","TypeQL query is semantically different from the question"
+"441","List the cities that have organizations with a revenue exceeding 500 million.","MATCH (c:City)<-[:IN_CITY]-(o:Organization) WHERE o.revenue > 5e8 RETURN c.name AS city","match
+  $o isa organization;
+  $o has revenue $o_revenue;
+  $o_revenue > 100000000;
+  $o_revenue < 5;
+fetch { ""organization"": $o.name, ""revenue"": $o.revenue };","TypeQL missing required entity type for question"
+"447","List the articles that mention organizations headquartered in 'Seattle'.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City {name: 'Seattle'}) RETURN a.title, a.summary, a.date, o.name","match
+  $o isa organization;
+  $o has is_public true;
+  $o has revenue $o_revenue;
+  $o_revenue > 500000000;
+fetch { ""organization"": $o.name, ""revenue"": $o.revenue };","TypeQL missing required entity type for question"
+"453","Name the organizations with the most board members who are also CEOs of other organizations.","MATCH (o:Organization)<-[:HAS_BOARD_MEMBER]-(boardMember:Person)
+WHERE EXISTS {
+  (boardMember)-[:HAS_CEO]->(:Organization)
+}
+WITH o, count(boardMember) AS boardMemberCEOCount
+RETURN o.name AS organization, boardMemberCEOCount
+ORDER BY boardMemberCEOCount DESC
+LIMIT 10","match
+  $o isa organization, has name $on;
+  $bm isa person;
+  $other isa organization;
+  (organization: $o, member: $bm) isa board_member_of;
+  (organization: $other, ceo: $bm) isa ceo_of;
+  $o has organization_id $oid;
+  $other has organization_id $otherid;
+  $oid != $otherid;
+limit 10;
+fetch { ""organization"": $on };","TypeQL missing required aggregation for question"
+"454","List the top 5 cities by number of public organizations.","MATCH (c:City)<-[:IN_CITY]-(o:Organization)
+WHERE o.isPublic = true
+WITH c, count(o) as orgCount
+ORDER BY orgCount DESC
+LIMIT 5
+RETURN c.name as city, orgCount as numberOfPublicOrganizations","match
+  $accenture isa organization, has name ""Accenture"";
+  $subsidiary isa organization;
+(parent: $accenture, subsidiary: $subsidiary) isa subsidiary_of; fetch { ""subsidiary"": $subsidiary.name };","TypeQL missing required entity type for question"
+"467","List the cities where the most CEOs of large organizations reside.","MATCH (c:City)<-[:IN_CITY]-(o:Organization)-[:HAS_CEO]->(p:Person) WHERE o.nbrEmployees > 1000 RETURN c.name AS city, count(p) AS ceoCount ORDER BY ceoCount DESC LIMIT 10","match $c isa city; $o isa organization; $p isa person; (organization: $o, city: $c) isa located_in; $o has nbr_employees $o_nbr_employees; $o_nbr_employees > 1000; (organization: $o, ceo: $p) isa ceo_of; limit 10; reduce $ceoCount = count($p);","TypeQL query is semantically different from the question"
+"468","Which organizations have the most positive sentiment articles mentioning them?","MATCH (o:Organization)<-[:MENTIONS]-(a:Article) WITH o, avg(a.sentiment) AS avgSentiment ORDER BY avgSentiment DESC LIMIT 10 RETURN o.name AS organization, avgSentiment","match
+  $c isa country, has country_name ""United States of America"";
+  $city isa city;
+  $o isa organization;
+  (child: $city, parent: $c) isa location-contains;
+  (organization: $o, city: $city) isa located_in;
+reduce $organizationCount = count($o);","TypeQL missing required entity type for question"
+"469","Name the organizations that have been mentioned in articles about financial fraud.","MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk), (a)-[:MENTIONS]->(o:Organization)
+WHERE c.text CONTAINS 'financial fraud'
+RETURN DISTINCT o.name","match $a isa article; $o isa organization; (article: $a, organization: $o) isa mentions; $o has revenue $o_revenue; $o_revenue < 10000000; fetch { ""a"": $a, ""o"": $o };","TypeQL queries articles about orgs with revenue under 10M not orgs in articles about financial fraud"
+"472","List the organizations that are mentioned in articles with a sentiment score of exactly 0.5.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.sentiment = 0.5
+RETURN DISTINCT o","match
+  $p isa person;
+  $o isa organization;
+  (investor: $p, organization: $o) isa invested_in;
+(organization: $o, member: $p) isa board_member_of; limit 3;
+fetch { ""person"": $p.name, ""organization"": $o.name };","TypeQL missing required entity type for question"
+"475","What are the names of the first 3 organizations that have been dissolved?","MATCH (o:Organization)
+WHERE o.isDissolved IS NOT NULL AND o.isDissolved = true
+RETURN o.name
+LIMIT 3","match $p isa person, has name ""Julie Spellman Sweet""; $child isa person; (parent: $p, child: $child) isa parent_of; fetch { ""name"": $child.name };","TypeQL query is semantically different from the question"
+"476","List the top 5 organizations with the highest revenue.","MATCH (o:Organization)
+WHERE o.revenue IS NOT NULL
+RETURN o.name AS organization, o.revenue AS revenue
+ORDER BY o.revenue DESC
+LIMIT 5","match $o isa organization; $c isa city; $country isa country; (organization: $o, city: $c) isa located_in; fetch { ""organization"": $o.name, ""city"": $c.city_name, ""country"": $country.country_name };","TypeQL queries orgs in cities with countries not top 5 by revenue"
+"477","Which organizations are located in Seattle?","MATCH (o:Organization)-[:IN_CITY]->(c:City {name: 'Seattle'})
+RETURN o.name AS organization","match
+  $a isa article, has date $a_date;
+  $o isa organization;
+  (article: $a, organization: $o) isa mentions;
+$a_date < 2023-01-01T00:00:00; limit 3;
+fetch { ""name"": $o.name };","TypeQL query is semantically different from the question"
+"480","What are the names of the first 3 organizations that have a motto?","MATCH (o:Organization)
+WHERE o.motto IS NOT NULL
+RETURN o.name
+LIMIT 3","match
+  $o isa organization;
+  $c isa country;
+  $o has revenue $o_revenue;
+  $o_revenue > 50000000;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; fetch { ""country"": $c.country_name };","TypeQL queries countries with orgs having revenue over 50M not orgs with a motto"
+"481","Identify the first 3 cities where organizations with more than 1000 employees are located.","MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.nbrEmployees > 1000
+RETURN c.name AS city
+ORDER BY c.name
+LIMIT 3","match
+  $o isa organization;
+  $c isa industry_category;
+  (organization: $o, category: $c) isa in_category;
+  $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in;
+fetch { ""industry_category_name"": $c.industry_category_name };","TypeQL queries Seattle industry categories not cities with orgs having 1000+ employees"
+"482","What are the names of the first 5 people who are board members of more than one organization?","MATCH (p:Person)-[:HAS_BOARD_MEMBER]->(:Organization) WITH p, count(p) AS num_orgs WHERE num_orgs > 1 RETURN p.name LIMIT 5","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, member: $p) isa board_member_of;
+limit 5;
+fetch { ""boardMember"": $p.name, ""organization"": $o.name };","TypeQL missing groupby count - does not find board members of multiple orgs"
+"488","Which organizations are suppliers to New Energy Group?","MATCH (o:Organization {name: ""New Energy Group""})<-[:HAS_SUPPLIER]-(supplier:Organization) RETURN supplier","match $o isa organization, has name ""New Energy Group""; $supplier isa organization; (customer: $supplier, supplier: $o) isa supplies; fetch { ""supplier"": $supplier };","TypeQL has wrong supplies direction - gets suppliers to New Energy Group not suppliers from New Energy Group"
+"489","Who are the first 3 people with children also working in the same organization?","MATCH (p:Person)-[:HAS_CHILD]->(c:Person), (p)-[:HAS_CEO|HAS_BOARD_MEMBER]->(:Organization)<-[:HAS_CEO|HAS_BOARD_MEMBER]-(c) RETURN p.name AS parent, c.name AS child LIMIT 3","match $p isa person; $c isa person; (parent: $p, child: $c) isa parent_of; limit 3; fetch { ""parent"": $p.name, ""child"": $c.name };","TypeQL query is semantically different from the question"
+"492","Which organizations have a revenue greater than 1 billion and are public?","MATCH (o:Organization) WHERE o.revenue > 1e9 AND o.isPublic = true RETURN o","match
+  $p isa person, has name ""Julie Spellman Sweet"";
+  $child isa person;
+(parent: $p, child: $child) isa parent_of; fetch { ""child"": $child.name };","TypeQL query is semantically different from the question"
+"493","What are the names of the first 3 persons who are investors in more than one organization?","MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization)
+WITH p, count(o) as num_orgs
+WHERE num_orgs > 1
+RETURN p.name
+LIMIT 3","match
+  $p isa person;
+  $o isa organization;
+  (investor: $p, organization: $o) isa invested_in;
+reduce $num_orgs = count($o) groupby $p;
+match $num_orgs > 1;
+limit 3;
+fetch { ""name"": $p.name };","TypeQL missing groupby count - does not find investors in multiple orgs"
+"494","What are the names of the first 3 organizations with the least number of employees?","MATCH (o:Organization)
+WHERE o.nbrEmployees IS NOT NULL
+RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees
+ORDER BY o.nbrEmployees
+LIMIT 3","match
+  $p isa person, has name ""David Correa"";
+  $parent isa person;
+(parent: $p, child: $parent) isa parent_of; fetch { ""parent"": $parent.name };","TypeQL query is semantically different from the question"
+"497","List the top 5 organizations that have more than one supplier.","MATCH (o:Organization)-[:HAS_SUPPLIER]->(s:Organization)
+WITH o, count(s) as supplierCount
+WHERE supplierCount > 1
+RETURN o.name as organization, supplierCount
+ORDER BY supplierCount DESC
+LIMIT 5","match
+  $o isa organization;
+  $o has is_public true;
+$ceo isa person, has name ""Julie Spellman Sweet""; (organization: $o, ceo: $ceo) isa ceo_of; fetch { ""o"": $o };","TypeQL query is semantically different from the question"
+"500","Identify the first 3 organizations that have a public status and are mentioned in articles with a negative sentiment.","MATCH (o:Organization {isPublic: true})<-[:MENTIONS]-(a:Article)
+WHERE a.sentiment < 0
+RETURN o.name
+LIMIT 3","match
+  $c isa country;
+  $city isa city;
+  $o isa organization;
+  (child: $city, parent: $c) isa location-contains;
+  (organization: $o, city: $city) isa located_in;
+reduce $numOrgs = count($o) groupby $c;
+sort $numOrgs desc;
+limit 5;
+fetch { ""country"": $c.country_name, ""numOrgs"": $numOrgs };","TypeQL missing required entity type for question"
+"501","List the first 3 countries where organizations with over 500 employees are based.","MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country) WHERE o.nbrEmployees > 500 RETURN DISTINCT c.name LIMIT 3","match
+  $c isa city;
+  $o isa organization;
+  $i isa industry_category;
+  (organization: $o, city: $c) isa located_in;
+  (organization: $o, category: $i) isa in_category;
+fetch { ""city"": $c.city_name };","TypeQL missing required entity type for question"
+"513","What are the first 3 articles that mention the organization 'Accenture'?","MATCH (o:Organization {name: 'Accenture'})<-[:MENTIONS]-(a:Article)
+RETURN a.title, a.summary, a.date
+ORDER BY a.date DESC
+LIMIT 3","match
+  $o isa organization;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+fetch { ""organization"": $o.name, ""numberOfEmployees"": $o.nbr_employees };","TypeQL missing required entity type for question"
+"514","List top 5 organizations that have a revenue greater than 100 million.","MATCH (o:Organization)
+WHERE o.revenue > 1E8
+RETURN o.name AS organization, o.revenue AS revenue
+ORDER BY o.revenue DESC
+LIMIT 5","match
+  $p isa person, has name ""Julie Spellman Sweet"";
+  $o isa organization;
+  $a isa article;
+  (organization: $o, ceo: $p) isa ceo_of;
+(article: $a, organization: $o) isa mentions; limit 5;
+fetch { ""title"": $a.title, ""article_summary"": $a.article_summary, ""site_name"": $a.site_name, ""date"": $a.date };","TypeQL query is semantically different from the question"
+"520","Can you provide the first 3 organizations that have been dissolved?","MATCH (o:Organization)
+WHERE o.isDissolved IS NOT NULL AND o.isDissolved = true
+RETURN o.name AS organization
+LIMIT 3","match
+  $o isa organization;
+  $c isa country;
+  $o has revenue $o_revenue;
+  $o_revenue < 1;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; fetch { ""country_name"": $c.country_name };","TypeQL missing required attribute filter for question"
+"527","List the first 5 cities that have organizations with more than 300 employees.","MATCH (c:City)<-[:IN_CITY]-(o:Organization)
+WHERE o.nbrEmployees > 300
+RETURN c.name AS city
+LIMIT 5","match $article isa article; $chunk isa chunk; (article: $article, chunk: $chunk) isa has_chunk; $org isa organization; $category isa industry_category; (article: $article, organization: $org) isa mentions; fetch { ""industry_category_name"": $category.industry_category_name };","TypeQL missing required entity type for question"
+"538","What are the top 5 highest revenue organizations in the database?","MATCH (o:Organization)
+WHERE o.revenue IS NOT NULL
+RETURN o.name AS organization, o.revenue AS revenue
+ORDER BY o.revenue DESC
+LIMIT 5","match
+  $o isa organization;
+  $c isa country;
+  $o has nbr_employees $o_nbr_employees;
+  $o_nbr_employees > 1000;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; limit 3;
+reduce $numOrgs = count($o);","TypeQL query is semantically different from the question"
+"561","List the first 5 organizations that have a motto containing 'world'.","MATCH (o:Organization)
+WHERE o.motto CONTAINS 'world'
+RETURN o.name, o.motto
+LIMIT 5","match
+  $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;
+limit 3;
+fetch { ""name"": $o.name };","TypeQL query is semantically different from the question"
+"562","What are the first 3 organizations that have been mentioned in articles by 'David Correa'?","MATCH (a:Article {author: 'David Correa'})-[:MENTIONS]->(o:Organization)
+RETURN o.name
+LIMIT 3","match
+  $c isa country;
+  $city isa city;
+  $o isa organization;
+  (child: $city, parent: $c) isa location-contains;
+  (organization: $o, city: $city) isa located_in;
+reduce $orgCount = count($o) groupby $c;
+sort $orgCount desc;
+limit 3;
+fetch { ""country"": $c.country_name, ""orgCount"": $orgCount };","TypeQL missing required entity type for question"
+"565","List the first 3 organizations that have a subsidiary and an investor.","MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(:Organization) WHERE EXISTS {(o)<-[:HAS_INVESTOR]-(:Organization)} RETURN o.name LIMIT 3","match
+  $o isa organization;
+  $subsidiary isa organization;
+  (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;
+limit 3;
+fetch { ""organization"": $o.name };","TypeQL query is semantically different from the question"
+"569","List the first 5 organizations that have a CEO with a summary mentioning 'Accenture'.","MATCH (o:Organization)-[:HAS_CEO]->(p:Person)
+WHERE p.summary CONTAINS 'Accenture'
+RETURN o.name AS organization
+LIMIT 5","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, member: $p) isa board_member_of;
+(organization: $o, ceo: $p) isa ceo_of; limit 3;
+fetch { ""name"": $o.name };","TypeQL query is semantically different from the question"
+"585","Name the first 3 CEOs of organizations that are headquartered in a city starting with 'S'.","MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person), (o)-[:IN_CITY]->(city:City)
+WHERE city.name STARTS WITH 'S'
+RETURN ceo.name
+LIMIT 3","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, ceo: $p) isa ceo_of;
+limit 3;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL missing required entity type for question"
+"586","List the names of the first 3 organizations that have both a CEO and a board member named in their summary.","MATCH (o:Organization) WHERE EXISTS {(o)-[:HAS_CEO]->(:Person)} AND EXISTS {(o)-[:HAS_BOARD_MEMBER]->(:Person)} AND o.summary IS NOT NULL RETURN o.name LIMIT 3","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, member: $p) isa board_member_of;
+limit 3;
+fetch { ""boardMember"": $p.name, ""organization"": $o.name };","TypeQL missing required relation for question"
+"588","Which organizations have a CEO and are headquartered in a country other than the USA?","MATCH (o:Organization)-[:HAS_CEO]->(:Person) WHERE EXISTS { (o)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country) WHERE c.name <> 'United States of America' } RETURN o.name AS organization, o.summary AS summary","match $o isa organization; $city isa city; (organization: $o, city: $city) isa located_in; $ceo isa person; (organization: $o, ceo: $ceo) isa ceo_of; fetch { ""organization"": $o.name, ""summary"": $o.summary };","TypeQL missing required entity type for question"
+"597","Which organizations are mentioned in articles authored by 'David Correa'?","MATCH (a:Article {author: 'David Correa'})-[:MENTIONS]->(o:Organization)
+RETURN DISTINCT o.name AS organization","match
+  $ceo isa person;
+  $org isa organization, has is_public true; $subsidiary isa organization; (parent: $org, subsidiary: $subsidiary) isa subsidiary_of;
+  $child isa person;
+  (organization: $org, ceo: $ceo) isa ceo_of;
+(parent: $ceo, child: $child) isa parent_of; limit 3;
+fetch { ""name"": $child.name };","TypeQL missing required entity type for question"
+"598","List the top 5 organizations that have more than 100 employees and are not dissolved.","MATCH (o:Organization) WHERE o.nbrEmployees > 100 AND o.isDissolved IS NOT NULL AND NOT o.isDissolved RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees ORDER BY o.nbrEmployees DESC LIMIT 5","match
+  $o isa organization;
+  $a isa article;
+  (article: $a, organization: $o) isa mentions;
+reduce $mentions = count($a) groupby $o;
+sort $mentions desc;
+limit 3;
+fetch { ""organization"": $o.name, ""mentions"": $mentions };","TypeQL missing required attribute filter for question"
+"599","What are the names of the organizations that have a public status and revenue greater than 100000000?","MATCH (o:Organization)
+WHERE o.isPublic = true AND o.revenue > 100000000
+RETURN o.name","match $o isa organization; $co isa country; $city isa city; (organization: $o, city: $city) isa located_in; (child: $city, parent: $co) isa location-contains; $co has country_name $c_country_name; $c_country_name contains ""America""; $o has nbr_employees $o_nbr_employees; sort $o_nbr_employees desc; limit 5; fetch { ""organization"": $o.name, ""numberOfEmployees"": $o.nbr_employees };","TypeQL missing required attribute filter for question"
+"610","List the countries where organizations with a revenue of over 50000000 are located.","MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country) WHERE o.revenue > 50000000 RETURN DISTINCT c.name","match
+  $o isa organization;
+  $ceo isa person;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+(organization: $o, member: $ceo) isa board_member_of; limit 3;
+fetch { ""name"": $o.name };","TypeQL missing required entity type for question"
+"614","What are the top 3 latest articles mentioning any organization?","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+RETURN a.title AS article, a.date AS published, o.name AS organization
+ORDER BY a.date DESC
+LIMIT 3","match
+  $p isa person;
+$parent isa person; $child isa person; (parent: $parent, child: $p) isa parent_of; (parent: $p, child: $child) isa parent_of; limit 3;
+fetch { ""name"": $p.name };","TypeQL missing required entity type for question"
+"618","Which cities have organizations with a public status?","MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.isPublic IS NOT NULL AND o.isPublic = true
+RETURN DISTINCT c.name","match
+  $c isa city;
+  $o isa organization;
+  (organization: $o, city: $c) isa located_in;
+  $o has revenue $o_revenue;
+  $o_revenue > 500000000;
+limit 3;
+fetch { ""city_name"": $c.city_name };","TypeQL missing required attribute filter for question"
+"619","Name the children and parents of persons who are CEOs of organizations with more than 50 employees.","MATCH (p:Person)<-[:HAS_CEO]-(o:Organization) WHERE o.nbrEmployees > 50 OPTIONAL MATCH (p)-[:HAS_CHILD]->(child:Person) OPTIONAL MATCH (p)-[:HAS_PARENT]->(parent:Person) RETURN p.name AS ceo, collect(child.name) AS children, collect(parent.name) AS parents","match $p isa person; $o isa organization; (organization: $o, ceo: $p) isa ceo_of; $o has nbr_employees $o_nbr_employees; $o_nbr_employees > 50; fetch { ""ceo"": $p.name };","TypeQL missing required relation for question"
+"631","Who are the children of people working in organizations in 'Seattle'?","MATCH (p:Person)-[:HAS_CHILD]->(child:Person) WHERE EXISTS { (p)-[:HAS_BOARD_MEMBER|HAS_CEO]->(:Organization)-[:IN_CITY]->(:City {name: 'Seattle'}) } RETURN p.name AS parent, child.name AS child","match $p isa person; $child isa person; (parent: $p, child: $child) isa parent_of; fetch { ""parent"": $p.name, ""child"": $child.name };","TypeQL query is semantically different from the question"
+"634","What is the sentiment of articles authored by 'David Correa' regarding organizations in the tech industry?","MATCH (a:Article {author: 'David Correa'})-[:MENTIONS]->(o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory) WHERE c.name CONTAINS 'Tech' RETURN a.title, a.sentiment","match
+  $o isa organization;
+  $sub isa organization;
+  $c isa country;
+  (parent: $o, subsidiary: $sub) isa subsidiary_of;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $c) isa location-contains; limit 3;
+fetch { ""name"": $o.name };","TypeQL missing required entity type for question"
+"648","Which organizations have more than two categories and are located in 'United States of America'?","MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory), (o)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(country:Country {name: 'United States of America'}) WITH o, count(c) AS categoryCount WHERE categoryCount > 2 RETURN o.name AS organization, categoryCount","match
+  $o isa organization;
+  $c isa city;
+  $country isa country;
+  (organization: $o, city: $c) isa located_in;
+(child: $c, parent: $country) isa location-contains;
+  $ic isa industry_category, has industry_category_name ""Telecommunications""; (organization: $o, category: $ic) isa in_category; limit 3;
+fetch { ""name"": $o.name };","TypeQL query is semantically different from the question"
+"652","Which organizations have a summary that includes 'based in San Francisco' and are not dissolved?","MATCH (o:Organization) WHERE o.summary CONTAINS 'based in San Francisco' AND o.isDissolved IS NOT NULL AND NOT o.isDissolved RETURN o","match
+  $o isa organization;
+  $ceo isa person;
+  $board_member isa person;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+  (organization: $o, member: $board_member) isa board_member_of;
+(parent: $ceo, child: $board_member) isa parent_of; limit 3;
+fetch { ""organization"": $o.name, ""ceo"": $ceo.name, ""board_member"": $board_member.name };","TypeQL missing required attribute filter for question"
+"655","What are the top 3 articles mentioning organizations with a public status?","MATCH (a:Article)-[:MENTIONS]->(o:Organization {isPublic: true})
+RETURN a.title AS article, a.date AS publishedDate, o.name AS organization
+ORDER BY a.date DESC
+LIMIT 3","match
+  $c isa country;
+  $city isa city;
+  $o isa organization;
+  $a isa article;
+  (child: $city, parent: $c) isa location-contains;
+  (article: $a, organization: $o) isa mentions;
+  (organization: $o, city: $city) isa located_in;
+  $ic isa industry_category, has industry_category_name ""Healthcare""; (organization: $o, category: $ic) isa in_category;
+limit 3;
+reduce $orgCount = count($o);","TypeQL missing required attribute filter for question"
+"660","Name the top 3 countries where organizations with a revenue of over 100000000 are based.","MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country) WHERE o.revenue > 100000000 RETURN c.name AS country, count(*) AS orgCount ORDER BY orgCount DESC LIMIT 3","match $o isa organization; $co isa country; $city isa city; (organization: $o, city: $city) isa located_in; (child: $city, parent: $co) isa location-contains; $o has revenue $o_revenue; $o_revenue > 100000000; limit 3; reduce $orgCount = count($o);","TypeQL query is semantically different from the question"
+"664","Name the organizations that are public and have a category in 'Electronic Products Manufacturers'.","MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Electronic Products Manufacturers'})
+WHERE o.isPublic = true
+RETURN o.name AS organization","match
+  $a isa article;
+  $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;
+  (article: $a, organization: $o) isa mentions;
+  $a has date $a_date;
+sort $a_date desc;
+limit 3;
+fetch { ""title"": $a.title, ""article_summary"": $a.article_summary, ""date"": $a.date };","TypeQL missing required attribute filter for question"
+"666","Identify the articles that mention organizations with a CEO named 'Julie Spellman Sweet' and a revenue over 100000000.","MATCH (article:Article)-[:MENTIONS]->(org:Organization) WHERE org.revenue > 100000000 AND (org)-[:HAS_CEO]->(:Person {name: 'Julie Spellman Sweet'}) RETURN article","match
+  $p isa person, has name ""Julie Spellman Sweet"";
+  $o isa organization;
+  (organization: $o, ceo: $p) isa ceo_of;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL missing required entity type for question"
+"668","List the organizations that have competitors and a public status.","MATCH (o:Organization) WHERE o.isPublic = true AND EXISTS { (o)-[:HAS_COMPETITOR]->(:Organization) } RETURN o.name AS organization","match
+  $o1 isa organization;
+  $o2 isa organization;
+  (competitor: $o1, competitor: $o2) isa competes_with;
+fetch { ""org1"": $o1.name, ""org2"": $o2.name };","TypeQL missing required attribute filter for question"
+"670","Name the organizations headquartered in 'Rome' that have a public status.","MATCH (o:Organization)-[:IN_CITY]->(:City {name: 'Rome'}) WHERE o.isPublic = true RETURN o.name","match
+  $o isa organization;
+  $ceo isa person;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+  $ic isa industry_category; (organization: $o, category: $ic) isa in_category;
+limit 3;
+fetch { ""name"": $o.name };","TypeQL missing required attribute filter for question"
+"672","What are the summaries of organizations that have a supplier named 'Accenture'?","MATCH (o:Organization)-[:HAS_SUPPLIER]->(s:Organization {name: 'Accenture'})
+RETURN o.summary AS organization_summary","match
+  $o isa organization;
+  $ceo isa person;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+  $ic isa industry_category; (organization: $o, category: $ic) isa in_category;
+limit 3;
+fetch { ""name"": $o.name };","TypeQL missing required relation for question"
+"676","What are the top 3 articles mentioning organizations with more than 200 employees?","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE o.nbrEmployees > 200
+WITH a, o
+ORDER BY a.sentiment DESC
+LIMIT 3
+RETURN a.title AS article, o.name AS organization","match
+  $o isa organization;
+  $ceo isa person;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+  $ic isa industry_category; (organization: $o, category: $ic) isa in_category;
+limit 3;
+fetch { ""name"": $o.name };","TypeQL missing required entity type for question"
+"677","Identify organizations that have both a CEO and an investor named 'Julie Spellman Sweet'.","MATCH (o:Organization) WHERE (o)-[:HAS_CEO]->(:Person {name: 'Julie Spellman Sweet'}) AND (o)-[:HAS_INVESTOR]->(:Person {name: 'Julie Spellman Sweet'}) RETURN o","match
+  $p isa person, has name ""Julie Spellman Sweet"";
+  $o isa organization;
+  (organization: $o, ceo: $p) isa ceo_of;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL query is semantically different from the question"
+"678","What are the top 5 organizations with the highest revenue?","MATCH (o:Organization)
+WHERE o.revenue IS NOT NULL
+RETURN o.name AS organization, o.revenue AS revenue
+ORDER BY o.revenue DESC
+LIMIT 5","match
+  $o isa organization;
+  $sub isa organization;
+  (parent: $o, subsidiary: $sub) isa subsidiary_of;
+  $ic isa industry_category; (organization: $o, category: $ic) isa in_category;
+limit 3;
+fetch { ""organization"": $o.name };","TypeQL query is semantically different from the question"
+"681","Name 5 organizations that have been marked as public.","MATCH (o:Organization)
+WHERE o.isPublic = true
+RETURN o.name
+LIMIT 5","match $o isa organization; $city isa city, has city_name ""Rome""; (organization: $o, city: $city) isa located_in; $c isa industry_category; (organization: $o, category: $c) isa in_category; limit 3; fetch { ""category"": $c.industry_category_name };","TypeQL missing required attribute filter for question"
+"682","Which 3 industries are most commonly associated with organizations in Seattle?","MATCH (o:Organization)-[:IN_CITY]->(:City {name: 'Seattle'}) MATCH (o)-[:HAS_CATEGORY]->(c:IndustryCategory) RETURN c.name AS category, count(*) AS num_orgs ORDER BY num_orgs DESC LIMIT 3","match
+  $o isa organization;
+  $sub isa organization;
+  (parent: $o, subsidiary: $sub) isa subsidiary_of;
+  $o has revenue $o_revenue;
+  $o_revenue > 1000000000;
+limit 3;
+fetch { ""name"": $sub.name };","TypeQL missing required aggregation for question"
+"693","What are the top 5 cities mentioned in recent articles?","MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk), (a)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(city:City)
+WHERE a.date >= datetime() - duration('P30D')
+RETURN city.name AS city, count(*) AS mentions
+ORDER BY mentions DESC
+LIMIT 5","match
+  $a isa article, has date $d;
+  $o isa organization;
+  $city isa city, has city_name $cn;
+  (article: $a, organization: $o) isa mentions;
+  (organization: $o, city: $city) isa located_in;
+sort $d desc;
+limit 5;
+fetch { ""city"": $cn };","TypeQL missing required aggregation for question"
+"696","List the 5 most recent articles that mention organizations in the technology sector.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory) WHERE c.name CONTAINS 'Technology' RETURN a.title AS article, a.date AS published ORDER BY a.date DESC LIMIT 5","match
+  $o isa organization;
+  $s isa organization;
+(parent: $o, subsidiary: $s) isa subsidiary_of; limit 3;
+fetch { ""organization"": $o.name };","TypeQL missing required entity type for question"
+"703","List the top 3 cities where tech organizations are based.","MATCH (c:City)<-[:IN_CITY]-(o:Organization)-[:HAS_CATEGORY]->(ic:IndustryCategory) WHERE ic.name CONTAINS 'Technology' RETURN c.name AS city, count(o) AS count ORDER BY count DESC LIMIT 3","match $c isa city; $o isa organization; $ic isa industry_category; (organization: $o, city: $c) isa located_in; $ic has industry_category_name $ic_industry_category_name; $ic_industry_category_name contains ""Technology""; (organization: $o, category: $ic) isa in_category; limit 3; reduce $count = count($o);","TypeQL query is semantically different from the question"
+"706","Which 3 organizations have the most negative sentiment in recent articles?","MATCH (a:Article)-[:MENTIONS]->(o:Organization) WHERE a.sentiment < 0 WITH o, avg(a.sentiment) AS avgSentiment ORDER BY avgSentiment LIMIT 3 RETURN o.name AS organization, avgSentiment","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, member: $p) isa board_member_of;
+  $ic isa industry_category, has industry_category_name ""Government Advisors""; (organization: $o, category: $ic) isa in_category;
+limit 3;
+fetch { ""name"": $o.name };","TypeQL missing required entity type for question"
+"707","List the 5 organizations with the most diverse industry categories.","MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory) WITH o, count(distinct c) as categoryCount ORDER BY categoryCount DESC LIMIT 5 RETURN o.name as organization, categoryCount","match $o isa organization; $c isa industry_category; (organization: $o, category: $c) isa in_category; limit 5; fetch { ""organization"": $o.name };","TypeQL missing required aggregation for question"
+"708","Which 3 organizations have the most detailed organizational summaries?","MATCH (o:Organization) WHERE o.summary IS NOT NULL RETURN o.name AS organization, o.summary AS summary ORDER BY size(o.summary) DESC LIMIT 3","match $o isa organization; $o has summary $o_summary; limit 3; fetch { ""organization"": $o.name, ""summary"": $o.summary };","TypeQL query is semantically different from the question"
+"712","Which organizations in the city of Chicago have more than 300 employees?","MATCH (o:Organization)-[:IN_CITY]->(:City {name: 'Chicago'}) WHERE o.nbrEmployees > 300 RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees","match
+  $o isa organization;
+  $o has revenue $o_revenue;
+  $o_revenue > 100000000;
+fetch { ""name"": $o.name };","TypeQL missing required entity type for question"
+"715","What are the names of the top 5 organizations that have been dissolved?","MATCH (o:Organization)
+WHERE o.isDissolved = true
+RETURN o.name
+ORDER BY o.revenue DESC
+LIMIT 5","match
+  $o isa organization;
+  $c isa city;
+  $country isa country, has country_name ""United States of America"";
+  (organization: $o, city: $c) isa located_in;
+  $o has is_public $o_is_public;
+  $o has is_public true;
+(child: $c, parent: $country) isa location-contains; fetch { ""organization"": $o.name, ""city"": $c.city_name };","TypeQL missing required attribute filter for question"
+"721","List the first 3 organizations that have 'Accenture' as a supplier.","MATCH (o:Organization)-[:HAS_SUPPLIER]->(a:Organization {name: 'Accenture'})
+RETURN o.name
+LIMIT 3","match
+  $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;
+fetch { ""o"": $o };","TypeQL missing required relation for question"
+"725","Who are the children of 'Julie Spellman Sweet', list the first 3.","MATCH (p:Person {name: 'Julie Spellman Sweet'})-[:HAS_CHILD]->(child:Person) RETURN child.name LIMIT 3","match
+  $o isa organization;
+  $s isa organization;
+  (customer: $o, supplier: $s) isa supplies;
+  $s has revenue $s_revenue;
+  $s_revenue > 50000000;
+fetch { ""name"": $o.name };","TypeQL missing required relation for question"
+"730","List the first 3 organizations with the highest number of employees that are public.","MATCH (o:Organization)
+WHERE o.isPublic = true AND o.nbrEmployees IS NOT NULL
+RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees
+ORDER BY o.nbrEmployees DESC
+LIMIT 3","match
+  $a isa article, has author ""David Correa"";
+  $c isa chunk;
+  $o isa organization;
+  (article: $a, chunk: $c) isa has_chunk;
+  (article: $a, organization: $o) isa mentions;
+  $ic isa industry_category, has industry_category_name ""Technology""; (organization: $o, category: $ic) isa in_category;
+fetch { ""title"": $a.title, ""site_name"": $a.site_name, ""date"": $a.date, ""name"": $o.name };","TypeQL missing required attribute filter for question"
+"731","What are the top 3 cities where the software companies are based?","MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Software'})-[:IN_CITY]->(city:City) RETURN city.name, count(*) as count ORDER BY count DESC LIMIT 3","match $o isa organization; $c isa industry_category, has industry_category_name ""Software""; $city isa city; (organization: $o, category: $c) isa in_category; (organization: $o, city: $city) isa located_in; limit 3; reduce $count = count($o);","TypeQL query is semantically different from the question"
+"733","Who are the top 3 suppliers of 'New Energy Group'?","MATCH (o:Organization {name: 'New Energy Group'})<-[:HAS_SUPPLIER]-(supplier:Organization) RETURN supplier.name AS supplier, supplier.summary AS summary ORDER BY supplier.revenue DESC LIMIT 3","match
+  $c isa city, has city_name ""Seattle"";
+  $country isa country;
+  (child: $c, parent: $country) isa location-contains;
+fetch { ""country_summary"": $country.country_summary };","TypeQL missing required relation for question"
+"738","What are the top 5 organizations that are mentioned the most in articles with a sentiment below 0.5?","MATCH (a:Article)-[:MENTIONS]->(o:Organization) WHERE a.sentiment < 0.5 WITH o, count(*) as mentions RETURN o.name as organization, mentions ORDER BY mentions DESC LIMIT 5","match $a isa article; $o isa organization; (article: $a, organization: $o) isa mentions; $a has sentiment $a_sentiment; $a_sentiment < 0.5; limit 5; fetch { ""organization"": $o.name };","TypeQL missing required aggregation for question"
+"740","List the top 5 organizations that have the most suppliers.","MATCH (o:Organization)-[:HAS_SUPPLIER]->(s:Organization)
+RETURN o.name AS organization, count(s) AS supplierCount
+ORDER BY supplierCount DESC
+LIMIT 5","match
+  $o isa organization, has name $on;
+  $s isa organization;
+  (customer: $o, supplier: $s) isa supplies;
+limit 5;
+fetch { ""organization"": $on };","TypeQL missing required aggregation for question"
+"742","List the first 3 organizations with the lowest revenue that are not dissolved.","MATCH (o:Organization)
+WHERE o.isDissolved = false AND o.revenue IS NOT NULL
+RETURN o.name, o.revenue
+ORDER BY o.revenue
+LIMIT 3","match $o1 isa organization; $c isa industry_category; $o2 isa organization; (organization: $o1, category: $c) isa in_category; (competitor: $o1, competitor: $o2) isa competes_with; limit 3; fetch { ""Org1"": $o1.name, ""Org2"": $o2.name, ""Category"": $c.industry_category_name };","TypeQL missing required attribute filter for question"
+"745","List the top 5 cities with the most organizations in the 'Healthcare' industry.","MATCH (c:City)<-[:IN_CITY]-(o:Organization)-[:HAS_CATEGORY]->(ic:IndustryCategory {name: 'Healthcare'}) WITH c, count(o) as orgCount ORDER BY orgCount DESC LIMIT 5 RETURN c.name as city, orgCount as numberOfHealthcareOrgs","match
+  $c isa city, has city_name $cn;
+  $o isa organization;
+  $ic isa industry_category, has industry_category_name ""Healthcare"";
+  (organization: $o, city: $c) isa located_in;
+  (organization: $o, category: $ic) isa in_category;
+limit 5;
+fetch { ""city"": $cn };","TypeQL missing required aggregation for question"
+"749","List the top 5 organizations that are public and have a revenue less than 10 million.","MATCH (o:Organization) WHERE o.isPublic = true AND o.revenue < 1E7 RETURN o.name AS organization, o.revenue AS revenue ORDER BY o.revenue DESC LIMIT 5","match $o isa organization; $c isa city; $country isa country; (organization: $o, city: $c) isa located_in; (child: $c, parent: $country) isa location-contains; fetch { ""organization"": $o.name, ""city"": $c.city_name, ""country"": $country.country_name };","TypeQL missing required attribute filter for question"
+"751","List the first 3 industries that have the most organizations with a CEO named 'Julie Spellman Sweet'.","MATCH (i:IndustryCategory)<-[:HAS_CATEGORY]-(o:Organization)-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'}) RETURN i.name AS industry, count(o) AS orgCount ORDER BY orgCount DESC LIMIT 3","match $i isa industry_category; $o isa organization; $p isa person, has name ""Julie Spellman Sweet""; (organization: $o, category: $i) isa in_category; (organization: $o, ceo: $p) isa ceo_of; limit 3; reduce $orgCount = count($o);","TypeQL query is semantically different from the question"
+"755","List the top 5 cities where the electronic products manufacturers are based.","MATCH (c:City)<-[:IN_CITY]-(o:Organization)-[:HAS_CATEGORY]->(ic:IndustryCategory {name: 'Electronic Products Manufacturers'}) RETURN c.name AS city, count(o) AS company_count ORDER BY company_count DESC LIMIT 5","match $c isa city; $o isa organization; $ic isa industry_category, has industry_category_name ""Electronic Products Manufacturers""; (organization: $o, city: $c) isa located_in; (organization: $o, category: $ic) isa in_category; limit 5; reduce $company_count = count($o);","TypeQL query is semantically different from the question"
+"762","Who are the top 3 suppliers of organizations in 'New York City'?","MATCH (o:Organization)-[:IN_CITY]->(:City {name: 'New York City'})
+MATCH (o)<-[:HAS_SUPPLIER]-(supplier:Organization)
+RETURN supplier.name, count(*) as supplierCount
+ORDER BY supplierCount DESC
+LIMIT 3","match
+  $o isa organization;
+  $city isa city, has city_name ""New York City"";
+  $supplier isa organization, has name $sn;
+  (organization: $o, city: $city) isa located_in;
+  (customer: $o, supplier: $supplier) isa supplies;
+limit 3;
+fetch { ""supplier"": $sn };","TypeQL missing required aggregation for question"
+"766","What are the names of organizations dissolved and were public?","MATCH (o:Organization)
+WHERE o.isDissolved = true AND o.isPublic = true
+RETURN o.name","match $o isa organization; $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in; $o has revenue $o_revenue; sort $o_revenue desc; limit 1; fetch { ""organization"": $o.name, ""revenue"": $o.revenue };","TypeQL missing required attribute filter for question"
+"775","Which cities host organizations with more than 100 employees?","MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.nbrEmployees > 100
+RETURN DISTINCT c.name AS city","match $o1 isa organization; $o2 isa organization; (competitor: $o1, competitor: $o2) isa competes_with; fetch { ""org1"": $o1.name, ""org2"": $o2.name };","TypeQL missing required entity type for question"
+"783","What are the names of organizations that have Accenture as their CEO?","MATCH (o:Organization)-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'})
+WHERE p.summary IS NOT NULL AND p.summary CONTAINS 'Accenture'
+RETURN o.name","match
+  $o isa organization;
+  $p isa person, has name ""Julie Spellman Sweet"";
+  (organization: $o, ceo: $p) isa ceo_of;
+  $p has summary $p_summary;
+  $p_summary contains ""Accenture"";
+fetch { ""name"": $o.name };","TypeQL query is semantically different from the question"
+"791","What is the revenue and employee number for organizations headquartered in Rome?","MATCH (o:Organization)-[:IN_CITY]->(:City {name: 'Rome'}) WHERE o.revenue IS NOT NULL AND o.nbrEmployees IS NOT NULL RETURN o.name AS organization, o.revenue AS revenue, o.nbrEmployees AS employees","match $o isa organization, has is_dissolved true; $a isa article; (article: $a, organization: $o) isa mentions; $a has date $a_date; sort $a_date desc; fetch { ""organization"": $o.name, ""article"": $a.title, ""date"": $a.date };","TypeQL query is semantically different from the question"
+"801","List the countries that have organizations with a motto.","MATCH (c:Country)<-[:IN_COUNTRY]-(city:City)<-[:IN_CITY]-(o:Organization) WHERE o.motto IS NOT NULL RETURN DISTINCT c.name","match $article isa article; $chunk isa chunk; (article: $article, chunk: $chunk) isa has_chunk; $org isa organization; $category isa industry_category; (article: $article, organization: $org) isa mentions; fetch { ""industry_category_name"": $category.industry_category_name };","TypeQL missing required entity type for question"
+"803","Which cities have more than three organizations based in them?","MATCH (c:City)<-[:IN_CITY]-(o:Organization)
+WITH c, count(o) AS orgCount
+WHERE orgCount > 3
+RETURN c.name AS city, orgCount","match $o isa organization; $p isa person; (organization: $o, ceo: $p) isa ceo_of; limit 3; fetch { ""name"": $o.name };","TypeQL missing required entity type for question"
+"814","List all articles that mention organizations headquartered in the United States of America.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country {name: 'United States of America'}) RETURN a, o","match $accenture isa organization, has name ""Accenture""; $city isa city; $other isa organization; (organization: $accenture, city: $city) isa located_in; fetch { ""organization"": $other.name };","TypeQL missing required entity type for question"
+"816","What are the cities where organizations with the highest number of suppliers are located?","MATCH (o:Organization)-[:HAS_SUPPLIER]->(s:Organization)
+WITH o, count(s) AS supplierCount
+ORDER BY supplierCount DESC
+LIMIT 1
+MATCH (o)-[:IN_CITY]->(c:City)
+RETURN c.name AS city","match
+  $o isa organization;
+  $s isa organization;
+  $c isa city, has city_name $cn;
+  (customer: $o, supplier: $s) isa supplies;
+  (organization: $o, city: $c) isa located_in;
+limit 1;
+fetch { ""city"": $cn };","TypeQL query is semantically different from the question"
+"822","List all organizations that have been mentioned in articles with a negative sentiment.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WHERE a.sentiment < 0
+RETURN DISTINCT o","match
+  $o isa organization;
+  $c isa industry_category, has industry_category_name ""Technology"";
+  (organization: $o, category: $c) isa in_category;
+  $o has revenue $o_revenue;
+sort $o_revenue desc;
+limit 3;
+fetch { ""organization"": $o.name, ""revenue"": $o.revenue };","TypeQL missing required entity type for question"
+"829","List articles that mention organizations based in countries not in North America.","MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country) WHERE c.name <> 'United States of America' AND c.name <> 'Canada' AND c.name <> 'Mexico' RETURN a.title, a.siteName, a.date, o.name, c.name","match
+  $o isa organization;
+  $p isa person, has name ""Julie Spellman Sweet"";
+  (organization: $o, ceo: $p) isa ceo_of;
+fetch { ""organization"": $o.name };","TypeQL query is semantically different from the question"
+"843","Who are the CEOs of organizations that have been dissolved but mentioned in recent articles?","MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)
+WHERE o.isDissolved = true
+  AND EXISTS {
+    (o)<-[:MENTIONS]-(a:Article)
+    WHERE a.date >= datetime() - duration('P1Y')
+  }
+RETURN ceo.name AS ceoName, o.name AS orgName","match
+  $o isa organization;
+  $ceo isa person;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+fetch { ""ceoName"": $ceo.name, ""orgName"": $o.name };","TypeQL missing required entity type for question"
+"849","Which organizations have the most articles mentioning them in 2022?","MATCH (o:Organization)<-[:MENTIONS]-(a:Article)
+WHERE a.date.year = 2022
+WITH o, count(a) as numMentions
+RETURN o.name as organization, numMentions
+ORDER BY numMentions DESC
+LIMIT 10","match
+  $a isa article;
+  $c isa chunk;
+  $o isa organization;
+  (article: $a, chunk: $c) isa has_chunk;
+  (article: $a, organization: $o) isa mentions;
+  $c has text $c_text;
+  $c_text contains ""corporate social responsibility"";
+fetch { ""organization"": $o.name };","TypeQL missing required aggregation for question"
+"853","Find the top 3 cities where organizations with more than 500 employees are located.","MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.nbrEmployees > 500
+RETURN c.name AS city, count(o) AS numOrganizations
+ORDER BY numOrganizations DESC
+LIMIT 3","match $o isa organization; $c isa city; $country isa country; (organization: $o, city: $c) isa located_in; $o has nbr_employees $o_nbr_employees; sort $o_nbr_employees desc; limit 1; fetch { ""organization"": $o.name, ""numberOfEmployees"": $o.nbr_employees };","TypeQL queries org with most employees in all cities not top cities for orgs with 500+ employees"
+"858","What are the names of the people who have both a parent and a child listed in the schema?","MATCH (p:Person)-[:HAS_PARENT]->(parent:Person)
+WHERE EXISTS {(p)-[:HAS_CHILD]->(:Person)}
+RETURN p.name","match
+  $p isa person;
+  $parent isa person;
+  (child: $p, parent: $parent) isa parent_of;
+fetch { ""name"": $p.name };","TypeQL only checks parent relationship not both parent and child relationships"
+"862","What are the names of the organizations that are headquartered in cities with a summary stating they are a county seat?","MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE c.summary CONTAINS 'county seat'
+RETURN o.name","match $p isa person; $child isa person; fetch { ""parent"": $p.name, ""child"": $child.name };","TypeQL missing required entity type for question"
+"864","Which organizations have a board member who is also a CEO of another organization?","MATCH (o1:Organization)-[:HAS_BOARD_MEMBER]->(p:Person)<-[:HAS_CEO]-(o2:Organization)
+WHERE o1 <> o2
+RETURN o1.name AS BoardMemberOrg, p.name AS Person, o2.name AS CEOOrg","match
+  $o1 isa organization;
+  $p isa person;
+  $o2 isa organization;
+  (organization: $o1, member: $p) isa board_member_of;
+(organization: $o1, ceo: $p) isa ceo_of; fetch { ""BoardMemberOrg"": $o1.name, ""Person"": $p.name, ""CEOOrg"": $o2.name };","TypeQL queries board member who is CEO of SAME org not DIFFERENT org"
+"865","List the first 3 organizations with the highest revenue that are also dissolved.","MATCH (o:Organization)
+WHERE o.isDissolved = true AND o.revenue IS NOT NULL
+RETURN o.name AS organization, o.revenue AS revenue
+ORDER BY o.revenue DESC
+LIMIT 3","match $p isa person; reduce $num_orgs = count($p) groupby $p; match $num_orgs > 1; limit 5; fetch { ""name"": $p.name };","TypeQL missing required attribute filter for question"
+"867","Identify the top 3 cities where organizations with a revenue less than 10 million are located.","MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE o.revenue < 10000000
+RETURN c.name AS city, count(o) AS orgCount
+ORDER BY orgCount DESC
+LIMIT 3","match
+  $i isa person;
+  $o isa organization;
+  $c isa industry_category;
+  (investor: $i, organization: $o) isa invested_in;
+  $c has industry_category_name $c_industry_category_name;
+  $c_industry_category_name contains ""Tech"";
+  (organization: $o, category: $c) isa in_category;
+reduce $investments = count($o) groupby $i;
+sort $investments desc;
+limit 3;
+fetch { ""investor"": $i.name, ""investments"": $investments };","TypeQL missing required entity type for question"
+"868","List the first 5 organizations that have a motto including the word 'security'.","MATCH (o:Organization)
+WHERE o.motto CONTAINS 'security'
+RETURN o.name, o.motto
+LIMIT 5","match $o1 isa organization; $p isa person; $o2 isa organization; (organization: $o1, member: $p) isa board_member_of; (organization: $o1, ceo: $p) isa ceo_of; fetch { ""BoardMemberOrg"": $o1.name, ""BoardMemberName"": $p.name, ""CEOOrg"": $o2.name };","TypeQL queries board members who are CEOs not orgs with motto containing security"
+"873","Which organizations have a summary mentioning 'software' and are public companies?","MATCH (o:Organization)
+WHERE o.summary CONTAINS 'software' AND o.isPublic = true
+RETURN o","match $o isa organization, has name ""New Energy Group""; $supplier isa organization; (customer: $supplier, supplier: $o) isa supplies; fetch { ""supplier"": $supplier };","TypeQL missing required attribute filter for question"
+"877","Find the top 3 countries mentioned in articles that have the lowest sentiment scores.","MATCH (article:Article)-[:HAS_CHUNK]->(chunk:Chunk)
+WHERE article.sentiment IS NOT NULL
+WITH article
+ORDER BY article.sentiment ASC
+LIMIT 3
+MATCH (article)-[:MENTIONS]->(:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(country:Country)
+RETURN country.name AS country, count(*) AS mentions
+ORDER BY mentions DESC","match
+  $article isa article, has sentiment $s;
+  $o isa organization;
+  $country isa country, has country_name $cn;
+  $city isa city;
+  (article: $article, organization: $o) isa mentions;
+  (organization: $o, city: $city) isa located_in;
+  (child: $city, parent: $country) isa location-contains;
+sort $s asc;
+limit 3;
+fetch { ""country"": $cn };","TypeQL query is semantically different from the question"
+"879","Which organizations have a city with a summary mentioning 'county seat' as their location?","MATCH (o:Organization)-[:IN_CITY]->(c:City)
+WHERE c.summary CONTAINS 'county seat'
+RETURN o.name AS organization, c.name AS city","match
+  $p isa person;
+  $o isa organization;
+  (investor: $p, organization: $o) isa invested_in;
+reduce $num_orgs = count($o) groupby $p;
+match $num_orgs > 1;
+limit 3;
+fetch { ""name"": $p.name };","TypeQL missing required entity type for question"
+"880","Identify the top 3 organizations with the smallest number of employees that are public.","MATCH (o:Organization)
+WHERE o.isPublic = true AND o.nbrEmployees IS NOT NULL
+RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees
+ORDER BY o.nbrEmployees
+LIMIT 3","match $o isa organization; $c isa industry_category; $country isa country, has country_name ""United States of America""; $city isa city; (organization: $o, city: $city) isa located_in; (child: $city, parent: $country) isa location-contains; (organization: $o, category: $c) isa in_category; reduce $categoryCount = count($c) groupby $o; match $categoryCount > 2; fetch { ""organization"": $o.name, ""categoryCount"": $categoryCount };","TypeQL missing required attribute filter for question"
+"891","Identify the top 3 organizations with the most articles mentioning them.","MATCH (o:Organization)<-[:MENTIONS]-(a:Article)
+RETURN o.name AS organization, count(a) AS mentionCount
+ORDER BY mentionCount DESC
+LIMIT 3","match
+  $o isa organization, has name $on;
+  $a isa article;
+  (article: $a, organization: $o) isa mentions;
+limit 3;
+fetch { ""organization"": $on };","TypeQL missing required aggregation for question"
+"895","List the first 5 organizations that have a CEO who is also a board member of a competitor.","MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)
+WHERE EXISTS {
+  (o)-[:HAS_COMPETITOR]->(competitor:Organization)<-[:HAS_BOARD_MEMBER]-(ceo)
+}
+RETURN o.name AS organization, ceo.name AS ceo
+LIMIT 5","match
+  $o1 isa organization;
+  $o2 isa organization;
+  (competitor: $o1, competitor: $o2) isa competes_with;
+limit 5;
+fetch { ""org1"": $o1.name, ""org2"": $o2.name };","TypeQL missing required relation for question"
+"897","Identify the top 3 organizations with the most board members.","MATCH (o:Organization)<-[:HAS_BOARD_MEMBER]-(p:Person)
+WITH o, count(p) AS boardMemberCount
+ORDER BY boardMemberCount DESC
+LIMIT 3
+RETURN o.name AS organization, boardMemberCount","match
+  $o isa organization, has name $on;
+  $p isa person;
+  (organization: $o, member: $p) isa board_member_of;
+limit 3;
+fetch { ""organization"": $on };","TypeQL missing required aggregation for question"
+"904","Find the top 3 countries with the most cities mentioned in the schema.","MATCH (country:Country)<-[:IN_COUNTRY]-(city:City)
+RETURN country.name AS country, count(city) AS numCities
+ORDER BY numCities DESC
+LIMIT 3","match $ceo isa person; $company isa organization; (organization: $company, ceo: $ceo) isa ceo_of; $child isa person; (organization: $company, investor: $ceo) isa invested_in; fetch { ""CEO"": $ceo.name, ""Child"": $child.name, ""Company"": $company.name };","TypeQL missing required entity type for question"
+"906","What are the names of the organizations that are competitors and have a CEO named 'Julie Spellman Sweet'?","MATCH (o1:Organization)-[:HAS_COMPETITOR]->(o2:Organization)
+WHERE (o1)-[:HAS_CEO]->(:Person {name: 'Julie Spellman Sweet'})
+   OR (o2)-[:HAS_CEO]->(:Person {name: 'Julie Spellman Sweet'})
+RETURN o1.name AS org1, o2.name AS org2","match
+  $p isa person, has name ""Julie Spellman Sweet"";
+  $o isa organization;
+  (organization: $o, ceo: $p) isa ceo_of;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL missing required relation for question"
+"916","Identify the top 3 organizations with a CEO who has authored an article.","MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)<-[:AUTHOR]-(a:Article)
+RETURN o.name AS organization, ceo.name AS ceo, count(a) AS articleCount
+ORDER BY articleCount DESC
+LIMIT 3","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, ceo: $p) isa ceo_of;
+limit 3;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL missing required aggregation for question"
+"918","What are the names of the organizations that have a CEO with a name mentioned in an article with a sentiment score greater than 0.8?","MATCH (article:Article)-[:HAS_CHUNK]->(chunk:Chunk),
+      (article)-[:MENTIONS]->(org:Organization),
+      (org)-[:HAS_CEO]->(ceo:Person)
+WHERE article.sentiment > 0.8 AND ceo.name IS NOT NULL
+RETURN DISTINCT org.name","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, ceo: $p) isa ceo_of;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };","TypeQL missing required entity type for question"
+"919","Find the top 3 organizations that have the most board members who are also CEOs of other organizations.","MATCH (o:Organization)<-[:HAS_BOARD_MEMBER]-(p:Person)
+WHERE EXISTS {(p)-[:HAS_CEO]->(:Organization)}
+WITH o, count(p) AS ceo_board_members
+RETURN o.name AS organization, ceo_board_members
+ORDER BY ceo_board_members DESC
+LIMIT 3","match
+  $o isa organization, has name $on;
+  $p isa person;
+  $other isa organization;
+  (organization: $o, member: $p) isa board_member_of;
+  (organization: $other, ceo: $p) isa ceo_of;
+  $o has organization_id $oid;
+  $other has organization_id $otherid;
+  $oid != $otherid;
+limit 3;
+fetch { ""organization"": $on };","TypeQL missing required aggregation for question"
+"931","Identify the top 3 organizations with the most subsidiaries headquartered in a city named 'Seattle'.","MATCH (o:Organization)-[:HAS_SUBSIDIARY*]->(sub:Organization)-[:IN_CITY]->(c:City {name: 'Seattle'})
+WITH o, count(sub) AS numSubs
+ORDER BY numSubs DESC
+LIMIT 3
+RETURN o.name AS organization, numSubs AS numberOfSubsidiaries","match
+  $o isa organization, has name $on;
+  $sub isa organization;
+  $c isa city, has city_name ""Seattle"";
+  (parent: $o, subsidiary: $sub) isa subsidiary_of;
+  (organization: $sub, city: $c) isa located_in;
+limit 3;
+fetch { ""organization"": $on };","TypeQL missing required aggregation for question"
