@@ -279,6 +279,18 @@ LIMIT 5","match
   $c isa character, has louvain 1;
 limit 5;
 fetch { ""c_name"": $c.name };"
+35,What are the names of characters who interact with 'Theon-Greyjoy' in any book? List up to 5.,"MATCH (c:Character)-[:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->(:Character {name: 'Theon-Greyjoy'})
+RETURN c.name
+LIMIT 5","match
+  $c isa character, has name $n;
+  $t isa character, has name ""Theon-Greyjoy"";
+  {(character1: $c, character2: $t) isa interacts;} or
+  {(character1: $c, character2: $t) isa interacts1;} or
+  {(character1: $c, character2: $t) isa interacts2;} or
+  {(character1: $c, character2: $t) isa interacts3;} or
+  {(character1: $c, character2: $t) isa interacts45;};
+limit 5;
+fetch { ""name"": $n };"
 36,Who has the highest 'pagerank' among all characters? Show top 3.,"MATCH (c:Character)
 RETURN c.name, c.pagerank
 ORDER BY c.pagerank DESC
@@ -337,6 +349,14 @@ RETURN c1, c2","match
   $c2 isa character;
   (character1: $c1, character2: $c2) isa interacts2;
 fetch { ""c1_name"": $c1.name, ""c2_name"": $c2.name };"
+43,Who interacted with 'Aegon-Frey-(son-of-Stevron)'? List first 3 characters.,"MATCH (c:Character)-[:INTERACTS]->(a:Character {name: 'Aegon-Frey-(son-of-Stevron)'})
+RETURN c.name
+LIMIT 3","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Aegon-Frey-(son-of-Stevron)"";
+  (character1: $c, character2: $target) isa interacts;
+limit 3;
+fetch { ""c_name"": $cn };"
 44,Which characters from community 795 have 'pagerank' above 0.15?,"MATCH (c:Character)
 WHERE c.community = 795 AND c.pagerank > 0.15
 RETURN c.name, c.pagerank","match
@@ -346,6 +366,19 @@ RETURN c.name, c.pagerank","match
   $c_community == 795;
   $c_pagerank > 0.15;
 fetch { ""c_name"": $c.name, ""c_pagerank"": $c.pagerank };"
+45,Identify the top 5 characters by 'book45PageRank' who are in the same community as 'Murenmure'.,"MATCH (c:Character)
+WHERE c.name = 'Murenmure'
+WITH c.community AS community
+MATCH (other:Character)
+WHERE other.community = community
+RETURN other.name, other.book45PageRank
+ORDER BY other.book45PageRank DESC
+LIMIT 5","match
+  $m isa character, has name ""Murenmure"", has community $comm;
+  $c isa character, has community $comm, has name $n, has book45_page_rank $pr;
+sort $pr desc;
+limit 5;
+fetch { ""name"": $n, ""book45_page_rank"": $pr };"
 46,Who are the top 3 characters in terms of 'pagerank' who also have a 'louvain' value of 6?,"MATCH (c:Character)
 WHERE c.louvain = 6
 RETURN c.name, c.pagerank
@@ -375,6 +408,16 @@ RETURN c","match
   $c_book1_betweenness_centrality == 0;
   $c_community == 642;
 fetch { ""c_name"": $c.name };"
+49,Find the characters who have interacted with 'Roose-Bolton' in 'book 1'. List the top 5.,"MATCH (c:Character)-[i:INTERACTS1]->(roose:Character {name: 'Roose-Bolton'})
+RETURN c.name AS character, i.weight AS interactions
+ORDER BY interactions DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Roose-Bolton"";
+  $rel (character1: $c, character2: $target) isa interacts1, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn, ""interactions"": $w };"
 50,Who are the characters in the louvain community 5 with a 'book45PageRank' greater than 5?,"MATCH (c:Character)
 WHERE c.louvain = 5 AND c.book45PageRank > 5
 RETURN c.name AS character","match
@@ -541,6 +584,14 @@ RETURN c1, c2","match
   $c1_louvain > 5;
   $c2_louvain > 5;
 fetch { ""c1_name"": $c1.name, ""c2_name"": $c2.name };"
+68,Who interacted with 'Walder-Rivers' in 'book 45'? List first 3 characters.,"MATCH (c:Character)-[i:INTERACTS45]->(w:Character {name: 'Walder-Rivers'})
+RETURN c.name
+LIMIT 3","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Walder-Rivers"";
+  (character1: $c, character2: $target) isa interacts45;
+limit 3;
+fetch { ""c_name"": $cn };"
 69,Which characters from community 642 have 'pagerank' above 1?,"MATCH (c:Character)
 WHERE c.community = 642 AND c.pagerank > 1
 RETURN c.name, c.pagerank","match
@@ -579,6 +630,16 @@ RETURN c.name AS character","match
   $c_book1_betweenness_centrality == 168.75234023581112;
   $c_community == 642;
 fetch { ""character"": $c.name };"
+73,Find the characters who have interacted with 'Murenmure' in 'book 45'. List the top 5.,"MATCH (c:Character)-[i:INTERACTS45]->(m:Character {name: 'Murenmure'})
+RETURN c.name AS character, i.weight AS interactions
+ORDER BY interactions DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Murenmure"";
+  $rel (character1: $c, character2: $target) isa interacts45, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn, ""interactions"": $w };"
 74,Who are the characters in the louvain community 6 with a 'book45PageRank' greater than 3?,"MATCH (c:Character)
 WHERE c.louvain = 6 AND c.book45PageRank > 3
 RETURN c.name AS character","match
@@ -745,6 +806,14 @@ RETURN c1, c2","match
   $c1_louvain > 3;
   $c2_louvain > 3;
 fetch { ""c1_name"": $c1.name, ""c2_name"": $c2.name };"
+92,Who interacted with 'Aeron-Greyjoy' in 'book 45'? List first 3 characters.,"MATCH (c:Character)-[i:INTERACTS45]->(a:Character {name: 'Aeron-Greyjoy'})
+RETURN c.name
+LIMIT 3","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Aeron-Greyjoy"";
+  (character1: $c, character2: $target) isa interacts45;
+limit 3;
+fetch { ""c_name"": $cn };"
 93,Which characters from community 795 have 'pagerank' above 0.2?,"MATCH (c:Character)
 WHERE c.community = 795 AND c.pagerank > 0.2
 RETURN c.name, c.pagerank","match
@@ -902,6 +971,21 @@ RETURN c1.name AS character1, c2.name AS character2, i.weight AS weight","match
   (character1: $c1, character2: $c2) isa interacts3, has weight $rel_weight;
   $rel_weight > 50;
 fetch { ""character1"": $c1.name, ""character2"": $c2.name, ""weight"": $rel_weight };"
+114,Which characters are in the same community as Daenerys Targaryen?,"MATCH (d:Character {name: 'Daenerys Targaryen'})-[:INTERACTS*0..]->(c:Character)
+WHERE d.community = c.community
+RETURN c.name","match
+  $d isa character, has name ""Daenerys-Targaryen"", has community $comm;
+  $c isa character, has community $comm, has name $n;
+fetch { ""name"": $n };"
+115,Who are the top 5 characters with the lowest book1BetweennessCentrality?,"MATCH (c:Character)
+WHERE c.book1BetweennessCentrality IS NOT NULL
+RETURN c.name AS character, c.book1BetweennessCentrality AS centrality
+ORDER BY centrality
+LIMIT 5","match
+  $c isa character, has name $n, has book1_betweenness_centrality $bc;
+sort $bc asc;
+limit 5;
+fetch { ""character"": $n, ""centrality"": $bc };"
 116,Identify characters with a pagerank higher than 4.,"MATCH (c:Character)
 WHERE c.pagerank > 4
 RETURN c.name, c.pagerank","match
@@ -932,6 +1016,12 @@ RETURN c.name AS character","match
   $c_degree > 50;
   $c_degree < 150;
 fetch { ""character"": $c.name };"
+120,List the characters whose name starts with 'A'.,"MATCH (c:Character)
+WHERE c.name STARTS WITH 'A'
+RETURN c.name","match
+  $c isa character, has name $n;
+  $n like ""^A.*"";
+fetch { ""name"": $n };"
 121,Which characters have a community number exactly 795?,"MATCH (c:Character)
 WHERE c.community = 795
 RETURN c","match
@@ -939,6 +1029,15 @@ RETURN c","match
   $c has community $c_community;
   $c_community == 795;
 fetch { ""c_name"": $c.name };"
+123,Who are the characters with the lowest book45PageRank?,"MATCH (c:Character)
+WHERE c.book45PageRank IS NOT NULL
+RETURN c.name, c.book45PageRank
+ORDER BY c.book45PageRank
+LIMIT 5","match
+  $c isa character, has name $n, has book45_page_rank $pr;
+sort $pr asc;
+limit 5;
+fetch { ""name"": $n, ""book45_page_rank"": $pr };"
 124,List the characters with an INTERACTS2 relationship and a weight of 92.,"MATCH (c1:Character)-[r:INTERACTS2]->(c2:Character)
 WHERE r.weight = 92
 RETURN c1.name, c2.name","match
@@ -984,6 +1083,13 @@ RETURN c.name AS character","match
   $c_book45_page_rank >= 2;
   $c_book45_page_rank <= 5;
 fetch { ""character"": $c.name };"
+130,List the characters that interact in book 45 with any character named 'Aegon-I-Targaryen'.,"MATCH (c1:Character)-[:INTERACTS45]->(c2:Character {name: 'Aegon-I-Targaryen'})
+RETURN c1.name AS character","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Aegon-I-Targaryen"";
+  (character1: $c, character2: $target) isa interacts45;
+limit 10;
+fetch { ""c_name"": $cn };"
 131,Who are the characters with a book1PageRank and a book45PageRank over 3?,"MATCH (c:Character)
 WHERE c.book1PageRank > 3 AND c.book45PageRank > 3
 RETURN c.name AS character","match
@@ -1017,6 +1123,16 @@ RETURN c.name AS character, c.pagerank AS pagerank","match
   $c_louvain == 3;
   $c_pagerank > 2;
 fetch { ""character"": $c.name, ""pagerank"": $c.pagerank };"
+135,Identify the characters who interact with 'Theon-Greyjoy' in any book.,"MATCH (c:Character)-[:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->(theon:Character {name: 'Theon-Greyjoy'})
+RETURN c.name AS character","match
+  $c isa character, has name $n;
+  $t isa character, has name ""Theon-Greyjoy"";
+  {(character1: $c, character2: $t) isa interacts;} or
+  {(character1: $c, character2: $t) isa interacts1;} or
+  {(character1: $c, character2: $t) isa interacts2;} or
+  {(character1: $c, character2: $t) isa interacts3;} or
+  {(character1: $c, character2: $t) isa interacts45;};
+fetch { ""character"": $n };"
 136,Who are the top 5 characters by degree in ascending order?,"MATCH (c:Character)
 RETURN c.name, c.degree
 ORDER BY c.degree ASC
@@ -1068,6 +1184,12 @@ RETURN c1.name AS character1, c2.name AS character2, r.weight AS weight","match
   $rel_weight >= 10;
   $rel_weight <= 50;
 fetch { ""character1"": $c1.name, ""character2"": $c2.name, ""weight"": $rel_weight };"
+143,List all characters whose name ends in 'Targaryen'.,"MATCH (c:Character)
+WHERE c.name ENDS WITH 'Targaryen'
+RETURN c","match
+  $c isa character, has name $n;
+  $n like "".*Targaryen$"";
+fetch { ""name"": $n };"
 144,Which characters have a pagerank less than 0.5?,"MATCH (c:Character)
 WHERE c.pagerank < 0.5
 RETURN c.name AS character","match
@@ -1259,6 +1381,18 @@ RETURN c.name","match
   $c has degree $c_degree;
   $c_degree < 10;
 fetch { ""c_name"": $c.name };"
+171,Find characters in the top 3 communities by number of members.,"MATCH (c:Character)
+WITH c.community AS community, count(*) AS members
+ORDER BY members DESC
+LIMIT 3
+WITH collect(community) AS top_communities
+MATCH (c:Character)
+WHERE c.community IN top_communities
+RETURN c.name AS character, c.community AS community","match
+  $c isa character, has name $n, has community $comm;
+sort $comm asc;
+limit 15;
+fetch { ""character"": $n, ""community"": $comm };"
 172,Who has the highest book45PageRank in community 759?,"MATCH (c:Character)
 WHERE c.community = 759
 RETURN c.name AS name, c.book45PageRank AS pageRank
@@ -1271,6 +1405,15 @@ LIMIT 1","match
 sort $c_book45_page_rank desc;
 limit 1;
 fetch { ""name"": $c.name, ""pageRank"": $c.book45_page_rank };"
+173,List characters with the lowest 5 book1PageRanks.,"MATCH (c:Character)
+WHERE c.book1PageRank IS NOT NULL
+RETURN c.name AS character, c.book1PageRank AS pageRank
+ORDER BY pageRank
+LIMIT 5","match
+  $c isa character, has name $n, has book1_page_rank $pr;
+sort $pr asc;
+limit 5;
+fetch { ""character"": $n, ""pageRank"": $pr };"
 174,Which characters interact in book 1 with a weight greater than 100?,"MATCH (c1:Character)-[i:INTERACTS1]->(c2:Character)
 WHERE i.weight > 100
 RETURN c1.name AS character1, c2.name AS character2, i.weight AS weight","match
@@ -1348,6 +1491,14 @@ RETURN c1.name AS character1, c2.name AS character2","match
   (character1: $c1, character2: $c2) isa interacts;
   $c1_community == $c2_community;
 fetch { ""character1"": $c1.name, ""character2"": $c2.name };"
+183,Find characters connected by any INTERACTS relationship with a weight over 200.,"MATCH (c1:Character)-[r:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->(c2:Character)
+WHERE r.weight > 200
+RETURN c1.name, r, c2.name","match
+  (character1: $c1, character2: $c2) isa interacts, has weight $w;
+  $c1 has name $n1;
+  $c2 has name $n2;
+  $w > 200;
+fetch { ""character1"": $n1, ""character2"": $n2, ""weight"": $w };"
 184,Who are the top 3 characters with the highest degree in community 795?,"MATCH (c:Character)
 WHERE c.community = 795
 RETURN c.name, c.degree
@@ -1449,6 +1600,15 @@ RETURN c.name","match
   $c has community $c_community;
   $c_community == 504;
 fetch { ""c_name"": $c.name };"
+197,Find characters with a book45PageRank in the top 5 highest values.,"MATCH (c:Character)
+WITH c
+ORDER BY c.book45PageRank DESC
+LIMIT 5
+RETURN c.name AS character, c.book45PageRank AS book45PageRank","match
+  $c isa character, has name $n, has book45_page_rank $pr;
+sort $pr desc;
+limit 5;
+fetch { ""character"": $n, ""book45_page_rank"": $pr };"
 198,Which characters have a centrality less than 0.1?,"MATCH (c:Character)
 WHERE c.centrality < 0.1
 RETURN c.name","match
@@ -1518,6 +1678,14 @@ RETURN c1.name AS character1, c2.name AS character2, i.weight AS weight","match
   (character1: $c1, character2: $c2) isa interacts1, has weight $rel_weight;
   $rel_weight < 10;
 fetch { ""character1"": $c1.name, ""character2"": $c2.name, ""weight"": $rel_weight };"
+206,Identify the top 3 most frequent communities in INTERACTS relationships.,"MATCH (c1:Character)-[i:INTERACTS]->(c2:Character)
+RETURN c1.community, count(*) AS frequency
+ORDER BY frequency DESC
+LIMIT 3","match
+  (character1: $c1, character2: $c2) isa interacts;
+  $c1 has community $comm;
+reduce $count = count($c1);
+fetch { ""count"": $count };"
 207,List characters who interact in book 45 with a weight greater than 90.,"MATCH (c1:Character)-[i:INTERACTS45]->(c2:Character)
 WHERE i.weight > 90
 RETURN c1.name AS character1, c2.name AS character2, i.weight AS weight","match
@@ -1679,6 +1847,15 @@ RETURN c.name AS character, c.pagerank AS pagerank","match
   $c_community == 795;
   $c_pagerank > 0.5;
 fetch { ""character"": $c.name, ""pagerank"": $c.pagerank };"
+227,Find characters with a book45PageRank in the top 10 highest values.,"MATCH (c:Character)
+WITH c
+ORDER BY c.book45PageRank DESC
+LIMIT 10
+RETURN c.name AS character, c.book45PageRank AS book45PageRank","match
+  $c isa character, has name $n, has book45_page_rank $pr;
+sort $pr desc;
+limit 10;
+fetch { ""character"": $n, ""book45_page_rank"": $pr };"
 228,Which characters have a centrality less than 0.05?,"MATCH (c:Character)
 WHERE c.centrality < 0.05
 RETURN c.name","match
@@ -1748,6 +1925,14 @@ RETURN c1.name AS character1, c2.name AS character2, i.weight AS weight","match
   (character1: $c1, character2: $c2) isa interacts1, has weight $rel_weight;
   $rel_weight > 200;
 fetch { ""character1"": $c1.name, ""character2"": $c2.name, ""weight"": $rel_weight };"
+236,Identify the top 5 most frequent communities in INTERACTS1 relationships.,"MATCH (c1:Character)-[i:INTERACTS1]->(c2:Character)
+RETURN c1.community AS community, count(*) AS frequency
+ORDER BY frequency DESC
+LIMIT 5","match
+  (character1: $c1, character2: $c2) isa interacts1;
+  $c1 has community $comm;
+reduce $count = count($c1);
+fetch { ""count"": $count };"
 237,List characters who interact in book 45 with a weight greater than 95.,"MATCH (c1:Character)-[i:INTERACTS45]->(c2:Character)
 WHERE i.weight > 95
 RETURN c1.name AS character1, c2.name AS character2, i.weight AS weight","match
@@ -1880,6 +2065,18 @@ RETURN c1.name AS character1, c2.name AS character2, i.weight AS weight","match
   $rel_book == 3;
   $rel_weight > 50;
 fetch { ""character1"": $c1.name, ""character2"": $c2.name, ""weight"": $rel_weight };"
+254,Who has the highest weight in an INTERACTS1 relationship?,"MATCH (c1:Character)-[r:INTERACTS1]->(c2:Character)
+WITH r
+ORDER BY r.weight DESC
+LIMIT 1
+MATCH (c1:Character)-[r]->(c2:Character)
+RETURN c1.name, c2.name, r.weight","match
+  (character1: $c1, character2: $c2) isa interacts1, has weight $w;
+  $c1 has name $n1;
+  $c2 has name $n2;
+sort $w desc;
+limit 1;
+fetch { ""character1"": $n1, ""character2"": $n2, ""weight"": $w };"
 255,Find characters that interact with a weight of exactly 92 in book 2.,"MATCH (c1:Character)-[i:INTERACTS2 {weight: 92}]->(c2:Character)
 RETURN c1, i, c2","match
   $c1 isa character;
@@ -1887,6 +2084,16 @@ RETURN c1, i, c2","match
   (character1: $c1, character2: $c2) isa interacts2, has weight $rel_weight;
   $rel_weight == 92;
 fetch { ""c1_name"": $c1.name, ""rel_weight"": $rel_weight, ""c2_name"": $c2.name };"
+256,Which characters have the least centrality but more than 30 degree?,"MATCH (c:Character)
+WHERE c.centrality IS NOT NULL AND c.degree > 30
+RETURN c.name, c.centrality, c.degree
+ORDER BY c.centrality ASC
+LIMIT 10","match
+  $c isa character, has name $n, has centrality $cent, has degree $deg;
+  $deg > 30;
+sort $cent asc;
+limit 10;
+fetch { ""name"": $n, ""centrality"": $cent, ""degree"": $deg };"
 257,List characters with a pagerank less than 1 but more than 0.5.,"MATCH (c:Character)
 WHERE c.pagerank < 1 AND c.pagerank > 0.5
 RETURN c.name, c.pagerank","match
@@ -1936,6 +2143,15 @@ RETURN c","match
   $c_community == 578;
   $c_degree == 0;
 fetch { ""c_name"": $c.name };"
+263,Who are the top 3 characters with the lowest book1BetweennessCentrality?,"MATCH (c:Character)
+WHERE c.book1BetweennessCentrality IS NOT NULL
+RETURN c.name AS character, c.book1BetweennessCentrality AS centrality
+ORDER BY centrality
+LIMIT 3","match
+  $c isa character, has name $n, has book1_betweenness_centrality $bc;
+sort $bc asc;
+limit 3;
+fetch { ""character"": $n, ""centrality"": $bc };"
 264,Which characters belong to louvain community 1 and have a pagerank above 1?,"MATCH (c:Character)
 WHERE c.louvain = 1 AND c.pagerank > 1
 RETURN c.name AS character, c.pagerank AS pagerank","match
@@ -1989,6 +2205,15 @@ RETURN c","match
   $c_book1_page_rank >= 2;
   $c_book1_page_rank <= 4;
 fetch { ""c_name"": $c.name };"
+270,Who are the top 5 characters with the highest book1PageRank?,"MATCH (c:Character)
+WHERE c.book1PageRank IS NOT NULL
+RETURN c.name, c.book1PageRank
+ORDER BY c.book1PageRank DESC
+LIMIT 5","match
+  $c isa character, has name $n, has book1_page_rank $pr;
+sort $pr desc;
+limit 5;
+fetch { ""name"": $n, ""book1_page_rank"": $pr };"
 271,List characters with a book45PageRank of exactly 2.,"MATCH (c:Character)
 WHERE c.book45PageRank = 2
 RETURN c.name","match
@@ -2063,6 +2288,15 @@ RETURN c","match
   $c_degree >= 50;
   $c_degree <= 100;
 fetch { ""c_name"": $c.name };"
+280,Who are the top 5 characters with the lowest book45PageRank?,"MATCH (c:Character)
+WHERE c.book45PageRank IS NOT NULL
+RETURN c.name, c.book45PageRank
+ORDER BY c.book45PageRank
+LIMIT 5","match
+  $c isa character, has name $n, has book45_page_rank $pr;
+sort $pr asc;
+limit 5;
+fetch { ""name"": $n, ""book45_page_rank"": $pr };"
 281,List characters with a centrality above 0.5 and a book1PageRank below 1.,"MATCH (c:Character)
 WHERE c.centrality > 0.5 AND c.book1PageRank < 1
 RETURN c.name AS character","match
@@ -2192,6 +2426,16 @@ RETURN c.name, c.pagerank, c.degree","match
   $c_pagerank > 7;
   $c_degree > 150;
 fetch { ""c_name"": $c.name, ""c_pagerank"": $c.pagerank, ""c_degree"": $c.degree };"
+296,Who are the top 3 characters with the highest weight in INTERACTS relationships?,"MATCH (c:Character)-[i:INTERACTS]->(other:Character)
+RETURN c.name AS character, sum(i.weight) AS total_weight
+ORDER BY total_weight DESC
+LIMIT 3","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts, has weight $w;
+sort $w desc;
+limit 3;
+fetch { ""character"": $cn };"
 297,List characters with a book1PageRank below 0.2 and a degree above 10.,"MATCH (c:Character)
 WHERE c.book1PageRank < 0.2 AND c.degree > 10
 RETURN c","match
@@ -2210,6 +2454,15 @@ RETURN c","match
   $c_centrality > 0.3;
   $c_louvain == 1;
 fetch { ""c_name"": $c.name };"
+299,Who are the top 5 characters with the lowest book1PageRank?,"MATCH (c:Character)
+WHERE c.book1PageRank IS NOT NULL
+RETURN c.name, c.book1PageRank
+ORDER BY c.book1PageRank
+LIMIT 5","match
+  $c isa character, has name $n, has book1_page_rank $pr;
+sort $pr asc;
+limit 5;
+fetch { ""name"": $n, ""book1_page_rank"": $pr };"
 300,List characters with a pagerank below 0.5.,"MATCH (c:Character)
 WHERE c.pagerank < 0.5
 RETURN c.name, c.pagerank","match
@@ -2278,6 +2531,16 @@ RETURN c","match
   $c_centrality > 0.4;
   $c_book1_page_rank < 0.3;
 fetch { ""c_name"": $c.name };"
+308,Who are the top 3 characters with the highest weight in INTERACTS1 relationships?,"MATCH (c:Character)-[i:INTERACTS1]->(other:Character)
+RETURN c.name AS character, max(i.weight) AS max_weight
+ORDER BY max_weight DESC
+LIMIT 3","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts1, has weight $w;
+sort $w desc;
+limit 3;
+fetch { ""character"": $cn };"
 309,List characters with a book1BetweennessCentrality above 2000.,"MATCH (c:Character)
 WHERE c.book1BetweennessCentrality > 2000
 RETURN c.name, c.book1BetweennessCentrality","match
@@ -2294,6 +2557,15 @@ RETURN c","match
   $c_centrality < 0.1;
   $c_louvain > 5;
 fetch { ""c_name"": $c.name };"
+311,Who are the top 5 characters with the lowest centrality?,"MATCH (c:Character)
+WHERE c.centrality IS NOT NULL
+RETURN c.name, c.centrality
+ORDER BY c.centrality
+LIMIT 5","match
+  $c isa character, has name $n, has centrality $cent;
+sort $cent asc;
+limit 5;
+fetch { ""name"": $n, ""centrality"": $cent };"
 312,List characters with a book45PageRank below 1.5.,"MATCH (c:Character)
 WHERE c.book45PageRank < 1.5
 RETURN c.name AS character","match
@@ -2337,6 +2609,16 @@ RETURN c","match
   $c_book1_page_rank > 5;
   $c_community == 578;
 fetch { ""c_name"": $c.name };"
+317,Who are the top 5 characters with the highest weight in INTERACTS2 relationships?,"MATCH (c:Character)-[i:INTERACTS2]->(other:Character)
+RETURN c.name AS character, max(i.weight) AS max_weight
+ORDER BY max_weight DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts2, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn };"
 318,List characters with a centrality below 0.4 and a book45PageRank above 2.,"MATCH (c:Character)
 WHERE c.centrality < 0.4 AND c.book45PageRank > 2
 RETURN c.name AS character, c.centrality, c.book45PageRank","match
@@ -2355,6 +2637,15 @@ RETURN c","match
   $c_pagerank < 0.6;
   $c_degree > 20;
 fetch { ""c_name"": $c.name };"
+320,Who are the top 3 characters with the lowest book45PageRank?,"MATCH (c:Character)
+WHERE c.book45PageRank IS NOT NULL
+RETURN c.name, c.book45PageRank
+ORDER BY c.book45PageRank
+LIMIT 3","match
+  $c isa character, has name $n, has book45_page_rank $pr;
+sort $pr asc;
+limit 5;
+fetch { ""name"": $n, ""book45_page_rank"": $pr };"
 321,List characters with a community above 750 and a pagerank below 1.,"MATCH (c:Character)
 WHERE c.community > 750 AND c.pagerank < 1
 RETURN c.name AS character","match
@@ -2427,6 +2718,16 @@ RETURN c","match
   $c_centrality > 0.8;
   $c_book1_betweenness_centrality > 4000;
 fetch { ""c_name"": $c.name };"
+329,Who are the top 5 characters with the highest weight in INTERACTS45 relationships?,"MATCH (c:Character)-[i:INTERACTS45]->(other:Character)
+RETURN c.name AS character, sum(i.weight) AS total_weight
+ORDER BY total_weight DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts45, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn };"
 330,What are the names of the top 5 characters with the highest book1PageRank?,"MATCH (c:Character)
 RETURN c.name AS character, c.book1PageRank AS pageRank
 ORDER BY pageRank DESC
@@ -2479,6 +2780,27 @@ RETURN c.name","match
   $c has degree $c_degree;
   $c_degree > 50;
 fetch { ""c_name"": $c.name };"
+336,Name 3 characters from the community with the highest number of members.,"MATCH (c:Character)
+WITH c.community AS community, count(*) AS members
+ORDER BY members DESC
+LIMIT 1
+WITH collect(community)[0] AS top_community
+MATCH (c:Character {community: top_community})
+RETURN c.name
+LIMIT 3","match
+  $c isa character, has name $n, has community $comm;
+sort $comm asc;
+limit 3;
+fetch { ""name"": $n, ""community"": $comm };"
+337,List the top 3 characters with the least betweenness centrality in book 1.,"MATCH (c:Character)
+WHERE c.book1BetweennessCentrality IS NOT NULL
+RETURN c.name AS character, c.book1BetweennessCentrality AS betweenness 
+ORDER BY betweenness
+LIMIT 3","match
+  $c isa character, has name $n, has book1_betweenness_centrality $bc;
+sort $bc asc;
+limit 3;
+fetch { ""character"": $n, ""betweenness"": $bc };"
 338,Who are the characters with a louvain value of 0? Limit to top 5.,"MATCH (c:Character)
 WHERE c.louvain = 0
 RETURN c.name
@@ -2488,6 +2810,16 @@ LIMIT 5","match
   $c_louvain == 0;
 limit 5;
 fetch { ""c_name"": $c.name };"
+339,Find the top 5 characters with the highest weight in INTERACTS relationship.,"MATCH (c:Character)-[i:INTERACTS]->(other:Character)
+RETURN c.name AS character, sum(i.weight) AS total_weight
+ORDER BY total_weight DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn };"
 340,Which characters interact in book 1 with a weight greater than 100?,"MATCH (c1:Character)-[i:INTERACTS1]->(c2:Character)
 WHERE i.weight > 100
 RETURN c1.name AS character1, c2.name AS character2, i.weight AS weight","match
@@ -2530,6 +2862,15 @@ LIMIT 3","match
 sort $c_pagerank desc;
 limit 3;
 fetch { ""c_name"": $c.name };"
+345,Identify characters who have both high pagerank and high degree of centrality. Limit to top 5.,"MATCH (c:Character)
+WHERE c.pagerank IS NOT NULL AND c.centrality IS NOT NULL
+RETURN c.name AS character, c.pagerank AS pagerank, c.centrality AS centrality
+ORDER BY c.pagerank DESC, c.centrality DESC
+LIMIT 5","match
+  $c isa character, has name $n, has pagerank $pr, has centrality $cent;
+sort $pr desc;
+limit 5;
+fetch { ""character"": $n, ""pagerank"": $pr, ""centrality"": $cent };"
 346,Which characters have a book45PageRank less than 1 but a book1PageRank greater than 2?,"MATCH (c:Character)
 WHERE c.book45PageRank < 1 AND c.book1PageRank > 2
 RETURN c.name AS character, c.book45PageRank AS book45PageRank, c.book1PageRank AS book1PageRank","match
@@ -2570,6 +2911,16 @@ RETURN c.name","match
   $c_louvain == 1;
   $c_degree > 10;
 fetch { ""c_name"": $c.name };"
+352,Identify the top 3 characters with the lowest pagerank but who interact in book 45.,"MATCH (c:Character)-[:INTERACTS45]->(other:Character)
+WHERE exists {(c)-[:INTERACTS45]->()} 
+RETURN c.name, c.pagerank
+ORDER BY c.pagerank
+LIMIT 3","match
+  $c isa character, has name $n, has pagerank $pr;
+  (character1: $c, character2: $other) isa interacts45;
+sort $pr asc;
+limit 3;
+fetch { ""name"": $n, ""pagerank"": $pr };"
 353,List the characters who are part of both community 578 and 579. Limit to 5 characters.,"MATCH (c:Character)
 WHERE c.community IN [578, 579]
 RETURN c.name
@@ -2586,6 +2937,29 @@ RETURN c.name","match
   $c_degree == 0;
   $c_centrality > 0.5;
 fetch { ""c_name"": $c.name };"
+355,Who are the top 5 characters in terms of INTERACTS45 weight?,"MATCH (c:Character)-[i:INTERACTS45]->(other:Character)
+RETURN c.name AS character, sum(i.weight) AS total_weight
+ORDER BY total_weight DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts45, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn };"
+356,List 3 characters with a book1PageRank less than 1 but an INTERACTS weight greater than 150.,"MATCH (c:Character)
+WHERE c.book1PageRank < 1 AND EXISTS {
+  (c)-[i:INTERACTS]->(:Character)
+  WHERE i.weight > 150
+}
+RETURN c.name
+LIMIT 3","match
+  $c isa character, has name $n, has book1_page_rank $pr;
+  (character1: $c, character2: $other) isa interacts, has weight $w;
+  $pr < 1;
+  $w > 150;
+limit 3;
+fetch { ""name"": $n };"
 357,Find the characters who have a louvain community number of 10 and a pagerank greater than 0.5.,"MATCH (c:Character)
 WHERE c.louvain = 10 AND c.pagerank > 0.5
 RETURN c","match
@@ -2607,6 +2981,16 @@ LIMIT 5","match
 sort $c_degree desc;
 limit 5;
 fetch { ""c_name"": $c.name, ""c_degree"": $c.degree };"
+360,List the characters with the highest sum of INTERACTS weights across all books. Limit to top 5.,"MATCH (c:Character)-[i:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->(other)
+WITH c, sum(i.weight) AS totalWeight
+ORDER BY totalWeight DESC
+LIMIT 5
+RETURN c.name AS character, totalWeight","match
+  $c isa character, has name $n;
+  (character1: $c, character2: $o) isa interacts, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $n, ""weight"": $w };"
 362,Find the characters with a community number less than 600 and a centrality of 1.,"MATCH (c:Character)
 WHERE c.community < 600 AND c.centrality = 1.0
 RETURN c","match
@@ -2652,6 +3036,17 @@ RETURN c.name, c.pagerank, c.degree","match
   $c_pagerank < 0.2;
   $c_degree > 10;
 fetch { ""c_name"": $c.name, ""c_pagerank"": $c.pagerank, ""c_degree"": $c.degree };"
+367,Which characters are in the top 5 for louvain community size?,"MATCH (c:Character)
+WITH c.louvain AS community, count(*) AS size
+ORDER BY size DESC
+LIMIT 5
+MATCH (c:Character)
+WHERE c.louvain = community
+RETURN community, collect(c.name) AS characters","match
+  $c isa character, has name $n, has louvain $l;
+sort $l asc;
+limit 5;
+fetch { ""name"": $n, ""louvain"": $l };"
 368,Who are the characters with a fastrf_embedding value at the last position less than -0.5? Limit to 3 characters.,"MATCH (c:Character)
 WHERE c.fastrf_embedding[-1] < -0.5
 RETURN c.name
@@ -2659,6 +3054,16 @@ LIMIT 3","match
   $c isa character;
 limit 3;
 fetch { ""c_name"": $c.name };"
+369,Identify the top 5 characters with the most interactions in book 3.,"MATCH (c:Character)-[i:INTERACTS3]->(other:Character)
+RETURN c.name AS character, sum(i.weight) AS total_interactions
+ORDER BY total_interactions DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts3, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn };"
 370,List the characters who have a centrality value of exactly 0.8. Limit to top 5.,"MATCH (c:Character)
 WHERE c.centrality = 0.8
 RETURN c.name
@@ -2707,6 +3112,27 @@ RETURN c","match
   $c_community == 504;
   $c_degree > 20;
 fetch { ""c_name"": $c.name };"
+376,Identify the top 5 characters based on the average of their centrality values across all books.,"MATCH (c:Character)
+WHERE c.centrality IS NOT NULL
+  AND exists {(c)-[:INTERACTS1]->()}
+  AND exists {(c)-[:INTERACTS2]->()}
+  AND exists {(c)-[:INTERACTS3]->()}
+  AND exists {(c)-[:INTERACTS45]->()}
+WITH c, 
+  (coalesce(c.book1PageRank, 0) + 
+   coalesce(c.book45PageRank, 0) +
+   coalesce(c.pagerank, 0)) / 3 AS avgCentrality
+RETURN c.name AS character, avgCentrality
+ORDER BY avgCentrality DESC
+LIMIT 5","match
+  $c isa character, has name $n, has centrality $cent, has book1_page_rank $b1pr, has book45_page_rank $b45pr, has pagerank $pr;
+  (character1: $c, character2: $o1) isa interacts1;
+  (character1: $c, character2: $o2) isa interacts2;
+  (character1: $c, character2: $o3) isa interacts3;
+  (character1: $c, character2: $o4) isa interacts45;
+sort $pr desc;
+limit 5;
+fetch { ""character"": $n, ""book1_page_rank"": $b1pr, ""book45_page_rank"": $b45pr, ""pagerank"": $pr };"
 377,Which characters have the highest sum of pagerank values across all books? Limit to top 5.,"MATCH (c:Character)
 RETURN c.name AS character,
        c.pagerank + c.book1PageRank + c.book45PageRank AS totalPageRank
@@ -2759,6 +3185,17 @@ LIMIT 5","match
 sort $c_book45_page_rank desc;
 limit 5;
 fetch { ""c_name"": $c.name, ""c_book45_page_rank"": $c.book45_page_rank, ""c_book1_page_rank"": $c.book1_page_rank };"
+382,List the characters with a pagerank above 0.5 and an INTERACTS weight over 200.,"MATCH (c:Character)
+WHERE c.pagerank > 0.5 AND EXISTS {
+  (c)-[i:INTERACTS]->(other:Character)
+  WHERE i.weight > 200
+}
+RETURN c.name AS character, c.pagerank AS pagerank","match
+  $c isa character, has name $n, has pagerank $pr;
+  (character1: $c, character2: $other) isa interacts, has weight $w;
+  $pr > 0.5;
+  $w > 200;
+fetch { ""character"": $n, ""pagerank"": $pr };"
 383,What are the names of characters who have an INTERACTS2 book value of 2 and a weight greater than 50?,"MATCH (c:Character)-[i:INTERACTS2]->(other:Character)
 WHERE i.book = 2 AND i.weight > 50
 RETURN c.name","match
@@ -2819,127 +3256,6 @@ LIMIT 5","match
 sort $c_pagerank desc;
 limit 5;
 fetch { ""c_name"": $c.name };"
-43,Who interacted with 'Aegon-Frey-(son-of-Stevron)'? List first 3 characters.,"MATCH (c:Character)-[:INTERACTS]->(a:Character {name: 'Aegon-Frey-(son-of-Stevron)'})
-RETURN c.name
-LIMIT 3","match
-  $c isa character, has name $cn;
-  $target isa character, has name ""Aegon-Frey-(son-of-Stevron)"";
-  (character1: $c, character2: $target) isa interacts;
-limit 3;
-fetch { ""c_name"": $cn };"
-49,Find the characters who have interacted with 'Roose-Bolton' in 'book 1'. List the top 5.,"MATCH (c:Character)-[i:INTERACTS1]->(roose:Character {name: 'Roose-Bolton'})
-RETURN c.name AS character, i.weight AS interactions
-ORDER BY interactions DESC
-LIMIT 5","match
-  $c isa character, has name $cn;
-  $target isa character, has name ""Roose-Bolton"";
-  $rel (character1: $c, character2: $target) isa interacts1, has weight $w;
-sort $w desc;
-limit 5;
-fetch { ""character"": $cn, ""interactions"": $w };"
-68,Who interacted with 'Walder-Rivers' in 'book 45'? List first 3 characters.,"MATCH (c:Character)-[i:INTERACTS45]->(w:Character {name: 'Walder-Rivers'})
-RETURN c.name
-LIMIT 3","match
-  $c isa character, has name $cn;
-  $target isa character, has name ""Walder-Rivers"";
-  (character1: $c, character2: $target) isa interacts45;
-limit 3;
-fetch { ""c_name"": $cn };"
-73,Find the characters who have interacted with 'Murenmure' in 'book 45'. List the top 5.,"MATCH (c:Character)-[i:INTERACTS45]->(m:Character {name: 'Murenmure'})
-RETURN c.name AS character, i.weight AS interactions
-ORDER BY interactions DESC
-LIMIT 5","match
-  $c isa character, has name $cn;
-  $target isa character, has name ""Murenmure"";
-  $rel (character1: $c, character2: $target) isa interacts45, has weight $w;
-sort $w desc;
-limit 5;
-fetch { ""character"": $cn, ""interactions"": $w };"
-92,Who interacted with 'Aeron-Greyjoy' in 'book 45'? List first 3 characters.,"MATCH (c:Character)-[i:INTERACTS45]->(a:Character {name: 'Aeron-Greyjoy'})
-RETURN c.name
-LIMIT 3","match
-  $c isa character, has name $cn;
-  $target isa character, has name ""Aeron-Greyjoy"";
-  (character1: $c, character2: $target) isa interacts45;
-limit 3;
-fetch { ""c_name"": $cn };"
-130,List the characters that interact in book 45 with any character named 'Aegon-I-Targaryen'.,"MATCH (c1:Character)-[:INTERACTS45]->(c2:Character {name: 'Aegon-I-Targaryen'})
-RETURN c1.name AS character","match
-  $c isa character, has name $cn;
-  $target isa character, has name ""Aegon-I-Targaryen"";
-  (character1: $c, character2: $target) isa interacts45;
-limit 10;
-fetch { ""c_name"": $cn };"
-296,Who are the top 3 characters with the highest weight in INTERACTS relationships?,"MATCH (c:Character)-[i:INTERACTS]->(other:Character)
-RETURN c.name AS character, sum(i.weight) AS total_weight
-ORDER BY total_weight DESC
-LIMIT 3","match
-  $c isa character, has name $cn;
-  $other isa character;
-  $rel (character1: $c, character2: $other) isa interacts, has weight $w;
-sort $w desc;
-limit 3;
-fetch { ""character"": $cn };"
-308,Who are the top 3 characters with the highest weight in INTERACTS1 relationships?,"MATCH (c:Character)-[i:INTERACTS1]->(other:Character)
-RETURN c.name AS character, max(i.weight) AS max_weight
-ORDER BY max_weight DESC
-LIMIT 3","match
-  $c isa character, has name $cn;
-  $other isa character;
-  $rel (character1: $c, character2: $other) isa interacts1, has weight $w;
-sort $w desc;
-limit 3;
-fetch { ""character"": $cn };"
-317,Who are the top 5 characters with the highest weight in INTERACTS2 relationships?,"MATCH (c:Character)-[i:INTERACTS2]->(other:Character)
-RETURN c.name AS character, max(i.weight) AS max_weight
-ORDER BY max_weight DESC
-LIMIT 5","match
-  $c isa character, has name $cn;
-  $other isa character;
-  $rel (character1: $c, character2: $other) isa interacts2, has weight $w;
-sort $w desc;
-limit 5;
-fetch { ""character"": $cn };"
-329,Who are the top 5 characters with the highest weight in INTERACTS45 relationships?,"MATCH (c:Character)-[i:INTERACTS45]->(other:Character)
-RETURN c.name AS character, sum(i.weight) AS total_weight
-ORDER BY total_weight DESC
-LIMIT 5","match
-  $c isa character, has name $cn;
-  $other isa character;
-  $rel (character1: $c, character2: $other) isa interacts45, has weight $w;
-sort $w desc;
-limit 5;
-fetch { ""character"": $cn };"
-339,Find the top 5 characters with the highest weight in INTERACTS relationship.,"MATCH (c:Character)-[i:INTERACTS]->(other:Character)
-RETURN c.name AS character, sum(i.weight) AS total_weight
-ORDER BY total_weight DESC
-LIMIT 5","match
-  $c isa character, has name $cn;
-  $other isa character;
-  $rel (character1: $c, character2: $other) isa interacts, has weight $w;
-sort $w desc;
-limit 5;
-fetch { ""character"": $cn };"
-355,Who are the top 5 characters in terms of INTERACTS45 weight?,"MATCH (c:Character)-[i:INTERACTS45]->(other:Character)
-RETURN c.name AS character, sum(i.weight) AS total_weight
-ORDER BY total_weight DESC
-LIMIT 5","match
-  $c isa character, has name $cn;
-  $other isa character;
-  $rel (character1: $c, character2: $other) isa interacts45, has weight $w;
-sort $w desc;
-limit 5;
-fetch { ""character"": $cn };"
-369,Identify the top 5 characters with the most interactions in book 3.,"MATCH (c:Character)-[i:INTERACTS3]->(other:Character)
-RETURN c.name AS character, sum(i.weight) AS total_interactions
-ORDER BY total_interactions DESC
-LIMIT 5","match
-  $c isa character, has name $cn;
-  $other isa character;
-  $rel (character1: $c, character2: $other) isa interacts3, has weight $w;
-sort $w desc;
-limit 5;
-fetch { ""character"": $cn };"
 391,List the top 3 characters with the highest INTERACTS3 relationship weight.,"MATCH (c:Character)-[i:INTERACTS3]->(other:Character)
 RETURN c.name AS character, max(i.weight) AS max_weight
 ORDER BY max_weight DESC
@@ -2950,319 +3266,3 @@ LIMIT 3","match
 sort $w desc;
 limit 3;
 fetch { ""character"": $cn };"
-45,Identify the top 5 characters by 'book45PageRank' who are in the same community as 'Murenmure'.,"MATCH (c:Character)
-WHERE c.name = 'Murenmure'
-WITH c.community AS community
-MATCH (other:Character)
-WHERE other.community = community
-RETURN other.name, other.book45PageRank
-ORDER BY other.book45PageRank DESC
-LIMIT 5","match
-  $m isa character, has name ""Murenmure"", has community $comm;
-  $c isa character, has community $comm, has name $n, has book45_page_rank $pr;
-sort $pr desc;
-limit 5;
-fetch { ""name"": $n, ""book45_page_rank"": $pr };"
-114,Which characters are in the same community as Daenerys Targaryen?,"MATCH (d:Character {name: 'Daenerys Targaryen'})-[:INTERACTS*0..]->(c:Character)
-WHERE d.community = c.community
-RETURN c.name","match
-  $d isa character, has name ""Daenerys-Targaryen"", has community $comm;
-  $c isa character, has community $comm, has name $n;
-fetch { ""name"": $n };"
-115,Who are the top 5 characters with the lowest book1BetweennessCentrality?,"MATCH (c:Character)
-WHERE c.book1BetweennessCentrality IS NOT NULL
-RETURN c.name AS character, c.book1BetweennessCentrality AS centrality
-ORDER BY centrality
-LIMIT 5","match
-  $c isa character, has name $n, has book1_betweenness_centrality $bc;
-sort $bc asc;
-limit 5;
-fetch { ""character"": $n, ""centrality"": $bc };"
-120,List the characters whose name starts with 'A'.,"MATCH (c:Character)
-WHERE c.name STARTS WITH 'A'
-RETURN c.name","match
-  $c isa character, has name $n;
-  $n like ""^A.*"";
-fetch { ""name"": $n };"
-123,Who are the characters with the lowest book45PageRank?,"MATCH (c:Character)
-WHERE c.book45PageRank IS NOT NULL
-RETURN c.name, c.book45PageRank
-ORDER BY c.book45PageRank
-LIMIT 5","match
-  $c isa character, has name $n, has book45_page_rank $pr;
-sort $pr asc;
-limit 5;
-fetch { ""name"": $n, ""book45_page_rank"": $pr };"
-143,List all characters whose name ends in 'Targaryen'.,"MATCH (c:Character)
-WHERE c.name ENDS WITH 'Targaryen'
-RETURN c","match
-  $c isa character, has name $n;
-  $n like "".*Targaryen$"";
-fetch { ""name"": $n };"
-173,List characters with the lowest 5 book1PageRanks.,"MATCH (c:Character)
-WHERE c.book1PageRank IS NOT NULL
-RETURN c.name AS character, c.book1PageRank AS pageRank
-ORDER BY pageRank
-LIMIT 5","match
-  $c isa character, has name $n, has book1_page_rank $pr;
-sort $pr asc;
-limit 5;
-fetch { ""character"": $n, ""pageRank"": $pr };"
-183,Find characters connected by any INTERACTS relationship with a weight over 200.,"MATCH (c1:Character)-[r:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->(c2:Character)
-WHERE r.weight > 200
-RETURN c1.name, r, c2.name","match
-  (character1: $c1, character2: $c2) isa interacts, has weight $w;
-  $c1 has name $n1;
-  $c2 has name $n2;
-  $w > 200;
-fetch { ""character1"": $n1, ""character2"": $n2, ""weight"": $w };"
-197,Find characters with a book45PageRank in the top 5 highest values.,"MATCH (c:Character)
-WITH c
-ORDER BY c.book45PageRank DESC
-LIMIT 5
-RETURN c.name AS character, c.book45PageRank AS book45PageRank","match
-  $c isa character, has name $n, has book45_page_rank $pr;
-sort $pr desc;
-limit 5;
-fetch { ""character"": $n, ""book45_page_rank"": $pr };"
-227,Find characters with a book45PageRank in the top 10 highest values.,"MATCH (c:Character)
-WITH c
-ORDER BY c.book45PageRank DESC
-LIMIT 10
-RETURN c.name AS character, c.book45PageRank AS book45PageRank","match
-  $c isa character, has name $n, has book45_page_rank $pr;
-sort $pr desc;
-limit 10;
-fetch { ""character"": $n, ""book45_page_rank"": $pr };"
-256,Which characters have the least centrality but more than 30 degree?,"MATCH (c:Character)
-WHERE c.centrality IS NOT NULL AND c.degree > 30
-RETURN c.name, c.centrality, c.degree
-ORDER BY c.centrality ASC
-LIMIT 10","match
-  $c isa character, has name $n, has centrality $cent, has degree $deg;
-  $deg > 30;
-sort $cent asc;
-limit 10;
-fetch { ""name"": $n, ""centrality"": $cent, ""degree"": $deg };"
-263,Who are the top 3 characters with the lowest book1BetweennessCentrality?,"MATCH (c:Character)
-WHERE c.book1BetweennessCentrality IS NOT NULL
-RETURN c.name AS character, c.book1BetweennessCentrality AS centrality
-ORDER BY centrality
-LIMIT 3","match
-  $c isa character, has name $n, has book1_betweenness_centrality $bc;
-sort $bc asc;
-limit 3;
-fetch { ""character"": $n, ""centrality"": $bc };"
-270,Who are the top 5 characters with the highest book1PageRank?,"MATCH (c:Character)
-WHERE c.book1PageRank IS NOT NULL
-RETURN c.name, c.book1PageRank
-ORDER BY c.book1PageRank DESC
-LIMIT 5","match
-  $c isa character, has name $n, has book1_page_rank $pr;
-sort $pr desc;
-limit 5;
-fetch { ""name"": $n, ""book1_page_rank"": $pr };"
-280,Who are the top 5 characters with the lowest book45PageRank?,"MATCH (c:Character)
-WHERE c.book45PageRank IS NOT NULL
-RETURN c.name, c.book45PageRank
-ORDER BY c.book45PageRank
-LIMIT 5","match
-  $c isa character, has name $n, has book45_page_rank $pr;
-sort $pr asc;
-limit 5;
-fetch { ""name"": $n, ""book45_page_rank"": $pr };"
-299,Who are the top 5 characters with the lowest book1PageRank?,"MATCH (c:Character)
-WHERE c.book1PageRank IS NOT NULL
-RETURN c.name, c.book1PageRank
-ORDER BY c.book1PageRank
-LIMIT 5","match
-  $c isa character, has name $n, has book1_page_rank $pr;
-sort $pr asc;
-limit 5;
-fetch { ""name"": $n, ""book1_page_rank"": $pr };"
-311,Who are the top 5 characters with the lowest centrality?,"MATCH (c:Character)
-WHERE c.centrality IS NOT NULL
-RETURN c.name, c.centrality
-ORDER BY c.centrality
-LIMIT 5","match
-  $c isa character, has name $n, has centrality $cent;
-sort $cent asc;
-limit 5;
-fetch { ""name"": $n, ""centrality"": $cent };"
-320,Who are the top 3 characters with the lowest book45PageRank?,"MATCH (c:Character)
-WHERE c.book45PageRank IS NOT NULL
-RETURN c.name, c.book45PageRank
-ORDER BY c.book45PageRank
-LIMIT 3","match
-  $c isa character, has name $n, has book45_page_rank $pr;
-sort $pr asc;
-limit 5;
-fetch { ""name"": $n, ""book45_page_rank"": $pr };"
-337,List the top 3 characters with the least betweenness centrality in book 1.,"MATCH (c:Character)
-WHERE c.book1BetweennessCentrality IS NOT NULL
-RETURN c.name AS character, c.book1BetweennessCentrality AS betweenness 
-ORDER BY betweenness
-LIMIT 3","match
-  $c isa character, has name $n, has book1_betweenness_centrality $bc;
-sort $bc asc;
-limit 3;
-fetch { ""character"": $n, ""betweenness"": $bc };"
-345,Identify characters who have both high pagerank and high degree of centrality. Limit to top 5.,"MATCH (c:Character)
-WHERE c.pagerank IS NOT NULL AND c.centrality IS NOT NULL
-RETURN c.name AS character, c.pagerank AS pagerank, c.centrality AS centrality
-ORDER BY c.pagerank DESC, c.centrality DESC
-LIMIT 5","match
-  $c isa character, has name $n, has pagerank $pr, has centrality $cent;
-sort $pr desc;
-limit 5;
-fetch { ""character"": $n, ""pagerank"": $pr, ""centrality"": $cent };"
-352,Identify the top 3 characters with the lowest pagerank but who interact in book 45.,"MATCH (c:Character)-[:INTERACTS45]->(other:Character)
-WHERE exists {(c)-[:INTERACTS45]->()} 
-RETURN c.name, c.pagerank
-ORDER BY c.pagerank
-LIMIT 3","match
-  $c isa character, has name $n, has pagerank $pr;
-  (character1: $c, character2: $other) isa interacts45;
-sort $pr asc;
-limit 3;
-fetch { ""name"": $n, ""pagerank"": $pr };"
-35,What are the names of characters who interact with 'Theon-Greyjoy' in any book? List up to 5.,"MATCH (c:Character)-[:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->(:Character {name: 'Theon-Greyjoy'})
-RETURN c.name
-LIMIT 5","match
-  $c isa character, has name $n;
-  $t isa character, has name ""Theon-Greyjoy"";
-  {(character1: $c, character2: $t) isa interacts;} or
-  {(character1: $c, character2: $t) isa interacts1;} or
-  {(character1: $c, character2: $t) isa interacts2;} or
-  {(character1: $c, character2: $t) isa interacts3;} or
-  {(character1: $c, character2: $t) isa interacts45;};
-limit 5;
-fetch { ""name"": $n };"
-135,Identify the characters who interact with 'Theon-Greyjoy' in any book.,"MATCH (c:Character)-[:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->(theon:Character {name: 'Theon-Greyjoy'})
-RETURN c.name AS character","match
-  $c isa character, has name $n;
-  $t isa character, has name ""Theon-Greyjoy"";
-  {(character1: $c, character2: $t) isa interacts;} or
-  {(character1: $c, character2: $t) isa interacts1;} or
-  {(character1: $c, character2: $t) isa interacts2;} or
-  {(character1: $c, character2: $t) isa interacts3;} or
-  {(character1: $c, character2: $t) isa interacts45;};
-fetch { ""character"": $n };"
-206,Identify the top 3 most frequent communities in INTERACTS relationships.,"MATCH (c1:Character)-[i:INTERACTS]->(c2:Character)
-RETURN c1.community, count(*) AS frequency
-ORDER BY frequency DESC
-LIMIT 3","match
-  (character1: $c1, character2: $c2) isa interacts;
-  $c1 has community $comm;
-reduce $count = count($c1);
-fetch { ""count"": $count };"
-236,Identify the top 5 most frequent communities in INTERACTS1 relationships.,"MATCH (c1:Character)-[i:INTERACTS1]->(c2:Character)
-RETURN c1.community AS community, count(*) AS frequency
-ORDER BY frequency DESC
-LIMIT 5","match
-  (character1: $c1, character2: $c2) isa interacts1;
-  $c1 has community $comm;
-reduce $count = count($c1);
-fetch { ""count"": $count };"
-254,Who has the highest weight in an INTERACTS1 relationship?,"MATCH (c1:Character)-[r:INTERACTS1]->(c2:Character)
-WITH r
-ORDER BY r.weight DESC
-LIMIT 1
-MATCH (c1:Character)-[r]->(c2:Character)
-RETURN c1.name, c2.name, r.weight","match
-  (character1: $c1, character2: $c2) isa interacts1, has weight $w;
-  $c1 has name $n1;
-  $c2 has name $n2;
-sort $w desc;
-limit 1;
-fetch { ""character1"": $n1, ""character2"": $n2, ""weight"": $w };"
-356,List 3 characters with a book1PageRank less than 1 but an INTERACTS weight greater than 150.,"MATCH (c:Character)
-WHERE c.book1PageRank < 1 AND EXISTS {
-  (c)-[i:INTERACTS]->(:Character)
-  WHERE i.weight > 150
-}
-RETURN c.name
-LIMIT 3","match
-  $c isa character, has name $n, has book1_page_rank $pr;
-  (character1: $c, character2: $other) isa interacts, has weight $w;
-  $pr < 1;
-  $w > 150;
-limit 3;
-fetch { ""name"": $n };"
-382,List the characters with a pagerank above 0.5 and an INTERACTS weight over 200.,"MATCH (c:Character)
-WHERE c.pagerank > 0.5 AND EXISTS {
-  (c)-[i:INTERACTS]->(other:Character)
-  WHERE i.weight > 200
-}
-RETURN c.name AS character, c.pagerank AS pagerank","match
-  $c isa character, has name $n, has pagerank $pr;
-  (character1: $c, character2: $other) isa interacts, has weight $w;
-  $pr > 0.5;
-  $w > 200;
-fetch { ""character"": $n, ""pagerank"": $pr };"
-171,Find characters in the top 3 communities by number of members.,"MATCH (c:Character)
-WITH c.community AS community, count(*) AS members
-ORDER BY members DESC
-LIMIT 3
-WITH collect(community) AS top_communities
-MATCH (c:Character)
-WHERE c.community IN top_communities
-RETURN c.name AS character, c.community AS community","match
-  $c isa character, has name $n, has community $comm;
-sort $comm asc;
-limit 15;
-fetch { ""character"": $n, ""community"": $comm };"
-336,Name 3 characters from the community with the highest number of members.,"MATCH (c:Character)
-WITH c.community AS community, count(*) AS members
-ORDER BY members DESC
-LIMIT 1
-WITH collect(community)[0] AS top_community
-MATCH (c:Character {community: top_community})
-RETURN c.name
-LIMIT 3","match
-  $c isa character, has name $n, has community $comm;
-sort $comm asc;
-limit 3;
-fetch { ""name"": $n, ""community"": $comm };"
-360,List the characters with the highest sum of INTERACTS weights across all books. Limit to top 5.,"MATCH (c:Character)-[i:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->(other)
-WITH c, sum(i.weight) AS totalWeight
-ORDER BY totalWeight DESC
-LIMIT 5
-RETURN c.name AS character, totalWeight","match
-  $c isa character, has name $n;
-  (character1: $c, character2: $o) isa interacts, has weight $w;
-sort $w desc;
-limit 5;
-fetch { ""character"": $n, ""weight"": $w };"
-367,Which characters are in the top 5 for louvain community size?,"MATCH (c:Character)
-WITH c.louvain AS community, count(*) AS size
-ORDER BY size DESC
-LIMIT 5
-MATCH (c:Character)
-WHERE c.louvain = community
-RETURN community, collect(c.name) AS characters","match
-  $c isa character, has name $n, has louvain $l;
-sort $l asc;
-limit 5;
-fetch { ""name"": $n, ""louvain"": $l };"
-376,Identify the top 5 characters based on the average of their centrality values across all books.,"MATCH (c:Character)
-WHERE c.centrality IS NOT NULL
-  AND exists {(c)-[:INTERACTS1]->()}
-  AND exists {(c)-[:INTERACTS2]->()}
-  AND exists {(c)-[:INTERACTS3]->()}
-  AND exists {(c)-[:INTERACTS45]->()}
-WITH c, 
-  (coalesce(c.book1PageRank, 0) + 
-   coalesce(c.book45PageRank, 0) +
-   coalesce(c.pagerank, 0)) / 3 AS avgCentrality
-RETURN c.name AS character, avgCentrality
-ORDER BY avgCentrality DESC
-LIMIT 5","match
-  $c isa character, has name $n, has centrality $cent, has book1_page_rank $b1pr, has book45_page_rank $b45pr, has pagerank $pr;
-  (character1: $c, character2: $o1) isa interacts1;
-  (character1: $c, character2: $o2) isa interacts2;
-  (character1: $c, character2: $o3) isa interacts3;
-  (character1: $c, character2: $o4) isa interacts45;
-sort $pr desc;
-limit 5;
-fetch { ""character"": $n, ""book1_page_rank"": $b1pr, ""book45_page_rank"": $b45pr, ""pagerank"": $pr };"

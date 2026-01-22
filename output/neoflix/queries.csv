@@ -335,6 +335,19 @@ LIMIT 3","match $m isa movie; $m has imdb_id $imdb_id; $m has title $title; limi
 WITH m, count(c) AS num_countries
 WHERE num_countries > 1
 RETURN m.title AS movie, num_countries","match $m isa movie; $c isa country; $rel0 (media: $m, country: $c) isa produced_in_country; $m has title $title_m; reduce $count = count($c); fetch { ""count"": $count };"
+33,What are the top 5 movies with the shortest runtime?,"MATCH (m:Movie)
+WHERE m.runtime IS NOT NULL
+RETURN m.title, m.runtime
+ORDER BY m.runtime
+LIMIT 5","match
+  $m isa movie;
+  $m has runtime $runtime;
+  $m has title $title;
+sort $runtime asc;
+limit 5;
+fetch {
+  ""title"": $title, ""runtime"": $runtime
+};"
 34,Name 3 movies that have been keyword-tagged with 'based on novel'.,"MATCH (m:Movie)-[:HAS_KEYWORD]->(k:Keyword {name: 'based on novel'})
 RETURN m.title
 LIMIT 3","match
@@ -367,6 +380,19 @@ LIMIT 3","match
 limit 3;
 fetch {
   ""title"": $title
+};"
+37,What are the top 5 movies with the lowest revenue?,"MATCH (m:Movie)
+WHERE m.revenue IS NOT NULL
+RETURN m.title, m.revenue
+ORDER BY m.revenue
+LIMIT 5","match
+  $m isa movie;
+  $m has revenue $revenue;
+  $m has title $title;
+sort $revenue asc;
+limit 5;
+fetch {
+  ""title"": $title, ""revenue"": $revenue
 };"
 38,Name 3 movies with a budget of exactly 30 million.,"MATCH (m:Movie)
 WHERE m.budget = 30000000
@@ -682,6 +708,19 @@ LIMIT 10","match
   (media: $m, keyword: $k) isa has_keyword;
 limit 100;
 fetch { ""keyword"": $kn };"
+71,List the top 3 movies with the shortest runtime.,"MATCH (m:Movie)
+WHERE m.runtime IS NOT NULL
+RETURN m.title, m.runtime
+ORDER BY m.runtime
+LIMIT 3","match
+  $m isa movie;
+  $m has runtime $runtime;
+  $m has title $title;
+sort $runtime asc;
+limit 3;
+fetch {
+  ""title"": $title, ""runtime"": $runtime
+};"
 72,Which movies are associated with the keyword 'space'?,"MATCH (m:Movie)-[:HAS_KEYWORD]->(k:Keyword {name: 'space'})
 RETURN m.title","match
   $m isa movie;
@@ -723,6 +762,18 @@ RETURN g.name AS genre","match
 fetch {
   ""genre"": $genre_name_g
 };"
+77,Display the top 3 movies with the least popularity.,"MATCH (m:Movie)
+RETURN m.title, m.popularity
+ORDER BY m.popularity
+LIMIT 3","match
+  $m isa movie;
+  $m has title $title;
+  $m has popularity $popularity;
+sort $popularity asc;
+limit 3;
+fetch {
+  ""title"": $title, ""popularity"": $popularity
+};"
 78,Which movies have a cast member who has also worked in the crew of the same movie?,"MATCH (m:Movie)<-[:CAST_FOR]-(p:Person)-[:CREW_FOR]->(m)
 RETURN m.title AS movie, p.name AS person","match
   $m isa movie;
@@ -758,6 +809,19 @@ fetch {
 WITH m, count(g) AS genreCount
 WHERE genreCount > 3
 RETURN m.title AS movie, genreCount","match $m isa movie; $g isa genre; $rel0 (media: $m, genre: $g) isa in_genre; $m has title $title_m; reduce $count = count($g); fetch { ""count"": $count };"
+82,Display the top 5 movies with the lowest average vote.,"MATCH (m:Movie)
+WHERE m.average_vote IS NOT NULL
+RETURN m.title, m.average_vote
+ORDER BY m.average_vote
+LIMIT 5","match
+  $m isa movie;
+  $m has average_vote $average_vote;
+  $m has title $title;
+sort $average_vote asc;
+limit 5;
+fetch {
+  ""title"": $title, ""average_vote"": $average_vote
+};"
 83,Which movies are associated with a collection that has a poster path?,"MATCH (m:Movie)-[:IN_COLLECTION]->(c:Collection)
 WHERE c.poster_path IS NOT NULL
 RETURN m.title, c.name, c.poster_path","match
@@ -1028,6 +1092,16 @@ RETURN m.title","match
 fetch {
   ""title"": $title_m
 };"
+110,What are the top 5 movies with the most user ratings?,"MATCH (m:Movie)<-[r:RATED]-(:User)
+RETURN m.title, count(r) AS num_ratings
+ORDER BY num_ratings DESC
+LIMIT 5","match
+  $m isa movie, has title $title_m;
+  $r (reviewer: $u, rated_media: $m) isa rated;
+reduce $count = count($r);
+sort $count desc;
+limit 5;
+fetch { ""count"": $count };"
 111,Which movies have been rated by user '1'?,"MATCH (u:User {id: 1})-[r:RATED]->(m:Movie)
 RETURN m.title AS movie, r.rating AS rating","match
   $u isa user, has user_id 1;
@@ -1101,6 +1175,16 @@ limit 3;
 fetch {
   ""name"": $person_name_p
 };"
+118,Who are the first 3 actors in the cast list of 'Toy Story'?,"MATCH (m:Movie {title: 'Toy Story'})<-[:CAST_FOR]-(p:Person)
+RETURN p.name
+ORDER BY p.id
+LIMIT 3","match
+  $m isa movie, has title ""Toy Story"";
+  $c (actor: $p, film: $m) isa cast_for, has cast_order $order;
+  $p has person_name $name;
+sort $order asc;
+limit 3;
+fetch { ""name"": $name };"
 119,List the first 3 genres most commonly found in videos.,"MATCH (v:Video)-[:IN_GENRE]->(g:Genre)
 RETURN g.name AS genre, count(*) AS frequency
 ORDER BY frequency DESC
@@ -1169,6 +1253,17 @@ RETURN a.title, a.runtime","match
 fetch {
   ""title"": $title, ""runtime"": $runtime
 };"
+126,What are the top 3 countries by the number of adult films produced?,"MATCH (c:Country)<-[:PRODUCED_IN_COUNTRY]-(a:Adult)
+RETURN c.name AS country, count(a) AS adultFilmCount
+ORDER BY adultFilmCount DESC
+LIMIT 3","match
+  $c isa country, has country_name $name_c;
+  (media: $a, country: $c) isa produced_in_country;
+  $a isa adult;
+reduce $count = count($a);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
 127,What are the original languages of the top 5 highest rated adult films?,"MATCH (a:Adult)-[:ORIGINAL_LANGUAGE]->(l:Language)
 WITH a, l
 ORDER BY a.average_vote DESC
@@ -1332,6 +1427,17 @@ RETURN m.title, m.popularity","match
 fetch {
   ""title"": $title_m, ""popularity"": $popularity_m
 };"
+143,What are the original languages for the top 5 movies based on average vote?,"MATCH (m:Movie)-[:ORIGINAL_LANGUAGE]->(l:Language)
+WITH m, l
+ORDER BY m.average_vote DESC
+LIMIT 5
+RETURN m.title AS movie, l.name AS original_language","match
+  $m isa movie, has title $title, has average_vote $vote;
+  (media: $m, language: $l) isa original_language;
+  $l has language_name $lang_name;
+sort $vote desc;
+limit 5;
+fetch { ""movie"": $title, ""original_language"": $lang_name };"
 144,What are the first 5 production companies by the number of genres they produce movies in?,"MATCH (c:ProductionCompany)-[:PRODUCED_BY]->(:Movie)-[:IN_GENRE]->(g:Genre)
 WITH c, count(distinct g) AS num_genres
 ORDER BY num_genres DESC
@@ -1837,6 +1943,19 @@ limit 5;
 fetch {
   ""title"": $title_m
 };"
+194,List the top 3 oldest movies in the database.,"MATCH (m:Movie)
+WHERE m.release_date IS NOT NULL
+RETURN m.title, m.release_date
+ORDER BY m.release_date
+LIMIT 3","match
+  $m isa movie;
+  $m has release_date $release_date;
+  $m has title $title;
+sort $release_date asc;
+limit 3;
+fetch {
+  ""title"": $title, ""release_date"": $release_date
+};"
 195,What are the top 5 movies with a tagline containing the word 'adventure'?,"MATCH (m:Movie)
 WHERE toLower(m.tagline) CONTAINS 'adventure'
 RETURN m.title, m.tagline
@@ -2333,6 +2452,19 @@ limit 3;
 fetch {
   ""title"": $title, ""tagline"": $tagline
 };"
+243,What are the top 5 adult films with the highest number of votes?,"MATCH (a:Adult)
+WHERE a.vote_count IS NOT NULL
+RETURN a.title, a.vote_count
+ORDER BY a.vote_count DESC
+LIMIT 5","match
+  $a isa adult;
+  $a has vote_count $vote_count;
+  $a has title $title;
+sort $vote_count desc;
+limit 5;
+fetch {
+  ""title"": $title, ""vote_count"": $vote_count
+};"
 244,Which 3 adult films have the lowest average votes but were produced in 'United States of America'?,"MATCH (a:Adult)-[:PRODUCED_IN_COUNTRY]->(:Country {name: 'United States of America'})
 RETURN a.title, a.average_vote
 ORDER BY a.average_vote
@@ -2394,6 +2526,19 @@ limit 3;
 fetch {
   ""title"": $title, ""average_vote"": $average_vote
 };"
+250,Name the top 5 oldest movies in the database.,"MATCH (m:Movie)
+WHERE m.release_date IS NOT NULL
+RETURN m.title, m.release_date
+ORDER BY m.release_date
+LIMIT 5","match
+  $m isa movie;
+  $m has release_date $release_date;
+  $m has title $title;
+sort $release_date asc;
+limit 5;
+fetch {
+  ""title"": $title, ""release_date"": $release_date
+};"
 251,What are the first 3 highest budget movies that were released?,"MATCH (m:Movie)
 WHERE m.status = 'Released' AND m.budget IS NOT NULL
 RETURN m.title, m.budget
@@ -2441,6 +2586,28 @@ sort $vote_count desc;
 limit 5;
 fetch {
   ""title"": $title, ""vote_count"": $vote_count
+};"
+255,Which 3 movies have the highest average vote?,"MATCH (m:Movie)
+WHERE m.average_vote IS NOT NULL
+RETURN m.title, m.average_vote
+ORDER BY m.average_vote DESC
+LIMIT 3","match
+  $m isa movie, has title $title, has average_vote $vote;
+sort $vote desc;
+limit 3;
+fetch { ""title"": $title, ""average_vote"": $vote };"
+256,List the top 5 movies that made the least revenue.,"MATCH (m:Movie)
+WHERE m.revenue IS NOT NULL
+RETURN m.title, m.revenue
+ORDER BY m.revenue
+LIMIT 5","match
+  $m isa movie;
+  $m has revenue $revenue;
+  $m has title $title;
+sort $revenue asc;
+limit 5;
+fetch {
+  ""title"": $title, ""revenue"": $revenue
 };"
 257,Which 3 languages are spoken in the most number of movies?,"MATCH (m:Movie)-[:SPOKEN_IN_LANGUAGE]->(l:Language)
 RETURN l.name AS language, count(*) AS movieCount
@@ -2524,6 +2691,19 @@ sort $popularity desc;
 limit 5;
 fetch {
   ""title"": $title, ""popularity"": $popularity
+};"
+265,Which 3 movies have the least number of votes?,"MATCH (m:Movie)
+WHERE m.vote_count IS NOT NULL
+RETURN m.title, m.vote_count
+ORDER BY m.vote_count
+LIMIT 3","match
+  $m isa movie;
+  $m has vote_count $vote_count;
+  $m has title $title;
+sort $vote_count asc;
+limit 3;
+fetch {
+  ""title"": $title, ""vote_count"": $vote_count
 };"
 266,Name the top 5 movies with the most budget to revenue ratio.,"MATCH (m:Movie)
 WHERE m.budget IS NOT NULL AND m.revenue IS NOT NULL
@@ -2788,6 +2968,19 @@ limit 3;
 fetch {
   ""title"": $title, ""poster_path"": $poster_path
 };"
+290,Name the top 5 adult videos with the least revenue.,"MATCH (a:Adult)
+WHERE a.revenue IS NOT NULL
+RETURN a.title, a.revenue
+ORDER BY a.revenue
+LIMIT 5","match
+  $a isa adult;
+  $a has revenue $revenue;
+  $a has title $title;
+sort $revenue asc;
+limit 5;
+fetch {
+  ""title"": $title, ""revenue"": $revenue
+};"
 291,List the top 5 adult videos based on popularity.,"MATCH (a:Adult)
 RETURN a.title, a.popularity
 ORDER BY a.popularity DESC
@@ -3040,6 +3233,19 @@ sort $popularity desc;
 limit 3;
 fetch {
   ""title"": $title, ""popularity"": $popularity
+};"
+311,List the top 5 videos with the least revenue.,"MATCH (v:Video)
+WHERE v.revenue IS NOT NULL
+RETURN v.title, v.revenue
+ORDER BY v.revenue
+LIMIT 5","match
+  $v isa video;
+  $v has revenue $revenue;
+  $v has title $title;
+sort $revenue asc;
+limit 5;
+fetch {
+  ""title"": $title, ""revenue"": $revenue
 };"
 313,Name the top 5 videos with the most crew members in the 'Production' department.,"MATCH (v:Video)<-[:CREW_FOR]-(p:Person)
 WHERE EXISTS {
@@ -3969,6 +4175,21 @@ LIMIT 5","match
   (media: $m, language: $l) isa original_language;
 limit 50;
 fetch { ""language"": $ln };"
+395,Name the top 5 users who have given the lowest average ratings to movies.,"MATCH (u:User)-[r:RATED]->(m:Movie)
+WITH u, avg(r.rating) AS avg_rating
+ORDER BY avg_rating
+LIMIT 5
+RETURN u.id AS user_id, avg_rating","match
+  $u isa user;
+  $m isa movie;
+  $r (reviewer: $u, rated_media: $m) isa rated, has rating $rating;
+  $u has user_id $user_id_u;
+reduce $avg = mean($rating);
+sort $avg asc;
+limit 5;
+fetch {
+  ""avg"": $avg
+};"
 396,What are the first 3 movies that have been rated 5 or higher by more than one user?,"MATCH (m:Movie)<-[r:RATED]-(u:User)
 WHERE r.rating >= 5
 WITH m, count(u) AS num_users
@@ -4166,6 +4387,20 @@ limit 3;
 fetch {
   ""count"": $count
 };"
+411,Name the top 3 directors who have worked on movies with an average vote greater than 7.5.,"MATCH (p:Person)-[:CREW_FOR {job: 'Director'}]->(m:Movie)
+WHERE m.average_vote > 7.5
+WITH p, count(m) AS num_movies, avg(m.average_vote) AS avg_rating
+ORDER BY avg_rating DESC
+LIMIT 3
+RETURN p.name AS director, num_movies, avg_rating","match
+  $p isa person, has person_name $name_p;
+  $crew (crew_member: $p, film: $m) isa crew_for, has job ""Director"";
+  $m isa movie, has average_vote $vote;
+  $vote > 7.5;
+reduce $count = count($m);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
 412,List the 5 most recent movies that have been added to the 'Toy Story Collection'.,"MATCH (m:Movie)-[:IN_COLLECTION]->(c:Collection {name: 'Toy Story Collection'})
 RETURN m.title, m.release_date
 ORDER BY m.release_date DESC
@@ -4744,6 +4979,10 @@ limit 3;
 fetch {
   ""count"": $count
 };"
+464,List the top 5 movies that have been part of at least one collection.,"MATCH (m:Movie)-[:IN_COLLECTION]->(:Collection)
+RETURN m.title, m.popularity
+ORDER BY m.popularity DESC
+LIMIT 5","match $m isa movie; $collection isa collection; (media: $m, collection: $collection) isa in_collection; $m has title $title; $m has popularity $popularity; sort $popularity desc; limit 5; fetch { ""title"": $title, ""popularity"": $popularity };"
 465,What are the first 3 genres associated with the movie 'Alex & Emma'?,"MATCH (m:Movie {title: 'Alex & Emma'})-[:IN_GENRE]->(g:Genre)
 RETURN g.name
 LIMIT 3","match
@@ -4872,6 +5111,14 @@ fetch {
   ""keyword"": $k.keyword_name,
   ""count"": $count
 };"
+475,Name the first 3 movies that have a poster path ending in '/pQFoyx7rp09CJTAb932F2g8Nlho.jpg'.,"MATCH (m:Movie)
+WHERE m.poster_path ENDS WITH '/pQFoyx7rp09CJTAb932F2g8Nlho.jpg'
+RETURN m.title
+LIMIT 3","match
+  $m isa movie, has title $title, has poster_path $path;
+  $path like "".*pQFoyx7rp09CJTAb932F2g8Nlho.jpg"";
+limit 3;
+fetch { ""title"": $title };"
 476,What are the first 3 genres associated with the movie 'Nil Battey Sannata'?,"MATCH (m:Movie {title: 'Nil Battey Sannata'})-[:IN_GENRE]->(g:Genre)
 RETURN g.name
 LIMIT 3","match
@@ -5162,6 +5409,15 @@ RETURN m.title","match
   $runtime == 90;
   $m has title $title;
 fetch { ""title"": $title, ""runtime"": $runtime };"
+508,What are the top 3 most voted movies in the database?,"MATCH (m:Movie)
+WHERE m.vote_count IS NOT NULL
+RETURN m.title, m.vote_count
+ORDER BY m.vote_count DESC
+LIMIT 3","match
+  $m isa movie, has title $title, has vote_count $votes;
+sort $votes desc;
+limit 3;
+fetch { ""title"": $title, ""vote_count"": $votes };"
 509,List the movies that have a budget of zero.,"MATCH (m:Movie)
 WHERE m.budget = 0
 RETURN m.title","match $m isa movie; $m has budget $budget; $m has title $title; fetch { ""title"": $title };"
@@ -5174,6 +5430,16 @@ LIMIT 3","match
   (media: $m, country: $c) isa produced_in_country;
 limit 30;
 fetch { ""country"": $cn };"
+511,Which movies have been most frequently rated by users?,"MATCH (m:Movie)<-[r:RATED]-(:User)
+RETURN m.title AS movie, count(r) AS num_ratings
+ORDER BY num_ratings DESC
+LIMIT 10","match
+  $m isa movie, has title $title_m;
+  $r (reviewer: $u, rated_media: $m) isa rated;
+reduce $count = count($r);
+sort $count desc;
+limit 10;
+fetch { ""count"": $count };"
 512,List the top 3 highest-grossing movies of 1995.,"MATCH (m:Movie)
 WHERE m.release_date STARTS WITH '1995' AND m.revenue IS NOT NULL
 RETURN m.title, m.revenue
@@ -5437,6 +5703,19 @@ RETURN m.title, m.popularity","match
   $popularity > 15;
 fetch {
   ""title"": $title, ""popularity"": $popularity
+};"
+547,What are the top 5 movies with the smallest budget?,"MATCH (m:Movie)
+WHERE m.budget IS NOT NULL
+RETURN m.title, m.budget
+ORDER BY m.budget
+LIMIT 5","match
+  $m isa movie;
+  $m has budget $budget;
+  $m has title $title;
+sort $budget asc;
+limit 5;
+fetch {
+  ""title"": $title, ""budget"": $budget
 };"
 548,List all movies that have a runtime greater than 150 minutes.,"MATCH (m:Movie)
 WHERE m.runtime > 150
@@ -6145,6 +6424,14 @@ limit 3;
 fetch {
   ""title"": $title
 };"
+611,List the first 3 video titles that have been produced by 'Pixar Animation Studios'.,"MATCH (v:Video)-[:PRODUCED_BY]->(c:ProductionCompany {name: 'Pixar Animation Studios'})
+RETURN v.title
+LIMIT 3","match
+  $v isa video, has title $title;
+  $pc isa production_company, has production_company_name ""Pixar Animation Studios"";
+  (media: $v, producer: $pc) isa produced_by;
+limit 3;
+fetch { ""title"": $title };"
 612,List the first 3 adult films with a tagline containing the word 'sex'.,"MATCH (a:Adult)
 WHERE a.tagline CONTAINS 'sex'
 RETURN a.title, a.tagline
@@ -6241,6 +6528,14 @@ limit 3;
 fetch {
   ""title"": $title, ""profit"": $budget, ""revenue"": $revenue
 };"
+620,List the first 3 genres that are accessed by the 'Ultimate' package.,"MATCH (p:Package {name: 'Ultimate'})-[:PROVIDES_ACCESS_TO]->(g:Genre)
+RETURN g.name
+LIMIT 3","match
+  $p isa package, has package_name ""Ultimate"";
+  (package: $p, genre: $g) isa provides_access_to;
+  $g has genre_name $name;
+limit 3;
+fetch { ""name"": $name };"
 621,List the first 3 movies that were rated exactly 5 stars by any user.,"MATCH (m:Movie)<-[r:RATED]-(u:User)
 WHERE r.rating = 5.0
 RETURN m.title
@@ -6252,6 +6547,19 @@ LIMIT 3","match
 limit 3;
 fetch {
   ""title"": $title_m, ""rating"": $rating
+};"
+623,What are the top 5 movies with the smallest runtime?,"MATCH (m:Movie)
+WHERE m.runtime IS NOT NULL
+RETURN m.title, m.runtime
+ORDER BY m.runtime
+LIMIT 5","match
+  $m isa movie;
+  $m has runtime $runtime;
+  $m has title $title;
+sort $runtime asc;
+limit 5;
+fetch {
+  ""title"": $title, ""runtime"": $runtime
 };"
 624,List the first 3 genres that have movies with no keywords associated.,"MATCH (g:Genre)
 WHERE NOT EXISTS {
@@ -6380,6 +6688,18 @@ LIMIT 3","match
 sort $r desc;
 limit 50;
 fetch { ""title"": $t, ""rating"": $r };"
+635,What are the top 5 oldest movies in the database?,"MATCH (m:Movie)
+RETURN m.title, m.release_date
+ORDER BY m.release_date
+LIMIT 5","match
+  $m isa movie;
+  $m has title $title;
+  $m has release_date $release_date;
+sort $release_date asc;
+limit 5;
+fetch {
+  ""title"": $title, ""release_date"": $release_date
+};"
 636,List the first 3 movies with taglines containing the word 'adventure'.,"MATCH (m:Movie)
 WHERE m.tagline CONTAINS 'adventure'
 RETURN m.title, m.tagline
@@ -6404,6 +6724,18 @@ limit 3;
 fetch {
   ""title"": $title, ""average_vote"": $average_vote
 };"
+638,List the first 3 genres that have movies with no keywords associated.,"MATCH (g:Genre)
+WHERE NOT EXISTS {
+  (g)<-[:IN_GENRE]-(:Movie)-[:HAS_KEYWORD]->(:Keyword)
+}
+RETURN g.name
+LIMIT 3","match
+  $g isa genre, has genre_name $name;
+  (media: $m, genre: $g) isa in_genre;
+  $m isa movie;
+  not { (media: $m, keyword: $k) isa has_keyword; };
+limit 3;
+fetch { ""name"": $name };"
 639,List the first 3 countries that have produced the most adult films.,"MATCH (c:Country)<-[:PRODUCED_IN_COUNTRY]-(a:Adult)
 RETURN c.name AS country, count(a) AS adultFilmCount
 ORDER BY adultFilmCount DESC
@@ -6458,6 +6790,17 @@ limit 3;
 fetch {
   ""count"": $count
 };"
+643,What are the top 5 countries by the number of videos produced there?,"MATCH (c:Country)<-[:PRODUCED_IN_COUNTRY]-(v:Video)
+RETURN c.name AS country, count(v) AS videoCount
+ORDER BY videoCount DESC
+LIMIT 5","match
+  $c isa country, has country_name $name_c;
+  (media: $v, country: $c) isa produced_in_country;
+  $v isa video;
+reduce $count = count($v);
+sort $count desc;
+limit 5;
+fetch { ""count"": $count };"
 644,What are the top 5 most frequently spoken languages in videos?,"MATCH (v:Video)-[:SPOKEN_IN_LANGUAGE]->(l:Language)
 RETURN l.name AS language, count(*) AS frequency
 ORDER BY frequency DESC
@@ -6803,6 +7146,34 @@ LIMIT 3","match
   (media: $m, keyword: $k) isa has_keyword;
 limit 100;
 fetch { ""title"": $t };"
+674,List the first 3 movies with the highest number of votes.,"MATCH (m:Movie)
+WHERE m.vote_count IS NOT NULL
+RETURN m.title, m.vote_count
+ORDER BY m.vote_count DESC
+LIMIT 3","match
+  $m isa movie;
+  $m has vote_count $vote_count;
+  $m has title $title;
+sort $vote_count desc;
+limit 3;
+fetch {
+  ""title"": $title, ""vote_count"": $vote_count
+};"
+675,What are the top 5 movies with the lowest revenue and are still in 'Released' status?,"MATCH (m:Movie)
+WHERE m.status = 'Released' AND m.revenue IS NOT NULL
+RETURN m.title, m.revenue
+ORDER BY m.revenue
+LIMIT 5","match
+  $m isa movie;
+  $m has status $status;
+  $m has revenue $revenue;
+  $m has title $title;
+  $status == ""Released"";
+sort $revenue asc;
+limit 5;
+fetch {
+  ""title"": $title, ""revenue"": $revenue
+};"
 676,Which 3 movies have the longest runtime and are in the 'Released' status?,"MATCH (m:Movie)
 WHERE m.status = 'Released'
 RETURN m.title, m.runtime
@@ -7549,6 +7920,17 @@ limit 3;
 fetch {
   ""title"": $title_m
 };"
+735,What are the top 3 collections with the most movies included?,"MATCH (c:Collection)<-[:IN_COLLECTION]-(m:Movie)
+RETURN c.name AS collection, count(m) AS num_movies
+ORDER BY num_movies DESC
+LIMIT 3","match
+  $c isa collection, has collection_name $name_c;
+  (media: $m, collection: $c) isa in_collection;
+  $m isa movie;
+reduce $count = count($m);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
 736,List the first 3 movies that are part of a collection and have a runtime less than 90 minutes.,"MATCH (m:Movie)-[:IN_COLLECTION]->(:Collection)
 WHERE m.runtime < 90
 RETURN m.title, m.runtime
@@ -7561,6 +7943,14 @@ limit 3;
 fetch {
   ""title"": $title, ""runtime"": $runtime
 };"
+737,Which 3 packages have the highest price?,"MATCH (p:Package)
+RETURN p.name AS package, p.price AS price
+ORDER BY p.price DESC
+LIMIT 3","match
+  $p isa package, has package_name $name, has package_price $price;
+sort $price desc;
+limit 3;
+fetch { ""package"": $name, ""price"": $price };"
 738,List the first 3 videos that have a specific keyword 'action' and are in the 'Released' status.,"MATCH (v:Video)-[:HAS_KEYWORD]->(k:Keyword {name: 'action'})
 WHERE v.status = 'Released'
 RETURN v.title, v.release_date, v.popularity
@@ -7579,6 +7969,21 @@ limit 3;
 fetch {
   ""title"": $title_v, ""release_date"": $release_date_v, ""popularity"": $popularity_v
 };"
+739,What are the top 5 adult films with the lowest vote count and are still in the 'Released' status?,"MATCH (a:Adult)
+WHERE a.status = 'Released'
+RETURN a.title, a.vote_count
+ORDER BY a.vote_count
+LIMIT 5","match
+  $a isa adult;
+  $a has status $status;
+  $a has title $title;
+  $a has vote_count $vote_count;
+  $status == ""Released"";
+sort $vote_count asc;
+limit 5;
+fetch {
+  ""title"": $title, ""vote_count"": $vote_count
+};"
 740,List the first 3 movies that have an original language of 'es' and are in the 'Released' status.,"MATCH (m:Movie)
 WHERE m.original_language = 'es' AND m.status = 'Released'
 RETURN m.title
@@ -7591,6 +7996,19 @@ limit 3;
 fetch {
   ""title"": $title
 };"
+741,Which 3 genres are most commonly associated with videos that have a budget over 100000 USD?,"MATCH (v:Video)-[:IN_GENRE]->(g:Genre)
+WHERE v.budget > 100000
+RETURN g.name AS genre, count(*) AS frequency
+ORDER BY frequency DESC
+LIMIT 3","match
+  $v isa video, has budget $budget;
+  $budget > 100000;
+  (media: $v, genre: $g) isa in_genre;
+  $g has genre_name $name_g;
+reduce $count = count($v);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
 743,What are the first 5 packages that provide access to the genre 'Drama'?,"MATCH (p:Package)-[:PROVIDES_ACCESS_TO]->(g:Genre {name: 'Drama'})
 RETURN p.name AS package
 LIMIT 5","match
@@ -7996,6 +8414,17 @@ limit 3;
 fetch {
   ""avg"": $avg
 };"
+774,List the first 3 movies that have been rated by the highest number of users.,"MATCH (m:Movie)<-[r:RATED]-(:User)
+WITH m, count(r) AS numRatings
+ORDER BY numRatings DESC
+LIMIT 3
+RETURN m.title AS movie, numRatings","match
+  $m isa movie, has title $title_m;
+  $r (reviewer: $u, rated_media: $m) isa rated;
+reduce $count = count($r);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
 775,What are the top 5 genres with the most movies having a runtime of less than 90 minutes?,"MATCH (g:Genre)<-[:IN_GENRE]-(m:Movie)
 WHERE m.runtime < 90
 RETURN g.name AS genre, count(m) AS numMovies
@@ -8023,6 +8452,31 @@ limit 3;
 fetch {
   ""count"": $count
 };"
+777,Which 3 languages are most commonly found in movies with a poster path featuring '/9'?,"MATCH (m:Movie)
+WHERE m.poster_path CONTAINS '/9'
+WITH m
+MATCH (m)-[:SPOKEN_IN_LANGUAGE]->(l:Language)
+RETURN l.name AS language, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","match
+  $m isa movie, has poster_path $path;
+  $path like "".*/9.*"";
+  (media: $m, language: $l) isa spoken_in_language;
+  $l has language_name $name_l;
+reduce $count = count($m);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
+778,List the first 3 countries where movies with an average vote above 8 were produced.,"MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(c:Country)
+WHERE m.average_vote > 8
+RETURN DISTINCT c.name
+LIMIT 3","match
+  $m isa movie, has average_vote $vote;
+  $vote > 8;
+  (media: $m, country: $c) isa produced_in_country;
+  $c has country_name $name;
+limit 3;
+fetch { ""name"": $name };"
 779,What are the top 3 highest budget movies that have a poster path ending in 'jpg'?,"MATCH (m:Movie)
 WHERE m.poster_path ENDS WITH 'jpg' AND m.budget IS NOT NULL
 RETURN m.title, m.budget
@@ -8228,6 +8682,19 @@ limit 3;
 fetch {
   ""name"": $person_name_p
 };"
+797,List the first 3 countries where the most English language movies are produced.,"MATCH (m:Movie)-[:ORIGINAL_LANGUAGE]->(:Language {name: 'English'})-[:PRODUCED_IN_COUNTRY]->(c:Country)
+RETURN c.name AS country, count(*) AS englishMovieCount
+ORDER BY englishMovieCount DESC
+LIMIT 3","match
+  $m isa movie;
+  (media: $m, language: $l) isa original_language;
+  $l has language_name ""English"";
+  (media: $m, country: $c) isa produced_in_country;
+  $c has country_name $name_c;
+reduce $count = count($m);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
 798,Which 3 production companies have produced movies with the highest average popularity?,"MATCH (c:ProductionCompany)<-[:PRODUCED_BY]-(m:Movie)
 RETURN c.name AS company, avg(m.popularity) AS avg_popularity
 ORDER BY avg_popularity DESC
@@ -8504,6 +8971,18 @@ LIMIT 5","match
   (media: $m, genre: $g) isa in_genre;
 limit 50;
 fetch { ""genre"": $gn };"
+819,List the first 3 genres of movies with the highest average vote count.,"MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)
+WITH g, avg(m.vote_count) AS avg_votes
+ORDER BY avg_votes DESC
+LIMIT 3
+RETURN g.name AS genre, avg_votes","match
+  $m isa movie, has vote_count $votes;
+  (media: $m, genre: $g) isa in_genre;
+  $g has genre_name $name_g;
+reduce $avg = mean($votes);
+sort $avg desc;
+limit 3;
+fetch { ""avg"": $avg };"
 820,What are the top 3 highest revenue adult films?,"MATCH (a:Adult)
 WHERE a.revenue IS NOT NULL
 RETURN a.title, a.revenue
@@ -8586,6 +9065,21 @@ limit 3;
 fetch {
   ""name"": $person_name_p
 };"
+826,Which 3 languages are spoken in the most films with a poster featuring '/rh'?,"MATCH (m:Movie)
+WHERE m.poster_path CONTAINS '/rh'
+WITH m
+MATCH (m)-[:SPOKEN_IN_LANGUAGE]->(l:Language)
+RETURN l.name AS language, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","match
+  $m isa movie, has poster_path $path;
+  $path like "".*/rh.*"";
+  (media: $m, language: $l) isa spoken_in_language;
+  $l has language_name $name_l;
+reduce $count = count($m);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
 827,List the first 3 genres of movies with the lowest average revenue.,"MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)
 WITH g, avg(m.revenue) AS avg_revenue
 ORDER BY avg_revenue
@@ -8834,6 +9328,18 @@ LIMIT 3","match
   $av < 4;
 limit 30;
 fetch { ""language"": $ln };"
+848,List the first 3 movies with the highest number of directors.,"MATCH (m:Movie)<-[:CREW_FOR]-(p:Person)
+WHERE p.job = 'Director'
+WITH m, count(p) AS num_directors
+ORDER BY num_directors DESC
+RETURN m.title AS movie, num_directors
+LIMIT 3","match
+  $m isa movie, has title $title_m;
+  $crew (crew_member: $p, film: $m) isa crew_for, has job ""Director"";
+reduce $count = count($p);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
 849,What are the top 5 production companies with the most movies featuring a runtime over 150 minutes?,"MATCH (c:ProductionCompany)<-[:PRODUCED_BY]-(m:Movie)
 WHERE m.runtime > 150
 WITH c, count(m) AS num_movies
@@ -8895,6 +9401,19 @@ limit 3;
 fetch {
   ""count"": $count
 };"
+854,What are the top 5 genres with the most movies having a poster path that starts with '/rh'?,"MATCH (g:Genre)<-[:IN_GENRE]-(m:Movie)
+WHERE m.poster_path STARTS WITH '/rh'
+RETURN g.name AS genre, count(m) AS movie_count
+ORDER BY movie_count DESC
+LIMIT 5","match
+  $m isa movie, has poster_path $path;
+  $path like ""/rh.*"";
+  (media: $m, genre: $g) isa in_genre;
+  $g has genre_name $name_g;
+reduce $count = count($m);
+sort $count desc;
+limit 5;
+fetch { ""count"": $count };"
 856,Which 3 languages are most common in movies with a revenue over $200 million?,"MATCH (m:Movie)-[:SPOKEN_IN_LANGUAGE]->(l:Language)
 WHERE m.revenue > 200000000
 RETURN l.name AS language, count(*) AS count
@@ -9605,522 +10124,3 @@ limit 5;
 fetch {
   ""title"": $title_m, ""popularity"": $popularity_m
 };"
-33,What are the top 5 movies with the shortest runtime?,"MATCH (m:Movie)
-WHERE m.runtime IS NOT NULL
-RETURN m.title, m.runtime
-ORDER BY m.runtime
-LIMIT 5","match
-  $m isa movie;
-  $m has runtime $runtime;
-  $m has title $title;
-sort $runtime asc;
-limit 5;
-fetch {
-  ""title"": $title, ""runtime"": $runtime
-};"
-37,What are the top 5 movies with the lowest revenue?,"MATCH (m:Movie)
-WHERE m.revenue IS NOT NULL
-RETURN m.title, m.revenue
-ORDER BY m.revenue
-LIMIT 5","match
-  $m isa movie;
-  $m has revenue $revenue;
-  $m has title $title;
-sort $revenue asc;
-limit 5;
-fetch {
-  ""title"": $title, ""revenue"": $revenue
-};"
-71,List the top 3 movies with the shortest runtime.,"MATCH (m:Movie)
-WHERE m.runtime IS NOT NULL
-RETURN m.title, m.runtime
-ORDER BY m.runtime
-LIMIT 3","match
-  $m isa movie;
-  $m has runtime $runtime;
-  $m has title $title;
-sort $runtime asc;
-limit 3;
-fetch {
-  ""title"": $title, ""runtime"": $runtime
-};"
-77,Display the top 3 movies with the least popularity.,"MATCH (m:Movie)
-RETURN m.title, m.popularity
-ORDER BY m.popularity
-LIMIT 3","match
-  $m isa movie;
-  $m has title $title;
-  $m has popularity $popularity;
-sort $popularity asc;
-limit 3;
-fetch {
-  ""title"": $title, ""popularity"": $popularity
-};"
-82,Display the top 5 movies with the lowest average vote.,"MATCH (m:Movie)
-WHERE m.average_vote IS NOT NULL
-RETURN m.title, m.average_vote
-ORDER BY m.average_vote
-LIMIT 5","match
-  $m isa movie;
-  $m has average_vote $average_vote;
-  $m has title $title;
-sort $average_vote asc;
-limit 5;
-fetch {
-  ""title"": $title, ""average_vote"": $average_vote
-};"
-194,List the top 3 oldest movies in the database.,"MATCH (m:Movie)
-WHERE m.release_date IS NOT NULL
-RETURN m.title, m.release_date
-ORDER BY m.release_date
-LIMIT 3","match
-  $m isa movie;
-  $m has release_date $release_date;
-  $m has title $title;
-sort $release_date asc;
-limit 3;
-fetch {
-  ""title"": $title, ""release_date"": $release_date
-};"
-243,What are the top 5 adult films with the highest number of votes?,"MATCH (a:Adult)
-WHERE a.vote_count IS NOT NULL
-RETURN a.title, a.vote_count
-ORDER BY a.vote_count DESC
-LIMIT 5","match
-  $a isa adult;
-  $a has vote_count $vote_count;
-  $a has title $title;
-sort $vote_count desc;
-limit 5;
-fetch {
-  ""title"": $title, ""vote_count"": $vote_count
-};"
-250,Name the top 5 oldest movies in the database.,"MATCH (m:Movie)
-WHERE m.release_date IS NOT NULL
-RETURN m.title, m.release_date
-ORDER BY m.release_date
-LIMIT 5","match
-  $m isa movie;
-  $m has release_date $release_date;
-  $m has title $title;
-sort $release_date asc;
-limit 5;
-fetch {
-  ""title"": $title, ""release_date"": $release_date
-};"
-256,List the top 5 movies that made the least revenue.,"MATCH (m:Movie)
-WHERE m.revenue IS NOT NULL
-RETURN m.title, m.revenue
-ORDER BY m.revenue
-LIMIT 5","match
-  $m isa movie;
-  $m has revenue $revenue;
-  $m has title $title;
-sort $revenue asc;
-limit 5;
-fetch {
-  ""title"": $title, ""revenue"": $revenue
-};"
-265,Which 3 movies have the least number of votes?,"MATCH (m:Movie)
-WHERE m.vote_count IS NOT NULL
-RETURN m.title, m.vote_count
-ORDER BY m.vote_count
-LIMIT 3","match
-  $m isa movie;
-  $m has vote_count $vote_count;
-  $m has title $title;
-sort $vote_count asc;
-limit 3;
-fetch {
-  ""title"": $title, ""vote_count"": $vote_count
-};"
-290,Name the top 5 adult videos with the least revenue.,"MATCH (a:Adult)
-WHERE a.revenue IS NOT NULL
-RETURN a.title, a.revenue
-ORDER BY a.revenue
-LIMIT 5","match
-  $a isa adult;
-  $a has revenue $revenue;
-  $a has title $title;
-sort $revenue asc;
-limit 5;
-fetch {
-  ""title"": $title, ""revenue"": $revenue
-};"
-311,List the top 5 videos with the least revenue.,"MATCH (v:Video)
-WHERE v.revenue IS NOT NULL
-RETURN v.title, v.revenue
-ORDER BY v.revenue
-LIMIT 5","match
-  $v isa video;
-  $v has revenue $revenue;
-  $v has title $title;
-sort $revenue asc;
-limit 5;
-fetch {
-  ""title"": $title, ""revenue"": $revenue
-};"
-395,Name the top 5 users who have given the lowest average ratings to movies.,"MATCH (u:User)-[r:RATED]->(m:Movie)
-WITH u, avg(r.rating) AS avg_rating
-ORDER BY avg_rating
-LIMIT 5
-RETURN u.id AS user_id, avg_rating","match
-  $u isa user;
-  $m isa movie;
-  $r (reviewer: $u, rated_media: $m) isa rated, has rating $rating;
-  $u has user_id $user_id_u;
-reduce $avg = mean($rating);
-sort $avg asc;
-limit 5;
-fetch {
-  ""avg"": $avg
-};"
-464,List the top 5 movies that have been part of at least one collection.,"MATCH (m:Movie)-[:IN_COLLECTION]->(:Collection)
-RETURN m.title, m.popularity
-ORDER BY m.popularity DESC
-LIMIT 5","match $m isa movie; $collection isa collection; (media: $m, collection: $collection) isa in_collection; $m has title $title; $m has popularity $popularity; sort $popularity desc; limit 5; fetch { ""title"": $title, ""popularity"": $popularity };"
-547,What are the top 5 movies with the smallest budget?,"MATCH (m:Movie)
-WHERE m.budget IS NOT NULL
-RETURN m.title, m.budget
-ORDER BY m.budget
-LIMIT 5","match
-  $m isa movie;
-  $m has budget $budget;
-  $m has title $title;
-sort $budget asc;
-limit 5;
-fetch {
-  ""title"": $title, ""budget"": $budget
-};"
-623,What are the top 5 movies with the smallest runtime?,"MATCH (m:Movie)
-WHERE m.runtime IS NOT NULL
-RETURN m.title, m.runtime
-ORDER BY m.runtime
-LIMIT 5","match
-  $m isa movie;
-  $m has runtime $runtime;
-  $m has title $title;
-sort $runtime asc;
-limit 5;
-fetch {
-  ""title"": $title, ""runtime"": $runtime
-};"
-635,What are the top 5 oldest movies in the database?,"MATCH (m:Movie)
-RETURN m.title, m.release_date
-ORDER BY m.release_date
-LIMIT 5","match
-  $m isa movie;
-  $m has title $title;
-  $m has release_date $release_date;
-sort $release_date asc;
-limit 5;
-fetch {
-  ""title"": $title, ""release_date"": $release_date
-};"
-674,List the first 3 movies with the highest number of votes.,"MATCH (m:Movie)
-WHERE m.vote_count IS NOT NULL
-RETURN m.title, m.vote_count
-ORDER BY m.vote_count DESC
-LIMIT 3","match
-  $m isa movie;
-  $m has vote_count $vote_count;
-  $m has title $title;
-sort $vote_count desc;
-limit 3;
-fetch {
-  ""title"": $title, ""vote_count"": $vote_count
-};"
-675,What are the top 5 movies with the lowest revenue and are still in 'Released' status?,"MATCH (m:Movie)
-WHERE m.status = 'Released' AND m.revenue IS NOT NULL
-RETURN m.title, m.revenue
-ORDER BY m.revenue
-LIMIT 5","match
-  $m isa movie;
-  $m has status $status;
-  $m has revenue $revenue;
-  $m has title $title;
-  $status == ""Released"";
-sort $revenue asc;
-limit 5;
-fetch {
-  ""title"": $title, ""revenue"": $revenue
-};"
-739,What are the top 5 adult films with the lowest vote count and are still in the 'Released' status?,"MATCH (a:Adult)
-WHERE a.status = 'Released'
-RETURN a.title, a.vote_count
-ORDER BY a.vote_count
-LIMIT 5","match
-  $a isa adult;
-  $a has status $status;
-  $a has title $title;
-  $a has vote_count $vote_count;
-  $status == ""Released"";
-sort $vote_count asc;
-limit 5;
-fetch {
-  ""title"": $title, ""vote_count"": $vote_count
-};"
-143,What are the original languages for the top 5 movies based on average vote?,"MATCH (m:Movie)-[:ORIGINAL_LANGUAGE]->(l:Language)
-WITH m, l
-ORDER BY m.average_vote DESC
-LIMIT 5
-RETURN m.title AS movie, l.name AS original_language","match
-  $m isa movie, has title $title, has average_vote $vote;
-  (media: $m, language: $l) isa original_language;
-  $l has language_name $lang_name;
-sort $vote desc;
-limit 5;
-fetch { ""movie"": $title, ""original_language"": $lang_name };"
-255,Which 3 movies have the highest average vote?,"MATCH (m:Movie)
-WHERE m.average_vote IS NOT NULL
-RETURN m.title, m.average_vote
-ORDER BY m.average_vote DESC
-LIMIT 3","match
-  $m isa movie, has title $title, has average_vote $vote;
-sort $vote desc;
-limit 3;
-fetch { ""title"": $title, ""average_vote"": $vote };"
-508,What are the top 3 most voted movies in the database?,"MATCH (m:Movie)
-WHERE m.vote_count IS NOT NULL
-RETURN m.title, m.vote_count
-ORDER BY m.vote_count DESC
-LIMIT 3","match
-  $m isa movie, has title $title, has vote_count $votes;
-sort $votes desc;
-limit 3;
-fetch { ""title"": $title, ""vote_count"": $votes };"
-638,List the first 3 genres that have movies with no keywords associated.,"MATCH (g:Genre)
-WHERE NOT EXISTS {
-  (g)<-[:IN_GENRE]-(:Movie)-[:HAS_KEYWORD]->(:Keyword)
-}
-RETURN g.name
-LIMIT 3","match
-  $g isa genre, has genre_name $name;
-  (media: $m, genre: $g) isa in_genre;
-  $m isa movie;
-  not { (media: $m, keyword: $k) isa has_keyword; };
-limit 3;
-fetch { ""name"": $name };"
-737,Which 3 packages have the highest price?,"MATCH (p:Package)
-RETURN p.name AS package, p.price AS price
-ORDER BY p.price DESC
-LIMIT 3","match
-  $p isa package, has package_name $name, has package_price $price;
-sort $price desc;
-limit 3;
-fetch { ""package"": $name, ""price"": $price };"
-778,List the first 3 countries where movies with an average vote above 8 were produced.,"MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(c:Country)
-WHERE m.average_vote > 8
-RETURN DISTINCT c.name
-LIMIT 3","match
-  $m isa movie, has average_vote $vote;
-  $vote > 8;
-  (media: $m, country: $c) isa produced_in_country;
-  $c has country_name $name;
-limit 3;
-fetch { ""name"": $name };"
-110,What are the top 5 movies with the most user ratings?,"MATCH (m:Movie)<-[r:RATED]-(:User)
-RETURN m.title, count(r) AS num_ratings
-ORDER BY num_ratings DESC
-LIMIT 5","match
-  $m isa movie, has title $title_m;
-  $r (reviewer: $u, rated_media: $m) isa rated;
-reduce $count = count($r);
-sort $count desc;
-limit 5;
-fetch { ""count"": $count };"
-118,Who are the first 3 actors in the cast list of 'Toy Story'?,"MATCH (m:Movie {title: 'Toy Story'})<-[:CAST_FOR]-(p:Person)
-RETURN p.name
-ORDER BY p.id
-LIMIT 3","match
-  $m isa movie, has title ""Toy Story"";
-  $c (actor: $p, film: $m) isa cast_for, has cast_order $order;
-  $p has person_name $name;
-sort $order asc;
-limit 3;
-fetch { ""name"": $name };"
-126,What are the top 3 countries by the number of adult films produced?,"MATCH (c:Country)<-[:PRODUCED_IN_COUNTRY]-(a:Adult)
-RETURN c.name AS country, count(a) AS adultFilmCount
-ORDER BY adultFilmCount DESC
-LIMIT 3","match
-  $c isa country, has country_name $name_c;
-  (media: $a, country: $c) isa produced_in_country;
-  $a isa adult;
-reduce $count = count($a);
-sort $count desc;
-limit 3;
-fetch { ""count"": $count };"
-411,Name the top 3 directors who have worked on movies with an average vote greater than 7.5.,"MATCH (p:Person)-[:CREW_FOR {job: 'Director'}]->(m:Movie)
-WHERE m.average_vote > 7.5
-WITH p, count(m) AS num_movies, avg(m.average_vote) AS avg_rating
-ORDER BY avg_rating DESC
-LIMIT 3
-RETURN p.name AS director, num_movies, avg_rating","match
-  $p isa person, has person_name $name_p;
-  $crew (crew_member: $p, film: $m) isa crew_for, has job ""Director"";
-  $m isa movie, has average_vote $vote;
-  $vote > 7.5;
-reduce $count = count($m);
-sort $count desc;
-limit 3;
-fetch { ""count"": $count };"
-511,Which movies have been most frequently rated by users?,"MATCH (m:Movie)<-[r:RATED]-(:User)
-RETURN m.title AS movie, count(r) AS num_ratings
-ORDER BY num_ratings DESC
-LIMIT 10","match
-  $m isa movie, has title $title_m;
-  $r (reviewer: $u, rated_media: $m) isa rated;
-reduce $count = count($r);
-sort $count desc;
-limit 10;
-fetch { ""count"": $count };"
-611,List the first 3 video titles that have been produced by 'Pixar Animation Studios'.,"MATCH (v:Video)-[:PRODUCED_BY]->(c:ProductionCompany {name: 'Pixar Animation Studios'})
-RETURN v.title
-LIMIT 3","match
-  $v isa video, has title $title;
-  $pc isa production_company, has production_company_name ""Pixar Animation Studios"";
-  (media: $v, producer: $pc) isa produced_by;
-limit 3;
-fetch { ""title"": $title };"
-620,List the first 3 genres that are accessed by the 'Ultimate' package.,"MATCH (p:Package {name: 'Ultimate'})-[:PROVIDES_ACCESS_TO]->(g:Genre)
-RETURN g.name
-LIMIT 3","match
-  $p isa package, has package_name ""Ultimate"";
-  (package: $p, genre: $g) isa provides_access_to;
-  $g has genre_name $name;
-limit 3;
-fetch { ""name"": $name };"
-643,What are the top 5 countries by the number of videos produced there?,"MATCH (c:Country)<-[:PRODUCED_IN_COUNTRY]-(v:Video)
-RETURN c.name AS country, count(v) AS videoCount
-ORDER BY videoCount DESC
-LIMIT 5","match
-  $c isa country, has country_name $name_c;
-  (media: $v, country: $c) isa produced_in_country;
-  $v isa video;
-reduce $count = count($v);
-sort $count desc;
-limit 5;
-fetch { ""count"": $count };"
-735,What are the top 3 collections with the most movies included?,"MATCH (c:Collection)<-[:IN_COLLECTION]-(m:Movie)
-RETURN c.name AS collection, count(m) AS num_movies
-ORDER BY num_movies DESC
-LIMIT 3","match
-  $c isa collection, has collection_name $name_c;
-  (media: $m, collection: $c) isa in_collection;
-  $m isa movie;
-reduce $count = count($m);
-sort $count desc;
-limit 3;
-fetch { ""count"": $count };"
-741,Which 3 genres are most commonly associated with videos that have a budget over 100000 USD?,"MATCH (v:Video)-[:IN_GENRE]->(g:Genre)
-WHERE v.budget > 100000
-RETURN g.name AS genre, count(*) AS frequency
-ORDER BY frequency DESC
-LIMIT 3","match
-  $v isa video, has budget $budget;
-  $budget > 100000;
-  (media: $v, genre: $g) isa in_genre;
-  $g has genre_name $name_g;
-reduce $count = count($v);
-sort $count desc;
-limit 3;
-fetch { ""count"": $count };"
-774,List the first 3 movies that have been rated by the highest number of users.,"MATCH (m:Movie)<-[r:RATED]-(:User)
-WITH m, count(r) AS numRatings
-ORDER BY numRatings DESC
-LIMIT 3
-RETURN m.title AS movie, numRatings","match
-  $m isa movie, has title $title_m;
-  $r (reviewer: $u, rated_media: $m) isa rated;
-reduce $count = count($r);
-sort $count desc;
-limit 3;
-fetch { ""count"": $count };"
-777,Which 3 languages are most commonly found in movies with a poster path featuring '/9'?,"MATCH (m:Movie)
-WHERE m.poster_path CONTAINS '/9'
-WITH m
-MATCH (m)-[:SPOKEN_IN_LANGUAGE]->(l:Language)
-RETURN l.name AS language, count(*) AS count
-ORDER BY count DESC
-LIMIT 3","match
-  $m isa movie, has poster_path $path;
-  $path like "".*/9.*"";
-  (media: $m, language: $l) isa spoken_in_language;
-  $l has language_name $name_l;
-reduce $count = count($m);
-sort $count desc;
-limit 3;
-fetch { ""count"": $count };"
-797,List the first 3 countries where the most English language movies are produced.,"MATCH (m:Movie)-[:ORIGINAL_LANGUAGE]->(:Language {name: 'English'})-[:PRODUCED_IN_COUNTRY]->(c:Country)
-RETURN c.name AS country, count(*) AS englishMovieCount
-ORDER BY englishMovieCount DESC
-LIMIT 3","match
-  $m isa movie;
-  (media: $m, language: $l) isa original_language;
-  $l has language_name ""English"";
-  (media: $m, country: $c) isa produced_in_country;
-  $c has country_name $name_c;
-reduce $count = count($m);
-sort $count desc;
-limit 3;
-fetch { ""count"": $count };"
-819,List the first 3 genres of movies with the highest average vote count.,"MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)
-WITH g, avg(m.vote_count) AS avg_votes
-ORDER BY avg_votes DESC
-LIMIT 3
-RETURN g.name AS genre, avg_votes","match
-  $m isa movie, has vote_count $votes;
-  (media: $m, genre: $g) isa in_genre;
-  $g has genre_name $name_g;
-reduce $avg = mean($votes);
-sort $avg desc;
-limit 3;
-fetch { ""avg"": $avg };"
-826,Which 3 languages are spoken in the most films with a poster featuring '/rh'?,"MATCH (m:Movie)
-WHERE m.poster_path CONTAINS '/rh'
-WITH m
-MATCH (m)-[:SPOKEN_IN_LANGUAGE]->(l:Language)
-RETURN l.name AS language, count(*) AS count
-ORDER BY count DESC
-LIMIT 3","match
-  $m isa movie, has poster_path $path;
-  $path like "".*/rh.*"";
-  (media: $m, language: $l) isa spoken_in_language;
-  $l has language_name $name_l;
-reduce $count = count($m);
-sort $count desc;
-limit 3;
-fetch { ""count"": $count };"
-848,List the first 3 movies with the highest number of directors.,"MATCH (m:Movie)<-[:CREW_FOR]-(p:Person)
-WHERE p.job = 'Director'
-WITH m, count(p) AS num_directors
-ORDER BY num_directors DESC
-RETURN m.title AS movie, num_directors
-LIMIT 3","match
-  $m isa movie, has title $title_m;
-  $crew (crew_member: $p, film: $m) isa crew_for, has job ""Director"";
-reduce $count = count($p);
-sort $count desc;
-limit 3;
-fetch { ""count"": $count };"
-854,What are the top 5 genres with the most movies having a poster path that starts with '/rh'?,"MATCH (g:Genre)<-[:IN_GENRE]-(m:Movie)
-WHERE m.poster_path STARTS WITH '/rh'
-RETURN g.name AS genre, count(m) AS movie_count
-ORDER BY movie_count DESC
-LIMIT 5","match
-  $m isa movie, has poster_path $path;
-  $path like ""/rh.*"";
-  (media: $m, genre: $g) isa in_genre;
-  $g has genre_name $name_g;
-reduce $count = count($m);
-sort $count desc;
-limit 5;
-fetch { ""count"": $count };"
-475,Name the first 3 movies that have a poster path ending in '/pQFoyx7rp09CJTAb932F2g8Nlho.jpg'.,"MATCH (m:Movie)
-WHERE m.poster_path ENDS WITH '/pQFoyx7rp09CJTAb932F2g8Nlho.jpg'
-RETURN m.title
-LIMIT 3","match
-  $m isa movie, has title $title, has poster_path $path;
-  $path like "".*pQFoyx7rp09CJTAb932F2g8Nlho.jpg"";
-limit 3;
-fetch { ""title"": $title };"
