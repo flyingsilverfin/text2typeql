@@ -169,20 +169,56 @@ After conversion, review queries to verify TypeQL matches the English question:
 | "tweets from followers" | Tweets by Me | Tweets by users who follow Me |
 | OPTIONAL MATCH | Require relation | Use `try { relation; }` |
 
-## File Structure
+## File Structure & Workflow
+
+### Output Files (per database)
+
+Each `output/<database>/` folder contains:
+
+| File | Purpose | Format |
+|------|---------|--------|
+| `schema.tql` | TypeQL schema definition | TypeQL |
+| `neo4j_schema.json` | Original Neo4j schema | JSON |
+| `queries.csv` | **Successfully validated** TypeQL queries | `original_index,question,cypher,typeql` |
+| `failed.csv` | Queries that **cannot be converted** (TypeQL limitations) | `original_index,question,cypher,error` |
+| `failed_review.csv` | Queries that **failed semantic review** (temporary) | `original_index,question,cypher,typeql,review_reason` |
+
+### Workflow Rules
+
+1. **queries.csv** - Only contains queries that:
+   - Successfully converted from Cypher to TypeQL
+   - Validated against TypeDB (no syntax/type errors)
+   - Passed semantic review (TypeQL matches question intent)
+
+2. **failed.csv** - Contains queries that:
+   - Cannot be converted due to TypeQL limitations (size(), collect(), etc.)
+   - Have schema mismatches (Cypher uses attributes not in TypeQL schema)
+   - Failed validation after multiple conversion attempts
+
+3. **failed_review.csv** - Temporary file for semantic review:
+   - Created when reviewing queries for intent matching
+   - After fixing, queries move to either `queries.csv` (success) or `failed.csv` (unfixable)
+   - Should be empty or deleted when review is complete
+
+### Retry Workflow
+
+When retrying a failed or semantically-failed query:
+1. Attempt conversion using `/convert-query` skill
+2. Validate against TypeDB
+3. If **success**: Move to `queries.csv`, remove from source file
+4. If **failure**: Move to `failed.csv` with error description
+
+### Scripts
 
 ```
-output/<database>/
-  schema.tql          # TypeQL schema
-  neo4j_schema.json   # Original Neo4j schema
-  queries.csv         # Successful conversions (original_index,question,cypher,typeql)
-  failed.csv          # Failed - TypeDB limitations (original_index,question,cypher,error)
-  failed_review.csv   # Failed semantic review (original_index,question,cypher,typeql,review_reason)
-
 scripts/
   get_query.py        # Get query by database and index
   review_helper.py    # Move queries during review
+```
 
+### Other Files
+
+```
 docs/
   semantic_review_notes.md  # Full review guidance
 
