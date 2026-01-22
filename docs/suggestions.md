@@ -277,9 +277,18 @@ fetch {
 { interacts (character1: $c); } or { interacts (character2: $c); };
 reduce $count = count($rel) groupby $comm;  # Error!
 
-# RIGHT - bind relation variable INSIDE each branch
+# ALSO WRONG - $rel inside branches is STILL scoped!
 { $rel isa interacts ($c); } or { $rel isa interacts2 ($c); };
-reduce $count = count($rel) groupby $comm;  # Works!
+reduce $count = count($rel) groupby $comm;  # $rel still scoped!
+
+# RIGHT - single type: bind outside
+$rel isa interacts ($c);
+reduce $count = count($rel) groupby $comm;  # Works
+
+# RIGHT - multiple types: use TYPE VARIABLE
+$rel isa $t ($c);
+{ $t label interacts; } or { $t label interacts1; };
+reduce $count = count($rel) groupby $comm;  # Works - $rel bound outside
 ```
 
 **Role inference - omit roles to match all possible role combinations:**

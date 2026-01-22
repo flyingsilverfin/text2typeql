@@ -176,9 +176,18 @@ Variables inside disjunction branches are **scoped** and not returned outside. T
 { interacts (character1: $c); } or { interacts (character2: $c); };
 reduce $count = count($rel) groupby $comm;  # Error: $rel undefined
 
-# RIGHT - bind relation variable, it persists outside disjunction
+# ALSO WRONG - $rel inside branches is STILL scoped!
 { $rel isa interacts ($c); } or { $rel isa interacts2 ($c); };
+reduce $count = count($rel) groupby $comm;  # $rel still scoped to branches!
+
+# RIGHT - single type: bind outside disjunction
+$rel isa interacts ($c);
 reduce $count = count($rel) groupby $comm;  # Works
+
+# RIGHT - multiple types: use TYPE VARIABLE with $rel outside
+$rel isa $t ($c);
+{ $t label interacts; } or { $t label interacts1; } or { $t label interacts2; };
+reduce $count = count($rel) groupby $comm;  # Works - $rel bound outside
 ```
 
 ### Negation (NOT)

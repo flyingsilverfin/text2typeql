@@ -146,15 +146,18 @@ $rel isa interacts ($role: $c);
 { interacts (character1: $c); } or { interacts (character2: $c); };
 reduce $count = count($rel) groupby $comm;  # Error: $rel undefined
 
-# RIGHT - bind relation variable outside disjunction
-$rel isa interacts ($c);  # $rel bound, role auto-inferred
+# ALSO WRONG - $rel inside disjunction branches is still scoped!
+{ $rel isa interacts ($c); } or { $rel isa interacts1 ($c); };
+reduce $count = count($rel) groupby $comm;  # $rel still scoped to branches
+
+# RIGHT - single relation type, bind outside disjunction
+$rel isa interacts ($c);
 reduce $count = count($rel) groupby $comm;  # Works
 
-# RIGHT - for multiple relation types, use disjunction with bound variable
-{ $rel isa interacts ($c); } or
-{ $rel isa interacts1 ($c); } or
-{ $rel isa interacts2 ($c); };
-reduce $count = count($rel) groupby $comm;  # Works
+# RIGHT - multiple relation types, use TYPE VARIABLE
+$rel isa $t ($c);
+{ $t label interacts; } or { $t label interacts1; } or { $t label interacts2; };
+reduce $count = count($rel) groupby $comm;  # Works - $rel bound outside disjunction
 ```
 
 ### Cypher → TypeQL Mapping
