@@ -1,24 +1,7 @@
 original_index,question,cypher,error
 80,List all movies that have a backdrop path available.,"MATCH (m:Movie)
 WHERE m.backdrop_path IS NOT NULL
-RETURN m.title",Query not converted - dropped during processing
-110,What are the top 5 movies with the most user ratings?,"MATCH (m:Movie)<-[r:RATED]-(:User)
-RETURN m.title, count(r) AS num_ratings
-ORDER BY num_ratings DESC
-LIMIT 5",Query not converted - dropped during processing
-118,Who are the first 3 actors in the cast list of 'Toy Story'?,"MATCH (m:Movie {title: 'Toy Story'})<-[:CAST_FOR]-(p:Person)
-RETURN p.name
-ORDER BY p.id
-LIMIT 3",TypeQL reduce clause cannot filter aggregated results (no GROUP BY + HAVING equivalent)
-126,What are the top 3 countries by the number of adult films produced?,"MATCH (c:Country)<-[:PRODUCED_IN_COUNTRY]-(a:Adult)
-RETURN c.name AS country, count(a) AS adultFilmCount
-ORDER BY adultFilmCount DESC
-LIMIT 3",TypeQL does not support size() function for string length sorting
-143,What are the original languages for the top 5 movies based on average vote?,"MATCH (m:Movie)-[:ORIGINAL_LANGUAGE]->(l:Language)
-WITH m, l
-ORDER BY m.average_vote DESC
-LIMIT 5
-RETURN m.title AS movie, l.name AS original_language",TypeQL reduce clause cannot filter aggregated results (no GROUP BY + HAVING equivalent)
+RETURN m.title",Schema mismatch: movie entity doesn't have backdrop_path attribute
 225,What are the first 5 movies that have a genre change from their original genre in a collection?,"MATCH (m:Movie)-[:IN_COLLECTION]->(c:Collection)
 WHERE EXISTS {
   (m)-[:IN_GENRE]->(g1:Genre)
@@ -28,165 +11,80 @@ WHERE EXISTS {
   }
 }
 RETURN m.title, c.name
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 5",Schema mismatch: collection doesn't have IN_GENRE relation
 228,List the first 3 movies with a backdrop path that includes '/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg'.,"MATCH (m:Movie)
 WHERE m.backdrop_path IS NOT NULL AND m.backdrop_path CONTAINS '/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg'
 RETURN m.title
-LIMIT 3",Query not converted - dropped during processing
-255,Which 3 movies have the highest average vote?,"MATCH (m:Movie)
-WHERE m.average_vote IS NOT NULL
-RETURN m.title, m.average_vote
-ORDER BY m.average_vote DESC
-LIMIT 3",TypeQL does not support size() function for string length sorting
+LIMIT 3",Schema mismatch: movie entity doesn't have backdrop_path attribute
 312,Which 3 videos have the most associated cast members?,"MATCH (v:Video)<-[:CAST_FOR]-(p:Person)
 RETURN v.title AS video, count(p) AS cast_members
 ORDER BY cast_members DESC
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3",Schema mismatch: video doesn't play cast_for:film role (only movie does)
 362,Name the top 5 movies that have been produced in more than 3 countries.,"MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(c:Country)
 WITH m, count(c) AS countryCount
 WHERE countryCount > 3
 RETURN m.title
 ORDER BY m.popularity DESC
-LIMIT 5",Query not converted - dropped during processing
-411,Name the top 3 directors who have worked on movies with an average vote greater than 7.5.,"MATCH (p:Person)-[:CREW_FOR {job: 'Director'}]->(m:Movie)
-WHERE m.average_vote > 7.5
-WITH p, count(m) AS num_movies, avg(m.average_vote) AS avg_rating
-ORDER BY avg_rating DESC
-LIMIT 3
-RETURN p.name AS director, num_movies, avg_rating",Query not converted - dropped during processing
+LIMIT 5",TypeQL doesn't support HAVING clause (filter on aggregated count)
 457,Name the first 5 movies that have been rated by at least 50 users.,"MATCH (m:Movie)<-[r:RATED]-(:User)
 WITH m, count(r) AS num_ratings
 WHERE num_ratings >= 50
 RETURN m.title
 ORDER BY num_ratings DESC
-LIMIT 5",Query not converted - dropped during processing
-475,Name the first 3 movies that have a poster path ending in '/pQFoyx7rp09CJTAb932F2g8Nlho.jpg'.,"MATCH (m:Movie)
-WHERE m.poster_path ENDS WITH '/pQFoyx7rp09CJTAb932F2g8Nlho.jpg'
-RETURN m.title
-LIMIT 3",TypeQL reduce clause cannot filter aggregated results (no GROUP BY + HAVING equivalent)
+LIMIT 5",TypeQL doesn't support HAVING clause (filter on aggregated count)
 504,Which movies have been produced in the 'United States of America' and have an adult rating?,"MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(:Country {name: 'United States of America'})
 WHERE exists {(u:User)-[:RATED]->(a:Adult)<-[:RATED]-(u)-[:RATED]->(m)} 
-RETURN m.title",Query not converted - dropped during processing
-508,What are the top 3 most voted movies in the database?,"MATCH (m:Movie)
-WHERE m.vote_count IS NOT NULL
-RETURN m.title, m.vote_count
-ORDER BY m.vote_count DESC
-LIMIT 3",TypeQL reduce clause cannot filter aggregated results (no GROUP BY + HAVING equivalent)
-511,Which movies have been most frequently rated by users?,"MATCH (m:Movie)<-[r:RATED]-(:User)
-RETURN m.title AS movie, count(r) AS num_ratings
-ORDER BY num_ratings DESC
-LIMIT 10",Query not converted - dropped during processing
+RETURN m.title",Complex nested EXISTS pattern not supported in TypeQL
 527,Which movies have a runtime longer than the average runtime of all movies?,"MATCH (m:Movie)
 WITH m, avg(m.runtime) AS avg_runtime
 WHERE m.runtime > avg_runtime
 RETURN m.title, m.runtime
-ORDER BY m.runtime DESC",Query not converted - dropped during processing
+ORDER BY m.runtime DESC",TypeQL doesn't support comparing to computed aggregate (subquery)
 594,List the first 3 users who rated the adult film titled 'Standoff'.,"MATCH (u:User)-[:RATED]->(a:Adult {title: 'Standoff'})
 RETURN u
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3",Schema mismatch: adult entity doesn't play rated:rated_media role
 607,"Which 3 production companies are associated with the most number of genres across movies, videos, and adult films?","MATCH (c:ProductionCompany)-[:PRODUCED_BY]-(m)
 WHERE m:Movie OR m:Video OR m:Adult
 WITH c, count(distinct m) AS num_genres
 RETURN c.name AS company, num_genres
 ORDER BY num_genres DESC
-LIMIT 3",Query not converted - dropped during processing
-611,List the first 3 video titles that have been produced by 'Pixar Animation Studios'.,"MATCH (v:Video)-[:PRODUCED_BY]->(c:ProductionCompany {name: 'Pixar Animation Studios'})
-RETURN v.title
-LIMIT 3",TypeQL does not support date arithmetic or duration calculations
-620,List the first 3 genres that are accessed by the 'Ultimate' package.,"MATCH (p:Package {name: 'Ultimate'})-[:PROVIDES_ACCESS_TO]->(g:Genre)
-RETURN g.name
-LIMIT 3",TypeQL does not support size() function for string length sorting
+LIMIT 3",TypeQL doesn't support multi-type union queries with aggregate
 622,Which 3 people have acted in the most number of videos?,"MATCH (p:Person)-[:CAST_FOR]->(v:Video)
 WITH p, count(v) AS videoCount
 ORDER BY videoCount DESC
 LIMIT 3
-RETURN p.name AS person, videoCount",Query not converted - dropped during processing
-638,List the first 3 genres that have movies with no keywords associated.,"MATCH (g:Genre)
-WHERE NOT EXISTS {
-  (g)<-[:IN_GENRE]-(:Movie)-[:HAS_KEYWORD]->(:Keyword)
-}
-RETURN g.name
-LIMIT 3",TypeQL does not support size() function for string length sorting
-643,What are the top 5 countries by the number of videos produced there?,"MATCH (c:Country)<-[:PRODUCED_IN_COUNTRY]-(v:Video)
-RETURN c.name AS country, count(v) AS videoCount
-ORDER BY videoCount DESC
-LIMIT 5",TypeQL does not support size() function for string length sorting
+RETURN p.name AS person, videoCount",Schema mismatch: video doesn't play cast_for:film role
 666,Which 3 adult films have been rated by the most users?,"MATCH (a:Adult)<-[r:RATED]-(u:User)
 RETURN a.title, count(r) AS num_ratings
 ORDER BY num_ratings DESC
-LIMIT 3",Query not converted - dropped during processing
-735,What are the top 3 collections with the most movies included?,"MATCH (c:Collection)<-[:IN_COLLECTION]-(m:Movie)
-RETURN c.name AS collection, count(m) AS num_movies
-ORDER BY num_movies DESC
-LIMIT 3",TypeQL does not support size() function for string length sorting
-737,Which 3 packages have the highest price?,"MATCH (p:Package)
-RETURN p.name AS package, p.price AS price
-ORDER BY p.price DESC
-LIMIT 3",TypeQL does not support size() function for string length sorting
-741,Which 3 genres are most commonly associated with videos that have a budget over 100000 USD?,"MATCH (v:Video)-[:IN_GENRE]->(g:Genre)
-WHERE v.budget > 100000
-RETURN g.name AS genre, count(*) AS frequency
-ORDER BY frequency DESC
-LIMIT 3",TypeQL does not support size() function for string length sorting
+LIMIT 3",Schema mismatch: adult entity doesn't play rated:rated_media role
 742,List the top 3 adult films that have been rated exactly 3 times.,"MATCH (a:Adult)<-[r:RATED]-(u:User)
 WITH a, count(r) AS ratingCount
 WHERE ratingCount = 3
 RETURN a.title AS title, a.release_date AS releaseDate
 ORDER BY a.popularity DESC
-LIMIT 3",Query not converted - dropped during processing
-774,List the first 3 movies that have been rated by the highest number of users.,"MATCH (m:Movie)<-[r:RATED]-(:User)
-WITH m, count(r) AS numRatings
-ORDER BY numRatings DESC
-LIMIT 3
-RETURN m.title AS movie, numRatings",Query not converted - dropped during processing
-777,Which 3 languages are most commonly found in movies with a poster path featuring '/9'?,"MATCH (m:Movie)
-WHERE m.poster_path CONTAINS '/9'
-WITH m
-MATCH (m)-[:SPOKEN_IN_LANGUAGE]->(l:Language)
-RETURN l.name AS language, count(*) AS count
-ORDER BY count DESC
-LIMIT 3",Query not converted - dropped during processing
-778,List the first 3 countries where movies with an average vote above 8 were produced.,"MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(c:Country)
-WHERE m.average_vote > 8
-RETURN DISTINCT c.name
-LIMIT 3",TypeQL does not support size() function for string length sorting
+LIMIT 3",Schema mismatch: adult entity doesn't play rated:rated_media role
 787,Who are the first 3 actors by number of roles in adult films?,"MATCH (p:Person)-[:CAST_FOR]->(a:Adult)
 WITH p, count(a) AS roles
 ORDER BY roles DESC
 LIMIT 3
-RETURN p.name AS actor, roles",Query not converted - dropped during processing
-797,List the first 3 countries where the most English language movies are produced.,"MATCH (m:Movie)-[:ORIGINAL_LANGUAGE]->(:Language {name: 'English'})-[:PRODUCED_IN_COUNTRY]->(c:Country)
-RETURN c.name AS country, count(*) AS englishMovieCount
-ORDER BY englishMovieCount DESC
-LIMIT 3",TypeQL does not support size() function for string length sorting
+RETURN p.name AS actor, roles",Schema mismatch: adult doesn't play cast_for:film role
 809,Who are the first 3 actors by number of roles in videos with a status of 'Released'?,"MATCH (p:Person)-[:CAST_FOR]->(v:Video {status: 'Released'})
 RETURN p.name AS actor, count(*) AS num_roles
 ORDER BY num_roles DESC
-LIMIT 3",Query not converted - dropped during processing
-819,List the first 3 genres of movies with the highest average vote count.,"MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)
-WITH g, avg(m.vote_count) AS avg_votes
-ORDER BY avg_votes DESC
-LIMIT 3
-RETURN g.name AS genre, avg_votes",TypeQL does not support size() function for string length sorting
-826,Which 3 languages are spoken in the most films with a poster featuring '/rh'?,"MATCH (m:Movie)
-WHERE m.poster_path CONTAINS '/rh'
-WITH m
-MATCH (m)-[:SPOKEN_IN_LANGUAGE]->(l:Language)
-RETURN l.name AS language, count(*) AS count
-ORDER BY count DESC
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3",Schema mismatch: video doesn't play cast_for:film role
 831,Who are the first 3 actors to have starred in at least 3 movies from the 'Toy Story Collection'?,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)-[:IN_COLLECTION]->(c:Collection {name: 'Toy Story Collection'})
 WITH p, count(m) AS num_movies
 WHERE num_movies >= 3
 RETURN p.name
 ORDER BY num_movies DESC
-LIMIT 3",TypeQL does not support size() function for string length sorting
+LIMIT 3",TypeQL doesn't support HAVING clause (filter on aggregated count)
 833,Who are the first 3 actors with the most roles in videos released after 2010?,"MATCH (p:Person)-[:CAST_FOR]->(v:Video)
 WHERE v.release_date > date('2010-01-01')
 WITH p, count(v) AS roles
 ORDER BY roles DESC
 LIMIT 3
-RETURN p.name AS actor, roles",Query not converted - dropped during processing
+RETURN p.name AS actor, roles",Schema mismatch: video doesn't play cast_for:film role
 843,Who are the first 3 directors with movies in at least three different genres?,"MATCH (p:Person)-[:CREW_FOR {job: 'Director'}]->(m:Movie)
 WITH p, count(distinct m.id) AS num_movies, collect(distinct m.id) AS movie_ids
 WHERE num_movies >= 3
@@ -197,34 +95,23 @@ WITH p, num_movies, collect(distinct g.name) AS genres
 WHERE size(genres) >= 3
 RETURN p.name AS director, num_movies, genres
 ORDER BY num_movies DESC
-LIMIT 3",Query not converted - dropped during processing
-848,List the first 3 movies with the highest number of directors.,"MATCH (m:Movie)<-[:CREW_FOR]-(p:Person)
-WHERE p.job = 'Director'
-WITH m, count(p) AS num_directors
-ORDER BY num_directors DESC
-RETURN m.title AS movie, num_directors
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3",TypeQL doesn't support HAVING clause (filter on aggregated count)
 853,List the first 3 actors who have appeared in at least three movies with different original languages.,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
 WITH p, count(DISTINCT m.original_language) AS num_languages
 WHERE num_languages >= 3
 RETURN p.name
-LIMIT 3",Query not converted - dropped during processing
-854,What are the top 5 genres with the most movies having a poster path that starts with '/rh'?,"MATCH (g:Genre)<-[:IN_GENRE]-(m:Movie)
-WHERE m.poster_path STARTS WITH '/rh'
-RETURN g.name AS genre, count(m) AS movie_count
-ORDER BY movie_count DESC
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 3",TypeQL doesn't support HAVING clause (filter on aggregated count)
 855,Who are the first 3 directors to have made both adult films and videos?,"MATCH (p:Person)-[:CREW_FOR]->(a:Adult), (p)-[:CREW_FOR]->(v:Video)
 WHERE a.id IS NOT NULL AND v.id IS NOT NULL
 WITH p, count(DISTINCT a) AS numAdult, count(DISTINCT v) AS numVideo
 WHERE numAdult > 0 AND numVideo > 0
 RETURN p.name
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3",Schema mismatch: adult entity doesn't play crew_for:film role
 879,What are the top 3 actors who have played in the most number of adult films?,"MATCH (p:Person)-[:CAST_FOR]->(a:Adult)
 WITH p, count(a) AS num_adult_films
 ORDER BY num_adult_films DESC
 LIMIT 3
-RETURN p.name AS actor, num_adult_films",Query not converted - dropped during processing
+RETURN p.name AS actor, num_adult_films",Schema mismatch: adult doesn't play cast_for:film role
 897,List the top 3 actors who have appeared in both movies and videos.,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
 WITH p, count(m) AS numMovies
 WHERE numMovies > 0
@@ -233,9 +120,9 @@ WITH p, numMovies, count(v) AS numVideos
 WHERE numVideos > 0
 RETURN p.name AS actor, numMovies, numVideos
 ORDER BY numMovies + numVideos DESC
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3",Schema mismatch: video doesn't play cast_for:film role
 902,"List the top 5 movies with the most diverse cast, measured by the number of different countries actors come from.","MATCH (m:Movie)<-[:CAST_FOR]-(p:Person)
 WITH m, size(collect(distinct p.country)) AS num_countries
 ORDER BY num_countries DESC
 LIMIT 5
-RETURN m.title AS movie, num_countries AS number_of_countries",Query not converted - dropped during processing
+RETURN m.title AS movie, num_countries AS number_of_countries",Schema mismatch: person entity doesn't have country attribute

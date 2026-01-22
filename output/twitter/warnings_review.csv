@@ -1,0 +1,787 @@
+original_index,question,cypher,typeql,warnings
+7,What are the URLs of the links contained in tweets from 'Neo4j'?,"MATCH (u:User {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)-[:CONTAINS]->(l:Link)
+RETURN l.url","match
+$u isa user, has screen_name ""neo4j"";
+$t isa tweet;
+$l isa link;
+posts (author: $u, content: $t);
+contains (containing_tweet: $t, contained_link: $l);
+fetch { ""url"": $l.link_url };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+13,Display tweets that use the source named 'Buffer'.,"MATCH (t:Tweet)-[:USING]->(s:Source {name: 'Buffer'})
+RETURN t","match
+$t isa tweet;
+$s isa source, has source_name ""Buffer"";
+using (tweet_content: $t, platform: $s);
+fetch { ""text"": $t.text, ""tweet_id"": $t.tweet_id, ""created_at"": $t.created_at };",wrong_return_attribute: Question asks for 'name' but not in fetch clause
+14,Find all tweets posted by 'Neo4j' between January and February 2021.,"MATCH (u:User {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)
+WHERE t.created_at >= date('2021-01-01') AND t.created_at < date('2021-03-01') 
+RETURN t","match
+$u isa user, has screen_name ""neo4j"";
+$t isa tweet, has created_at $ca;
+posts (author: $u, content: $t);
+$ca >= 2021-01-01T00:00:00;
+$ca < 2021-03-01T00:00:00;
+fetch { ""text"": $t.text, ""tweet_id"": $t.tweet_id, ""created_at"": $ca };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+15,What are the names of all hashtags used in tweets from 'Neo4j'?,"MATCH (u:User {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)-[:TAGS]->(h:Hashtag)
+RETURN DISTINCT h.name","match
+$u isa user, has screen_name ""neo4j"";
+$t isa tweet;
+$h isa hashtag;
+posts (author: $u, content: $t);
+tags (tagged_tweet: $t, tag: $h);
+fetch { ""name"": $h.hashtag_name };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+20,How many followers does the user with screen name 'neo4j' have?,"MATCH (u:User {screen_name: 'neo4j'})
+RETURN u.followers AS followers","match
+$u isa user, has screen_name ""neo4j"";
+fetch { ""followers"": $u.followers };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+21,What is the location of the user with the highest betweenness value?,"MATCH (u:User)
+WHERE u.betweenness IS NOT NULL
+RETURN u.location
+ORDER BY u.betweenness DESC
+LIMIT 1","match
+$u isa user, has betweenness $b;
+sort $b desc;
+limit 1;
+fetch { ""location"": $u.location };",wrong_return_attribute: Question asks for 'betweenness' but not in fetch clause
+27,Show the sources used by tweets that mention 'Neo4j'.,"MATCH (t:Tweet)-[:MENTIONS]->(:User {screen_name: 'neo4j'}), 
+      (t)-[:USING]->(s:Source)
+RETURN DISTINCT s.name AS source","match
+$t isa tweet;
+$u isa user, has screen_name ""neo4j"";
+$s isa source;
+mentions (source_tweet: $t, mentioned_user: $u);
+using (tweet_content: $t, platform: $s);
+fetch { ""source"": $s.source_name };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+31,Which users have more than 10000 followers and less than 15000 statuses?,"MATCH (u:User)
+WHERE u.followers > 10000 AND u.statuses < 15000
+RETURN u.screen_name AS username, u.followers AS followerCount, u.statuses AS statusesCount","match
+$u isa user, has followers $f, has statuses $s;
+$f > 10000;
+$s < 15000;
+fetch { ""username"": $u.screen_name, ""followerCount"": $f, ""statusesCount"": $s };",wrong_return_attribute: Question asks for 'followers' but not in fetch clause
+35,What are the names of the top 5 users with the highest betweenness centrality?,"MATCH (u:User)
+RETURN u.name
+ORDER BY u.betweenness DESC
+LIMIT 5","match
+$u isa user, has betweenness $b;
+sort $b desc;
+limit 5;
+fetch { ""name"": $u.name };",wrong_return_attribute: Question asks for 'betweenness' but not in fetch clause
+51,Which 3 users have the most followers among those who have interacted with Neo4j?,"MATCH (u:User)-[:INTERACTS_WITH]->(:Me {name: 'Neo4j'})
+RETURN u.screen_name AS user, u.followers AS followerCount
+ORDER BY followerCount DESC
+LIMIT 3","match
+$u isa user, has followers $f;
+$me isa me, has name ""Neo4j"";
+interacts_with (interactor: $u, target: $me);
+sort $f desc;
+limit 3;
+fetch { ""user"": $u.screen_name, ""followerCount"": $f };",wrong_return_attribute: Question asks for 'followers' but not in fetch clause
+59,List the 3 tweets by Neo4j that have been retweeted by users with more than 10000 followers.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)
+WHERE exists {
+  (tweet)<-[:RETWEETS]-(:Tweet)<-[:POSTS]-(retweeter:User)
+  WHERE retweeter.followers > 10000
+}
+RETURN tweet.text
+LIMIT 3","match
+$me isa me, has screen_name ""neo4j"";
+$tweet isa tweet;
+$retweet isa tweet;
+$retweeter isa user, has followers $f;
+posts (author: $me, content: $tweet);
+retweets (retweeting_tweet: $retweet, original_tweet: $tweet);
+posts (author: $retweeter, content: $retweet);
+$f > 10000;
+limit 3;
+fetch { ""text"": $tweet.text };",wrong_return_attribute: Question asks for 'followers' but not in fetch clause
+60,What are the names of the top 5 users with the highest betweenness?,"MATCH (u:User)
+RETURN u.name
+ORDER BY u.betweenness DESC
+LIMIT 5","match
+$u isa user, has betweenness $b;
+sort $b desc;
+limit 5;
+fetch { ""name"": $u.name };",wrong_return_attribute: Question asks for 'betweenness' but not in fetch clause
+62,Who are the top 5 users based on the number of statuses they have posted?,"MATCH (u:User)
+WHERE u.statuses IS NOT NULL
+RETURN u.screen_name, u.statuses AS status_count
+ORDER BY u.statuses DESC
+LIMIT 5","match
+$u isa user, has statuses $s;
+sort $s desc;
+limit 5;
+fetch { ""screen_name"": $u.screen_name, ""status_count"": $s };",wrong_return_attribute: Question asks for 'statuses' but not in fetch clause
+77,List the first 3 tweets that mention the user with the highest betweenness.,"MATCH (u:User)-[:MENTIONS]-(t:Tweet)
+WHERE u.betweenness IS NOT NULL
+WITH u, t
+ORDER BY u.betweenness DESC
+LIMIT 1
+MATCH (t2:Tweet)-[:MENTIONS]->(u) 
+RETURN t2.text
+LIMIT 3","match
+$u isa user, has betweenness $b;
+$t isa tweet;
+mentions (source_tweet: $t, mentioned_user: $u);
+sort $b desc;
+limit 3;
+fetch { ""text"": $t.text };",wrong_return_attribute: Question asks for 'betweenness' but not in fetch clause
+83,What are the top 3 most common tweet sources for the user 'neo4j'?,"MATCH (u:User {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)-[:USING]->(s:Source)
+RETURN s.name AS source, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","match
+$u isa user, has screen_name ""neo4j"";
+$t isa tweet;
+$s isa source;
+posts (author: $u, content: $t);
+using (tweet_content: $t, platform: $s);
+reduce $count = count($t) groupby $s;
+sort $count desc;
+limit 3;
+fetch { ""source"": $s.source_name, ""count"": $count };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+84,Identify the top 5 users with the most similar profiles to 'Neo4j' based on betweenness and following.,"MATCH (me:Me {name: 'Neo4j'})-[s:SIMILAR_TO]->(u:User)
+WHERE s.score IS NOT NULL
+RETURN u.screen_name AS user, s.score AS similarity
+ORDER BY s.score DESC
+LIMIT 5","match
+$me isa me, has name ""Neo4j"";
+$u isa user;
+$s isa similar_to (source_user: $me, similar_user: $u), has score $sc;
+sort $sc desc;
+limit 5;
+fetch { ""user"": $u.screen_name, ""similarity"": $sc };",wrong_return_attribute: Question asks for 'following' but not in fetch clause; wrong_return_attribute: Question asks for 'betweenness' but not in fetch clause
+85,Which 3 tweets have the highest aggregation of favorites and retweets?,"MATCH (t:Tweet)
+OPTIONAL MATCH (t)-[:RETWEETS]->(r:Tweet)
+RETURN t, t.favorites + count(r) AS score
+ORDER BY score DESC
+LIMIT 3","match
+$tweet isa tweet;
+retweets (original_tweet: $tweet);
+reduce $retweets = count groupby $tweet;
+match
+$tweet has favorites $favorites;
+let $total = $favorites + $retweets;
+sort $total desc;
+limit 3;
+fetch {
+  ""tweet"": $tweet.text,
+  ""total"": $total
+};",wrong_return_attribute: Question asks for 'favorites' but not in fetch clause
+88,Identify the top 5 tweets mentioning 'Neo4j' with the greatest number of favorites.,"MATCH (t:Tweet)-[:MENTIONS]->(:User {screen_name: 'neo4j'})
+WHERE t.text CONTAINS 'Neo4j'
+RETURN t.text AS tweet_text, t.favorites AS num_favorites
+ORDER BY t.favorites DESC
+LIMIT 5","match
+$t isa tweet, has text $txt, has favorites $f;
+$u isa user, has screen_name ""neo4j"";
+mentions (source_tweet: $t, mentioned_user: $u);
+$txt like ""%Neo4j%"";
+sort $f desc;
+limit 5;
+fetch { ""tweet_text"": $txt, ""num_favorites"": $f };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+92,Which tweets mention the user with the screen name 'neo4j'?,"MATCH (t:Tweet)-[:MENTIONS]->(u:User {screen_name: 'neo4j'})
+RETURN t","match
+$t isa tweet;
+$u isa user, has screen_name ""neo4j"";
+mentions (source_tweet: $t, mentioned_user: $u);
+fetch { ""text"": $t.text, ""tweet_id"": $t.tweet_id, ""created_at"": $t.created_at };","wrong_return_attribute: Question asks for 'screen name' but not in fetch clause; wrong_return_attribute: Question asks for 'name' but not in fetch clause; wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+93,Find the top 5 most recent tweets by 'neo4j'.,"MATCH (u:User {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)
+RETURN t.text, t.created_at
+ORDER BY t.created_at DESC
+LIMIT 5","match
+$u isa user, has screen_name ""neo4j"";
+$t isa tweet, has created_at $ca;
+posts (author: $u, content: $t);
+sort $ca desc;
+limit 5;
+fetch { ""text"": $t.text, ""created_at"": $ca };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+95,Who are the top 5 followers of 'neo4j' by number of followers?,"MATCH (me:Me {screen_name: 'neo4j'})<-[:FOLLOWS]-(follower:User)
+RETURN follower.screen_name AS follower, follower.followers AS followerCount
+ORDER BY followerCount DESC
+LIMIT 5","match
+$me isa me, has screen_name ""neo4j"";
+$follower isa user, has followers $f;
+follows (follower: $follower, followed: $me);
+sort $f desc;
+limit 5;
+fetch { ""follower"": $follower.screen_name, ""followerCount"": $f };",wrong_return_attribute: Question asks for 'followers' but not in fetch clause
+98,Find tweets that contain links and were posted by 'neo4j'.,"MATCH (u:User {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)-[:CONTAINS]->(l:Link)
+RETURN t, l","match
+$u isa user, has screen_name ""neo4j"";
+$t isa tweet;
+$l isa link;
+posts (author: $u, content: $t);
+contains (containing_tweet: $t, contained_link: $l);
+fetch { ""text"": $t.text, ""tweet_id"": $t.tweet_id, ""link_url"": $l.link_url };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+108,Which users following 'neo4j' have tweeted about 'education'?,"MATCH (u:User)-[:FOLLOWS]->(:Me {screen_name: 'neo4j'}),
+      (u)-[:POSTS]->(t:Tweet)-[:TAGS]->(:Hashtag {name: 'education'})
+RETURN u.screen_name AS user, t.text AS tweet","match
+$u isa user;
+$me isa me, has screen_name ""neo4j"";
+$t isa tweet;
+$h isa hashtag, has hashtag_name ""education"";
+follows (follower: $u, followed: $me);
+posts (author: $u, content: $t);
+tags (tagged_tweet: $t, tag: $h);
+fetch { ""user"": $u.screen_name, ""tweet"": $t.text };",wrong_return_attribute: Question asks for 'following' but not in fetch clause
+111,List all the links contained in tweets posted by 'neo4j'.,"MATCH (u:User {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)-[:CONTAINS]->(l:Link)
+RETURN l.url","match
+$u isa user, has screen_name ""neo4j"";
+$t isa tweet;
+$l isa link;
+posts (author: $u, content: $t);
+contains (containing_tweet: $t, contained_link: $l);
+fetch { ""url"": $l.link_url };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+114,Find the top 3 tweets with the most retweets made by 'neo4j'.,"MATCH (u:User {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)
+WHERE exists{ (t)-[:RETWEETS]->(:Tweet) }
+RETURN t.text AS tweet_text, count{(t)-[:RETWEETS]->(:Tweet)} AS retweet_count
+ORDER BY retweet_count DESC
+LIMIT 3","match
+$u isa user, has screen_name ""neo4j"";
+$t isa tweet;
+$rt isa tweet;
+posts (author: $u, content: $t);
+retweets (retweeting_tweet: $t, original_tweet: $rt);
+reduce $retweet_count = count($rt) groupby $t;
+sort $retweet_count desc;
+limit 3;
+fetch { ""tweet_text"": $t.text, ""retweet_count"": $retweet_count };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+119,Find the top 5 tweets mentioning 'neo4j' with the most favorites.,"MATCH (t:Tweet)-[:MENTIONS]->(:User {screen_name: 'neo4j'})
+WHERE t.text CONTAINS 'neo4j'
+RETURN t.text AS tweet_text, t.favorites AS num_favorites
+ORDER BY t.favorites DESC
+LIMIT 5","match
+$t isa tweet, has text $txt, has favorites $f;
+$u isa user, has screen_name ""neo4j"";
+mentions (source_tweet: $t, mentioned_user: $u);
+$txt like ""%neo4j%"";
+sort $f desc;
+limit 5;
+fetch { ""tweet_text"": $txt, ""num_favorites"": $f };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+120,Which tweets by 'neo4j' use the source named 'Buffer'?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:USING]->(source:Source {name: 'Buffer'})
+RETURN tweet","match
+$me isa me, has screen_name ""neo4j"";
+$tweet isa tweet;
+$source isa source, has source_name ""Buffer"";
+posts (author: $me, content: $tweet);
+using (tweet_content: $tweet, platform: $source);
+fetch { ""text"": $tweet.text, ""tweet_id"": $tweet.tweet_id, ""created_at"": $tweet.created_at };",wrong_return_attribute: Question asks for 'name' but not in fetch clause
+121,List all the hashtags used in tweets that mention 'neo4j'.,"MATCH (t:Tweet)-[:MENTIONS]->(:User {screen_name: 'neo4j'})-[:POSTS]->(tweet)-[:TAGS]->(h:Hashtag)
+RETURN DISTINCT h.name","match
+$t isa tweet;
+$u isa user, has screen_name ""neo4j"";
+$h isa hashtag;
+mentions (source_tweet: $t, mentioned_user: $u);
+tags (tagged_tweet: $t, tag: $h);
+fetch { ""name"": $h.hashtag_name };","cypher_structural_issue: Cypher has questionable pattern (User)-[:POSTS]-> after MENTIONS - TypeQL may use different semantics; wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+123,Find the tweets where 'neo4j' has been mentioned by users with more than 10000 followers.,"MATCH (u:User {screen_name: 'neo4j'})<-[:MENTIONS]-(t:Tweet)<-[:POSTS]-(mentioner:User)
+WHERE mentioner.followers > 10000
+RETURN t, mentioner","match
+$u isa user, has screen_name ""neo4j"";
+$t isa tweet;
+$mentioner isa user, has followers $f;
+mentions (source_tweet: $t, mentioned_user: $u);
+posts (author: $mentioner, content: $t);
+$f > 10000;
+fetch { ""text"": $t.text, ""mentioner_screen_name"": $mentioner.screen_name, ""mentioner_followers"": $f };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+124,List the URLs of tweets posted by 'neo4j' that contain links.,"MATCH (u:User {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)-[:CONTAINS]->(l:Link)
+RETURN l.url","match
+$u isa user, has screen_name ""neo4j"";
+$t isa tweet;
+$l isa link;
+posts (author: $u, content: $t);
+contains (containing_tweet: $t, contained_link: $l);
+fetch { ""url"": $l.link_url };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+130,List the top 3 most followed users who mention 'neo4j' in their tweets.,"MATCH (u:User)-[:POSTS]->(t:Tweet)-[:MENTIONS]->(:User {screen_name: 'neo4j'})
+WITH u, count(t) AS mentions
+ORDER BY u.followers DESC
+LIMIT 3
+RETURN u.screen_name AS user, u.followers AS followers, mentions","match
+$u isa user, has followers $f;
+$t isa tweet;
+$neo isa user, has screen_name ""neo4j"";
+posts (author: $u, content: $t);
+mentions (source_tweet: $t, mentioned_user: $neo);
+reduce $mentions = count($t) groupby $u, $f;
+sort $f desc;
+limit 3;
+fetch { ""user"": $u.screen_name, ""followers"": $f, ""mentions"": $mentions };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+136,List the tweets by 'neo4j' that have been retweeted by more than 5 different users.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)
+WHERE count{(tweet)<-[:RETWEETS]-(:Tweet)<-[:POSTS]-(:User)} > 5
+RETURN tweet.text, count{(tweet)<-[:RETWEETS]-(:Tweet)<-[:POSTS]-(:User)} AS retweets","with fun retweeting_users($tweet: tweet) -> integer:
+  match
+    retweets (original_tweet: $tweet, retweeting_tweet: $retweet);
+    posts ($user, $retweet);
+  select $user;
+  distinct;
+  return count;
+match
+$u isa user, has screen_name 'neo4j';
+posts ($user, $tweet);
+let $retweeting_users = retweeting_users($tweet);
+$retweeting_users > 5;
+fetch {
+  ""tweet"": $tweet.text
+};","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+142,What are the names of the top 3 users who have a betweenness greater than 300000000?,"MATCH (u:User)
+WHERE u.betweenness > 300000000
+RETURN u.name
+ORDER BY u.betweenness DESC
+LIMIT 3","match
+$u isa user, has betweenness $b;
+$b > 300000000;
+sort $b desc;
+limit 3;
+fetch { ""name"": $u.name };",wrong_return_attribute: Question asks for 'betweenness' but not in fetch clause
+158,List the top 5 tweets which mention the user with the highest followers.,"MATCH (u:User)-[:MENTIONS]-(t:Tweet)
+WHERE u.followers IS NOT NULL
+WITH u, t
+ORDER BY u.followers DESC
+LIMIT 1
+MATCH (t:Tweet)-[:MENTIONS]->(u) 
+RETURN t.text AS tweet_text
+ORDER BY t.favorites DESC
+LIMIT 5","match
+$u isa user, has followers $f;
+$t isa tweet, has favorites $fav;
+mentions (source_tweet: $t, mentioned_user: $u);
+sort $f desc;
+limit 5;
+fetch { ""tweet_text"": $t.text };",wrong_return_attribute: Question asks for 'followers' but not in fetch clause
+173,List the first 3 tweets posted using the source named 'Buffer'.,"MATCH (t:Tweet)-[:USING]->(s:Source {name: 'Buffer'})
+RETURN t.text AS tweet_text
+ORDER BY t.created_at
+LIMIT 3","match
+$t isa tweet, has created_at $ca;
+$s isa source, has source_name ""Buffer"";
+using (tweet_content: $t, platform: $s);
+sort $ca asc;
+limit 3;
+fetch { ""tweet_text"": $t.text };",wrong_return_attribute: Question asks for 'name' but not in fetch clause
+177,List the top 5 users by the number of statuses they have posted.,"MATCH (u:User)
+WHERE u.statuses IS NOT NULL
+RETURN u.screen_name, u.statuses AS status_count
+ORDER BY u.statuses DESC
+LIMIT 5","match
+$u isa user, has statuses $s;
+sort $s desc;
+limit 5;
+fetch { ""screen_name"": $u.screen_name, ""status_count"": $s };",wrong_return_attribute: Question asks for 'statuses' but not in fetch clause
+202,What are the first 3 tweets by 'Neo4j' that have been retweeted by other users with more than 10000 followers?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)
+WHERE tweet.text IS NOT NULL
+WITH me, tweet
+MATCH (tweet)<-[:RETWEETS]-(retweet:Tweet)<-[:POSTS]-(retweeter:User)
+WHERE retweeter.followers > 10000
+RETURN tweet.text AS tweet_text, count{(tweet)<-[:RETWEETS]-(:Tweet)} AS retweet_count
+ORDER BY tweet.created_at
+LIMIT 3","match
+$me isa me, has screen_name ""neo4j"";
+$tweet isa tweet, has created_at $ca;
+$retweet isa tweet;
+$retweeter isa user, has followers $f;
+posts (author: $me, content: $tweet);
+retweets (original_tweet: $tweet, retweeting_tweet: $retweet);
+posts (author: $retweeter, content: $retweet);
+$f > 10000;
+sort $ca asc;
+limit 3;
+fetch { ""tweet_text"": $tweet.text };",wrong_return_attribute: Question asks for 'followers' but not in fetch clause
+212,List the top 5 tweets that include a link and were posted by users following 'Neo4j'.,"MATCH (u:User)-[:FOLLOWS]->(:Me {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)-[:CONTAINS]->(l:Link)
+RETURN t.text AS tweet_text, t.favorites AS favorites
+ORDER BY t.favorites DESC
+LIMIT 5","match
+$neo4j isa user, has screen_name ""neo4j"";
+$u isa user;
+follows (follower: $u, followed: $neo4j);
+$t isa tweet, has text $txt, has favorites $fav;
+posts (author: $u, content: $t);
+$l isa link;
+contains (containing_tweet: $t, contained_link: $l);
+sort $fav desc;
+limit 5;
+fetch { ""tweet_text"": $txt, ""favorites"": $fav };","wrong_return_attribute: Question asks for 'following' but not in fetch clause; wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+213,What are the first 3 tweets posted by 'Neo4j' that include a source named 'Buffer'?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:USING]->(source:Source {name: 'Buffer'})
+RETURN tweet.text
+ORDER BY tweet.created_at
+LIMIT 3","match
+$me isa me, has screen_name ""neo4j"";
+$tweet isa tweet, has created_at $ca;
+$source isa source, has source_name ""Buffer"";
+posts (author: $me, content: $tweet);
+using (tweet_content: $tweet, platform: $source);
+sort $ca asc;
+limit 3;
+fetch { ""text"": $tweet.text };",wrong_return_attribute: Question asks for 'name' but not in fetch clause
+215,List the first 3 users who follow 'Neo4j' and have a betweenness score of exactly 349332601.0.,"MATCH (u:User)-[:FOLLOWS]->(:Me {screen_name: 'neo4j'})
+WHERE u.betweenness = 349332601.0
+RETURN u.screen_name
+LIMIT 3","match
+$me isa me, has screen_name ""neo4j"";
+$u isa user, has betweenness 349332601.0;
+follows (follower: $u, followed: $me);
+limit 3;
+fetch { ""screen_name"": $u.screen_name };",wrong_return_attribute: Question asks for 'betweenness' but not in fetch clause
+219,List the top 5 users that 'Neo4j' retweeted and who have a following of more than 10000.,"MATCH (me:Me {screen_name: 'neo4j'})-[:AMPLIFIES]->(u:User)
+WHERE u.following > 10000
+RETURN u.screen_name, u.following
+ORDER BY u.following DESC
+LIMIT 5","match
+$me isa me, has screen_name ""neo4j"";
+$tweet isa tweet;
+posts (author: $me, content: $tweet);
+retweets (retweeting_tweet: $tweet, original_tweet: $orig);
+$u isa user, has screen_name $sn, has following $fg;
+posts (author: $u, content: $orig);
+$fg > 10000;
+sort $fg desc;
+limit 5;
+fetch { ""screen_name"": $sn, ""following"": $fg };",semantic_substitution: Cypher uses AMPLIFIES but TypeQL uses retweets - may be semantically appropriate
+222,What are the top 5 users who have amplified 'Neo4j' and have a following of more than 5000?,"MATCH (me:Me {name: 'Neo4j'})<-[:AMPLIFIES]-(u:User)
+WHERE u.following > 5000
+RETURN u.name, u.screen_name, u.followers
+ORDER BY u.followers DESC
+LIMIT 5","match
+$me isa me, has name ""Neo4j"";
+$u isa user, has following $f, has followers $followers;
+amplifies (amplifier: $u, amplified_user: $me);
+$f > 5000;
+sort $followers desc;
+limit 5;
+fetch { ""name"": $u.name, ""screen_name"": $u.screen_name, ""followers"": $followers };",wrong_return_attribute: Question asks for 'following' but not in fetch clause
+223,Identify the first 3 tweets that 'Neo4j' has retweeted and were posted by users with a profile image URL ending in 'normal.jpg'.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:RETWEETS]->(retweeted_tweet:Tweet)<-[:POSTS]-(user:User)
+WHERE user.profile_image_url ENDS WITH 'normal.jpg'
+RETURN retweeted_tweet, user
+ORDER BY tweet.created_at
+LIMIT 3","match
+$me isa me, has screen_name ""neo4j"";
+$tweet isa tweet, has created_at $ca;
+$retweeted_tweet isa tweet;
+$user isa user, has profile_image_url $purl;
+posts (author: $me, content: $tweet);
+retweets (retweeting_tweet: $tweet, original_tweet: $retweeted_tweet);
+posts (author: $user, content: $retweeted_tweet);
+$purl like ""%normal.jpg"";
+sort $ca asc;
+limit 3;
+fetch { ""retweeted_text"": $retweeted_tweet.text, ""user_screen_name"": $user.screen_name };",wrong_return_attribute: Question asks for 'profile image' but not in fetch clause; wrong_return_attribute: Question asks for 'url' but not in fetch clause
+244,What are the profile images of the top 5 users by followers?,"MATCH (u:User)
+WHERE u.profile_image_url IS NOT NULL
+RETURN u.profile_image_url AS profile_image
+ORDER BY u.followers DESC
+LIMIT 5","match
+  $u isa user, has profile_image_url $profile_image, has followers $followers;
+sort $followers desc;
+limit 5;
+fetch { ""profile_image"": $profile_image };",wrong_return_attribute: Question asks for 'profile image' but not in fetch clause; wrong_return_attribute: Question asks for 'followers' but not in fetch clause
+245,Which users with a location of 'Sweden' follow more than 10 users?,"MATCH (u:User)
+WHERE u.location = 'Sweden' AND count{(u)-[:FOLLOWS]->(:User)} > 10
+RETURN u","match
+  $u isa user, has location ""Sweden"", has screen_name $sn, has name $n;
+  follows (follower: $u, followed: $f);
+reduce $count = count($f), groupby $sn, $n;
+$count > 10;
+fetch { ""screen_name"": $sn, ""name"": $n };",wrong_return_attribute: Question asks for 'location' but not in fetch clause
+248,What are the top 5 links contained in the tweets posted by users with fewer than 100 followers?,"MATCH (u:User)-[:POSTS]->(t:Tweet)-[:CONTAINS]->(l:Link)
+WHERE u.followers < 100
+RETURN l.url, count(*) as count
+ORDER BY count DESC
+LIMIT 5","match
+  $u isa user, has followers $followers;
+  $followers < 100;
+  posts (author: $u, content: $t);
+  contains (containing_tweet: $t, contained_link: $l);
+  $l has link_url $url;
+reduce $count = count($t), groupby $url;
+sort $count desc;
+limit 5;
+fetch { ""url"": $url, ""count"": $count };",wrong_return_attribute: Question asks for 'followers' but not in fetch clause
+253,List the profile URLs of the top 3 users by betweenness.,"MATCH (u:User)
+WHERE u.profile_image_url IS NOT NULL
+RETURN u.profile_image_url
+ORDER BY u.betweenness DESC
+LIMIT 3","match
+  $u isa user, has profile_image_url $profile_image_url, has betweenness $betweenness;
+sort $betweenness desc;
+limit 3;
+fetch { ""profile_image_url"": $profile_image_url };",wrong_return_attribute: Question asks for 'betweenness' but not in fetch clause
+257,Identify the top 5 users who have exactly 663 followers.,"MATCH (u:User)
+WHERE u.followers = 663
+RETURN u.screen_name, u.name
+ORDER BY u.screen_name
+LIMIT 5","match
+  $u isa user, has followers 663, has screen_name $sn, has name $name;
+sort $sn asc;
+limit 5;
+fetch { ""screen_name"": $sn, ""name"": $name };",wrong_return_attribute: Question asks for 'followers' but not in fetch clause
+259,Which users with a profile image URL containing 'horned_reaper' follow 'Neo4j'?,"MATCH (u:User)-[:FOLLOWS]->(:Me {screen_name: 'neo4j'})
+WHERE u.profile_image_url CONTAINS 'horned_reaper'
+RETURN u","match
+  $u isa user, has profile_image_url $profile_url, has screen_name $sn, has name $name;
+  $profile_url like "".*horned_reaper.*"";
+  $me isa me, has screen_name ""neo4j"";
+  follows (follower: $u, followed: $me);
+fetch { ""screen_name"": $sn, ""name"": $name };",wrong_return_attribute: Question asks for 'profile image' but not in fetch clause; wrong_return_attribute: Question asks for 'url' but not in fetch clause
+280,Identify all tweets by 'Neo4j' that mention a user with at least 5000 followers.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:MENTIONS]->(user:User)
+WHERE user.followers >= 5000
+RETURN tweet, user","match
+  $me isa me, has screen_name ""neo4j"";
+  posts (author: $me, content: $tweet);
+  mentions (source_tweet: $tweet, mentioned_user: $user);
+  $user has followers $followers, has screen_name $usn, has name $uname;
+  $followers >= 5000;
+  $tweet has text $text, has tweet_id $id;
+fetch { ""tweet_id"": $id, ""text"": $text, ""mentioned_user"": $usn, ""mentioned_name"": $uname };",wrong_return_attribute: Question asks for 'followers' but not in fetch clause
+285,Who are the top 5 users with similar screen names to 'Neo4j'?,"MATCH (me:Me {screen_name: 'neo4j'})-[s:SIMILAR_TO]->(u:User)
+RETURN u.screen_name AS similar_user, s.score AS similarity
+ORDER BY similarity DESC
+LIMIT 5","match
+  $me isa me, has screen_name ""neo4j"";
+  $s (source_user: $me, similar_user: $u) isa similar_to, has score $score;
+  $u has screen_name $sn;
+sort $score desc;
+limit 5;
+fetch { ""similar_user"": $sn, ""similarity"": $score };",wrong_return_attribute: Question asks for 'screen name' but not in fetch clause; wrong_return_attribute: Question asks for 'name' but not in fetch clause
+289,Show the top 5 tweets by 'Neo4j' that were posted from a location outside 'Graphs Are Everywhere'.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)
+WHERE me.location <> 'Graphs Are Everywhere'
+RETURN tweet.text, tweet.created_at
+ORDER BY tweet.favorites DESC
+LIMIT 5","match
+  $me isa me, has screen_name ""neo4j"", has location $loc;
+  not { $loc = ""Graphs Are Everywhere""; };
+  posts (author: $me, content: $tweet);
+  $tweet has text $text, has created_at $created_at, has favorites $favorites;
+sort $favorites desc;
+limit 5;
+fetch { ""text"": $text, ""created_at"": $created_at };",wrong_return_attribute: Question asks for 'location' but not in fetch clause
+295,Show all hashtags that have appeared in more than 5 tweets mentioning 'Neo4j'.,"MATCH (t:Tweet)-[:MENTIONS]->(:User {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:TAGS]->(h:Hashtag)
+WITH h, count(tweet) AS tweet_count
+WHERE tweet_count > 5
+RETURN h.name AS hashtag, tweet_count
+ORDER BY tweet_count DESC","match
+  $tweet isa tweet, has text $text;
+  $text like "".*Neo4j.*"";
+  tags (tagged_tweet: $tweet, tag: $tag);
+reduce $count = count groupby $tag;
+match
+  $count > 5;
+fetch {
+  ""tag"": $tag.hashtag_name,
+  ""appearances_with_neo4j"": $count
+};",cypher_structural_issue: Cypher has questionable pattern (User)-[:POSTS]-> after MENTIONS - TypeQL may use different semantics
+296,List the top 5 users who have a similar betweenness to 'Neo4j'.,"MATCH (me:Me {name: 'Neo4j'}), (u:User)
+WHERE u.betweenness IS NOT NULL
+WITH me, u
+ORDER BY abs(me.betweenness - u.betweenness) 
+LIMIT 5
+RETURN u.name AS user, u.betweenness AS betweenness","match
+$neo4j isa me, has name ""Neo4j"", has betweenness $neo4j_betweenness;
+$user isa user, has betweenness $betweenness;
+not { $neo4j is $user; };
+let $difference = abs($betweenness - $neo4j_betweenness);
+sort $difference asc;
+limit 5;
+fetch {
+  ""user"": $user.name
+};",wrong_return_attribute: Question asks for 'betweenness' but not in fetch clause
+328,Who are the top 5 followers of 'Neo4j' based on the number of statuses they have?,"MATCH (me:Me {screen_name: 'neo4j'})<-[:FOLLOWS]-(follower:User)
+RETURN follower.screen_name AS follower, follower.statuses AS num_statuses
+ORDER BY follower.statuses DESC
+LIMIT 5","match
+  $me isa me, has screen_name ""neo4j"";
+  follows (follower: $follower, followed: $me);
+  $follower has screen_name $sn, has statuses $statuses;
+sort $statuses desc;
+limit 5;
+fetch { ""follower"": $sn, ""num_statuses"": $statuses };",wrong_return_attribute: Question asks for 'followers' but not in fetch clause
+330,Which users have the highest following to follower ratio?,"MATCH (u:User)
+WHERE u.followers IS NOT NULL AND u.following IS NOT NULL
+RETURN u.screen_name AS user, 
+       toFloat(u.following) / u.followers AS followingToFollowerRatio
+ORDER BY followingToFollowerRatio DESC
+LIMIT 10","with fun follower_count($user: user) -> integer:
+  match follows (followed: $user);
+  return count;
+with fun follows_count($user: user) -> integer:
+  match follows (follower: $user);
+  return count;
+match
+$user isa user;
+let $followers = follower_count($user);
+let $follows = follows_count($user);
+$followers > 0;
+$follows > 0;
+let $ratio = $follows / $followers;
+sort $ratio desc;
+limit 10;
+fetch {
+  ""user"": $user.name,
+  ""ratio"": $ratio
+};",wrong_return_attribute: Question asks for 'following' but not in fetch clause
+333,Which tweets from 'Neo4j' mention other users and what are these users' screen names?,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:MENTIONS]->(mentioned:User)
+RETURN tweet.text AS tweet, mentioned.screen_name AS mentioned_user","match
+  $me isa me, has screen_name ""neo4j"";
+  posts (author: $me, content: $tweet);
+  mentions (source_tweet: $tweet, mentioned_user: $mentioned);
+  $tweet has text $text;
+  $mentioned has screen_name $sn;
+fetch { ""tweet"": $text, ""mentioned_user"": $sn };",wrong_return_attribute: Question asks for 'screen name' but not in fetch clause; wrong_return_attribute: Question asks for 'name' but not in fetch clause
+335,List the 5 most recent users who started following 'Neo4j'.,"MATCH (u:User)-[:FOLLOWS]->(me:Me {screen_name: 'neo4j'})
+RETURN u.screen_name, u.name
+ORDER BY u.following DESC
+LIMIT 5","match
+  $u isa user, has screen_name $sn, has name $name, has following $following;
+  $me isa me, has screen_name ""neo4j"";
+  follows (follower: $u, followed: $me);
+sort $following desc;
+limit 5;
+fetch { ""screen_name"": $sn, ""name"": $name };",wrong_return_attribute: Question asks for 'following' but not in fetch clause
+337,Which tweets have been replied to and have more than 50 favorites?,"MATCH (t:Tweet)-[:REPLY_TO]->(replied_to_tweet:Tweet)
+WHERE t.favorites > 50
+RETURN t, replied_to_tweet","match
+  $t isa tweet, has favorites $favorites, has text $text1, has tweet_id $id1;
+  $favorites > 50;
+  reply_to (replying_tweet: $t, original_tweet: $replied_to_tweet);
+  $replied_to_tweet has text $text2, has tweet_id $id2;
+fetch { ""tweet_id"": $id1, ""text"": $text1, ""replied_to_id"": $id2, ""replied_to_text"": $text2 };",wrong_return_attribute: Question asks for 'favorites' but not in fetch clause
+373,List all the tweets that link to a URL containing 'twitter.com'.,"MATCH (t:Tweet)-[:CONTAINS]->(l:Link)
+WHERE l.url CONTAINS 'twitter.com'
+RETURN t","match
+  $t isa tweet, has text $text, has tweet_id $id;
+  contains (containing_tweet: $t, contained_link: $l);
+  $l has link_url $url;
+  $url like "".*twitter\\.com.*"";
+fetch { ""tweet_id"": $id, ""text"": $text };",wrong_return_attribute: Question asks for 'url' but not in fetch clause
+386,List the first 3 users followed by 'neo4j' with a betweenness of zero.,"MATCH (me:Me {screen_name: 'neo4j'})-[:FOLLOWS]->(followed:User)
+WHERE followed.betweenness = 0
+RETURN followed.screen_name
+LIMIT 3","match
+  $me isa me, has screen_name ""neo4j"";
+  follows (follower: $me, followed: $followed);
+  $followed has screen_name $sn, has betweenness 0.0;
+limit 3;
+fetch { ""screen_name"": $sn };",wrong_return_attribute: Question asks for 'betweenness' but not in fetch clause
+402,Find the first 3 users who follow 'neo4j' and have a betweenness greater than 100 million.,"MATCH (u:User)-[:FOLLOWS]->(:Me {screen_name: 'neo4j'})
+WHERE u.betweenness > 1E8
+RETURN u
+LIMIT 3","match
+  $u isa user, has screen_name $sn, has name $name, has betweenness $betweenness;
+  $betweenness > 100000000.0;
+  $me isa me, has screen_name ""neo4j"";
+  follows (follower: $u, followed: $me);
+limit 3;
+fetch { ""screen_name"": $sn, ""name"": $name };",wrong_return_attribute: Question asks for 'betweenness' but not in fetch clause
+414,Find all tweets from users who follow 'neo4j' and list the top 5.,"MATCH (u:User)-[:FOLLOWS]->(:Me {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)
+RETURN t.text, t.favorites
+ORDER BY t.favorites DESC
+LIMIT 5","match
+$neo4j isa user, has screen_name ""neo4j"";
+$u isa user;
+follows (follower: $u, followed: $neo4j);
+$t isa tweet, has text $txt, has favorites $fav;
+posts (author: $u, content: $t);
+sort $fav desc;
+limit 5;
+fetch { ""text"": $txt, ""favorites"": $fav };","wrong_entity_type: Question refers to 'neo4j' which should use 'me' entity, not 'user'"
+432,Find the first 3 users who have amplified tweets posted by 'neo4j'.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)<-[:AMPLIFIES]-(user:User)
+RETURN user.screen_name, user.name
+LIMIT 3","match
+$me isa me, has screen_name ""neo4j"";
+$tweet isa tweet;
+posts (author: $me, content: $tweet);
+retweets (original_tweet: $tweet, retweeting_tweet: $rt);
+$user isa user, has screen_name $sn, has name $n;
+posts (author: $user, content: $rt);
+limit 3;
+fetch { ""screen_name"": $sn, ""name"": $n };",semantic_substitution: Cypher uses AMPLIFIES but TypeQL uses retweets - may be semantically appropriate
+456,Which hashtags have been tagged in tweets that have more than 200 favorites? List the top 3.,"MATCH (t:Tweet)-[:TAGS]->(h:Hashtag)
+WHERE t.favorites > 200
+RETURN h.name AS hashtag, count(*) AS tweet_count
+ORDER BY tweet_count DESC
+LIMIT 3","match
+  $t isa tweet, has favorites $favorites;
+  $favorites > 200;
+  tags (tagged_tweet: $t, tag: $h);
+  $h has hashtag_name $name;
+reduce $count = count($t), groupby $name;
+sort $count desc;
+limit 3;
+fetch { ""hashtag"": $name, ""tweet_count"": $count };",wrong_return_attribute: Question asks for 'favorites' but not in fetch clause
+462,Who are the top 3 followers of 'Neo4j' based on betweenness centrality?,"MATCH (me:Me {screen_name: 'neo4j'})<-[:FOLLOWS]-(follower:User)
+WHERE follower.betweenness IS NOT NULL
+RETURN follower.screen_name AS follower, follower.betweenness AS betweenness
+ORDER BY follower.betweenness DESC
+LIMIT 3","match
+  $me isa me, has screen_name ""neo4j"";
+  follows (follower: $follower, followed: $me);
+  $follower has screen_name $sn, has betweenness $betweenness;
+sort $betweenness desc;
+limit 3;
+fetch { ""follower"": $sn, ""betweenness"": $betweenness };",wrong_return_attribute: Question asks for 'followers' but not in fetch clause
+463,List the names of the top 5 tweets that reply to another tweet and have more than 50 favorites.,"MATCH (t:Tweet)-[:REPLY_TO]->(:Tweet)
+WHERE t.favorites > 50
+RETURN t.text AS tweet_text
+ORDER BY t.favorites DESC
+LIMIT 5","match
+  $t isa tweet, has text $text, has favorites $favorites;
+  $favorites > 50;
+  reply_to (replying_tweet: $t, original_tweet: $rt);
+sort $favorites desc;
+limit 5;
+fetch { ""tweet_text"": $text };",wrong_return_attribute: Question asks for 'name' but not in fetch clause; wrong_return_attribute: Question asks for 'favorites' but not in fetch clause
+470,Find the top 5 users who follow 'Neo4j' and are from the same location as 'Neo4j'.,"MATCH (u:User)-[:FOLLOWS]->(:Me {screen_name: 'neo4j'})
+WHERE u.location IS NOT NULL AND u.location = 'Graphs Are Everywhere'
+RETURN u.screen_name, u.name, u.followers
+ORDER BY u.followers DESC
+LIMIT 5","match
+  $u isa user, has location ""Graphs Are Everywhere"", has screen_name $sn, has name $name, has followers $followers;
+  $me isa me, has screen_name ""neo4j"";
+  follows (follower: $u, followed: $me);
+sort $followers desc;
+limit 5;
+fetch { ""screen_name"": $sn, ""name"": $name, ""followers"": $followers };",wrong_return_attribute: Question asks for 'location' but not in fetch clause
+475,What are the top 3 tweets posted by the user with the screen name 'neo4j'?,"MATCH (u:User {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)
+RETURN t.text AS tweet_text, t.favorites AS favorites
+ORDER BY t.favorites DESC
+LIMIT 3","match
+  $me isa me, has screen_name ""neo4j"";
+  posts (author: $me, content: $t);
+  $t has text $text, has favorites $favorites;
+sort $favorites desc;
+limit 3;
+fetch { ""tweet_text"": $text, ""favorites"": $favorites };",wrong_return_attribute: Question asks for 'screen name' but not in fetch clause; wrong_return_attribute: Question asks for 'name' but not in fetch clause
+478,List the top 5 tweets that mention the user with the screen name 'neo4j'.,"MATCH (t:Tweet)-[:MENTIONS]->(u:User {screen_name: 'neo4j'})
+RETURN t.text AS tweet_text, t.favorites AS favorites
+ORDER BY t.favorites DESC
+LIMIT 5","match
+  $t isa tweet, has text $text, has favorites $favorites;
+  $me isa me, has screen_name ""neo4j"";
+  mentions (source_tweet: $t, mentioned_user: $me);
+sort $favorites desc;
+limit 5;
+fetch { ""tweet_text"": $text, ""favorites"": $favorites };",wrong_return_attribute: Question asks for 'screen name' but not in fetch clause; wrong_return_attribute: Question asks for 'name' but not in fetch clause
+489,List the top 5 tweets by 'Me' using a specific source named 'Buffer'.,"MATCH (me:Me)-[:POSTS]->(tweet:Tweet)-[:USING]->(source:Source {name: 'Buffer'})
+RETURN tweet.text, tweet.favorites
+ORDER BY tweet.favorites DESC
+LIMIT 5","match
+  $me isa me;
+  posts (author: $me, content: $tweet);
+  using (tweet_content: $tweet, platform: $source);
+  $source has source_name ""Buffer"";
+  $tweet has text $text, has favorites $favorites;
+sort $favorites desc;
+limit 5;
+fetch { ""text"": $text, ""favorites"": $favorites };",wrong_return_attribute: Question asks for 'name' but not in fetch clause
+490,Which users does 'Neo4j' follow that have a location set to 'Graphs Are Everywhere'?,"MATCH (me:Me {screen_name: 'neo4j'})-[:FOLLOWS]->(user:User)
+WHERE user.location = 'Graphs Are Everywhere'
+RETURN user","match
+  $me isa me, has screen_name ""neo4j"";
+  follows (follower: $me, followed: $user);
+  $user has location ""Graphs Are Everywhere"", has screen_name $sn, has name $name;
+fetch { ""screen_name"": $sn, ""name"": $name };",wrong_return_attribute: Question asks for 'location' but not in fetch clause
+491,List the first 3 tweets containing a hashtag named 'education'.,"MATCH (t:Tweet)-[:TAGS]->(:Hashtag {name: 'education'})
+RETURN t.text AS tweet_text
+LIMIT 3","match
+  $t isa tweet, has text $text;
+  tags (tagged_tweet: $t, tag: $h);
+  $h has hashtag_name ""education"";
+limit 3;
+fetch { ""tweet_text"": $text };",wrong_return_attribute: Question asks for 'name' but not in fetch clause

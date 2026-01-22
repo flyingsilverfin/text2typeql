@@ -2603,7 +2603,7 @@ LIMIT 5","match
   $created_at < 2020-12-07T00:00:00;
   tags (tagged_tweet: $t, tag: $h);
   $h has hashtag_name $name;
-reduce $count = count($t) groupby $name;
+reduce $count = count($t), groupby $name;
 sort $count desc;
 limit 5;
 fetch { ""hashtag"": $name, ""count"": $count };"
@@ -2631,8 +2631,9 @@ WHERE u.location = 'Sweden' AND count{(u)-[:FOLLOWS]->(:User)} > 10
 RETURN u","match
   $u isa user, has location ""Sweden"", has screen_name $sn, has name $n;
   follows (follower: $u, followed: $f);
-reduce $count = count($f) groupby $sn, $n;
-fetch { ""screen_name"": $sn, ""name"": $n, ""following_count"": $count };"
+reduce $count = count($f), groupby $sn, $n;
+$count > 10;
+fetch { ""screen_name"": $sn, ""name"": $n };"
 246,List the first 3 tweets with a creation date on '2021-03-16'.,"MATCH (t:Tweet)
 WHERE t.created_at >= datetime('2021-03-16') AND t.created_at < datetime('2021-03-17') 
 RETURN t
@@ -2662,7 +2663,7 @@ LIMIT 5","match
   posts (author: $u, content: $t);
   contains (containing_tweet: $t, contained_link: $l);
   $l has link_url $url;
-reduce $count = count($t) groupby $url;
+reduce $count = count($t), groupby $url;
 sort $count desc;
 limit 5;
 fetch { ""url"": $url, ""count"": $count };"
@@ -2720,7 +2721,7 @@ LIMIT 5","match
   $text like "".*education.*"";
   tags (tagged_tweet: $t, tag: $h);
   $h has hashtag_name $name;
-reduce $count = count($t) groupby $name;
+reduce $count = count($t), groupby $name;
 sort $count desc;
 limit 5;
 fetch { ""hashtag"": $name, ""count"": $count };"
@@ -2822,7 +2823,7 @@ LIMIT 5","match
   posts (author: $u, content: $t);
   using (tweet_content: $t, platform: $s);
   $s has source_name $name;
-reduce $count = count($t) groupby $name;
+reduce $count = count($t), groupby $name;
 sort $count desc;
 limit 5;
 fetch { ""source"": $name, ""count"": $count };"
@@ -2890,7 +2891,7 @@ LIMIT 5","match
   $me isa me, has screen_name ""neo4j"";
   $i (interactor: $me, target: $u) isa interacts_with;
   $u has screen_name $sn;
-reduce $count = count($i) groupby $sn;
+reduce $count = count($i), groupby $sn;
 sort $count desc;
 limit 5;
 fetch { ""user"": $sn, ""interactions"": $count };"
@@ -3001,7 +3002,7 @@ LIMIT 5","match
   posts (author: $me, content: $tweet);
   using (tweet_content: $tweet, platform: $source);
   $source has source_name $name;
-reduce $count = count($tweet) groupby $name;
+reduce $count = count($tweet), groupby $name;
 sort $count desc;
 limit 5;
 fetch { ""source"": $name, ""tweet_count"": $count };"
@@ -3074,7 +3075,7 @@ RETURN tweet.text, tweet.created_at
 ORDER BY tweet.favorites DESC
 LIMIT 5","match
   $me isa me, has screen_name ""neo4j"", has location $loc;
-  not { $me has location ""Graphs Are Everywhere""; };
+  not { $loc = ""Graphs Are Everywhere""; };
   posts (author: $me, content: $tweet);
   $tweet has text $text, has created_at $created_at, has favorites $favorites;
 sort $favorites desc;
@@ -3087,7 +3088,7 @@ LIMIT 3","match
   $me isa me, has screen_name ""neo4j"";
   $a (amplifier: $me, amplified_user: $u) isa amplifies;
   $u has screen_name $sn;
-reduce $count = count($a) groupby $sn;
+reduce $count = count($a), groupby $sn;
 sort $count desc;
 limit 3;
 fetch { ""user"": $sn, ""amplifications"": $count };"
@@ -3218,7 +3219,8 @@ RETURN user.screen_name, retweet_count","match
   retweets (retweeting_tweet: $tweet, original_tweet: $retweeted);
   posts (author: $user, content: $retweeted);
   $user has screen_name $sn;
-reduce $count = count($retweeted) groupby $sn;
+reduce $count = count($retweeted), groupby $sn;
+$count >= 2;
 fetch { ""screen_name"": $sn, ""retweet_count"": $count };"
 302,Find the top 5 tweets by 'Neo4j' that contain the hashtag '#education'.,"MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:TAGS]->(hashtag:Hashtag {name: 'education'})
 RETURN tweet.text, tweet.favorites
@@ -3242,7 +3244,7 @@ RETURN u.name, u.screen_name, u.profile_image_url, mentions","match
   posts (author: $u, content: $t);
   $me isa me, has name ""Neo4j"";
   mentions (source_tweet: $t, mentioned_user: $me);
-reduce $count = count($t) groupby $name, $sn, $img;
+reduce $count = count($t), groupby $name, $sn, $img;
 sort $count desc;
 limit 3;
 fetch { ""name"": $name, ""screen_name"": $sn, ""profile_image_url"": $img, ""mentions"": $count };"
@@ -3253,7 +3255,7 @@ RETURN tweet","match
   posts (author: $me, content: $tweet);
   using (tweet_content: $tweet, platform: $source);
   $source has source_name $name;
-  not { $source has source_name ""Buffer""; };
+  not { $name = ""Buffer""; };
   $tweet has text $text, has tweet_id $id;
 fetch { ""tweet_id"": $id, ""text"": $text };"
 305,Show the first 3 tweets mentioning 'Neo4j' that have been retweeted by 'Me'.,"MATCH (me:Me)-[:POSTS]->(tweet:Tweet)-[:RETWEETS]->(retweetedTweet:Tweet)
@@ -3411,7 +3413,7 @@ LIMIT 3","match
   $t isa tweet;
   tags (tagged_tweet: $t, tag: $h);
   $h has hashtag_name $name;
-reduce $count = count($t) groupby $name;
+reduce $count = count($t), groupby $name;
 sort $count desc;
 limit 3;
 fetch { ""hashtag"": $name, ""count"": $count };"
@@ -3440,7 +3442,7 @@ LIMIT 3","match
   posts (author: $me, content: $tweet);
   using (tweet_content: $tweet, platform: $source);
   $source has source_name $name;
-reduce $count = count($tweet) groupby $name;
+reduce $count = count($tweet), groupby $name;
 sort $count desc;
 limit 3;
 fetch { ""source"": $name, ""tweet_count"": $count };"
@@ -3494,7 +3496,7 @@ ORDER BY retweets DESC
 LIMIT 3","match
   $t isa tweet, has text $text, has tweet_id $id;
   retweets (original_tweet: $t, retweeting_tweet: $retweeted);
-reduce $count = count($retweeted) groupby $id, $text;
+reduce $count = count($retweeted), groupby $id, $text;
 sort $count desc;
 limit 3;
 fetch { ""tweet_id"": $id, ""text"": $text, ""retweets"": $count };"
@@ -3537,7 +3539,7 @@ ORDER BY tweet_count DESC
 LIMIT 3","match
   $u isa user, has location $location;
   posts (author: $u, content: $t);
-reduce $count = count($t) groupby $location;
+reduce $count = count($t), groupby $location;
 sort $count desc;
 limit 3;
 fetch { ""location"": $location, ""tweet_count"": $count };"
@@ -3556,7 +3558,7 @@ LIMIT 3","match
   $me isa me, has screen_name ""neo4j"";
   $i (interactor: $u, target: $me) isa interacts_with;
   $u has screen_name $sn;
-reduce $count = count($i) groupby $sn;
+reduce $count = count($i), groupby $sn;
 sort $count desc;
 limit 3;
 fetch { ""user"": $sn, ""interactions"": $count };"
@@ -3624,7 +3626,7 @@ LIMIT 3
 RETURN u.name AS user, num_interactions","match
   $u isa user, has name $name;
   interacts_with (interactor: $u, target: $other);
-reduce $count = count($other) groupby $name;
+reduce $count = count($other), groupby $name;
 sort $count desc;
 limit 3;
 fetch { ""user"": $name, ""num_interactions"": $count };"
@@ -3686,7 +3688,7 @@ LIMIT 10","match
   posts (author: $u, content: $t);
   $me isa me, has name ""Neo4j"";
   mentions (source_tweet: $t, mentioned_user: $me);
-reduce $count = count($t) groupby $name;
+reduce $count = count($t), groupby $name;
 sort $count desc;
 limit 10;
 fetch { ""user"": $name, ""mentions"": $count };"
@@ -3737,7 +3739,7 @@ LIMIT 3","match
   $me isa me, has screen_name ""neo4j"";
   $rt (mentioner: $me, mentioned_user: $user) isa rt_mentions;
   $user has screen_name $sn;
-reduce $count = count($rt) groupby $sn;
+reduce $count = count($rt), groupby $sn;
 sort $count desc;
 limit 3;
 fetch { ""user"": $sn, ""mentions"": $count };"
@@ -3771,7 +3773,7 @@ LIMIT 3","match
   retweets (retweeting_tweet: $tweet, original_tweet: $retweetedTweet);
   using (tweet_content: $retweetedTweet, platform: $source);
   $source has source_name $name;
-reduce $count = count($retweetedTweet) groupby $name;
+reduce $count = count($retweetedTweet), groupby $name;
 sort $count desc;
 limit 3;
 fetch { ""source"": $name, ""count"": $count };"
@@ -3784,7 +3786,7 @@ RETURN u.name AS user, tweet_count","match
   posts (author: $u, content: $t);
   tags (tagged_tweet: $t, tag: $h);
   $h has hashtag_name ""education"";
-reduce $count = count($t) groupby $name;
+reduce $count = count($t), groupby $name;
 sort $count desc;
 limit 3;
 fetch { ""user"": $name, ""tweet_count"": $count };"
@@ -3819,7 +3821,7 @@ ORDER BY num_tweets DESC
 LIMIT 10","match
   $u isa user, has location ""Graphs Are Everywhere"", has screen_name $sn;
   posts (author: $u, content: $t);
-reduce $count = count($t) groupby $sn;
+reduce $count = count($t), groupby $sn;
 sort $count desc;
 limit 10;
 fetch { ""user"": $sn, ""num_tweets"": $count };"
@@ -3909,7 +3911,7 @@ LIMIT 3","match
   posts (author: $me, content: $tweet);
   tags (tagged_tweet: $tweet, tag: $hashtag);
   $hashtag has hashtag_name $name;
-reduce $count = count($tweet) groupby $name;
+reduce $count = count($tweet), groupby $name;
 sort $count desc;
 limit 3;
 fetch { ""hashtag"": $name, ""count"": $count };"
@@ -3937,7 +3939,7 @@ ORDER BY num_tweets DESC
 LIMIT 5","match
   $u isa user, has location $location;
   posts (author: $u, content: $t);
-reduce $count = count($t) groupby $location;
+reduce $count = count($t), groupby $location;
 sort $count desc;
 limit 5;
 fetch { ""location"": $location, ""num_tweets"": $count };"
@@ -3956,7 +3958,7 @@ LIMIT 5","match
   $me isa me, has screen_name ""neo4j"";
   $i (interactor: $u, target: $me) isa interacts_with;
   $u has screen_name $sn;
-reduce $count = count($i) groupby $sn;
+reduce $count = count($i), groupby $sn;
 sort $count desc;
 limit 5;
 fetch { ""user"": $sn, ""interactions"": $count };"
@@ -3977,7 +3979,7 @@ ORDER BY retweets DESC
 LIMIT 3","match
   $t isa tweet, has text $text;
   retweets (original_tweet: $t, retweeting_tweet: $rt);
-reduce $count = count($rt) groupby $text;
+reduce $count = count($rt), groupby $text;
 sort $count desc;
 limit 3;
 fetch { ""tweet_text"": $text, ""retweets"": $count };"
@@ -4024,7 +4026,7 @@ LIMIT 3","match
   posts (author: $me, content: $tweet);
   using (tweet_content: $tweet, platform: $source);
   $source has source_name $name;
-reduce $count = count($tweet) groupby $name;
+reduce $count = count($tweet), groupby $name;
 sort $count desc;
 limit 3;
 fetch { ""source"": $name, ""tweet_count"": $count };"
@@ -4088,7 +4090,7 @@ ORDER BY num_tweets DESC
 LIMIT 5","match
   $u isa user, has location ""Graphs Are Everywhere"", has screen_name $sn;
   posts (author: $u, content: $t);
-reduce $count = count($t) groupby $sn;
+reduce $count = count($t), groupby $sn;
 sort $count desc;
 limit 5;
 fetch { ""user"": $sn, ""num_tweets"": $count };"
@@ -4127,7 +4129,7 @@ LIMIT 5","match
   $me isa me, has screen_name ""neo4j"";
   $i (interactor: $me, target: $u) isa interacts_with;
   $u has screen_name $sn;
-reduce $count = count($i) groupby $sn;
+reduce $count = count($i), groupby $sn;
 sort $count desc;
 limit 5;
 fetch { ""user"": $sn, ""interactions"": $count };"
@@ -4151,7 +4153,7 @@ LIMIT 5","match
   posts (author: $u, content: $t);
   using (tweet_content: $t, platform: $s);
   $s has source_name ""Buffer"";
-reduce $count = count($t) groupby $sn;
+reduce $count = count($t), groupby $sn;
 sort $count desc;
 limit 5;
 fetch { ""user"": $sn, ""tweets"": $count };"
@@ -4194,7 +4196,7 @@ LIMIT 5","match
   posts (author: $me, content: $tweet);
   reply_to (replying_tweet: $reply, original_tweet: $tweet);
   $tweet has text $text;
-reduce $count = count($reply) groupby $text;
+reduce $count = count($reply), groupby $text;
 sort $count desc;
 limit 5;
 fetch { ""tweet"": $text, ""replies"": $count };"
@@ -4276,7 +4278,7 @@ LIMIT 5","match
   $u isa user, has location $location;
   $me isa me, has screen_name ""neo4j"";
   interacts_with (interactor: $u, target: $me);
-reduce $count = count($u) groupby $location;
+reduce $count = count($u), groupby $location;
 sort $count desc;
 limit 5;
 fetch { ""location"": $location, ""num_users"": $count };"
@@ -4351,7 +4353,7 @@ LIMIT 5","match
   retweets (retweeting_tweet: $tweet, original_tweet: $retweetedTweet);
   tags (tagged_tweet: $retweetedTweet, tag: $hashtag);
   $hashtag has hashtag_name $name;
-reduce $count = count($retweetedTweet) groupby $name;
+reduce $count = count($retweetedTweet), groupby $name;
 sort $count desc;
 limit 5;
 fetch { ""hashtag"": $name, ""count"": $count };"
@@ -4439,7 +4441,7 @@ LIMIT 5","match
   posts (author: $me, content: $tweet);
   mentions (source_tweet: $tweet, mentioned_user: $mentioned);
   $mentioned has screen_name $sn;
-reduce $count = count($tweet) groupby $sn;
+reduce $count = count($tweet), groupby $sn;
 sort $count desc;
 limit 5;
 fetch { ""user"": $sn, ""mentions"": $count };"
@@ -4462,7 +4464,7 @@ LIMIT 5","match
   $me isa me, has screen_name ""neo4j"";
   $a (amplifier: $me, amplified_user: $u) isa amplifies;
   $u has screen_name $sn;
-reduce $count = count($a) groupby $sn;
+reduce $count = count($a), groupby $sn;
 sort $count desc;
 limit 5;
 fetch { ""user"": $sn, ""amplifications"": $count };"
@@ -4497,7 +4499,7 @@ LIMIT 5","match
   retweets (retweeting_tweet: $tweet, original_tweet: $retweetedTweet);
   posts (author: $retweetedUser, content: $retweetedTweet);
   $retweetedUser has screen_name $sn;
-reduce $count = count($tweet) groupby $sn;
+reduce $count = count($tweet), groupby $sn;
 sort $count desc;
 limit 5;
 fetch { ""retweeted_user"": $sn, ""retweet_count"": $count };"
@@ -4579,7 +4581,7 @@ LIMIT 5","match
   mentions (source_tweet: $t, mentioned_user: $me);
   using (tweet_content: $t, platform: $s);
   $s has source_name $name;
-reduce $count = count($t) groupby $name;
+reduce $count = count($t), groupby $name;
 sort $count desc;
 limit 5;
 fetch { ""source"": $name, ""tweet_count"": $count };"
@@ -4687,7 +4689,7 @@ LIMIT 5","match
   using (tweet_content: $t, platform: $s);
   $s has source_name ""Buffer"";
   $u has screen_name $sn;
-reduce $count = count($t) groupby $sn;
+reduce $count = count($t), groupby $sn;
 sort $count desc;
 limit 5;
 fetch { ""screen_name"": $sn, ""tweet_count"": $count };"
@@ -4743,7 +4745,7 @@ LIMIT 3","match
   $me isa me, has screen_name ""neo4j"";
   $i (interactor: $me, target: $u) isa interacts_with;
   $u has screen_name $sn;
-reduce $count = count($i) groupby $sn;
+reduce $count = count($i), groupby $sn;
 sort $count desc;
 limit 3;
 fetch { ""user"": $sn, ""interactions"": $count };"
@@ -4755,7 +4757,7 @@ LIMIT 3","match
   posts (author: $me, content: $tweet);
   tags (tagged_tweet: $tweet, tag: $hashtag);
   $hashtag has hashtag_name $name;
-reduce $count = count($tweet) groupby $name;
+reduce $count = count($tweet), groupby $name;
 sort $count desc;
 limit 3;
 fetch { ""hashtag"": $name, ""count"": $count };"
@@ -4800,7 +4802,7 @@ LIMIT 3","match
   retweets (retweeting_tweet: $tweet, original_tweet: $retweet);
   posts (author: $user, content: $retweet);
   $user has screen_name $sn;
-reduce $count = count($tweet) groupby $sn;
+reduce $count = count($tweet), groupby $sn;
 sort $count desc;
 limit 3;
 fetch { ""retweeted_user"": $sn, ""retweet_count"": $count };"
@@ -4821,7 +4823,7 @@ LIMIT 3
 RETURN u.screen_name AS screen_name, tweet_count","match
   $u isa user, has screen_name $sn;
   posts (author: $u, content: $t);
-reduce $count = count($t) groupby $sn;
+reduce $count = count($t), groupby $sn;
 sort $count desc;
 limit 3;
 fetch { ""screen_name"": $sn, ""tweet_count"": $count };"
@@ -4834,7 +4836,7 @@ LIMIT 3","match
   $favorites > 200;
   tags (tagged_tweet: $t, tag: $h);
   $h has hashtag_name $name;
-reduce $count = count($t) groupby $name;
+reduce $count = count($t), groupby $name;
 sort $count desc;
 limit 3;
 fetch { ""hashtag"": $name, ""tweet_count"": $count };"
@@ -4880,7 +4882,7 @@ RETURN u.profile_image_url","match
   posts (author: $u, content: $t);
   $me isa me, has name ""Neo4j"";
   mentions (source_tweet: $t, mentioned_user: $me);
-reduce $count = count($t) groupby $img;
+reduce $count = count($t), groupby $img;
 sort $count desc;
 limit 3;
 fetch { ""profile_image_url"": $img };"
@@ -4924,7 +4926,7 @@ LIMIT 3","match
   $me isa me, has screen_name ""neo4j"";
   interacts_with (interactor: $u, target: $me);
   $u has location $location;
-reduce $count = count($u) groupby $location;
+reduce $count = count($u), groupby $location;
 sort $count desc;
 limit 3;
 fetch { ""location"": $location, ""num_users"": $count };"
@@ -4940,7 +4942,7 @@ RETURN u.screen_name AS user, tweet_count","match
   tags (tagged_tweet: $t, tag: $h);
   $h has hashtag_name ""education"";
   $u has screen_name $sn;
-reduce $count = count($t) groupby $sn;
+reduce $count = count($t), groupby $sn;
 sort $count desc;
 limit 3;
 fetch { ""user"": $sn, ""tweet_count"": $count };"
@@ -4965,7 +4967,7 @@ LIMIT 3","match
   retweets (retweeting_tweet: $tweet, original_tweet: $retweetedTweet);
   tags (tagged_tweet: $retweetedTweet, tag: $hashtag);
   $hashtag has hashtag_name $name;
-reduce $count = count($retweetedTweet) groupby $name;
+reduce $count = count($retweetedTweet), groupby $name;
 sort $count desc;
 limit 3;
 fetch { ""hashtag"": $name, ""count"": $count };"
@@ -4994,7 +4996,7 @@ LIMIT 3","match
   posts (author: $me, content: $t);
   mentions (source_tweet: $t, mentioned_user: $u);
   $u has name $name;
-reduce $count = count($t) groupby $name;
+reduce $count = count($t), groupby $name;
 sort $count desc;
 limit 3;
 fetch { ""user"": $name, ""mentions"": $count };"
@@ -5095,7 +5097,7 @@ LIMIT 5","match
   posts (author: $me, content: $t);
   tags (tagged_tweet: $t, tag: $h);
   $h has hashtag_name $name;
-reduce $count = count($t) groupby $name;
+reduce $count = count($t), groupby $name;
 sort $count desc;
 limit 5;
 fetch { ""hashtag"": $name, ""count"": $count };"
@@ -5115,7 +5117,7 @@ LIMIT 5","match
   $me isa me, has screen_name ""neo4j"";
   $i (interactor: $u, target: $me) isa interacts_with;
   $u has screen_name $sn;
-reduce $count = count($i) groupby $sn;
+reduce $count = count($i), groupby $sn;
 sort $count desc;
 limit 5;
 fetch { ""user"": $sn, ""interactions"": $count };"
@@ -5162,7 +5164,7 @@ LIMIT 3","match
   posts (author: $me, content: $tweet);
   mentions (source_tweet: $tweet, mentioned_user: $mentioned);
   $mentioned has name $name;
-reduce $count = count($tweet) groupby $name;
+reduce $count = count($tweet), groupby $name;
 sort $count desc;
 limit 3;
 fetch { ""user"": $name, ""mentions"": $count };"
@@ -5223,7 +5225,7 @@ LIMIT 5","match
   $i (interactor: $me, target: $u) isa interacts_with;
   follows (follower: $me, followed: $u);
   $u has screen_name $sn;
-reduce $count = count($i) groupby $sn;
+reduce $count = count($i), groupby $sn;
 sort $count desc;
 limit 5;
 fetch { ""user"": $sn, ""interactions"": $count };"

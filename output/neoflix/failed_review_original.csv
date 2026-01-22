@@ -1,0 +1,10 @@
+original_index,question,cypher,typeql,review_reason
+307,List the top 5 videos by the number of countries they were produced in.,"MATCH (v:Video)-[:PRODUCED_IN_COUNTRY]->(c:Country)
+RETURN v.title AS video, count(c) AS numCountries
+ORDER BY numCountries DESC
+LIMIT 5","match
+  $v isa video;
+  $c isa country;
+  $rel0 (media: $v, country: $c) isa produced_in_country;
+  $v has title $title_v;
+reduce $count = count($c);",Cypher has LIMIT 5 but TypeQL missing limit clause

@@ -5,36 +5,38 @@
 **Phase**: Query Validation Complete (Post-TypeDB Revalidation)
 **Last Updated**: 2026-01-21
 
-### Conversion Progress (After TypeDB Validation + Semantic Review + Fixes)
+### Conversion Progress (Final - After Deep Failed Query Recovery)
 
-| Database | Valid | Failed | Failed Review | Total | % |
-|----------|-------|--------|---------------|-------|---|
-| twitter | 440 | 53 | 0 | 493 | 89% |
-| twitch | 506 | 55 | 0 | 561 | 90% |
-| recommendations | 555 | 198 | 0 | 753 | 74% |
-| movies | 568 | 161 | 0 | 729 | 78% |
-| neoflix | 868 | 47 | 0 | 915 | 95% |
-| companies | 833 | 100 | 0 | 933 | 89% |
-| gameofthrones | 342 | 50 | 0 | 392 | 87% |
-| **Total** | **4112** | **664** | **0** | **4776** | **86%** |
+| Database | Valid | Failed | Total | % |
+|----------|-------|--------|-------|---|
+| twitter | 493 | 0 | 493 | **100%** |
+| twitch | 533 | 28 | 561 | 95% |
+| recommendations | 655 | 98 | 753 | 87% |
+| movies | 729 | 0 | 729 | **100%** |
+| neoflix | 892 | 23 | 915 | 97% |
+| companies | 906 | 27 | 933 | 97% |
+| gameofthrones | 374 | 18 | 392 | 95% |
+| **Total** | **4582** | **194** | **4776** | **96%** |
 
 ### Validation Summary
 
-After full TypeDB validation, semantic review, and fixes:
-- **Valid queries**: 4112 (86%) - Execute correctly against TypeDB
-- **Validation failures**: 664 (14%) - TypeDB syntax/type errors or unconverted
-- **Semantic failures**: 0 (all fixed or moved to failed.csv)
+After full TypeDB validation, semantic review, and deep failed query recovery:
+- **Valid queries**: 4582 (96%) - Execute correctly against TypeDB
+- **Validation failures**: 194 (4%) - Fundamental TypeQL limitations
 
-### Common Validation Failures (in failed.csv)
+### Remaining Failures by Category (194 total)
 
-| Error Type | Count | Description |
-|------------|-------|-------------|
-| Dropped during processing | ~500 | Complex patterns not yet converted |
+| Category | Count | Description |
+|----------|-------|-------------|
 | size() function | ~50 | TypeQL lacks string/list length functions |
-| GROUP BY + HAVING | ~30 | TypeQL reduce cannot filter aggregated results |
-| Date arithmetic | ~10 | TypeQL lacks date/duration calculations |
-| Array index access | ~20 | TypeQL doesn't support array[N] syntax |
-| Complex subqueries | ~50 | Multi-step WITH clauses not directly translatable |
+| collect() aggregation | ~15 | No TypeQL equivalent for list collection |
+| Nested WITH queries | ~25 | Multi-step subqueries not translatable |
+| Schema mismatches | ~30 | Cypher assumes attributes/relations not in schema |
+| Array operations | ~20 | TypeQL doesn't support array[N] or list predicates |
+| String functions | ~15 | split(), left(), regex not supported |
+| Date/duration arithmetic | ~10 | TypeQL lacks duration calculations |
+| HAVING clause | ~15 | Post-aggregation filtering not supported |
+| Other | ~14 | UNWIND, epochSeconds, complex patterns |
 
 ### Completed Setup
 - [x] Project setup and structure

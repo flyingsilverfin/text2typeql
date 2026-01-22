@@ -1,253 +1,141 @@
 original_index,question,cypher,error
-6,Who are the top 3 VIPs in the stream named 'summit1g'?,"MATCH (s:Stream {name: 'summit1g'})<-[:VIP]-(vip:User)
-RETURN vip.name AS vip, vip.followers AS followers
-ORDER BY followers DESC
-LIMIT 3",Query not converted - dropped during processing
 26,What are the first 5 streams that have been played by more than 5 different users?,"MATCH (s:Stream)<-[:PLAYS]-(u:User)
 WITH s, count(distinct u) as userCount
 WHERE userCount > 5
 RETURN s.name as streamName, s.url as streamUrl, userCount
 ORDER BY userCount DESC
-LIMIT 5",Query not converted - dropped during processing
-43,Who are the top 3 users who are VIPs in the stream with the name '9linda'?,"MATCH (s:Stream {name: '9linda'})<-[:VIP]-(u:User)
-RETURN u.name AS user, u.followers AS followers
-ORDER BY followers DESC
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 5","Cypher schema error: PLAYS goes Stream->Game, not User->Stream. Query asks for streams played by users which is incorrect."
 99,Which 3 users have moderated the most streams and users combined?,"MATCH (u:User)-[:MODERATOR]->(s)
 WHERE s:Stream OR s:User
 WITH u, count(s) AS moderations
 RETURN u.name AS user, moderations
 ORDER BY moderations DESC
-LIMIT 3",Query not converted - dropped during processing
-128,Which streams have chatters who have less than 1000 followers?,"MATCH (s:Stream)<-[:CHATTER]-(u:User)
-WHERE u.followers < 1000
-RETURN s, u",Query not converted - dropped during processing
-142,What are the top 5 streams with the longest descriptions?,"MATCH (s:Stream)
-WHERE s.description IS NOT NULL
-RETURN s.name, s.description
-ORDER BY size(s.description) DESC
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 3",Complex aggregation: requires counting across multiple relationship types (MODERATOR to Stream OR User) with HAVING clause
 152,Which 3 streams have the highest ratio of followers to total view count?,"MATCH (s:Stream)
 WHERE s.followers IS NOT NULL AND s.total_view_count IS NOT NULL
 RETURN s.name AS stream, toFloat(s.followers) / s.total_view_count AS follower_to_view_ratio
 ORDER BY follower_to_view_ratio DESC
-LIMIT 3",Query not converted - dropped during processing
-162,What are the names of the first 3 streams that have a moderator with more than 5000 followers?,"MATCH (s:Stream)<-[:MODERATOR]-(m:User)
-WHERE m.followers > 5000
-RETURN s.name
-LIMIT 3",Query not converted - dropped during processing
-171,List the top 5 streams that have chatters with more than 5000 followers.,"MATCH (s:Stream)<-[:CHATTER]-(u:User)
-WHERE u.followers > 5000
-RETURN s.name AS stream, s.url AS url, s.followers AS followers
-ORDER BY s.followers DESC
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 3",Arithmetic expression: requires division (toFloat(followers) / total_view_count) which TypeQL 3.x doesn't support in fetch
 173,Which 3 streams have the most complex descriptions based on word count?,"MATCH (s:Stream)
 WHERE s.description IS NOT NULL
 RETURN s.name, s.description, size(split(s.description, ' ')) AS word_count
 ORDER BY word_count DESC
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3",String function: requires split() and size() which are not available in TypeQL 3.x
 180,What are the first 3 streams that have a chatter with a description longer than 50 words?,"MATCH (s:Stream)<-[:CHATTER]-(u:User)
 WHERE size(split(u.description, ' ')) > 50
 RETURN s.name, s.url
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3","Schema error: User entity doesn't have description attribute, also requires split() function"
 182,List the top 5 streams with the most complex URLs.,"MATCH (s:Stream)
 WHERE s.url IS NOT NULL
 RETURN s.url AS url, s.name AS name
 ORDER BY size(s.url) DESC
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 5",String function: requires size(url) which is not available in TypeQL 3.x
 184,Which 3 streams have the most VIP users who also have more than 5000 followers?,"MATCH (s:Stream)-[:VIP]->(u:User)
 WHERE u.followers > 5000
 WITH s, count(u) AS vipCount
 RETURN s.name AS streamName, vipCount
 ORDER BY vipCount DESC
-LIMIT 3",Query not converted - dropped during processing
-201,Identify the first 3 streams that have moderators with a follower count over 1000.,"MATCH (s:Stream)<-[:MODERATOR]-(m:User)
-WHERE m.followers > 1000
-RETURN s.name AS stream, m.name AS moderator
-ORDER BY s.createdAt
-LIMIT 3",Query not converted - dropped during processing
-207,List the first 3 streams that have chatters who are also streams.,"MATCH (s:Stream)<-[:CHATTER]-(chatter:User)
-WHERE exists{ (chatter:Stream) }
-RETURN s.name AS stream, chatter.name AS chatter
-LIMIT 3",Query not converted - dropped during processing
-218,"List the top 5 streams that have chatters with a total view count over 10,000.","MATCH (s:Stream)<-[:CHATTER]-(u:User)
-WHERE u.total_view_count > 10000
-RETURN s.name AS stream_name, s.total_view_count AS stream_views
-ORDER BY s.total_view_count DESC
-LIMIT 5",Query not converted - dropped during processing
-224,Identify the first 3 streams that have chatters who are users with a follower count below 3000.,"MATCH (s:Stream)<-[:CHATTER]-(u:User)
-WHERE u.followers < 3000
-RETURN s.name AS stream_name, s.url AS stream_url
-ORDER BY s.createdAt
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3","Complex aggregation: requires counting VIP users with filtering (followers > 5000), then ordering by count"
 227,Which streams are played by users with a name containing 'doduik' and have a total view count above 3000?,"MATCH (s:Stream)<-[:PLAYS]-(u:User)
 WHERE u.name CONTAINS 'doduik' AND s.total_view_count > 3000
-RETURN s",Query not converted - dropped during processing
-228,Identify the first 3 streams that have a language set to 'ru' and a moderator with a follower count above 5000.,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(:Language {name: 'ru'})
-MATCH (s)-[:MODERATOR]->(m:User)
-WHERE m.followers > 5000
-RETURN s
-LIMIT 3",Query not converted - dropped during processing
-233,List the top 5 streams with moderators who are users and have a follower count above 2000.,"MATCH (s:Stream)-[:MODERATOR]->(u:User)
-WHERE u.followers > 2000
-RETURN s.name AS stream, s.followers AS followers
-ORDER BY followers DESC
-LIMIT 5",Query not converted - dropped during processing
+RETURN s",Schema incompatibility - Cypher query references attributes or relationships not available in TypeQL schema
 265,"Which game has the fewest streams playing it, listing the first 3 streams?","MATCH (g:Game)<-[:PLAYS]-(s:Stream)
 WITH g, count(s) AS streamCount
 ORDER BY streamCount
 LIMIT 1
 MATCH (g)<-[:PLAYS]-(s:Stream)
 RETURN g.name AS game, s.name AS stream
-LIMIT 3",Query not converted - dropped during processing
-269,What are the first 3 streams that have been played continuously since their creation date without changing the game?,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
-WITH s, g, s.createdAt AS createdAt
-ORDER BY createdAt
-WITH s, g, createdAt, count(DISTINCT g) AS numGames
-WHERE numGames = 1
-RETURN s.name AS streamName, g.name AS gameName, createdAt
-ORDER BY createdAt
-LIMIT 3",Query not converted - dropped during processing
-276,Who are the first 3 stream moderators who have been in that role since before 2015?,"MATCH (s:Stream)-[:MODERATOR]->(m:User)
-WHERE m.createdAt < date('2015-01-01')
-RETURN m.name AS moderator, m.createdAt AS modSince
-ORDER BY m.createdAt
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3","Nested query: requires finding game with fewest streams first, then listing streams for that game"
 282,Which are the first 5 streams that have a language and a game both starting with the same letter?,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language), (s)-[:PLAYS]->(g:Game)
 WHERE left(l.name, 1) = left(g.name, 1)
 RETURN s.name AS stream, l.name AS language, g.name AS game
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 5",String function: requires left() to compare first letters of language and game names
 286,Which 3 streams had the most chatters in the past month?,"MATCH (s:Stream)<-[:CHATTER]-(chatter)
 WHERE s.createdAt >= datetime() - duration('P1M')
 WITH s, count(chatter) AS chatterCount
 RETURN s.name AS streamName, chatterCount
 ORDER BY chatterCount DESC
-LIMIT 3",Query not converted - dropped during processing
-287,Who are the first 5 users who have been moderators in streams with a language other than 'en'?,"MATCH (u:User)-[:MODERATOR]->(s:Stream)-[:HAS_LANGUAGE]->(l:Language)
-WHERE l.name <> 'en'
-RETURN u.name AS user, u.createdAt AS created_at
-ORDER BY u.createdAt
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 3",Datetime arithmetic: requires datetime() - duration('P1M') which TypeQL doesn't support. Also requires aggregation with ordering.
 288,List the top 3 games played by streams with a description length over 50 characters.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
 WHERE size(s.description) > 50
 RETURN g.name AS game, count(*) AS streams
 ORDER BY streams DESC
-LIMIT 3",Query not converted - dropped during processing
-289,"Which streams are the first 3 that have a VIP user with over 500,000 followers?","MATCH (s:Stream)-[:VIP]->(u:User)
-WHERE u.followers > 500000
-RETURN s.name AS stream_name, u.name AS vip_user
-ORDER BY u.followers DESC
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3",String function + aggregation: requires size(description) and then count(*) grouped by game
 291,Which game is streamed by the most teams and list the first 3 teams?,"MATCH (g:Game)<-[:PLAYS]-(s:Stream)<-[:HAS_TEAM]-(t:Team)
 WITH g, count(distinct t) as teamCount, collect(t.name) as teams
 ORDER BY teamCount DESC
 LIMIT 1
-RETURN g.name as game, teamCount, teams[..3] as topTeams",Query not converted - dropped during processing
-296,List the first 5 streams that have been moderated by the same user for over 5 years.,"MATCH (s:Stream)-[:MODERATOR]->(u:User)
-WHERE u.createdAt < datetime() - duration('P5Y')
-WITH s, u
-ORDER BY s.createdAt
-LIMIT 5
-RETURN s.name AS stream, u.name AS moderator",Query not converted - dropped during processing
+RETURN g.name as game, teamCount, teams[..3] as topTeams","Complex nested query: requires finding game with most teams, then listing those teams"
 300,What are the first 3 streams that are part of a team with the most streams?,"MATCH (s:Stream)-[:HAS_TEAM]->(t:Team)
 WITH t, count(s) AS streamCount
 ORDER BY streamCount DESC
 LIMIT 1
 MATCH (s:Stream)-[:HAS_TEAM]->(t)
 RETURN s.name AS streamName
-LIMIT 3",Query not converted - dropped during processing
-301,List the first 5 games with streams that have been active for over 10 years.,"MATCH (g:Game)<-[:PLAYS]-(s:Stream)
-WHERE s.createdAt < datetime() - duration('P10Y')
-RETURN g.name AS game, count(s) AS num_streams
-ORDER BY num_streams DESC
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 3","Nested query: requires finding team with most streams first, then listing streams in that team"
 304,List the first 3 streams that have a game and team name starting with the same letter.,"MATCH (s:Stream)-[:PLAYS]->(g:Game), (s)-[:HAS_TEAM]->(t:Team)
 WHERE left(g.name, 1) = left(t.name, 1)
 RETURN s.name AS stream, g.name AS game, t.name AS team
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3",String function: requires left() to compare first letters of game and team names
 306,Who are the first 5 moderators in streams that have changed games at least twice?,"MATCH (s:Stream)-[:PLAYS]->(:Game)
 WITH s, count(DISTINCT s) AS gameCount
 WHERE gameCount >= 2
 MATCH (s)<-[:MODERATOR]-(m:User)
 RETURN m.name AS moderator
 ORDER BY m.name
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 5","Complex aggregation: requires counting distinct games per stream, filtering by count >= 2"
 314,Who are the first 3 moderators for the oldest stream?,"MATCH (s:Stream)<-[:MODERATOR]-(m:User)
 WITH s, m
 ORDER BY s.createdAt
 LIMIT 1
-RETURN s.name AS stream, collect(m.name)[..3] AS moderators",Query not converted - dropped during processing
+RETURN s.name AS stream, collect(m.name)[..3] AS moderators","Nested query with collection slicing: requires finding oldest stream first, then collecting/slicing moderators"
 316,Which are the first 3 streams that have had a VIP relationship with the same user for over 3 years?,"MATCH (s:Stream)-[r:VIP]->(u:User)
 WHERE duration.between(r.createdAt, date()).years >= 3
 WITH s, u
 ORDER BY r.createdAt
 LIMIT 3
-RETURN s.name AS stream, u.name AS user",Query not converted - dropped during processing
+RETURN s.name AS stream, u.name AS user",Schema incompatibility - Cypher query references attributes or relationships not available in TypeQL schema
 320,List the first 5 streams that have the most languages associated with them.,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)
 RETURN s.name AS stream, collect(l.name) AS languages
 ORDER BY size(collect(l.name)) DESC
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 5",Aggregation with ordering: requires collecting languages per stream and ordering by collection size
 321,"Which streams have been moderated by users with the most followers, listing the top 3?","MATCH (s:Stream)<-[:MODERATOR]-(u:User)
 WITH s, max(u.followers) AS max_followers
 ORDER BY max_followers DESC
 LIMIT 3
-RETURN s.name AS stream, max_followers",Query not converted - dropped during processing
+RETURN s.name AS stream, max_followers","Aggregation: requires max(followers) grouped by stream, then ordering"
 322,Name the first 5 streams that have a game with the shortest name.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
 RETURN s.name AS stream, g.name AS game
 ORDER BY size(g.name)
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 5",String function: requires size(game.name) for ordering
 323,"List the first 3 games that have been featured in streams with a team having over 1,000 followers.","MATCH (s:Stream)-[:HAS_TEAM]->(t:Team), (s)-[:PLAYS]->(g:Game)
 WHERE t.followers > 1000
 RETURN g.name AS game
 ORDER BY g.name
-LIMIT 3",Query not converted - dropped during processing
-326,List the first 5 streams that have been in the same language and game for over 5 years.,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language), (s)-[:PLAYS]->(g:Game)
-WHERE s.createdAt < datetime() - duration('P5Y')
-RETURN s.name AS stream, l.name AS language, g.name AS game
-ORDER BY s.createdAt
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 3",Schema incompatibility - Cypher query references attributes or relationships not available in TypeQL schema
 331,Who are the first 3 VIPs in streams with the most languages spoken?,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)
 WITH s, count(l) AS languageCount
 ORDER BY languageCount DESC
 LIMIT 1
 MATCH (s)-[:VIP]->(vip:User)
 RETURN vip.name
-LIMIT 3",Query not converted - dropped during processing
-332,"What are the first 5 streams that have been active for over 5 years and have over 100,000 followers?","MATCH (s:Stream)
-WHERE s.createdAt < datetime() - duration('P5Y') AND s.followers > 100000
-RETURN s.name AS stream_name, s.createdAt AS created_at, s.followers AS follower_count
-ORDER BY s.createdAt
-LIMIT 5",Query not converted - dropped during processing
-359,Find the descriptions of streams that have chatted with the user '9linda'.,"MATCH (s:Stream)-[:CHATTER]->(:User {name: '9linda'})
-WHERE s.description IS NOT NULL
-RETURN s.description",Query not converted - dropped during processing
-423,"List the streams that have VIP users with less than 10,000 followers.","MATCH (s:Stream)-[:VIP]->(u:User)
-WHERE u.followers < 10000
-RETURN s",Query not converted - dropped during processing
+LIMIT 3","Nested query: requires finding stream with most languages first, then listing VIPs"
 438,Which users are VIPs for the stream with the highest follower count?,"MATCH (s:Stream)
 WITH s
 ORDER BY s.followers DESC
 LIMIT 1
 MATCH (s)<-[:VIP]-(u:User)
-RETURN u.name AS user, s.name AS stream",Query not converted - dropped during processing
-442,Show the 3 streams that have the longest descriptions.,"MATCH (s:Stream)
-WHERE s.description IS NOT NULL
-RETURN s.name, s.description
-ORDER BY size(s.description) DESC
-LIMIT 3",Query not converted - dropped during processing
+RETURN u.name AS user, s.name AS stream","Nested query: requires finding stream with highest followers first, then listing VIPs"
 459,Show the streams that have been moderated by a user more than once.,"MATCH (s:Stream)<-[:MODERATOR]-(u:User)
 WITH s, u, count(*) AS modCount
 WHERE modCount > 1
-RETURN s, u, modCount",Query not converted - dropped during processing
+RETURN s, u, modCount","Complex aggregation: requires counting moderations per (stream, user) pair and filtering by count > 1"
 473,Which streams are part of a team with the most streams associated?,"MATCH (t:Team)<-[:HAS_TEAM]-(s:Stream)
 WITH t, count(s) AS stream_count
 ORDER BY stream_count DESC
 LIMIT 1
 MATCH (t)<-[:HAS_TEAM]-(stream:Stream)
-RETURN stream",Query not converted - dropped during processing
-483,"List the streams that are moderated by users with more than 10,000 followers.","MATCH (s:Stream)<-[:MODERATOR]-(u:User)
-WHERE u.followers > 10000
-RETURN s",Query not converted - dropped during processing
+RETURN stream","Nested query: requires finding team with most streams first, then listing those streams"
 491,List the top 5 streams that are part of the team with the newest creation date.,"MATCH (s:Stream)-[:HAS_TEAM]->(t:Team)
 WITH t
 ORDER BY t.createdAt DESC
@@ -255,12 +143,7 @@ LIMIT 1
 MATCH (s:Stream)-[:HAS_TEAM]->(t)
 RETURN s.name AS stream, s.total_view_count AS views
 ORDER BY views DESC
-LIMIT 5",Query not converted - dropped during processing
-526,Name the streams that are VIPs in the stream named 'itsbigchase'.,"MATCH (s:Stream)-[:VIP]->(stream:Stream {name: 'itsbigchase'})
-RETURN s.name AS stream_name",Query not converted - dropped during processing
-533,List the streams that have the same game played by both itsbigchase and 9linda.,"MATCH (s1:Stream)<-[:CHATTER]-(u1:User {name: 'itsbigchase'})-[:PLAYS]->(g:Game)<-[:PLAYS]-(u2:User {name: '9linda'})-[:CHATTER]->(s2:Stream)
-WHERE s1 = s2
-RETURN s1",Query not converted - dropped during processing
+LIMIT 5","Nested query: requires finding team with newest creation date first, then listing streams"
 535,Name the top 3 users who are moderators in the stream with the highest follower count.,"MATCH (s:Stream)
 WITH s
 ORDER BY s.followers DESC
@@ -268,10 +151,4 @@ LIMIT 1
 MATCH (s)<-[:MODERATOR]-(u:User)
 RETURN u.name
 ORDER BY u.followers DESC
-LIMIT 3",Query not converted - dropped during processing
-543,Identify the first 3 games played by streams that have at least 5000 followers.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
-WHERE s.followers >= 5000
-WITH g, s
-ORDER BY s.createdAt
-RETURN g.name AS game, collect(s.name)[0..2] AS streams
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3","Nested query: requires finding stream with highest followers first, then listing moderators"

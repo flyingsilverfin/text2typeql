@@ -9860,3 +9860,267 @@ limit 5;
 fetch {
   ""title"": $title, ""vote_count"": $vote_count
 };"
+143,What are the original languages for the top 5 movies based on average vote?,"MATCH (m:Movie)-[:ORIGINAL_LANGUAGE]->(l:Language)
+WITH m, l
+ORDER BY m.average_vote DESC
+LIMIT 5
+RETURN m.title AS movie, l.name AS original_language","match
+  $m isa movie, has title $title, has average_vote $vote;
+  (media: $m, language: $l) isa original_language;
+  $l has language_name $lang_name;
+sort $vote desc;
+limit 5;
+fetch { ""movie"": $title, ""original_language"": $lang_name };"
+255,Which 3 movies have the highest average vote?,"MATCH (m:Movie)
+WHERE m.average_vote IS NOT NULL
+RETURN m.title, m.average_vote
+ORDER BY m.average_vote DESC
+LIMIT 3","match
+  $m isa movie, has title $title, has average_vote $vote;
+sort $vote desc;
+limit 3;
+fetch { ""title"": $title, ""average_vote"": $vote };"
+508,What are the top 3 most voted movies in the database?,"MATCH (m:Movie)
+WHERE m.vote_count IS NOT NULL
+RETURN m.title, m.vote_count
+ORDER BY m.vote_count DESC
+LIMIT 3","match
+  $m isa movie, has title $title, has vote_count $votes;
+sort $votes desc;
+limit 3;
+fetch { ""title"": $title, ""vote_count"": $votes };"
+638,List the first 3 genres that have movies with no keywords associated.,"MATCH (g:Genre)
+WHERE NOT EXISTS {
+  (g)<-[:IN_GENRE]-(:Movie)-[:HAS_KEYWORD]->(:Keyword)
+}
+RETURN g.name
+LIMIT 3","match
+  $g isa genre, has genre_name $name;
+  (media: $m, genre: $g) isa in_genre;
+  $m isa movie;
+  not { (media: $m, keyword: $k) isa has_keyword; };
+limit 3;
+fetch { ""name"": $name };"
+737,Which 3 packages have the highest price?,"MATCH (p:Package)
+RETURN p.name AS package, p.price AS price
+ORDER BY p.price DESC
+LIMIT 3","match
+  $p isa package, has package_name $name, has package_price $price;
+sort $price desc;
+limit 3;
+fetch { ""package"": $name, ""price"": $price };"
+778,List the first 3 countries where movies with an average vote above 8 were produced.,"MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(c:Country)
+WHERE m.average_vote > 8
+RETURN DISTINCT c.name
+LIMIT 3","match
+  $m isa movie, has average_vote $vote;
+  $vote > 8;
+  (media: $m, country: $c) isa produced_in_country;
+  $c has country_name $name;
+limit 3;
+fetch { ""name"": $name };"
+110,What are the top 5 movies with the most user ratings?,"MATCH (m:Movie)<-[r:RATED]-(:User)
+RETURN m.title, count(r) AS num_ratings
+ORDER BY num_ratings DESC
+LIMIT 5","match
+  $m isa movie, has title $title_m;
+  $r (reviewer: $u, rated_media: $m) isa rated;
+reduce $count = count($r);
+sort $count desc;
+limit 5;
+fetch { ""count"": $count };"
+118,Who are the first 3 actors in the cast list of 'Toy Story'?,"MATCH (m:Movie {title: 'Toy Story'})<-[:CAST_FOR]-(p:Person)
+RETURN p.name
+ORDER BY p.id
+LIMIT 3","match
+  $m isa movie, has title ""Toy Story"";
+  $c (actor: $p, film: $m) isa cast_for, has cast_order $order;
+  $p has person_name $name;
+sort $order asc;
+limit 3;
+fetch { ""name"": $name };"
+126,What are the top 3 countries by the number of adult films produced?,"MATCH (c:Country)<-[:PRODUCED_IN_COUNTRY]-(a:Adult)
+RETURN c.name AS country, count(a) AS adultFilmCount
+ORDER BY adultFilmCount DESC
+LIMIT 3","match
+  $c isa country, has country_name $name_c;
+  (media: $a, country: $c) isa produced_in_country;
+  $a isa adult;
+reduce $count = count($a);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
+411,Name the top 3 directors who have worked on movies with an average vote greater than 7.5.,"MATCH (p:Person)-[:CREW_FOR {job: 'Director'}]->(m:Movie)
+WHERE m.average_vote > 7.5
+WITH p, count(m) AS num_movies, avg(m.average_vote) AS avg_rating
+ORDER BY avg_rating DESC
+LIMIT 3
+RETURN p.name AS director, num_movies, avg_rating","match
+  $p isa person, has person_name $name_p;
+  $crew (crew_member: $p, film: $m) isa crew_for, has job ""Director"";
+  $m isa movie, has average_vote $vote;
+  $vote > 7.5;
+reduce $count = count($m);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
+511,Which movies have been most frequently rated by users?,"MATCH (m:Movie)<-[r:RATED]-(:User)
+RETURN m.title AS movie, count(r) AS num_ratings
+ORDER BY num_ratings DESC
+LIMIT 10","match
+  $m isa movie, has title $title_m;
+  $r (reviewer: $u, rated_media: $m) isa rated;
+reduce $count = count($r);
+sort $count desc;
+limit 10;
+fetch { ""count"": $count };"
+611,List the first 3 video titles that have been produced by 'Pixar Animation Studios'.,"MATCH (v:Video)-[:PRODUCED_BY]->(c:ProductionCompany {name: 'Pixar Animation Studios'})
+RETURN v.title
+LIMIT 3","match
+  $v isa video, has title $title;
+  $pc isa production_company, has production_company_name ""Pixar Animation Studios"";
+  (media: $v, producer: $pc) isa produced_by;
+limit 3;
+fetch { ""title"": $title };"
+620,List the first 3 genres that are accessed by the 'Ultimate' package.,"MATCH (p:Package {name: 'Ultimate'})-[:PROVIDES_ACCESS_TO]->(g:Genre)
+RETURN g.name
+LIMIT 3","match
+  $p isa package, has package_name ""Ultimate"";
+  (package: $p, genre: $g) isa provides_access_to;
+  $g has genre_name $name;
+limit 3;
+fetch { ""name"": $name };"
+643,What are the top 5 countries by the number of videos produced there?,"MATCH (c:Country)<-[:PRODUCED_IN_COUNTRY]-(v:Video)
+RETURN c.name AS country, count(v) AS videoCount
+ORDER BY videoCount DESC
+LIMIT 5","match
+  $c isa country, has country_name $name_c;
+  (media: $v, country: $c) isa produced_in_country;
+  $v isa video;
+reduce $count = count($v);
+sort $count desc;
+limit 5;
+fetch { ""count"": $count };"
+735,What are the top 3 collections with the most movies included?,"MATCH (c:Collection)<-[:IN_COLLECTION]-(m:Movie)
+RETURN c.name AS collection, count(m) AS num_movies
+ORDER BY num_movies DESC
+LIMIT 3","match
+  $c isa collection, has collection_name $name_c;
+  (media: $m, collection: $c) isa in_collection;
+  $m isa movie;
+reduce $count = count($m);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
+741,Which 3 genres are most commonly associated with videos that have a budget over 100000 USD?,"MATCH (v:Video)-[:IN_GENRE]->(g:Genre)
+WHERE v.budget > 100000
+RETURN g.name AS genre, count(*) AS frequency
+ORDER BY frequency DESC
+LIMIT 3","match
+  $v isa video, has budget $budget;
+  $budget > 100000;
+  (media: $v, genre: $g) isa in_genre;
+  $g has genre_name $name_g;
+reduce $count = count($v);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
+774,List the first 3 movies that have been rated by the highest number of users.,"MATCH (m:Movie)<-[r:RATED]-(:User)
+WITH m, count(r) AS numRatings
+ORDER BY numRatings DESC
+LIMIT 3
+RETURN m.title AS movie, numRatings","match
+  $m isa movie, has title $title_m;
+  $r (reviewer: $u, rated_media: $m) isa rated;
+reduce $count = count($r);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
+777,Which 3 languages are most commonly found in movies with a poster path featuring '/9'?,"MATCH (m:Movie)
+WHERE m.poster_path CONTAINS '/9'
+WITH m
+MATCH (m)-[:SPOKEN_IN_LANGUAGE]->(l:Language)
+RETURN l.name AS language, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","match
+  $m isa movie, has poster_path $path;
+  $path like "".*/9.*"";
+  (media: $m, language: $l) isa spoken_in_language;
+  $l has language_name $name_l;
+reduce $count = count($m);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
+797,List the first 3 countries where the most English language movies are produced.,"MATCH (m:Movie)-[:ORIGINAL_LANGUAGE]->(:Language {name: 'English'})-[:PRODUCED_IN_COUNTRY]->(c:Country)
+RETURN c.name AS country, count(*) AS englishMovieCount
+ORDER BY englishMovieCount DESC
+LIMIT 3","match
+  $m isa movie;
+  (media: $m, language: $l) isa original_language;
+  $l has language_name ""English"";
+  (media: $m, country: $c) isa produced_in_country;
+  $c has country_name $name_c;
+reduce $count = count($m);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
+819,List the first 3 genres of movies with the highest average vote count.,"MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)
+WITH g, avg(m.vote_count) AS avg_votes
+ORDER BY avg_votes DESC
+LIMIT 3
+RETURN g.name AS genre, avg_votes","match
+  $m isa movie, has vote_count $votes;
+  (media: $m, genre: $g) isa in_genre;
+  $g has genre_name $name_g;
+reduce $avg = mean($votes);
+sort $avg desc;
+limit 3;
+fetch { ""avg"": $avg };"
+826,Which 3 languages are spoken in the most films with a poster featuring '/rh'?,"MATCH (m:Movie)
+WHERE m.poster_path CONTAINS '/rh'
+WITH m
+MATCH (m)-[:SPOKEN_IN_LANGUAGE]->(l:Language)
+RETURN l.name AS language, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","match
+  $m isa movie, has poster_path $path;
+  $path like "".*/rh.*"";
+  (media: $m, language: $l) isa spoken_in_language;
+  $l has language_name $name_l;
+reduce $count = count($m);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
+848,List the first 3 movies with the highest number of directors.,"MATCH (m:Movie)<-[:CREW_FOR]-(p:Person)
+WHERE p.job = 'Director'
+WITH m, count(p) AS num_directors
+ORDER BY num_directors DESC
+RETURN m.title AS movie, num_directors
+LIMIT 3","match
+  $m isa movie, has title $title_m;
+  $crew (crew_member: $p, film: $m) isa crew_for, has job ""Director"";
+reduce $count = count($p);
+sort $count desc;
+limit 3;
+fetch { ""count"": $count };"
+854,What are the top 5 genres with the most movies having a poster path that starts with '/rh'?,"MATCH (g:Genre)<-[:IN_GENRE]-(m:Movie)
+WHERE m.poster_path STARTS WITH '/rh'
+RETURN g.name AS genre, count(m) AS movie_count
+ORDER BY movie_count DESC
+LIMIT 5","match
+  $m isa movie, has poster_path $path;
+  $path like ""/rh.*"";
+  (media: $m, genre: $g) isa in_genre;
+  $g has genre_name $name_g;
+reduce $count = count($m);
+sort $count desc;
+limit 5;
+fetch { ""count"": $count };"
+475,Name the first 3 movies that have a poster path ending in '/pQFoyx7rp09CJTAb932F2g8Nlho.jpg'.,"MATCH (m:Movie)
+WHERE m.poster_path ENDS WITH '/pQFoyx7rp09CJTAb932F2g8Nlho.jpg'
+RETURN m.title
+LIMIT 3","match
+  $m isa movie, has title $title, has poster_path $path;
+  $path like "".*pQFoyx7rp09CJTAb932F2g8Nlho.jpg"";
+limit 3;
+fetch { ""title"": $title };"

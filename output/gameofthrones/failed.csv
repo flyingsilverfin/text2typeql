@@ -2,94 +2,37 @@ original_index,question,cypher,error
 7,Identify three characters whose fastrf_embedding includes a value greater than 1.,"MATCH (c:Character)
 WHERE any(x IN c.fastrf_embedding WHERE x > 1)
 RETURN c.name
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3",Array indexing/iteration not supported in TypeQL - no equivalent syntax
 16,Which characters have a fastrf_embedding first element below 0?,"MATCH (c:Character)
 WHERE c.fastrf_embedding[0] < 0
-RETURN c.name",Query not converted - dropped during processing
-35,What are the names of characters who interact with 'Theon-Greyjoy' in any book? List up to 5.,"MATCH (c:Character)-[:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->(:Character {name: 'Theon-Greyjoy'})
-RETURN c.name
-LIMIT 5",Query not converted - dropped during processing
-45,Identify the top 5 characters by 'book45PageRank' who are in the same community as 'Murenmure'.,"MATCH (c:Character)
-WHERE c.name = 'Murenmure'
-WITH c.community AS community
-MATCH (other:Character)
-WHERE other.community = community
-RETURN other.name, other.book45PageRank
-ORDER BY other.book45PageRank DESC
-LIMIT 5",Query not converted - dropped during processing
+RETURN c.name",Array indexing/iteration not supported in TypeQL - no equivalent syntax
 63,Identify the characters with 'fastrf_embedding' values that start with a positive number. List the first 5.,"MATCH (c:Character)
 WHERE c.fastrf_embedding[0] >= 0
 RETURN c.name
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 5",Array indexing/iteration not supported in TypeQL - no equivalent syntax
 87,Identify the characters with 'fastrf_embedding' values that start with a negative number. List the first 5.,"MATCH (c:Character)
 WHERE c.fastrf_embedding[0] < 0
 RETURN c.name
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 5",Array indexing/iteration not supported in TypeQL - no equivalent syntax
 104,Find all characters with fastrf_embedding values that include more than 0.5 in any dimension.,"MATCH (c:Character)
 WHERE any(x IN c.fastrf_embedding WHERE x > 0.5)
-RETURN c",Query not converted - dropped during processing
-114,Which characters are in the same community as Daenerys Targaryen?,"MATCH (d:Character {name: 'Daenerys Targaryen'})-[:INTERACTS*0..]->(c:Character)
-WHERE d.community = c.community
-RETURN c.name",Query not converted - dropped during processing
-115,Who are the top 5 characters with the lowest book1BetweennessCentrality?,"MATCH (c:Character)
-WHERE c.book1BetweennessCentrality IS NOT NULL
-RETURN c.name AS character, c.book1BetweennessCentrality AS centrality
-ORDER BY centrality
-LIMIT 5",Query not converted - dropped during processing
-120,List the characters whose name starts with 'A'.,"MATCH (c:Character)
-WHERE c.name STARTS WITH 'A'
-RETURN c.name",Query not converted - dropped during processing
+RETURN c",Array indexing/iteration not supported in TypeQL - no equivalent syntax
 122,Identify characters with a fastrf_embedding first element greater than 0.5.,"MATCH (c:Character)
 WHERE c.fastrf_embedding[0] > 0.5
-RETURN c.name",Query not converted - dropped during processing
-123,Who are the characters with the lowest book45PageRank?,"MATCH (c:Character)
-WHERE c.book45PageRank IS NOT NULL
-RETURN c.name, c.book45PageRank
-ORDER BY c.book45PageRank
-LIMIT 5",Query not converted - dropped during processing
-135,Identify the characters who interact with 'Theon-Greyjoy' in any book.,"MATCH (c:Character)-[:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->(theon:Character {name: 'Theon-Greyjoy'})
-RETURN c.name AS character",Query not converted - dropped during processing
+RETURN c.name",Array indexing/iteration not supported in TypeQL - no equivalent syntax
 137,List characters whose fastrf_embedding tenth element is less than -0.5.,"MATCH (c:Character)
 WHERE c.fastrf_embedding[9] < -0.5
-RETURN c.name",Query not converted - dropped during processing
-143,List all characters whose name ends in 'Targaryen'.,"MATCH (c:Character)
-WHERE c.name ENDS WITH 'Targaryen'
-RETURN c",Query not converted - dropped during processing
+RETURN c.name",Array indexing/iteration not supported in TypeQL - no equivalent syntax
 150,List the characters whose fastrf_embedding fifth element is greater than 0.5.,"MATCH (c:Character)
 WHERE c.fastrf_embedding[4] > 0.5
-RETURN c.name",Query not converted - dropped during processing
-171,Find characters in the top 3 communities by number of members.,"MATCH (c:Character)
-WITH c.community AS community, count(*) AS members
-ORDER BY members DESC
-LIMIT 3
-WITH collect(community) AS top_communities
-MATCH (c:Character)
-WHERE c.community IN top_communities
-RETURN c.name AS character, c.community AS community",Query not converted - dropped during processing
-173,List characters with the lowest 5 book1PageRanks.,"MATCH (c:Character)
-WHERE c.book1PageRank IS NOT NULL
-RETURN c.name AS character, c.book1PageRank AS pageRank
-ORDER BY pageRank
-LIMIT 5",Query not converted - dropped during processing
-183,Find characters connected by any INTERACTS relationship with a weight over 200.,"MATCH (c1:Character)-[r:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->(c2:Character)
-WHERE r.weight > 200
-RETURN c1.name, r, c2.name",Query not converted - dropped during processing
+RETURN c.name",Array indexing/iteration not supported in TypeQL - no equivalent syntax
 192,Which characters belong to the community with the highest number of relationships?,"MATCH (c:Character)
 WITH c.community AS community, count(c) AS num_characters, count{(c)-[:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->()} AS num_relationships
 ORDER BY num_relationships DESC
 LIMIT 1
 WITH community
 MATCH (c:Character {community: community})
-RETURN c.name AS character",Query not converted - dropped during processing
-197,Find characters with a book45PageRank in the top 5 highest values.,"MATCH (c:Character)
-WITH c
-ORDER BY c.book45PageRank DESC
-LIMIT 5
-RETURN c.name AS character, c.book45PageRank AS book45PageRank",Query not converted - dropped during processing
-206,Identify the top 3 most frequent communities in INTERACTS relationships.,"MATCH (c1:Character)-[i:INTERACTS]->(c2:Character)
-RETURN c1.community, count(*) AS frequency
-ORDER BY frequency DESC
-LIMIT 3",Query not converted - dropped during processing
+RETURN c.name AS character",Count subqueries require nested query execution not supported in TypeQL
 222,Which characters belong to the community with the lowest number of relationships?,"MATCH (c:Character)
 WHERE c.community IS NOT NULL
 WITH c.community AS community, count{(c)-[:INTERACTS]->()} AS num_relationships
@@ -97,161 +40,50 @@ ORDER BY num_relationships
 LIMIT 1
 WITH community
 MATCH (c:Character {community: community})
-RETURN c.name AS character",Query not converted - dropped during processing
-227,Find characters with a book45PageRank in the top 10 highest values.,"MATCH (c:Character)
-WITH c
-ORDER BY c.book45PageRank DESC
-LIMIT 10
-RETURN c.name AS character, c.book45PageRank AS book45PageRank",Query not converted - dropped during processing
-236,Identify the top 5 most frequent communities in INTERACTS1 relationships.,"MATCH (c1:Character)-[i:INTERACTS1]->(c2:Character)
-RETURN c1.community AS community, count(*) AS frequency
-ORDER BY frequency DESC
-LIMIT 5",Query not converted - dropped during processing
-254,Who has the highest weight in an INTERACTS1 relationship?,"MATCH (c1:Character)-[r:INTERACTS1]->(c2:Character)
-WITH r
-ORDER BY r.weight DESC
-LIMIT 1
-MATCH (c1:Character)-[r]->(c2:Character)
-RETURN c1.name, c2.name, r.weight",Query not converted - dropped during processing
-256,Which characters have the least centrality but more than 30 degree?,"MATCH (c:Character)
-WHERE c.centrality IS NOT NULL AND c.degree > 30
-RETURN c.name, c.centrality, c.degree
-ORDER BY c.centrality ASC
-LIMIT 10",Query not converted - dropped during processing
-263,Who are the top 3 characters with the lowest book1BetweennessCentrality?,"MATCH (c:Character)
-WHERE c.book1BetweennessCentrality IS NOT NULL
-RETURN c.name AS character, c.book1BetweennessCentrality AS centrality
-ORDER BY centrality
-LIMIT 3",Query not converted - dropped during processing
-270,Who are the top 5 characters with the highest book1PageRank?,"MATCH (c:Character)
-WHERE c.book1PageRank IS NOT NULL
-RETURN c.name, c.book1PageRank
-ORDER BY c.book1PageRank DESC
-LIMIT 5",Query not converted - dropped during processing
-280,Who are the top 5 characters with the lowest book45PageRank?,"MATCH (c:Character)
-WHERE c.book45PageRank IS NOT NULL
-RETURN c.name, c.book45PageRank
-ORDER BY c.book45PageRank
-LIMIT 5",Query not converted - dropped during processing
-299,Who are the top 5 characters with the lowest book1PageRank?,"MATCH (c:Character)
-WHERE c.book1PageRank IS NOT NULL
-RETURN c.name, c.book1PageRank
-ORDER BY c.book1PageRank
-LIMIT 5",Query not converted - dropped during processing
-311,Who are the top 5 characters with the lowest centrality?,"MATCH (c:Character)
-WHERE c.centrality IS NOT NULL
-RETURN c.name, c.centrality
-ORDER BY c.centrality
-LIMIT 5",Query not converted - dropped during processing
-320,Who are the top 3 characters with the lowest book45PageRank?,"MATCH (c:Character)
-WHERE c.book45PageRank IS NOT NULL
-RETURN c.name, c.book45PageRank
-ORDER BY c.book45PageRank
-LIMIT 3",Query not converted - dropped during processing
-336,Name 3 characters from the community with the highest number of members.,"MATCH (c:Character)
-WITH c.community AS community, count(*) AS members
-ORDER BY members DESC
-LIMIT 1
-WITH collect(community)[0] AS top_community
-MATCH (c:Character {community: top_community})
-RETURN c.name
-LIMIT 3",Query not converted - dropped during processing
-337,List the top 3 characters with the least betweenness centrality in book 1.,"MATCH (c:Character)
-WHERE c.book1BetweennessCentrality IS NOT NULL
-RETURN c.name AS character, c.book1BetweennessCentrality AS betweenness 
-ORDER BY betweenness
-LIMIT 3",Query not converted - dropped during processing
+RETURN c.name AS character",Count subqueries require nested query execution not supported in TypeQL
 343,Find 3 characters with fastrf_embedding values where the first element is greater than 0.5.,"MATCH (c:Character)
 WHERE c.fastrf_embedding[0] > 0.5
 RETURN c.name, c.fastrf_embedding
-LIMIT 3",Query not converted - dropped during processing
-345,Identify characters who have both high pagerank and high degree of centrality. Limit to top 5.,"MATCH (c:Character)
-WHERE c.pagerank IS NOT NULL AND c.centrality IS NOT NULL
-RETURN c.name AS character, c.pagerank AS pagerank, c.centrality AS centrality
-ORDER BY c.pagerank DESC, c.centrality DESC
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 3",Array indexing/iteration not supported in TypeQL - no equivalent syntax
 348,List the top 5 characters based on the sum weight of their INTERACTS1 and INTERACTS2 relationships.,"MATCH (c:Character)
 OPTIONAL MATCH (c)-[i1:INTERACTS1]->(other1)
 OPTIONAL MATCH (c)-[i2:INTERACTS2]->(other2)
 WITH c, sum(i1.weight) AS weight1, sum(i2.weight) AS weight2
 RETURN c.name AS character, weight1 + weight2 AS totalWeight
 ORDER BY totalWeight DESC
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 5",OPTIONAL MATCH with aggregation requires LEFT JOIN semantics not in TypeQL
 349,Find 3 characters with the most diverse fastrf_embedding values (considering range between max and min in the list).,"MATCH (c:Character)
 WHERE c.fastrf_embedding IS NOT NULL
 WITH c, max(c.fastrf_embedding) AS maxVal, min(c.fastrf_embedding) AS minVal
 RETURN c.name AS character, maxVal - minVal AS embeddingRange
 ORDER BY embeddingRange DESC
-LIMIT 3",Query not converted - dropped during processing
-352,Identify the top 3 characters with the lowest pagerank but who interact in book 45.,"MATCH (c:Character)-[:INTERACTS45]->(other:Character)
-WHERE exists {(c)-[:INTERACTS45]->()} 
-RETURN c.name, c.pagerank
-ORDER BY c.pagerank
-LIMIT 3",Query not converted - dropped during processing
-356,List 3 characters with a book1PageRank less than 1 but an INTERACTS weight greater than 150.,"MATCH (c:Character)
-WHERE c.book1PageRank < 1 AND EXISTS {
-  (c)-[i:INTERACTS]->(:Character)
-  WHERE i.weight > 150
-}
-RETURN c.name
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3",Array min/max operations not supported in TypeQL
 359,Identify the top 3 characters based on the sum of their centrality values across all books.,"MATCH (c:Character)
 WITH c, c.centrality + c.book45PageRank + c.book1BetweennessCentrality + c.book1PageRank + c.pagerank AS totalCentrality
 RETURN c.name AS character, totalCentrality
 ORDER BY totalCentrality DESC
-LIMIT 3",Query not converted - dropped during processing
-360,List the characters with the highest sum of INTERACTS weights across all books. Limit to top 5.,"MATCH (c:Character)-[i:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->(other)
-WITH c, sum(i.weight) AS totalWeight
-ORDER BY totalWeight DESC
-LIMIT 5
-RETURN c.name AS character, totalWeight",Query not converted - dropped during processing
+LIMIT 3",Arithmetic expressions on attributes not supported in TypeQL fetch
 361,Who are the top 3 characters based on the combination of book1PageRank and book45PageRank?,"MATCH (c:Character)
 WHERE c.book1PageRank IS NOT NULL AND c.book45PageRank IS NOT NULL
 RETURN c.name AS character, c.book1PageRank + c.book45PageRank AS combinedPageRank
 ORDER BY combinedPageRank DESC
-LIMIT 3",Query not converted - dropped during processing
-367,Which characters are in the top 5 for louvain community size?,"MATCH (c:Character)
-WITH c.louvain AS community, count(*) AS size
-ORDER BY size DESC
-LIMIT 5
-MATCH (c:Character)
-WHERE c.louvain = community
-RETURN community, collect(c.name) AS characters",Query not converted - dropped during processing
+LIMIT 3",Arithmetic expressions on attributes not supported in TypeQL fetch
 374,Who are the top 3 characters based on the sum of weights in their INTERACTS and INTERACTS3 relationships?,"MATCH (c:Character)
 OPTIONAL MATCH (c)-[i:INTERACTS]->()
 OPTIONAL MATCH (c)-[i3:INTERACTS3]->()
 WITH c, sum(i.weight) AS interactsWeight, sum(i3.weight) AS interacts3Weight
 RETURN c.name AS character, interactsWeight + interacts3Weight AS totalWeight
 ORDER BY totalWeight DESC
-LIMIT 3",Query not converted - dropped during processing
-376,Identify the top 5 characters based on the average of their centrality values across all books.,"MATCH (c:Character)
-WHERE c.centrality IS NOT NULL
-  AND exists {(c)-[:INTERACTS1]->()}
-  AND exists {(c)-[:INTERACTS2]->()}
-  AND exists {(c)-[:INTERACTS3]->()}
-  AND exists {(c)-[:INTERACTS45]->()}
-WITH c, 
-  (coalesce(c.book1PageRank, 0) + 
-   coalesce(c.book45PageRank, 0) +
-   coalesce(c.pagerank, 0)) / 3 AS avgCentrality
-RETURN c.name AS character, avgCentrality
-ORDER BY avgCentrality DESC
-LIMIT 5",Query not converted - dropped during processing
-382,List the characters with a pagerank above 0.5 and an INTERACTS weight over 200.,"MATCH (c:Character)
-WHERE c.pagerank > 0.5 AND EXISTS {
-  (c)-[i:INTERACTS]->(other:Character)
-  WHERE i.weight > 200
-}
-RETURN c.name AS character, c.pagerank AS pagerank",Query not converted - dropped during processing
+LIMIT 3",OPTIONAL MATCH with aggregation requires LEFT JOIN semantics not in TypeQL
 385,Which characters are in the top 5 for the sum of their INTERACTS1 and INTERACTS2 weights?,"MATCH (c:Character)
 OPTIONAL MATCH (c)-[i1:INTERACTS1]->(other1)
 OPTIONAL MATCH (c)-[i2:INTERACTS2]->(other2)
 WITH c, sum(i1.weight) AS weight1, sum(i2.weight) AS weight2
 RETURN c.name AS character, weight1 + weight2 AS totalWeight
 ORDER BY totalWeight DESC
-LIMIT 5",Query not converted - dropped during processing
+LIMIT 5",OPTIONAL MATCH with aggregation requires LEFT JOIN semantics not in TypeQL
 386,Name the top 3 characters based on the sum of their book1PageRank and book45PageRank.,"MATCH (c:Character)
 WHERE c.book1PageRank IS NOT NULL AND c.book45PageRank IS NOT NULL
 RETURN c.name, c.book1PageRank + c.book45PageRank AS totalPageRank
 ORDER BY totalPageRank DESC
-LIMIT 3",Query not converted - dropped during processing
+LIMIT 3",Arithmetic expressions on attributes not supported in TypeQL fetch
