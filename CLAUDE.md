@@ -50,7 +50,17 @@ The primary method for query conversion uses Claude Code subagents directly (no 
 2. **Load schema**: `output/<database>/schema.tql`
 3. **Convert** using TypeDB 3.0 syntax
 4. **Validate** against TypeDB (`text2typeql_<database>`)
-5. **Write** to `queries.csv` (success) or `failed.csv` (after 3 attempts)
+5. **Semantic review**: Verify TypeQL answers the English question (ignore Cypher)
+6. **Write** to `queries.csv` (success) or `failed.csv` (after 3 attempts)
+
+### Semantic Review Checklist (Step 5)
+
+Before writing to CSV, verify WITHOUT looking at Cypher:
+- Returns correct entity type (question asks for users → return users)
+- Includes ALL conditions from question (public AND 50+ employees)
+- Has correct aggregation ("top 3 by count" → needs `reduce count groupby`, `sort`, `limit`)
+- Relation directions correct (supplier OF vs supplies TO)
+- Numeric thresholds correct (1 million = 1000000)
 
 To spawn parallel conversion agents:
 ```

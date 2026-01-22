@@ -570,7 +570,58 @@ with driver.transaction(f"text2typeql_{database}", TransactionType.READ) as tx:
     list(result.as_concept_documents()) or list(result.as_concept_rows())
 ```
 
-### 5. Retry on Failure (up to 3 attempts)
+### 5. Semantic Review (REQUIRED)
+
+**After TypeDB validation passes**, perform a semantic review comparing the **English question** to the **TypeQL query**. Do NOT look at the Cypher query during this review.
+
+#### Semantic Review Checklist
+
+Ask yourself these questions:
+
+1. **Does the TypeQL return the right entity type?**
+   - Question asks for "users" → query should return users, not tweets
+   - Question asks for "articles" → query should return articles, not organizations
+
+2. **Does the TypeQL include ALL conditions from the question?**
+   - "public organizations with 50+ employees" → needs BOTH `is_public true` AND `nbr_employees >= 50`
+   - "dissolved companies mentioned in articles" → needs `is_dissolved true` AND `mentions` relation
+
+3. **Is the aggregation correct?**
+   - "top 3 countries with most cities" → needs `reduce count groupby`, `sort desc`, `limit 3`
+   - "how many users" → needs `reduce count`
+   - If question asks for "top N by count of X", there MUST be a `reduce ... count ... groupby`
+
+4. **Are relation directions correct?**
+   - "suppliers OF company X" → `supplies (supplier: $s, customer: $x)` where $x is Company X
+   - "companies THAT SUPPLY X" → same pattern, but return $s
+   - "tweets RETWEETED BY users" → tweet is `original_tweet`
+   - "tweets THAT RETWEET others" → tweet is `retweeting_tweet`
+
+5. **Are numeric thresholds correct?**
+   - "revenue over 1 million" → `$revenue > 1000000` not `$revenue > 1`
+   - "more than 5 employees" → `$emp > 5`
+
+6. **Is sorting/ordering correct?**
+   - "highest revenue" → `sort $revenue desc`
+   - "most similar" (smallest difference) → `sort $diff asc`
+
+#### If Semantic Review Fails
+
+If any check fails, the TypeQL does NOT correctly answer the question. Go back to step 3 and rewrite the query. This counts as one of your 3 retry attempts.
+
+**Common semantic failures:**
+- Missing `reduce ... groupby` for ranking/counting questions
+- Wrong relation direction (who supplies whom, who follows whom)
+- Missing filter conditions from the question
+- Returning wrong entity type
+- Wrong boolean value (`is_dissolved true` vs `false`)
+- Completely unrelated query (generated from wrong understanding)
+
+### 6. Retry on Failure (up to 3 attempts)
+
+Retry if:
+- TypeDB validation fails (syntax/type errors)
+- Semantic review fails (query doesn't match question)
 
 Read error message carefully, fix TypeQL, retry.
 
@@ -579,10 +630,11 @@ Common fixes:
 - Role mismatch → check schema for exact role names
 - Unknown type → verify entity/relation names in schema
 - Syntax error → check quotes, semicolons, brackets
+- Semantic mismatch → reread question, rewrite query from scratch
 
-### 6. Write Result
+### 7. Write Result
 
-**Success** → Append to `output/<database>/queries.csv`:
+**Success** (validated AND passed semantic review) → Append to `output/<database>/queries.csv`:
 ```
 original_index,question,cypher,typeql
 ```
