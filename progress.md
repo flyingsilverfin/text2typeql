@@ -12,18 +12,18 @@
 | twitter | 440 | 53 | 0 | 493 | 89% |
 | twitch | 506 | 0 | 0 | 506 | 100% |
 | recommendations | 555 | 0 | 0 | 555 | 100% |
-| movies | 508 | 0 | 60 | 568 | 89% |
+| movies | 568 | 0 | 0 | 568 | 100% |
 | neoflix | 848 | 0 | 37 | 885 | 95% |
 | companies | 726 | 16 | 107 | 849 | 85% |
 | gameofthrones | 328 | 0 | 14 | 342 | 95% |
-| **Total** | **3911** | **69** | **218** | **4198** | **93%** |
+| **Total** | **3971** | **69** | **158** | **4198** | **94%** |
 
 ### Validation Summary
 
 After full TypeDB validation and semantic review:
-- **Valid queries**: 3911 (93%) - Execute correctly against TypeDB
+- **Valid queries**: 3971 (94%) - Execute correctly against TypeDB
 - **Validation failures**: 69 (2%) - TypeDB syntax/type errors
-- **Semantic failures**: 218 (5%) - TypeQL doesn't match question intent
+- **Semantic failures**: 158 (4%) - TypeQL doesn't match question intent
 
 ### Common Validation Failures
 

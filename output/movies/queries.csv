@@ -6850,3 +6850,845 @@ fetch {
   ""title"": $titlem,
   ""rating"": $ratingr
 };"
+23,"Find all movies where Nancy Meyers was involved either by acting, directing, producing, or writing.","MATCH (p:Person {name: 'Nancy Meyers'})-[:ACTED_IN|DIRECTED|PRODUCED|WROTE]->(m:Movie)
+RETURN m.title AS movie","match
+  $p isa person, has name ""Nancy Meyers"";
+  $m isa movie;
+  {
+    (actor: $p, film: $m) isa acted_in;
+  } or {
+    (director: $p, film: $m) isa directed;
+  } or {
+    (producer: $p, film: $m) isa produced;
+  } or {
+    (writer: $p, film: $m) isa wrote;
+  };
+  $m has title $titlem;
+fetch {
+  ""movie"": $titlem
+};"
+28,Which people have produced and also reviewed the same movie?,"MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN p.name AS person, m.title AS movie","match
+  $p isa person;
+  $m isa movie;
+  (producer: $p, film: $m) isa produced;
+  (reviewer: $p, film: $m) isa reviewed;
+  $p has name $namep;
+  $m has title $titlem;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};"
+65,Which movies have been reviewed and also acted in by the same person?,"MATCH (p:Person)-[:REVIEWED]->(m:Movie)<-[:ACTED_IN]-(p)
+RETURN m.title, p.name","match
+  $p isa person;
+  $m isa movie;
+  (reviewer: $p, film: $m) isa reviewed;
+  (actor: $p, film: $m) isa acted_in;
+  $m has title $titlem;
+  $p has name $namep;
+fetch {
+  ""title"": $titlem,
+  ""name"": $namep
+};"
+66,List the first 3 people who have directed a movie and also followed someone.,"MATCH (p:Person)-[:DIRECTED]->(:Movie)
+WHERE exists{ (p)-[:FOLLOWS]->(:Person) }
+RETURN p.name
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  (follower: $p, followed: $other) isa follows;
+  $p has name $namep;
+limit 3;
+fetch {
+  ""name"": $namep
+};"
+75,Who are the first 3 actors in the movie with the tagline 'Speed has no limits'?,"MATCH (m:Movie {tagline: 'Speed has no limits'})<-[:ACTED_IN]-(p:Person)
+RETURN p.name
+LIMIT 3","match
+  $m isa movie, has tagline ""Speed has no limits"";
+  $p isa person;
+  (actor: $p, film: $m) isa acted_in;
+  $p has name $namep;
+limit 3;
+fetch {
+  ""name"": $namep
+};"
+78,List the first 3 movies that have been both acted in and reviewed by the same person.,"MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN m.title
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (actor: $p, film: $m) isa acted_in;
+  (reviewer: $p, film: $m) isa reviewed;
+  $m has title $titlem;
+limit 3;
+fetch {
+  ""title"": $titlem
+};"
+100,What are the first 3 movies directed by someone who also reviewed them?,"MATCH (d:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(d)
+RETURN m.title
+LIMIT 3","match
+  $d isa person;
+  $m isa movie;
+  (director: $d, film: $m) isa directed;
+  (reviewer: $d, film: $m) isa reviewed;
+  $m has title $titlem;
+limit 3;
+fetch {
+  ""title"": $titlem
+};"
+115,List the top 5 movies directed by someone who also acted in them.,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:ACTED_IN]-(p)
+WITH m, p
+ORDER BY m.votes DESC
+LIMIT 5
+RETURN m.title AS movie, p.name AS person","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  (actor: $p, film: $m) isa acted_in;
+  $m has title $titlem;
+  $p has name $namep;
+  $m has votes $votesm;
+sort $votesm desc;
+limit 5;
+fetch {
+  ""movie"": $titlem,
+  ""person"": $namep
+};"
+118,"Which 3 movies reviewed with a summary 'Dark, but compelling' were produced by someone born before 1960?","MATCH (m:Movie)<-[:REVIEWED {summary: 'Dark, but compelling'}]-()
+MATCH (m)<-[:PRODUCED]-(p:Person)
+WHERE p.born < 1960
+RETURN m.title
+LIMIT 3","match
+  $p isa person;
+  (producer: $p, film: $m) isa produced;
+  (reviewer: $p, film: $m) isa reviewed;
+  $p has born $bornp;
+  $bornp < 1960;
+  $m has title $titlem;
+limit 3;
+fetch {
+  ""title"": $titlem
+};"
+119,Name the top 5 directors of movies that have a tagline mentioning 'Real World'.,"MATCH (m:Movie)
+WHERE m.tagline CONTAINS 'Real World'
+WITH m
+MATCH (d:Person)-[:DIRECTED]->(m)
+RETURN d.name AS director, count(m) AS num_movies
+ORDER BY num_movies DESC
+LIMIT 5","match
+  $m isa movie;
+  $d isa person;
+  (director: $d, film: $m) isa directed;
+  $m has tagline $taglinem;
+  $taglinem contains ""Real World"";
+  $d has name $named;
+reduce $num_movies = count($m) groupby $named;
+sort $num_movies desc;
+limit 5;
+fetch {
+  ""director"": $named,
+  ""num_movies"": $num_movies
+};"
+128,List the top 5 actors who acted in movies reviewed with a summary 'Slapstick redeemed only by the Robin Williams and '.,"MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[r:REVIEWED]-(reviewer:Person)
+WHERE r.summary = 'Slapstick redeemed only by the Robin Williams and '
+RETURN p.name AS actor, count(m) AS movie_count
+ORDER BY movie_count DESC
+LIMIT 5","match
+  $p isa person;
+  $m isa movie;
+  (actor: $p, film: $m) isa acted_in;
+  (reviewer: $p, film: $m) isa reviewed;
+  $p has name $namep;
+reduce $movie_count = count($m) groupby $namep;
+sort $movie_count desc;
+limit 5;
+fetch {
+  ""actor"": $namep,
+  ""movie_count"": $movie_count
+};"
+167,Which movies have the tagline 'Speed has no limits' and who are the producers?,"MATCH (m:Movie {tagline: 'Speed has no limits'})<-[:PRODUCED]-(p:Person)
+RETURN m.title AS movie, p.name AS producer","match
+  $m isa movie, has tagline ""Speed has no limits"";
+  $p isa person;
+  (producer: $p, film: $m) isa produced;
+  $m has title $titlem;
+  $p has name $namep;
+fetch {
+  ""movie"": $titlem,
+  ""producer"": $namep
+};"
+168,What are the names of the people who wrote and also acted in the same movie?,"MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:ACTED_IN]-(p)
+RETURN p.name AS person","match
+  $p isa person;
+  $m isa movie;
+  (writer: $p, film: $m) isa wrote;
+  (actor: $p, film: $m) isa acted_in;
+  $p has name $namep;
+fetch {
+  ""person"": $namep
+};"
+173,List the movies that have been reviewed and also have a tagline including the word 'journey'.,"MATCH (m:Movie)
+WHERE m.tagline CONTAINS 'journey' AND exists{(m)<-[:REVIEWED]-()}
+RETURN m.title","match
+  $m isa movie;
+  (reviewer: $p, film: $m) isa reviewed;
+  $m has tagline $taglinem;
+  $taglinem contains ""journey"";
+  $m has title $titlem;
+fetch {
+  ""title"": $titlem
+};"
+200,Which movies have a person who both produced and reviewed them and what are their titles?,"MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN m.title","match
+  $p isa person;
+  $m isa movie;
+  (producer: $p, film: $m) isa produced;
+  (reviewer: $p, film: $m) isa reviewed;
+  $m has title $titlem;
+fetch {
+  ""title"": $titlem
+};"
+211,List the first 3 people who directed and also acted in the same movie.,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:ACTED_IN]-(p)
+RETURN p.name, m.title
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  (actor: $p, film: $m) isa acted_in;
+  $p has name $namep;
+  $m has title $titlem;
+limit 3;
+fetch {
+  ""name"": $namep,
+  ""title"": $titlem
+};"
+222,Which people have acted in and also reviewed the same movie? List the first 3.,"MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN p.name AS person, m.title AS movie
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (actor: $p, film: $m) isa acted_in;
+  (reviewer: $p, film: $m) isa reviewed;
+  $p has name $namep;
+  $m has title $titlem;
+limit 3;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};"
+227,Name the first 3 people who produced a movie that they also acted in.,"MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:ACTED_IN]-(p)
+RETURN p.name
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (producer: $p, film: $m) isa produced;
+  (actor: $p, film: $m) isa acted_in;
+  $p has name $namep;
+limit 3;
+fetch {
+  ""name"": $namep
+};"
+248,"Who has produced, directed, and acted in the same movie?","MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:DIRECTED]-(p)
+WHERE exists{ (p)-[:ACTED_IN]->(m) }
+RETURN p.name AS person, m.title AS movie","match
+  $p isa person;
+  $m isa movie;
+  (producer: $p, film: $m) isa produced;
+  (actor: $p, film: $m) isa acted_in;
+  $p has name $namep;
+  $m has title $titlem;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};"
+258,Which people have both acted in and reviewed the same movie?,"MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN p.name AS person, m.title AS movie","match
+  $p isa person;
+  $m isa movie;
+  (actor: $p, film: $m) isa acted_in;
+  (reviewer: $p, film: $m) isa reviewed;
+  $p has name $namep;
+  $m has title $titlem;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};"
+259,List all persons who have directed a movie and also follow someone.,"MATCH (p:Person)-[:DIRECTED]->(:Movie)
+WHERE exists{ (p)-[:FOLLOWS]->(:Person) }
+RETURN p.name","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  (follower: $p, followed: $other) isa follows;
+  $p has name $namep;
+fetch {
+  ""name"": $namep
+};"
+283,List all movies that Joel Silver has both produced and reviewed.,"MATCH (p:Person {name: 'Joel Silver'})-[:PRODUCED]->(m:Movie)
+WHERE EXISTS {(p)-[:REVIEWED]->(m)}
+RETURN m","match
+  $p isa person, has name ""Joel Silver"";
+  $m isa movie;
+  (producer: $p, film: $m) isa produced;
+  (reviewer: $p, film: $m) isa reviewed;
+  $m has title $titlem;
+  $m has votes $votesm;
+  $m has tagline $taglinem;
+  $m has released $releasedm;
+fetch {
+  ""title"": $titlem,
+  ""votes"": $votesm,
+  ""tagline"": $taglinem,
+  ""released"": $releasedm
+};"
+284,Who are the directors of movies with more than 1000 votes?,"MATCH (m:Movie)
+WHERE m.votes > 1000
+MATCH (d:Person)-[:DIRECTED]->(m)
+RETURN d.name AS director, m.title AS movie","match
+  $m isa movie;
+  $d isa person;
+  (director: $d, film: $m) isa directed;
+  $m has votes $votesm;
+  $votesm > 1000;
+  $d has name $named;
+  $m has title $titlem;
+fetch {
+  ""director"": $named,
+  ""movie"": $titlem
+};"
+312,Name 3 persons who have reviewed a movie and also acted in a different movie.,"MATCH (p:Person)-[:REVIEWED]->(:Movie)
+WHERE exists {
+  (p)-[:ACTED_IN]->(:Movie)
+}
+RETURN p.name
+LIMIT 3","match
+  $p isa person;
+  $m1 isa movie;
+  $m2 isa movie;
+  (reviewer: $p, film: $m1) isa reviewed;
+  (actor: $p, film: $m2) isa acted_in;
+  $p has name $namep;
+limit 3;
+fetch {
+  ""name"": $namep
+};"
+337,What are the names of the top 5 people who acted in and also reviewed the same movie?,"MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:REVIEWED]-(p)
+WITH p, count(*) AS count
+ORDER BY count DESC
+LIMIT 5
+RETURN p.name","match
+  $p isa person;
+  $m isa movie;
+  (actor: $p, film: $m) isa acted_in;
+  (reviewer: $p, film: $m) isa reviewed;
+  $p has name $namep;
+reduce $count = count($m) groupby $namep;
+sort $count desc;
+limit 5;
+fetch {
+  ""name"": $namep
+};"
+342,Which top 3 movies have been both produced and reviewed by the same person?,"MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:REVIEWED]-(p)
+WITH m, p
+ORDER BY m.votes DESC
+LIMIT 3
+RETURN m.title AS movie, p.name AS person","match
+  $p isa person;
+  $m isa movie;
+  (producer: $p, film: $m) isa produced;
+  (reviewer: $p, film: $m) isa reviewed;
+  $m has title $titlem;
+  $p has name $namep;
+  $m has votes $votesm;
+sort $votesm desc;
+limit 3;
+fetch {
+  ""movie"": $titlem,
+  ""person"": $namep
+};"
+343,List the first 5 movies that have been acted in by someone with the role 'Captain' and reviewed with a rating below 60.,"MATCH (m:Movie)<-[:ACTED_IN]-(p:Person)
+WHERE 'Captain' IN p.roles
+WITH m
+MATCH (m)<-[r:REVIEWED]-()
+WHERE r.rating < 60
+RETURN m.title
+LIMIT 5","match
+  $m isa movie;
+  $p isa person;
+  (actor: $p, film: $m) isa acted_in;
+  (reviewer: $p, film: $m) isa reviewed;
+  $m has title $titlem;
+limit 5;
+fetch {
+  ""title"": $titlem
+};"
+353,Who are the top 3 directors of movies that have been reviewed with a summary stating 'Pretty funny at times'?,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(r:Person)
+WHERE r.summary = 'Pretty funny at times'
+RETURN p.name AS director, count(*) AS num_movies
+ORDER BY num_movies DESC
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  (reviewer: $p, film: $m) isa reviewed;
+  $r has summary ""Pretty funny at times"";
+  $p has name $namep;
+reduce $num_movies = count($p) groupby $namep;
+sort $num_movies desc;
+limit 3;
+fetch {
+  ""director"": $namep,
+  ""num_movies"": $num_movies
+};"
+378,"List top 3 people who have directed, produced, and acted in the same movie.","MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:PRODUCED]-(p)-[:ACTED_IN]->(m)
+WITH p, count(m) AS movieCount
+ORDER BY movieCount DESC
+LIMIT 3
+RETURN p.name AS person, movieCount","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  (actor: $p, film: $m) isa acted_in;
+  $p has name $namep;
+reduce $movieCount = count($m) groupby $namep;
+sort $movieCount desc;
+limit 3;
+fetch {
+  ""person"": $namep,
+  ""movieCount"": $movieCount
+};"
+403,List all persons who have directed and reviewed the same movie.,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN p.name AS person, m.title AS movie","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  (reviewer: $p, film: $m) isa reviewed;
+  $p has name $namep;
+  $m has title $titlem;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};"
+407,Which directors have also acted in the movies they directed?,"MATCH (director:Person)-[:DIRECTED]->(movie:Movie)<-[:ACTED_IN]-(director)
+RETURN director.name AS director, collect(movie.title) AS movies","match
+  $director isa person;
+  $movie isa movie;
+  (director: $director, film: $movie) isa directed;
+  (actor: $director, film: $movie) isa acted_in;
+  $director has name $namedirector;
+  $movie has title $titlemovie;
+fetch {
+  ""director"": $namedirector,
+  ""movies"": $titlemovie
+};"
+422,Which movies have been reviewed by persons following Keanu Reeves?,"MATCH (follower:Person)-[:FOLLOWS]->(:Person {name: 'Keanu Reeves'}),
+      (follower)-[:REVIEWED]->(movie:Movie)
+RETURN movie.title AS movie, follower.name AS reviewer","match
+  $keanu isa person, has name ""Keanu Reeves"";
+  $follower isa person;
+  (follower: $follower, followed: $keanu) isa follows;
+  $movie isa movie;
+  (reviewer: $follower, film: $movie) isa reviewed;
+  $movie has title $titlemovie;
+  $follower has name $namefollower;
+fetch {
+  ""movie"": $titlemovie,
+  ""reviewer"": $namefollower
+};"
+423,Who has directed and reviewed the same movie?,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN p.name AS person, m.title AS movie","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  (reviewer: $p, film: $m) isa reviewed;
+  $p has name $namep;
+  $m has title $titlem;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};"
+435,List all movies where the producer has also acted.,"MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:ACTED_IN]-(p)
+RETURN m.title AS movie, p.name AS producer_actor","match
+  $p isa person;
+  $m isa movie;
+  (producer: $p, film: $m) isa produced;
+  (actor: $p, film: $m) isa acted_in;
+  $m has title $titlem;
+  $p has name $namep;
+fetch {
+  ""movie"": $titlem,
+  ""producer_actor"": $namep
+};"
+438,List the top 5 youngest people who have written a movie.,"MATCH (p:Person)-[:WROTE]->(:Movie)
+RETURN p.name, p.born
+ORDER BY p.born DESC
+LIMIT 5","match
+  $p isa person;
+  $m isa movie;
+  (writer: $p, film: $m) isa wrote;
+  $p has name $namep;
+  $p has born $bornp;
+sort $bornp desc;
+limit 5;
+fetch {
+  ""name"": $namep,
+  ""born"": $bornp
+};"
+497,List the titles of 3 movies that have been both acted in and reviewed by the same person.,"MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN m.title
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (actor: $p, film: $m) isa acted_in;
+  (reviewer: $p, film: $m) isa reviewed;
+  $m has title $titlem;
+limit 3;
+fetch {
+  ""title"": $titlem
+};"
+502,What are the 3 most common summaries in the REVIEWED relationship?,"MATCH (:Person)-[r:REVIEWED]->(:Movie)
+RETURN r.summary, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","match
+  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $p isa person;
+  $m isa movie;
+reduce $count = count($r) groupby $summaryr;
+sort $count desc;
+limit 3;
+fetch {
+  ""summary"": $summaryr,
+  ""count"": $count
+};"
+519,Find 3 movies that were both directed and reviewed by the same person.,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN m.title, p.name
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  (reviewer: $p, film: $m) isa reviewed;
+  $m has title $titlem;
+  $p has name $namep;
+limit 3;
+fetch {
+  ""title"": $titlem,
+  ""name"": $namep
+};"
+524,List 3 movies that have been followed by the most persons.,"MATCH (m:Movie)<-[:REVIEWED]-(p:Person)
+RETURN m.title AS movie, count(p) AS followers
+ORDER BY followers DESC
+LIMIT 3","match
+  $m isa movie;
+  $p isa person;
+  (reviewer: $p, film: $m) isa reviewed;
+  $m has title $titlem;
+reduce $reviewers = count($p) groupby $titlem;
+sort $reviewers desc;
+limit 3;
+fetch {
+  ""movie"": $titlem,
+  ""reviewers"": $reviewers
+};"
+546,"Show top 3 persons who directed, produced, and acted in the same movie.","MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:PRODUCED]-(p)-[:ACTED_IN]->(m)
+RETURN p.name AS person, m.title AS movie
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  (actor: $p, film: $m) isa acted_in;
+  $p has name $namep;
+  $m has title $titlem;
+limit 3;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};"
+558,Which movies released between 1990 and 2000 have been reviewed?,"MATCH (m:Movie)
+WHERE m.released >= 1990 AND m.released <= 2000
+AND exists{ (m)<-[:REVIEWED]-() }
+RETURN m","match
+  $m isa movie;
+  $m has released $releasedm;
+  $releasedm >= 1990;
+  $releasedm <= 2000;
+  (reviewer: $r, film: $m) isa reviewed;
+  $m has title $titlem;
+  $m has votes $votesm;
+  $m has tagline $taglinem;
+fetch {
+  ""title"": $titlem,
+  ""votes"": $votesm,
+  ""tagline"": $taglinem,
+  ""released"": $releasedm
+};"
+588,"Which persons born after 1980 have acted in, directed, or produced any movies?","MATCH (p:Person)
+WHERE p.born > 1980 AND (
+  (p)-[:ACTED_IN]->(:Movie) OR
+  (p)-[:DIRECTED]->(:Movie) OR
+  (p)-[:PRODUCED]->(:Movie)
+)
+RETURN p","match
+  $p isa person;
+  $m isa movie;
+  $p has born $bornp;
+  $bornp > 1980;
+  {
+    (actor: $p, film: $m) isa acted_in;
+  } or {
+    (director: $p, film: $m) isa directed;
+  } or {
+    (producer: $p, film: $m) isa produced;
+  };
+  $p has name $namep;
+fetch {
+  ""name"": $namep,
+  ""born"": $bornp
+};"
+615,Who are the top 3 oldest persons who have reviewed a movie?,"MATCH (p:Person)-[:REVIEWED]->(:Movie)
+RETURN p.name, p.born
+ORDER BY p.born
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (reviewer: $p, film: $m) isa reviewed;
+  $p has name $namep;
+  $p has born $bornp;
+sort $bornp asc;
+limit 3;
+fetch {
+  ""name"": $namep,
+  ""born"": $bornp
+};"
+642,Who wrote and acted in the same movie?,"MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:ACTED_IN]-(p)
+RETURN p.name AS person, m.title AS movie","match
+  $p isa person;
+  $m isa movie;
+  (writer: $p, film: $m) isa wrote;
+  (actor: $p, film: $m) isa acted_in;
+  $p has name $namep;
+  $m has title $titlem;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};"
+665,List the movies that have been followed by someone born in 1990.,"MATCH (p:Person)-[:FOLLOWS]->(follower:Person)-[:REVIEWED]->(m:Movie)
+WHERE p.born = 1990
+RETURN m.title","match
+  $p isa person, has born 1990;
+  $follower isa person;
+  (follower: $p, followed: $follower) isa follows;
+  $m isa movie;
+  (reviewer: $follower, film: $m) isa reviewed;
+  $m has title $titlem;
+fetch {
+  ""title"": $titlem
+};"
+668,List the people born in the 1960s who have directed a movie.,"MATCH (p:Person)-[:DIRECTED]->(:Movie)
+WHERE p.born >= 1960 AND p.born < 1970
+RETURN p.name AS director, p.born AS birthYear","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  $p has born $bornp;
+  $bornp >= 1960;
+  $bornp < 1970;
+  $p has name $namep;
+fetch {
+  ""director"": $namep,
+  ""birthYear"": $bornp
+};"
+689,Which movies have been directed by someone who has also acted in them?,"MATCH (m:Movie)<-[:DIRECTED]-(p:Person)-[:ACTED_IN]->(m)
+RETURN m.title AS movie, p.name AS person","match
+  $m isa movie;
+  $p isa person;
+  (director: $p, film: $m) isa directed;
+  (actor: $p, film: $m) isa acted_in;
+  $m has title $titlem;
+  $p has name $namep;
+fetch {
+  ""movie"": $titlem,
+  ""person"": $namep
+};"
+698,List the people who have directed and reviewed the same movie.,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN p.name AS person, m.title AS movie","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  (reviewer: $p, film: $m) isa reviewed;
+  $p has name $namep;
+  $m has title $titlem;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};"
+706,Retrieve the top five movies released in the 2000s that were either directed or produced by the same person.,"MATCH (m:Movie)
+WHERE m.released >= 2000 AND m.released < 2010
+AND EXISTS {
+  (p:Person)-[:DIRECTED]->(m)
+  WHERE (p)-[:PRODUCED]->(m)
+}
+RETURN m.title, m.released
+ORDER BY m.votes DESC
+LIMIT 5","match
+  $m isa movie;
+  $p isa person;
+  $m has released $releasedm;
+  $releasedm >= 2000;
+  $releasedm < 2010;
+  (director: $p, film: $m) isa directed;
+  (producer: $p, film: $m) isa produced;
+  $m has title $titlem;
+  $m has votes $votesm;
+sort $votesm desc;
+limit 5;
+fetch {
+  ""title"": $titlem,
+  ""released"": $releasedm
+};"
+715,Find the first three people who produced a movie and have a name starting with 'J'.,"MATCH (p:Person)-[:PRODUCED]->(:Movie)
+WHERE p.name STARTS WITH 'J'
+RETURN p.name
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (producer: $p, film: $m) isa produced;
+  $p has name $namep;
+  $namep like ""J%"";
+limit 3;
+fetch {
+  ""name"": $namep
+};"
+719,Who are the first three people who have directed and reviewed the same movie?,"MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN p.name
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (director: $p, film: $m) isa directed;
+  (reviewer: $p, film: $m) isa reviewed;
+  $p has name $namep;
+limit 3;
+fetch {
+  ""name"": $namep
+};"
+721,"Find the first three movies that have been reviewed with the summary 'Silly, but fun' and were released in the 1990s.","MATCH (m:Movie)<-[:REVIEWED {summary: 'Silly, but fun'}]-()
+WHERE m.released >= 1990 AND m.released < 2000
+RETURN m.title
+LIMIT 3","match
+  $m isa movie;
+  (reviewer: $r, film: $m) isa reviewed, has summary ""Silly, but fun"";
+  $m has released $releasedm;
+  $releasedm >= 1990;
+  $releasedm < 2000;
+  $m has title $titlem;
+limit 3;
+fetch {
+  ""title"": $titlem
+};"
+39,Who are the persons that have written and also acted in the same movie?,"MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:ACTED_IN]-(p)
+RETURN p.name AS person, m.title AS movie","match
+  $p isa person;
+  $m isa movie;
+  (writer: $p, film: $m) isa wrote;
+  (actor: $p, film: $m) isa acted_in;
+  $p has name $namep;
+  $m has title $titlem;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};"
+96,List the first 3 people who wrote and also reviewed the same movie.,"MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN p.name AS person, m.title AS movie
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (writer: $p, film: $m) isa wrote;
+  (reviewer: $p, film: $m) isa reviewed;
+  $p has name $namep;
+  $m has title $titlem;
+limit 3;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};"
+213,Which movies released between 1980 and 1990 have been reviewed with a rating higher than 80?,"MATCH (m:Movie)
+WHERE m.released >= 1980 AND m.released <= 1990
+AND EXISTS {
+  (m)<-[:REVIEWED]-(r:Person)
+  WHERE r.rating > 80
+}
+RETURN m.title, m.released","match
+  $m isa movie;
+  $m has released $releasedm;
+  $releasedm >= 1980;
+  $releasedm <= 1990;
+  (reviewer: $r, film: $m) isa reviewed, has rating $ratingr;
+  $ratingr > 80;
+  $m has title $titlem;
+fetch {
+  ""title"": $titlem,
+  ""released"": $releasedm
+};"
+218,List the first 3 movies that were both written and reviewed by the same person.,"MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN m.title
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  (writer: $p, film: $m) isa wrote;
+  (reviewer: $p, film: $m) isa reviewed;
+  $m has title $titlem;
+limit 3;
+fetch {
+  ""title"": $titlem
+};"
+252,What are the distinct summaries available for movie reviews?,"MATCH (:Person)-[r:REVIEWED]->(:Movie)
+RETURN DISTINCT r.summary","match
+  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $p isa person;
+  $m isa movie;
+fetch {
+  ""summary"": $summaryr
+};"
+587,List the top 5 movies that have not been reviewed.,"MATCH (m:Movie)
+WHERE NOT EXISTS { (m)<-[:REVIEWED]-() }
+RETURN m.title
+LIMIT 5","match
+  $m isa movie;
+  not { (reviewer: $r, film: $m) isa reviewed; };
+  $m has title $titlem;
+limit 5;
+fetch {
+  ""title"": $titlem
+};"
+682,List the people who have written and reviewed the same movie.,"MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:REVIEWED]-(p)
+RETURN p.name AS person, m.title AS movie","match
+  $p isa person;
+  $m isa movie;
+  (writer: $p, film: $m) isa wrote;
+  (reviewer: $p, film: $m) isa reviewed;
+  $p has name $namep;
+  $m has title $titlem;
+fetch {
+  ""person"": $namep,
+  ""movie"": $titlem
+};"
+725,What are the top five movies that have been both written and reviewed by the same person?,"MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:REVIEWED]-(p)
+WITH m, p
+ORDER BY m.votes DESC
+LIMIT 5
+RETURN m.title AS movie, p.name AS person","match
+  $p isa person;
+  $m isa movie;
+  (writer: $p, film: $m) isa wrote;
+  (reviewer: $p, film: $m) isa reviewed;
+  $m has title $titlem;
+  $p has name $namep;
+  $m has votes $votesm;
+sort $votesm desc;
+limit 5;
+fetch {
+  ""movie"": $titlem,
+  ""person"": $namep
+};"
