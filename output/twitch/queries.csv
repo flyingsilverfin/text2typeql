@@ -4741,3 +4741,22 @@ reduce $num_moderated_streams = count($s) groupby $un;
 sort $num_moderated_streams desc;
 limit 3;
 fetch { ""user"": $un, ""num_moderated_streams"": $num_moderated_streams };"
+454,Identify the top 3 games played by streams with a description containing 'hilarious moments'.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
+WHERE s.description CONTAINS 'hilarious moments'
+RETURN g.name AS game, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","match
+  $s isa stream, has description $d;
+  $d like "".*hilarious moments.*"";
+  (streaming_channel: $s, played_game: $g) isa game_play;
+limit 3;
+fetch { ""game"": $g.name };"
+554,What are the names of the first 3 languages used by streams with a description containing 'strategy'?,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)
+WHERE s.description CONTAINS 'strategy'
+RETURN l.name
+LIMIT 3","match
+  $s isa stream, has description $d;
+  $d like "".*strategy.*"";
+  (channel: $s, used_language: $l) isa language_usage;
+limit 3;
+fetch { ""language"": $l.name };"

@@ -10,29 +10,28 @@
 | Database | Valid | Failed | Failed Review | Total | % |
 |----------|-------|--------|---------------|-------|---|
 | twitter | 440 | 53 | 0 | 493 | 89% |
-| twitch | 504 | 0 | 2 | 506 | 100% |
+| twitch | 506 | 0 | 0 | 506 | 100% |
 | recommendations | 555 | 0 | 0 | 555 | 100% |
 | movies | 508 | 0 | 60 | 568 | 89% |
-| neoflix | 644 | 204 | 37 | 885 | 73% |
-| companies | 726 | 16 | 107 | 849 | 86% |
-| gameofthrones | 328 | 0 | 14 | 342 | 96% |
-| **Total** | **3705** | **273** | **220** | **4198** | **88%** |
+| neoflix | 848 | 0 | 37 | 885 | 95% |
+| companies | 726 | 16 | 107 | 849 | 85% |
+| gameofthrones | 328 | 0 | 14 | 342 | 95% |
+| **Total** | **3911** | **69** | **218** | **4198** | **93%** |
 
 ### Validation Summary
 
 After full TypeDB validation and semantic review:
-- **Valid queries**: 3705 (88%) - Execute correctly against TypeDB
-- **Validation failures**: 273 (7%) - TypeDB syntax/type errors
-- **Semantic failures**: 220 (5%) - TypeQL doesn't match question intent
+- **Valid queries**: 3911 (93%) - Execute correctly against TypeDB
+- **Validation failures**: 69 (2%) - TypeDB syntax/type errors
+- **Semantic failures**: 218 (5%) - TypeQL doesn't match question intent
 
 ### Common Validation Failures
 
 | Error Type | Count | Description |
 |------------|-------|-------------|
-| groupby syntax | 51 | `reduce ... groupby` not supported in TypeDB 3.x |
-| reduce without fetch | 161 | Aggregation queries need different result handling |
-| syntax errors | 47 | Date literals, comparison operators, clause ordering |
-| type inference | 14 | Incompatible types across constraints |
+| syntax errors | 64 | Mostly twitter/companies - clause ordering issues |
+| type inference | 2 | Incompatible types across constraints |
+| other | 3 | Miscellaneous parsing issues |
 
 ### Common Semantic Failures
 

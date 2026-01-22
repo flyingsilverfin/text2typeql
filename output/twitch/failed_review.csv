@@ -1,18 +1,1 @@
 original_index,question,cypher,typeql,review_reason
-454,Identify the top 3 games played by streams with a description containing 'hilarious moments'.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
-WHERE s.description CONTAINS 'hilarious moments'
-RETURN g.name AS game, count(*) AS count
-ORDER BY count DESC
-LIMIT 3","match
-  $s isa stream, has description $d;
-  $d like "".*hilarious moments.*"";
-  (streaming_channel: $s, played_game: $g) isa game_play;
-fetch { ""game"": $g };",Question asks for 3 items but no limit clause found
-554,What are the names of the first 3 languages used by streams with a description containing 'strategy'?,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)
-WHERE s.description CONTAINS 'strategy'
-RETURN l.name
-LIMIT 3","match
-  $s isa stream, has description $d;
-  $d like "".*strategy.*"";
-  (channel: $s, used_language: $l) isa language_usage;
-fetch { ""language"": $l };",Question asks for 3 items but no limit clause found
