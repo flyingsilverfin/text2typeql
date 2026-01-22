@@ -30,6 +30,10 @@ define
   attribute question value string;
   attribute cypher value string;
   attribute fewshot_id value integer;
+  attribute population value integer;
+  attribute start-date value datetime;
+  attribute founding-date value datetime;
+  attribute patent-count value integer;
 
   # Entities
   entity person,
@@ -51,6 +55,8 @@ define
     owns nbr_employees,
     owns is_dissolved,
     owns is_public,
+    owns founding-date,
+    owns patent-count,
     plays located_in:organization,
     plays ceo_of:organization,
     plays in_category:organization,
@@ -59,6 +65,7 @@ define
     plays supplies:supplier,
     plays supplies:customer,
     plays invested_in:organization,
+    plays invested_in:investor,
     plays board_member_of:organization,
     plays competes_with:competitor,
     plays mentions:organization;
@@ -68,18 +75,21 @@ define
     owns industry_category_id @key,
     plays in_category:category;
 
-  entity city,
+  entity place,
+    owns population,
+    plays location-contains:parent,
+    plays location-contains:child;
+
+  entity city sub place,
     owns city_id @key,
     owns city_summary,
     owns city_name,
-    plays located_in:city,
-    plays in_country:city;
+    plays located_in:city;
 
-  entity country,
+  entity country sub place,
     owns country_name,
     owns country_id @key,
-    owns country_summary,
-    plays in_country:country;
+    owns country_summary;
 
   entity article,
     owns article_id @key,
@@ -115,7 +125,8 @@ define
 
   relation ceo_of,
     relates organization,
-    relates ceo;
+    relates ceo,
+    owns start-date;
 
   relation in_category,
     relates organization,
@@ -135,14 +146,15 @@ define
 
   relation board_member_of,
     relates organization,
-    relates member;
+    relates member,
+    owns start-date;
 
   relation competes_with,
     relates competitor;
 
-  relation in_country,
-    relates city,
-    relates country;
+  relation location-contains,
+    relates parent,
+    relates child;
 
   relation has_chunk,
     relates article,

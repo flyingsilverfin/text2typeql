@@ -7,6 +7,13 @@ Always read the following files when starting a session:
 - `progress.md` - Current progress and next steps (if it exists)
 - `plan.md` - Implementation plan (if it exists)
 
+## Updating Documentation
+
+When learning new TypeQL patterns or syntax rules, update ALL of these files:
+- `CLAUDE.md` - This file (quick reference)
+- `.claude/skills/convert-query.md` - Conversion skill (comprehensive reference)
+- `docs/suggestions.md` - Validated examples of advanced patterns
+
 ## Project Overview
 
 Pipeline to convert Neo4j text2cypher datasets to TypeQL format for training text-to-TypeQL models.
@@ -117,6 +124,33 @@ let $difference = abs($a - $b);
 # Type variables - polymorphic queries
 $rel isa $t;
 { $t label mentions; } or { $t label retweets; };
+
+# Relation role inference - omit roles to match all permutations
+$rel isa interacts ($c);  # Matches $c in ANY role (character1 or character2)
+
+# Explicit role type checking (when needed)
+$rel isa interacts ($role: $c);
+{ $role sub interacts:character1; } or { $role sub interacts:character2; };
+```
+
+### Variable Scoping in Disjunctions
+
+**IMPORTANT**: Variables inside disjunction branches are scoped and not returned. This affects counting:
+
+```typeql
+# WRONG - $rel not accessible outside disjunction, nothing to count
+{ interacts (character1: $c); } or { interacts (character2: $c); };
+reduce $count = count($rel) groupby $comm;  # Error: $rel undefined
+
+# RIGHT - bind relation variable outside disjunction
+$rel isa interacts ($c);  # $rel bound, role auto-inferred
+reduce $count = count($rel) groupby $comm;  # Works
+
+# RIGHT - for multiple relation types, use disjunction with bound variable
+{ $rel isa interacts ($c); } or
+{ $rel isa interacts1 ($c); } or
+{ $rel isa interacts2 ($c); };
+reduce $count = count($rel) groupby $comm;  # Works
 ```
 
 ### Cypher → TypeQL Mapping
@@ -132,6 +166,7 @@ $rel isa $t;
 | `LIMIT 10` | `limit 10;` |
 | `COUNT(n)` | `reduce $count = count($n);` |
 | `WITH n, count(m) AS c` | `reduce $c = count($m) groupby $n;` |
+| `WITH a, b, count(*) AS c` | `reduce $c = count groupby $a, $b;` (tuple groupby) |
 | `WITH x, count(y) WHERE c > N` | `reduce $c = count groupby $x; match $c > N;` |
 | `ORDER BY a / b` | `let $ratio = $a / $b; sort $ratio;` |
 

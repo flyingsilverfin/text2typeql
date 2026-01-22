@@ -265,6 +265,33 @@ fetch {
 4. **Type variables** - `$rel isa $t; $t label typename;` for polymorphic queries (index 81)
 5. **Disjunction** - `{ pattern } or { pattern }` for multiple match options (index 81)
 6. **Arithmetic** - `$a + $b`, `$a / $b`, `abs($a - $b)` for computed values (indices 85, 296, 330)
+7. **Role inference** - `$rel isa relation ($player);` matches player in ANY role (all permutations)
+8. **Tuple groupby** - `reduce $c = count groupby $a, $b;` for grouping by multiple variables
+
+## Important Scoping Rules
+
+**Variables inside disjunction branches are scoped and NOT returned outside:**
+
+```typeql
+# WRONG - $rel not accessible, nothing to count
+{ interacts (character1: $c); } or { interacts (character2: $c); };
+reduce $count = count($rel) groupby $comm;  # Error!
+
+# RIGHT - bind relation variable INSIDE each branch
+{ $rel isa interacts ($c); } or { $rel isa interacts2 ($c); };
+reduce $count = count($rel) groupby $comm;  # Works!
+```
+
+**Role inference - omit roles to match all possible role combinations:**
+
+```typeql
+# Matches $c in character1 OR character2 role (all permutations)
+$rel isa interacts ($c);
+
+# Explicit role type checking when needed
+$rel isa interacts ($role: $c);
+{ $role sub interacts:character1; } or { $role sub interacts:character2; };
+```
 
 ## Validation Status
 

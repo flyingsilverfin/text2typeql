@@ -101,6 +101,19 @@ $rel has role_name $role;
 $rel isa acted_in, links (actor: $p, film: $m);
 ```
 
+**Role inference (omit roles to match all permutations):**
+```typeql
+# Matches $c in ANY role - auto-fills all possible role combinations
+$rel isa interacts ($c);
+
+# Equivalent to: interacts (character1: $c) OR interacts (character2: $c)
+# Use when you don't care which role the player has
+
+# Explicit role type checking (when you need to filter by role)
+$rel isa interacts ($role: $c);
+{ $role sub interacts:character1; } or { $role sub interacts:character2; };
+```
+
 ### Value Comparisons
 ```typeql
 # Must bind attribute to variable first, then compare
@@ -148,6 +161,20 @@ $p isa person; $p has name $n; $p has age $a;
 - Cypher `UNION` queries
 - Questions asking "X or Y"
 - Multiple alternative paths to same result
+
+**CRITICAL - Variable Scoping in Disjunctions:**
+
+Variables inside disjunction branches are **scoped** and not returned outside. This affects counting:
+
+```typeql
+# WRONG - nothing to count, $rel not accessible outside disjunction
+{ interacts (character1: $c); } or { interacts (character2: $c); };
+reduce $count = count($rel) groupby $comm;  # Error: $rel undefined
+
+# RIGHT - bind relation variable, it persists outside disjunction
+{ $rel isa interacts ($c); } or { $rel isa interacts2 ($c); };
+reduce $count = count($rel) groupby $comm;  # Works
+```
 
 ### Negation (NOT)
 ```typeql

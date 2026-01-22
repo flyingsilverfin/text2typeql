@@ -3266,3 +3266,127 @@ LIMIT 3","match
 sort $w desc;
 limit 3;
 fetch { ""character"": $cn };"
+192,Which characters belong to the community with the highest number of relationships?,"MATCH (c:Character)
+WITH c.community AS community, count(c) AS num_characters, count{(c)-[:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->()} AS num_relationships
+ORDER BY num_relationships DESC
+LIMIT 1
+WITH community
+MATCH (c:Character {community: community})
+RETURN c.name AS character","match
+$c isa character, has community $comm;
+{ $rel isa interacts ($c); } or
+{ $rel isa interacts1 ($c); } or
+{ $rel isa interacts2 ($c); } or
+{ $rel isa interacts3 ($c); } or
+{ $rel isa interacts45 ($c); };
+reduce $rel_count = count($rel) groupby $comm;
+sort $rel_count desc;
+limit 1;
+match $member isa character, has community $comm;
+fetch { ""character"": $member.name };"
+222,Which characters belong to the community with the lowest number of relationships?,"MATCH (c:Character)
+WHERE c.community IS NOT NULL
+WITH c.community AS community, count{(c)-[:INTERACTS]->()} AS num_relationships
+ORDER BY num_relationships
+LIMIT 1
+WITH community
+MATCH (c:Character {community: community})
+RETURN c.name AS character","match
+$c isa character, has community $comm;
+$rel isa interacts ($c);
+reduce $rel_count = count($rel) groupby $comm;
+sort $rel_count asc;
+limit 1;
+match $member isa character, has community $comm;
+fetch { ""character"": $member.name };"
+348,List the top 5 characters based on the sum weight of their INTERACTS1 and INTERACTS2 relationships.,"MATCH (c:Character)
+OPTIONAL MATCH (c)-[i1:INTERACTS1]->(other1)
+OPTIONAL MATCH (c)-[i2:INTERACTS2]->(other2)
+WITH c, sum(i1.weight) AS weight1, sum(i2.weight) AS weight2
+RETURN c.name AS character, weight1 + weight2 AS totalWeight
+ORDER BY totalWeight DESC
+LIMIT 5","with fun interacts1_weight_sum($c: character) -> integer:
+  match $rel isa interacts1 ($c), has weight $w;
+  return sum($w);
+with fun interacts2_weight_sum($c: character) -> integer:
+  match $rel isa interacts2 ($c), has weight $w;
+  return sum($w);
+match
+$c isa character;
+let $w1 = interacts1_weight_sum($c);
+let $w2 = interacts2_weight_sum($c);
+let $total = $w1 + $w2;
+sort $total desc;
+limit 5;
+fetch { ""character"": $c.name, ""totalWeight"": $total };"
+359,Identify the top 3 characters based on the sum of their centrality values across all books.,"MATCH (c:Character)
+WITH c, c.centrality + c.book45PageRank + c.book1BetweennessCentrality + c.book1PageRank + c.pagerank AS totalCentrality
+RETURN c.name AS character, totalCentrality
+ORDER BY totalCentrality DESC
+LIMIT 3","match
+$c isa character, has centrality $cent, has book45_page_rank $b45pr, 
+  has book1_betweenness_centrality $b1bc, has book1_page_rank $b1pr, has pagerank $pr;
+let $total = $cent + $b45pr + $b1bc + $b1pr + $pr;
+sort $total desc;
+limit 3;
+fetch { ""character"": $c.name, ""totalCentrality"": $total };"
+361,Who are the top 3 characters based on the combination of book1PageRank and book45PageRank?,"MATCH (c:Character)
+WHERE c.book1PageRank IS NOT NULL AND c.book45PageRank IS NOT NULL
+RETURN c.name AS character, c.book1PageRank + c.book45PageRank AS combinedPageRank
+ORDER BY combinedPageRank DESC
+LIMIT 3","match
+$c isa character, has book1_page_rank $b1pr, has book45_page_rank $b45pr;
+let $combined = $b1pr + $b45pr;
+sort $combined desc;
+limit 3;
+fetch { ""character"": $c.name, ""combinedPageRank"": $combined };"
+374,Who are the top 3 characters based on the sum of weights in their INTERACTS and INTERACTS3 relationships?,"MATCH (c:Character)
+OPTIONAL MATCH (c)-[i:INTERACTS]->()
+OPTIONAL MATCH (c)-[i3:INTERACTS3]->()
+WITH c, sum(i.weight) AS interactsWeight, sum(i3.weight) AS interacts3Weight
+RETURN c.name AS character, interactsWeight + interacts3Weight AS totalWeight
+ORDER BY totalWeight DESC
+LIMIT 3","with fun interacts_weight_sum($c: character) -> integer:
+  match $rel isa interacts ($c), has weight $w;
+  return sum($w);
+with fun interacts3_weight_sum($c: character) -> integer:
+  match $rel isa interacts3 ($c), has weight $w;
+  return sum($w);
+match
+$c isa character;
+let $w1 = interacts_weight_sum($c);
+let $w2 = interacts3_weight_sum($c);
+let $total = $w1 + $w2;
+sort $total desc;
+limit 3;
+fetch { ""character"": $c.name, ""totalWeight"": $total };"
+385,Which characters are in the top 5 for the sum of their INTERACTS1 and INTERACTS2 weights?,"MATCH (c:Character)
+OPTIONAL MATCH (c)-[i1:INTERACTS1]->(other1)
+OPTIONAL MATCH (c)-[i2:INTERACTS2]->(other2)
+WITH c, sum(i1.weight) AS weight1, sum(i2.weight) AS weight2
+RETURN c.name AS character, weight1 + weight2 AS totalWeight
+ORDER BY totalWeight DESC
+LIMIT 5","with fun interacts1_weight_sum($c: character) -> integer:
+  match $rel isa interacts1 ($c), has weight $w;
+  return sum($w);
+with fun interacts2_weight_sum($c: character) -> integer:
+  match $rel isa interacts2 ($c), has weight $w;
+  return sum($w);
+match
+$c isa character;
+let $w1 = interacts1_weight_sum($c);
+let $w2 = interacts2_weight_sum($c);
+let $total = $w1 + $w2;
+sort $total desc;
+limit 5;
+fetch { ""character"": $c.name, ""totalWeight"": $total };"
+386,Name the top 3 characters based on the sum of their book1PageRank and book45PageRank.,"MATCH (c:Character)
+WHERE c.book1PageRank IS NOT NULL AND c.book45PageRank IS NOT NULL
+RETURN c.name, c.book1PageRank + c.book45PageRank AS totalPageRank
+ORDER BY totalPageRank DESC
+LIMIT 3","match
+$c isa character, has book1_page_rank $b1pr, has book45_page_rank $b45pr;
+let $total = $b1pr + $b45pr;
+sort $total desc;
+limit 3;
+fetch { ""name"": $c.name, ""totalPageRank"": $total };"

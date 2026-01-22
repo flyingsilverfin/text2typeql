@@ -26,64 +26,13 @@ RETURN c.name",Array indexing/iteration not supported in TypeQL - no equivalent 
 150,List the characters whose fastrf_embedding fifth element is greater than 0.5.,"MATCH (c:Character)
 WHERE c.fastrf_embedding[4] > 0.5
 RETURN c.name",Array indexing/iteration not supported in TypeQL - no equivalent syntax
-192,Which characters belong to the community with the highest number of relationships?,"MATCH (c:Character)
-WITH c.community AS community, count(c) AS num_characters, count{(c)-[:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->()} AS num_relationships
-ORDER BY num_relationships DESC
-LIMIT 1
-WITH community
-MATCH (c:Character {community: community})
-RETURN c.name AS character",Count subqueries require nested query execution not supported in TypeQL
-222,Which characters belong to the community with the lowest number of relationships?,"MATCH (c:Character)
-WHERE c.community IS NOT NULL
-WITH c.community AS community, count{(c)-[:INTERACTS]->()} AS num_relationships
-ORDER BY num_relationships
-LIMIT 1
-WITH community
-MATCH (c:Character {community: community})
-RETURN c.name AS character",Count subqueries require nested query execution not supported in TypeQL
 343,Find 3 characters with fastrf_embedding values where the first element is greater than 0.5.,"MATCH (c:Character)
 WHERE c.fastrf_embedding[0] > 0.5
 RETURN c.name, c.fastrf_embedding
 LIMIT 3",Array indexing/iteration not supported in TypeQL - no equivalent syntax
-348,List the top 5 characters based on the sum weight of their INTERACTS1 and INTERACTS2 relationships.,"MATCH (c:Character)
-OPTIONAL MATCH (c)-[i1:INTERACTS1]->(other1)
-OPTIONAL MATCH (c)-[i2:INTERACTS2]->(other2)
-WITH c, sum(i1.weight) AS weight1, sum(i2.weight) AS weight2
-RETURN c.name AS character, weight1 + weight2 AS totalWeight
-ORDER BY totalWeight DESC
-LIMIT 5",OPTIONAL MATCH with aggregation requires LEFT JOIN semantics not in TypeQL
 349,Find 3 characters with the most diverse fastrf_embedding values (considering range between max and min in the list).,"MATCH (c:Character)
 WHERE c.fastrf_embedding IS NOT NULL
 WITH c, max(c.fastrf_embedding) AS maxVal, min(c.fastrf_embedding) AS minVal
 RETURN c.name AS character, maxVal - minVal AS embeddingRange
 ORDER BY embeddingRange DESC
 LIMIT 3",Array min/max operations not supported in TypeQL
-359,Identify the top 3 characters based on the sum of their centrality values across all books.,"MATCH (c:Character)
-WITH c, c.centrality + c.book45PageRank + c.book1BetweennessCentrality + c.book1PageRank + c.pagerank AS totalCentrality
-RETURN c.name AS character, totalCentrality
-ORDER BY totalCentrality DESC
-LIMIT 3",Arithmetic expressions on attributes not supported in TypeQL fetch
-361,Who are the top 3 characters based on the combination of book1PageRank and book45PageRank?,"MATCH (c:Character)
-WHERE c.book1PageRank IS NOT NULL AND c.book45PageRank IS NOT NULL
-RETURN c.name AS character, c.book1PageRank + c.book45PageRank AS combinedPageRank
-ORDER BY combinedPageRank DESC
-LIMIT 3",Arithmetic expressions on attributes not supported in TypeQL fetch
-374,Who are the top 3 characters based on the sum of weights in their INTERACTS and INTERACTS3 relationships?,"MATCH (c:Character)
-OPTIONAL MATCH (c)-[i:INTERACTS]->()
-OPTIONAL MATCH (c)-[i3:INTERACTS3]->()
-WITH c, sum(i.weight) AS interactsWeight, sum(i3.weight) AS interacts3Weight
-RETURN c.name AS character, interactsWeight + interacts3Weight AS totalWeight
-ORDER BY totalWeight DESC
-LIMIT 3",OPTIONAL MATCH with aggregation requires LEFT JOIN semantics not in TypeQL
-385,Which characters are in the top 5 for the sum of their INTERACTS1 and INTERACTS2 weights?,"MATCH (c:Character)
-OPTIONAL MATCH (c)-[i1:INTERACTS1]->(other1)
-OPTIONAL MATCH (c)-[i2:INTERACTS2]->(other2)
-WITH c, sum(i1.weight) AS weight1, sum(i2.weight) AS weight2
-RETURN c.name AS character, weight1 + weight2 AS totalWeight
-ORDER BY totalWeight DESC
-LIMIT 5",OPTIONAL MATCH with aggregation requires LEFT JOIN semantics not in TypeQL
-386,Name the top 3 characters based on the sum of their book1PageRank and book45PageRank.,"MATCH (c:Character)
-WHERE c.book1PageRank IS NOT NULL AND c.book45PageRank IS NOT NULL
-RETURN c.name, c.book1PageRank + c.book45PageRank AS totalPageRank
-ORDER BY totalPageRank DESC
-LIMIT 3",Arithmetic expressions on attributes not supported in TypeQL fetch
