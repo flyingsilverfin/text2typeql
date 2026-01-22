@@ -128,6 +128,10 @@ $rel isa $t;
 # Relation role inference - omit roles to match all permutations
 $rel isa interacts ($c);  # Matches $c in ANY role (character1 or character2)
 
+# Symmetric/bidirectional matching - omit roles for both players
+subsidiary_of ($o1, $o2);  # Matches ($o1 as parent, $o2 as child) OR ($o1 as child, $o2 as parent)
+# Replaces: { subsidiary_of (parent: $o1, subsidiary: $o2); } or { subsidiary_of (parent: $o2, subsidiary: $o1); };
+
 # Explicit role type checking (when needed)
 $rel isa interacts ($role: $c);
 { $role sub interacts:character1; } or { $role sub interacts:character2; };

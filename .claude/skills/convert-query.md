@@ -109,6 +109,11 @@ $rel isa interacts ($c);
 # Equivalent to: interacts (character1: $c) OR interacts (character2: $c)
 # Use when you don't care which role the player has
 
+# Symmetric/bidirectional - omit roles for BOTH players
+subsidiary_of ($o1, $o2);
+# Matches: (parent: $o1, subsidiary: $o2) OR (parent: $o2, subsidiary: $o1)
+# Replaces verbose: { subsidiary_of (parent: $o1, subsidiary: $o2); } or { subsidiary_of (parent: $o2, subsidiary: $o1); };
+
 # Explicit role type checking (when you need to filter by role)
 $rel isa interacts ($role: $c);
 { $role sub interacts:character1; } or { $role sub interacts:character2; };

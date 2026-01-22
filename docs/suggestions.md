@@ -288,6 +288,11 @@ reduce $count = count($rel) groupby $comm;  # Works!
 # Matches $c in character1 OR character2 role (all permutations)
 $rel isa interacts ($c);
 
+# Symmetric/bidirectional - omit roles for BOTH players
+subsidiary_of ($o1, $o2);
+# Matches: (parent: $o1, subsidiary: $o2) OR (parent: $o2, subsidiary: $o1)
+# Much simpler than: { subsidiary_of (parent: $o1, ...); } or { subsidiary_of (parent: $o2, ...); };
+
 # Explicit role type checking when needed
 $rel isa interacts ($role: $c);
 { $role sub interacts:character1; } or { $role sub interacts:character2; };

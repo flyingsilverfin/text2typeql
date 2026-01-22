@@ -7978,12 +7978,9 @@ RETURN o1.name, o2.name, collaborations
 LIMIT 3","match
 $o1 isa organization, has name $n1;
 $o2 isa organization, has name $n2;
-{ subsidiary_of (parent: $o1, subsidiary: $o2); } or
-{ subsidiary_of (parent: $o2, subsidiary: $o1); } or
-{ supplies (supplier: $o1, customer: $o2); } or
-{ supplies (supplier: $o2, customer: $o1); } or
-{ invested_in (organization: $o1, investor: $o2); } or
-{ invested_in (organization: $o2, investor: $o1); };
+{ subsidiary_of ($o1, $o2); } or
+{ supplies ($o1, $o2); } or
+{ invested_in ($o1, $o2); };
 reduce $collaborations = count groupby $n1, $n2;
 sort $collaborations desc;
 limit 3;
