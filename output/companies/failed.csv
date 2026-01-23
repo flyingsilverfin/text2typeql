@@ -1,1 +1,25 @@
 original_index,question,cypher,error
+292,List the top 3 organizations by the number of articles mentioning them in 2021.,"MATCH (o:Organization)<-[:MENTIONS]-(a:Article)
+WHERE a.date >= date(""2021-01-01"") AND a.date <= date(""2021-12-31"") 
+WITH o, count(a) as mentionCount
+ORDER BY mentionCount DESC
+LIMIT 3
+RETURN o.name as organization, mentionCount",Schema mismatch: article entity has no date attribute to filter by 2021
+305,Which 3 cities are mentioned most frequently in articles?,"MATCH (a:Article)-[:HAS_CHUNK]->(:Chunk)-[:MENTIONS]->(c:City)
+RETURN c.name AS city, count(*) AS mentions
+ORDER BY mentions DESC
+LIMIT 3","Schema mismatch: TypeQL schema has mentions(article, organization) but Cypher uses (Chunk)-[:MENTIONS]->(City). No chunk→city mention relation exists in schema."
+341,What are the names of organizations that have a CEO who is younger than 40 years old?,"MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)
+WHERE date().year - toInteger(left(ceo.id, 4)) < 40
+RETURN o.name",TypeQL lacks string manipulation (left()) and date functions (date().year) needed to extract birth year from person_id and compute age
+708,Which 3 organizations have the most detailed organizational summaries?,"MATCH (o:Organization) WHERE o.summary IS NOT NULL RETURN o.name AS organization, o.summary AS summary ORDER BY size(o.summary) DESC LIMIT 3",TypeQL limitation: no string length function (size() equivalent) to order by summary length
+783,What are the names of organizations that have Accenture as their CEO?,"MATCH (o:Organization)-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'})
+WHERE p.summary IS NOT NULL AND p.summary CONTAINS 'Accenture'
+RETURN o.name","Invalid question: Asks for organizations where Accenture (an organization) is their CEO, but CEOs must be persons, not organizations. The question is semantically invalid and cannot be answered."
+843,Who are the CEOs of organizations that have been dissolved but mentioned in recent articles?,"MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)
+WHERE o.isDissolved = true
+  AND EXISTS {
+    (o)<-[:MENTIONS]-(a:Article)
+    WHERE a.date >= datetime() - duration('P1Y')
+  }
+RETURN ceo.name AS ceoName, o.name AS orgName",TypeQL limitation: Cannot express relative date (recent articles) - requires now() function for datetime() - duration() calculation which TypeQL does not support

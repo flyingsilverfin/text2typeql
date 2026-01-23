@@ -1,0 +1,339 @@
+original_index,question,cypher,typeql,review_reason
+360,List the characters with the highest sum of INTERACTS weights across all books. Limit to top 5.,"MATCH (c:Character)-[i:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->(other)
+WITH c, sum(i.weight) AS totalWeight
+ORDER BY totalWeight DESC
+LIMIT 5
+RETURN c.name AS character, totalWeight","match
+  $c isa character, has name $n;
+  (character1: $c, character2: $o) isa interacts, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $n, ""weight"": $w };","Query only uses 'interacts' relation but question asks for sum across ALL interaction types (interacts, interacts1, interacts2, interacts3, interacts45). Also missing SUM aggregation grouped by character - just sorts by individual weights."
+367,Which characters are in the top 5 for louvain community size?,"MATCH (c:Character)
+WITH c.louvain AS community, count(*) AS size
+ORDER BY size DESC
+LIMIT 5
+MATCH (c:Character)
+WHERE c.louvain = community
+RETURN community, collect(c.name) AS characters","match
+  $c isa character, has name $n, has louvain $l;
+sort $l asc;
+limit 5;
+fetch { ""name"": $n, ""louvain"": $l };",Question asks for 'top 5 louvain community SIZE' meaning count of characters per community. TypeQL just sorts characters by louvain value (not counting members per community). Needs to group by louvain and count characters.
+368,Who are the characters with a fastrf_embedding value at the last position less than -0.5? Limit to 3 characters.,"MATCH (c:Character)
+WHERE c.fastrf_embedding[-1] < -0.5
+RETURN c.name
+LIMIT 3","match
+  $c isa character;
+limit 3;
+fetch { ""c_name"": $c.name };",TypeQL completely ignores the fastrf_embedding condition. The query returns any 3 characters instead of filtering by fastrf_embedding at last position < -0.5. TypeQL may not support array indexing but query should not pass without the filter.
+369,Identify the top 5 characters with the most interactions in book 3.,"MATCH (c:Character)-[i:INTERACTS3]->(other:Character)
+RETURN c.name AS character, sum(i.weight) AS total_interactions
+ORDER BY total_interactions DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts3, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn };","Question asks for 'most interactions' which should SUM weights grouped by character. TypeQL sorts by individual weight value, not sum of weights per character. Needs 'reduce $total = sum($w) groupby $c'."
+376,Identify the top 5 characters based on the average of their centrality values across all books.,"MATCH (c:Character)
+WHERE c.centrality IS NOT NULL
+  AND exists {(c)-[:INTERACTS1]->()}
+  AND exists {(c)-[:INTERACTS2]->()}
+  AND exists {(c)-[:INTERACTS3]->()}
+  AND exists {(c)-[:INTERACTS45]->()}
+WITH c, 
+  (coalesce(c.book1PageRank, 0) + 
+   coalesce(c.book45PageRank, 0) +
+   coalesce(c.pagerank, 0)) / 3 AS avgCentrality
+RETURN c.name AS character, avgCentrality
+ORDER BY avgCentrality DESC
+LIMIT 5","match
+  $c isa character, has name $n, has centrality $cent, has book1_page_rank $b1pr, has book45_page_rank $b45pr, has pagerank $pr;
+  (character1: $c, character2: $o1) isa interacts1;
+  (character1: $c, character2: $o2) isa interacts2;
+  (character1: $c, character2: $o3) isa interacts3;
+  (character1: $c, character2: $o4) isa interacts45;
+sort $pr desc;
+limit 5;
+fetch { ""character"": $n, ""book1_page_rank"": $b1pr, ""book45_page_rank"": $b45pr, ""pagerank"": $pr };",Question asks for 'average of centrality values across all books'. TypeQL only sorts by pagerank instead of computing average of (book1_page_rank + book45_page_rank + pagerank) / 3.
+377,Which characters have the highest sum of pagerank values across all books? Limit to top 5.,"MATCH (c:Character)
+RETURN c.name AS character,
+       c.pagerank + c.book1PageRank + c.book45PageRank AS totalPageRank
+ORDER BY totalPageRank DESC
+LIMIT 5","match
+  $c isa character;
+  $c has pagerank $c_pagerank;
+sort $c_pagerank desc;
+limit 5;
+fetch { ""character"": $c.name, ""totalPageRank"": $c.pagerank };","Question asks for 'sum of pagerank values across all books' (pagerank + book1PageRank + book45PageRank). TypeQL only uses pagerank, doesn't compute sum of all three pagerank values."
+381,Who are the top 5 characters with the lowest book45PageRank but a book1PageRank greater than 4?,"MATCH (c:Character)
+WHERE c.book1PageRank > 4
+RETURN c.name, c.book45PageRank, c.book1PageRank
+ORDER BY c.book45PageRank
+LIMIT 5","match
+  $c isa character;
+  $c has book1_page_rank $c_book1_page_rank;
+  $c has book45_page_rank $c_book45_page_rank;
+  $c_book1_page_rank > 4;
+sort $c_book45_page_rank desc;
+limit 5;
+fetch { ""c_name"": $c.name, ""c_book45_page_rank"": $c.book45_page_rank, ""c_book1_page_rank"": $c.book1_page_rank };",Question asks for 'LOWEST book45PageRank' but TypeQL sorts DESC (highest first). Should sort ASC to get lowest values.
+388,Who are the top 5 characters based on the combination of centrality and degree?,"MATCH (c:Character)
+RETURN c.name, c.centrality, c.degree
+ORDER BY c.centrality DESC, c.degree DESC
+LIMIT 5","match
+  $c isa character;
+  $c has centrality $c_centrality;
+sort $c_centrality desc;
+limit 5;
+fetch { ""c_name"": $c.name, ""c_centrality"": $c.centrality, ""c_degree"": $c.degree };","Question asks for 'combination of centrality and degree'. TypeQL only sorts by centrality, completely ignoring degree. Should sort by both (centrality desc, degree desc) or compute a combined score."
+52,Which characters have the lowest 'book1BetweennessCentrality' and are part of community 579? Provide first 3 results.,"MATCH (c:Character)
+WHERE c.community = 579
+RETURN c.name, c.book1BetweennessCentrality
+ORDER BY c.book1BetweennessCentrality
+LIMIT 3","match
+  $c isa character;
+  $c has community $c_community;
+  $c has book1_betweenness_centrality $c_book1_betweenness_centrality;
+  $c_community == 579;
+sort $c_book1_betweenness_centrality desc;
+limit 3;
+fetch { ""c_name"": $c.name, ""c_book1_betweenness_centrality"": $c.book1_betweenness_centrality };",Question asks for 'lowest book1BetweennessCentrality' but query sorts DESC (descending). Should sort ASC to get lowest values.
+53,Identify all characters with a 'pagerank' below 0.2 and list top 3.,"MATCH (c:Character)
+WHERE c.pagerank < 0.2
+RETURN c.name, c.pagerank
+ORDER BY c.pagerank
+LIMIT 3","match
+  $c isa character;
+  $c has pagerank $c_pagerank;
+  $c_pagerank < 0.2;
+sort $c_pagerank desc;
+limit 3;
+fetch { ""c_name"": $c.name, ""c_pagerank"": $c.pagerank };","Sort direction mismatch. With 'pagerank below 0.2' and 'top 3', the expected behavior is to show the lowest values (closest to 0). Query sorts DESC which gives highest values in the filtered set."
+68,Who interacted with 'Walder-Rivers' in 'book 45'? List first 3 characters.,"MATCH (c:Character)-[i:INTERACTS45]->(w:Character {name: 'Walder-Rivers'})
+RETURN c.name
+LIMIT 3","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Walder-Rivers"";
+  (character1: $c, character2: $target) isa interacts45;
+limit 3;
+fetch { ""c_name"": $cn };","Question asks 'Who interacted with Walder-Rivers' which semantically implies finding ALL characters who interacted with them. Query only checks one role combination (character1: $c, character2: $target) and misses interactions where Walder-Rivers is in character1 role."
+73,Find the characters who have interacted with 'Murenmure' in 'book 45'. List the top 5.,"MATCH (c:Character)-[i:INTERACTS45]->(m:Character {name: 'Murenmure'})
+RETURN c.name AS character, i.weight AS interactions
+ORDER BY interactions DESC
+LIMIT 5","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Murenmure"";
+  $rel (character1: $c, character2: $target) isa interacts45, has weight $w;
+sort $w desc;
+limit 5;
+fetch { ""character"": $cn, ""interactions"": $w };","Question asks for characters who interacted with Murenmure which semantically implies ALL interactions. Query only checks one role combination (character1: $c, character2: $target) and misses interactions where Murenmure is in character1 role."
+76,Which characters have the lowest 'book1BetweennessCentrality' and are part of community 642? Provide first 3 results.,"MATCH (c:Character)
+WHERE c.community = 642
+RETURN c.name, c.book1BetweennessCentrality
+ORDER BY c.book1BetweennessCentrality
+LIMIT 3","match
+  $c isa character;
+  $c has community $c_community;
+  $c has book1_betweenness_centrality $c_book1_betweenness_centrality;
+  $c_community == 642;
+sort $c_book1_betweenness_centrality desc;
+limit 3;
+fetch { ""c_name"": $c.name, ""c_book1_betweenness_centrality"": $c.book1_betweenness_centrality };",Question asks for 'lowest book1BetweennessCentrality' but query sorts DESC (descending). Should sort ASC to get lowest values.
+77,Identify all characters with a 'pagerank' below 0.3 and list top 3.,"MATCH (c:Character)
+WHERE c.pagerank < 0.3
+RETURN c.name, c.pagerank
+ORDER BY c.pagerank
+LIMIT 3","match
+  $c isa character;
+  $c has pagerank $c_pagerank;
+  $c_pagerank < 0.3;
+sort $c_pagerank desc;
+limit 3;
+fetch { ""c_name"": $c.name, ""c_pagerank"": $c.pagerank };","Sort direction mismatch. With 'pagerank below 0.3' and 'top 3', the expected behavior is to show the lowest values. Query sorts DESC which gives highest values in the filtered set."
+92,Who interacted with 'Aeron-Greyjoy' in 'book 45'? List first 3 characters.,"MATCH (c:Character)-[i:INTERACTS45]->(a:Character {name: 'Aeron-Greyjoy'})
+RETURN c.name
+LIMIT 3","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Aeron-Greyjoy"";
+  (character1: $c, character2: $target) isa interacts45;
+limit 3;
+fetch { ""c_name"": $cn };","Question asks 'Who interacted with Aeron-Greyjoy' which semantically implies finding ALL characters who interacted with them. Query only checks one role combination (character1: $c, character2: $target) and misses interactions where Aeron-Greyjoy is in character1 role."
+130,List the characters that interact in book 45 with any character named 'Aegon-I-Targaryen'.,"MATCH (c1:Character)-[:INTERACTS45]->(c2:Character {name: 'Aegon-I-Targaryen'})
+RETURN c1.name AS character","match
+  $c isa character, has name $cn;
+  $target isa character, has name ""Aegon-I-Targaryen"";
+  (character1: $c, character2: $target) isa interacts45;
+limit 10;
+fetch { ""c_name"": $cn };",Query has arbitrary 'limit 10' that is not specified in the question. The question asks to 'list the characters' without any limit.
+157,List the characters whose name contains 'Greyjoy'.,"MATCH (c:Character)
+WHERE c.name CONTAINS 'Greyjoy'
+RETURN c.name","match
+  $c isa character;
+fetch { ""c_name"": $c.name };","Query is missing the CONTAINS filter for 'Greyjoy'. The TypeQL query returns ALL characters instead of only those whose name contains 'Greyjoy'. Should use: $c has name $n; $n like "".*Greyjoy.*"";"
+171,Find characters in the top 3 communities by number of members.,"MATCH (c:Character)
+WITH c.community AS community, count(*) AS members
+ORDER BY members DESC
+LIMIT 3
+WITH collect(community) AS top_communities
+MATCH (c:Character)
+WHERE c.community IN top_communities
+RETURN c.name AS character, c.community AS community","match
+  $c isa character, has name $n, has community $comm;
+sort $comm asc;
+limit 15;
+fetch { ""character"": $n, ""community"": $comm };","Query does not answer the question. Question asks for characters from the top 3 communities by member count, which requires: (1) grouping by community, (2) counting members per community, (3) sorting by count desc, (4) limiting to 3 communities, (5) then fetching characters from those communities. Current query just sorts by community number ascending and limits to 15 rows, which is completely wrong."
+183,Find characters connected by any INTERACTS relationship with a weight over 200.,"MATCH (c1:Character)-[r:INTERACTS|INTERACTS1|INTERACTS2|INTERACTS3|INTERACTS45]->(c2:Character)
+WHERE r.weight > 200
+RETURN c1.name, r, c2.name","match
+  (character1: $c1, character2: $c2) isa interacts, has weight $w;
+  $c1 has name $n1;
+  $c2 has name $n2;
+  $w > 200;
+fetch { ""character1"": $n1, ""character2"": $n2, ""weight"": $w };","Query only checks 'interacts' relation but question asks for ANY INTERACTS relationship including INTERACTS1, INTERACTS2, INTERACTS3, and INTERACTS45. Should use a disjunction with type variable to match all five interaction types."
+206,Identify the top 3 most frequent communities in INTERACTS relationships.,"MATCH (c1:Character)-[i:INTERACTS]->(c2:Character)
+RETURN c1.community, count(*) AS frequency
+ORDER BY frequency DESC
+LIMIT 3","match
+  (character1: $c1, character2: $c2) isa interacts;
+  $c1 has community $comm;
+reduce $count = count($c1);
+fetch { ""count"": $count };","Query does not answer the question. Question asks for top 3 most frequent communities (grouped by community, sorted by count desc, limited to 3). Current query just counts all c1 without groupby, doesn't sort, doesn't limit, and doesn't return the community values - only returns a single total count."
+212,Find characters in the top 3 louvain communities by centrality.,"MATCH (c:Character)
+WHERE c.louvain IN [0, 1, 2]
+RETURN c.name AS character, c.louvain AS community, c.centrality
+ORDER BY c.centrality DESC","match
+  $c isa character;
+  $c has centrality $c_centrality;
+sort $c_centrality desc;
+fetch { ""character"": $c.name, ""community"": $c.louvain, ""c_centrality"": $c.centrality };","Query does not filter by louvain communities 0, 1, 2 (the top 3). It returns all characters sorted by centrality, missing the louvain IN [0,1,2] condition."
+213,Who has the lowest book1PageRank in community 579?,"MATCH (c:Character)
+WHERE c.community = 579
+RETURN c.name, c.book1PageRank
+ORDER BY c.book1PageRank
+LIMIT 1","match
+  $c isa character;
+  $c has community $c_community;
+  $c has book1_page_rank $c_book1_page_rank;
+  $c_community == 579;
+sort $c_book1_page_rank desc;
+limit 1;
+fetch { ""c_name"": $c.name, ""c_book1_page_rank"": $c.book1_page_rank };",Sort is wrong direction. Question asks for LOWEST book1PageRank but query sorts desc (descending) which returns the HIGHEST. Should be 'sort $c_book1_page_rank asc;'
+236,Identify the top 5 most frequent communities in INTERACTS1 relationships.,"MATCH (c1:Character)-[i:INTERACTS1]->(c2:Character)
+RETURN c1.community AS community, count(*) AS frequency
+ORDER BY frequency DESC
+LIMIT 5","match
+  (character1: $c1, character2: $c2) isa interacts1;
+  $c1 has community $comm;
+reduce $count = count($c1);
+fetch { ""count"": $count };","Query is completely wrong. Should group by community, count relationships per community, sort by count desc, and limit to top 5. Current query does a simple count without groupby and lacks sort/limit. Should be: reduce $count = count groupby $comm; sort $count desc; limit 5;"
+267,Who has the lowest weight in an INTERACTS3 relationship?,"MATCH (c1:Character)-[r:INTERACTS3]->(c2:Character)
+RETURN c1.name, c2.name, r.weight AS weight
+ORDER BY r.weight
+LIMIT 1","match
+  $c1 isa character;
+  $c2 isa character;
+  (character1: $c1, character2: $c2) isa interacts3, has weight $rel_weight;
+sort $rel_weight desc;
+limit 1;
+fetch { ""c1_name"": $c1.name, ""c2_name"": $c2.name, ""weight"": $rel_weight };",Question asks for 'lowest weight' but query sorts by 'desc' (descending) which would return the HIGHEST weight. Should sort by 'asc' (ascending) to get lowest.
+277,Who are the top 5 characters with the lowest pagerank?,"MATCH (c:Character)
+RETURN c.name, c.pagerank
+ORDER BY c.pagerank
+LIMIT 5","match
+  $c isa character;
+  $c has pagerank $c_pagerank;
+sort $c_pagerank desc;
+limit 5;
+fetch { ""c_name"": $c.name, ""c_pagerank"": $c.pagerank };",Question asks for 'lowest pagerank' but query sorts by 'desc' (descending) which would return the HIGHEST pagerank. Should sort by 'asc' (ascending) to get lowest.
+290,Who are the top 3 characters with the lowest degree?,"MATCH (c:Character)
+RETURN c.name, c.degree
+ORDER BY c.degree
+LIMIT 3","match
+  $c isa character;
+  $c has degree $c_degree;
+sort $c_degree desc;
+limit 3;
+fetch { ""c_name"": $c.name, ""c_degree"": $c.degree };",Question asks for 'lowest degree' but query sorts by 'desc' (descending) which would return the HIGHEST degree. Should sort by 'asc' (ascending) to get lowest.
+296,Who are the top 3 characters with the highest weight in INTERACTS relationships?,"MATCH (c:Character)-[i:INTERACTS]->(other:Character)
+RETURN c.name AS character, sum(i.weight) AS total_weight
+ORDER BY total_weight DESC
+LIMIT 3","match
+  $c isa character, has name $cn;
+  $other isa character;
+  $rel (character1: $c, character2: $other) isa interacts, has weight $w;
+sort $w desc;
+limit 3;
+fetch { ""character"": $cn };","Question asks for 'highest weight' which should be the sum of all interaction weights per character. The TypeQL query just sorts by individual relationship weight, not the sum total. It should use 'reduce $total = sum($w) groupby $c' to compute total weight per character, then sort and limit."
+302,Who are the top 3 characters with the lowest pagerank?,"MATCH (c:Character)
+RETURN c.name, c.pagerank
+ORDER BY c.pagerank
+LIMIT 3","match
+  $c isa character;
+  $c has pagerank $c_pagerank;
+sort $c_pagerank desc;
+limit 3;
+fetch { ""c_name"": $c.name, ""c_pagerank"": $c.pagerank };",Question asks for 'lowest pagerank' but query sorts by 'desc' (descending) which would return the HIGHEST pagerank. Should sort by 'asc' (ascending) to get lowest.
+320,Who are the top 3 characters with the lowest book45PageRank?,"MATCH (c:Character)
+WHERE c.book45PageRank IS NOT NULL
+RETURN c.name, c.book45PageRank
+ORDER BY c.book45PageRank
+LIMIT 3","match
+  $c isa character, has name $n, has book45_page_rank $pr;
+sort $pr asc;
+limit 5;
+fetch { ""name"": $n, ""book45_page_rank"": $pr };",Question asks for top 3 but query has limit 5
+323,Who are the top 5 characters with the lowest weight in INTERACTS3 relationships?,"MATCH (c:Character)-[i:INTERACTS3]->(other:Character)
+RETURN c.name, min(i.weight) AS minWeight
+ORDER BY minWeight
+LIMIT 5","match
+  $c isa character;
+  $other isa character;
+  (character1: $c, character2: $other) isa interacts3;
+limit 5;
+fetch { ""c_name"": $c.name };",Question asks for lowest weight but query does not sort by weight (has no sort clause) - just returns arbitrary 5 characters with interacts3 relationships
+336,Name 3 characters from the community with the highest number of members.,"MATCH (c:Character)
+WITH c.community AS community, count(*) AS members
+ORDER BY members DESC
+LIMIT 1
+WITH collect(community)[0] AS top_community
+MATCH (c:Character {community: top_community})
+RETURN c.name
+LIMIT 3","match
+  $c isa character, has name $n, has community $comm;
+sort $comm asc;
+limit 3;
+fetch { ""name"": $n, ""community"": $comm };","Question asks for characters from the community with the HIGHEST NUMBER OF MEMBERS (requires aggregation to find most populous community first), but query simply sorts by community number ascending and returns 3 characters"
+342,Who are the top 5 characters with the lowest book1PageRank but more than zero degree?,"MATCH (c:Character)
+WHERE c.degree > 0
+RETURN c.name, c.book1PageRank
+ORDER BY c.book1PageRank
+LIMIT 5","match
+  $c isa character;
+  $c has degree $c_degree;
+  $c has book1_page_rank $c_book1_page_rank;
+  $c_degree > 0;
+sort $c_book1_page_rank desc;
+limit 5;
+fetch { ""c_name"": $c.name, ""c_book1_page_rank"": $c.book1_page_rank };",Question asks for LOWEST book1PageRank but query sorts DESC instead of ASC
+353,List the characters who are part of both community 578 and 579. Limit to 5 characters.,"MATCH (c:Character)
+WHERE c.community IN [578, 579]
+RETURN c.name
+LIMIT 5","match
+  $c isa character;
+limit 5;
+fetch { ""c_name"": $c.name };","Query has NO conditions at all - just returns any 5 characters. Should filter for community 578 OR 579 (a character cannot be in BOTH communities since community is a single-valued attribute, so 'both' should mean 'either' here)"
+358,Which characters have the lowest degree but are part of community 795? Limit to top 5.,"MATCH (c:Character)
+WHERE c.community = 795
+RETURN c.name, c.degree
+ORDER BY c.degree
+LIMIT 5","match
+  $c isa character;
+  $c has community $c_community;
+  $c has degree $c_degree;
+  $c_community == 795;
+sort $c_degree desc;
+limit 5;
+fetch { ""c_name"": $c.name, ""c_degree"": $c.degree };",Question asks for LOWEST degree but query sorts DESC instead of ASC

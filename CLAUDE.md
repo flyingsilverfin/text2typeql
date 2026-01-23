@@ -21,6 +21,10 @@ Pipeline to convert Neo4j text2cypher datasets to TypeQL format for training tex
 
 **Source**: https://github.com/neo4j-labs/text2cypher (datasets/synthetic_opus_demodbs/)
 
+## Important: Sequential Processing
+
+**DO NOT process queries in parallel.** Multiple agents writing to the same CSV file can cause race conditions and data loss. Always process queries one at a time, waiting for each to complete before starting the next.
+
 ## Available Skills
 
 Use this skill for query conversion (requires TypeDB server running):
@@ -46,12 +50,23 @@ python main.py convert-schema movies      # Convert schema
 
 The primary method for query conversion uses Claude Code subagents directly (no API costs):
 
-1. **Get query**: `python3 scripts/get_query.py <database> <index>`
+1. **Get query**: `python3 scripts/get_query.py <database> <index>` (or from `failed_review.csv`)
 2. **Load schema**: `output/<database>/schema.tql`
 3. **Convert** using TypeDB 3.0 syntax
-4. **Validate** against TypeDB (`text2typeql_<database>`)
+4. **Validate** against TypeDB using: `python3 scripts/validate_typeql.py <database> --file /tmp/query.tql`
 5. **Semantic review**: Verify TypeQL answers the English question (ignore Cypher)
 6. **Write** to `queries.csv` (success) or `failed.csv` (after 3 attempts)
+
+### Validation Script
+
+```bash
+# Write query to temp file and validate
+cat > /tmp/query.tql << 'EOF'
+<your typeql here>
+EOF
+python3 scripts/validate_typeql.py <database> --file /tmp/query.tql
+# Returns "OK" and exit 0 on success, error message and exit 1 on failure
+```
 
 ### Semantic Review Checklist (Step 5)
 
@@ -62,9 +77,18 @@ Before writing to CSV, verify WITHOUT looking at Cypher:
 - Relation directions correct (supplier OF vs supplies TO)
 - Numeric thresholds correct (1 million = 1000000)
 
-To spawn parallel conversion agents:
+### Spawning Conversion Agents
+
+**IMPORTANT: Process queries SEQUENTIALLY, not in parallel.** Parallel writes to the same CSV file can cause race conditions.
+
+To convert a single query using the dedicated agent:
 ```
-Use Task tool with subagent_type=general-purpose
+Use Task tool with subagent_type=convert-query-runner
+```
+
+For re-converting queries from `failed_review.csv`:
+```
+/convert-query <database> <index> --source failed_review
 ```
 
 ## TypeDB 3.0 Query Syntax
@@ -291,10 +315,30 @@ When retrying a failed or semantically-failed query:
 
 ### Scripts
 
+**CRITICAL: Never read entire CSV files.** Use these scripts to prevent context overflow:
+
 ```
 scripts/
-  get_query.py        # Get query by database and index
-  review_helper.py    # Move queries during review
+  get_query.py           # Get source query by database and index
+  csv_read_row.py        # Read single row from CSV by original_index
+  csv_append_row.py      # Append row to CSV (creates with header if needed)
+  csv_move_row.py        # Move row between CSVs atomically
+  review_helper.py       # Move queries during review
+```
+
+**CSV Script Usage:**
+```bash
+# Check if query already processed
+python3 scripts/csv_read_row.py output/<db>/queries.csv <index> --exists
+
+# Append successful conversion
+python3 scripts/csv_append_row.py output/<db>/queries.csv '{"original_index": N, "question": "...", "cypher": "...", "typeql": "..."}'
+
+# Append failed conversion
+python3 scripts/csv_append_row.py output/<db>/failed.csv '{"original_index": N, "question": "...", "cypher": "...", "error": "..."}'
+
+# Move row from failed to queries (with updated fields)
+python3 scripts/csv_move_row.py output/<db>/failed.csv output/<db>/queries.csv <index> '{"typeql": "..."}'
 ```
 
 ### Other Files
@@ -302,9 +346,10 @@ scripts/
 ```
 docs/
   semantic_review_notes.md  # Full review guidance
+  typeql_reference.md       # Comprehensive TypeQL 3.0 reference (read only when needed)
 
 .claude/skills/
-  convert-query.md    # Skill with TypeQL 3.0 reference (comprehensive)
+  convert-query.md          # Conversion skill (streamlined)
 ```
 
 ## Query Counts by Database
