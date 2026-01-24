@@ -465,3 +465,27 @@ WHERE numMovies > 5
 RETURN a.name, a.bio, numMovies
 ORDER BY numMovies DESC
 LIMIT 3",Uses size() on string property - not directly supported
+22,Show the top 3 movies that have been rated by the oldest users.,"MATCH (m:Movie)<-[r:RATED]-(u:User)
+WITH m, u, r
+ORDER BY u.born ASC
+LIMIT 3
+RETURN m.title AS movie, u.name AS user, r.rating AS rating",Schema mismatch: Question asks for oldest users (by birth date) but user entity has no born attribute in TypeQL schema. Only person entity has born attribute. Cannot correctly convert this query.
+28,List the first 5 movies that have been rated by users from more than 10 different countries.,"MATCH (m:Movie)<-[r:RATED]-(u:User)
+WITH m, count(DISTINCT u.name) AS numCountries
+WHERE numCountries > 10
+RETURN m.title
+LIMIT 5",Schema mismatch: Question asks about user countries but User entity has no country attribute. Cypher counts distinct user names (misleadingly named numCountries) which cannot accurately answer the question about geographic diversity.
+242,Show the first 3 movies that have been rated by the youngest users.,"MATCH (m:Movie)<-[r:RATED]-(u:User)
+WITH m, u, r
+ORDER BY u.born DESC, r.timestamp
+RETURN m.title AS movie, u.name AS user
+LIMIT 3","Schema mismatch: Cypher query sorts by u.born (user birth date) to find youngest users, but TypeQL user entity does not have a born attribute. Only person entity has born. Cannot correctly answer the question."
+585,Which 5 movies have the most distinct posters on IMDb?,"MATCH (m:Movie)
+WHERE m.poster IS NOT NULL
+RETURN m.title, m.poster
+ORDER BY m.poster
+LIMIT 5","Schema mismatch: Question asks for movies with most distinct posters, but schema defines poster as single-cardinality attribute (each movie has at most one poster). Counting distinct posters per movie is impossible - all movies would have count of 0 or 1. Original Cypher also fails to answer question correctly."
+624,List all movies that have been rated by both male and female users.,"MATCH (m:Movie)
+WHERE exists{ (m)<-[:RATED]-(:User {name: 'Omar Huffman'}) }
+  AND exists{ (m)<-[:RATED]-(:User {name: 'Myrtle Potter'}) }
+RETURN m.title","Schema limitation: Question asks for movies rated by male and female users, but the recommendations schema has no gender attribute for users. The original Cypher uses hardcoded user names as a workaround but this does not actually answer the question about gender."

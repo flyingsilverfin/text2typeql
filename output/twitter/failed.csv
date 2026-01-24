@@ -1,1 +1,25 @@
 original_index,question,cypher,error
+222,What are the top 5 users who have amplified 'Neo4j' and have a following of more than 5000?,"MATCH (me:Me {name: 'Neo4j'})&lt;-[:AMPLIFIES]-(u:User)
+WHERE u.following > 5000
+RETURN u.name, u.screen_name, u.followers
+ORDER BY u.followers DESC
+LIMIT 5","Schema mismatch: TypeQL schema only allows me entity to play amplifier role in amplifies relation, but query requires regular user entities to be amplifiers"
+285,Who are the top 5 users with similar screen names to 'Neo4j'?,"MATCH (me:Me {screen_name: 'neo4j'})-[s:SIMILAR_TO]->(u:User)
+RETURN u.screen_name AS similar_user, s.score AS similarity
+ORDER BY similarity DESC
+LIMIT 5","TypeQL limitation: No fuzzy string matching functions. Question asks for users with similar screen names (text similarity), but TypeQL lacks Levenshtein distance, soundex, or other string similarity functions. The similar_to relation measures general user similarity, not screen name similarity."
+294,Identify the first 3 tweets by 'Me' that have been mentioned by another user.,"MATCH (me:Me)-[:POSTS]->(tweet:Tweet)<-[:MENTIONS]-(user:User)
+RETURN tweet.text, user.screen_name
+ORDER BY tweet.created_at
+LIMIT 3","Schema mismatch: Cypher MENTIONS relation goes from User to Tweet (user mentions a tweet), but TypeQL mentions relation goes from Tweet to User (tweet mentions a user as source_tweet->mentioned_user). Cannot express a user mentioning a tweet in current schema."
+308,Who are the top 5 most recent users followed by 'Neo4j'?,"MATCH (me:Me {screen_name: 'neo4j'})-[:FOLLOWS]->(followed:User)
+RETURN followed.screen_name AS user, followed.followers AS followers
+ORDER BY followed.followers DESC
+LIMIT 5","Schema limitation: follows relation has no timestamp attribute - cannot determine most recent follows. Original Cypher is also incorrect (sorts by follower count, not recency)."
+335,List the 5 most recent users who started following 'Neo4j'.,"MATCH (u:User)-[:FOLLOWS]->(me:Me {screen_name: 'neo4j'})
+RETURN u.screen_name, u.name
+ORDER BY u.following DESC
+LIMIT 5",Schema limitation: follows relation has no timestamp attribute. Cannot determine when follow relationships were created to sort by most recent.
+353,Which tweets have been amplified by 'Neo4j' and have more than 100 favorites?,"MATCH (me:Me {screen_name: 'neo4j'})-[:AMPLIFIES]->(u:User)<-[:MENTIONS]-(t:Tweet)
+WHERE t.favorites > 100
+RETURN t","Schema limitation: amplifies is a user-to-user relation (amplifier->amplified_user), not a tweet relation. Cannot identify which tweets were amplified - only which users were amplified."

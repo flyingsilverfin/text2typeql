@@ -930,23 +930,6 @@ RETURN s.name, s.total_view_count","match
   $s isa stream, has name $sn, has total_view_count $tvc;
   $tvc > 1000000;
 fetch { ""name"": $sn, ""total_view_count"": $tvc };"
-104,List the games that have been played by more than five different streams.,"MATCH (g:Game)<-[:PLAYS]-(s:Stream)
-WITH g, count(distinct s) as numStreams
-WHERE numStreams > 5
-RETURN g.name as game, numStreams
-ORDER BY numStreams DESC","match
-  game_play (streaming_channel: $s, played_game: $g);
-  $g has name $gn;
-reduce $numStreams = count($s) groupby $gn;
-sort $numStreams desc;"
-105,What are the names of users who are moderators for more than three streams?,"MATCH (u:User)-[:MODERATOR]->(s:Stream)
-WITH u, count(s) AS num_moderated_streams
-WHERE num_moderated_streams > 3
-RETURN u.name AS user_name","match
-  $u isa user, has name $un;
-  moderation (moderating_user: $u, moderated_channel: $s);
-reduce $num_moderated_streams = count($s) groupby $un;
-sort $num_moderated_streams desc;"
 106,Identify streams that have moderators who are also VIPs.,"MATCH (s:Stream)<-[:MODERATOR]-(m:User)-[:VIP]->(s)
 RETURN s.name AS stream, m.name AS moderator_and_vip","match
   moderation (moderated_channel: $s, moderating_user: $m);
@@ -999,14 +982,6 @@ RETURN s.description","match
   game_play (streaming_channel: $s, played_game: $g);
   $s has description $d;
 fetch { ""description"": $d };"
-113,Which users are VIPs on at least two different streams?,"MATCH (u:User)-[:VIP]->(s:Stream)
-WITH u, count(distinct s) as num_vip_streams
-WHERE num_vip_streams >= 2
-RETURN u.name as user, num_vip_streams","match
-  $u isa user, has name $un;
-  vip_status (vip_user: $u, channel_with_vips: $s);
-reduce $num_vip_streams = count($s) groupby $un;
-sort $num_vip_streams desc;"
 114,Find streams that have a follower count between 1000 and 5000.,"MATCH (s:Stream)
 WHERE s.followers >= 1000 AND s.followers <= 5000
 RETURN s","match
@@ -1053,14 +1028,6 @@ RETURN DISTINCT l.name","match
   language_usage (channel: $s, used_language: $l);
   $l has name $ln;
 fetch { ""name"": $ln };"
-120,Which users are chatters on more than five different streams?,"MATCH (u:User)-[:CHATTER]->(s:Stream)
-WITH u, count(distinct s) AS num_streams
-WHERE num_streams > 5
-RETURN u.name AS user, num_streams","match
-  $u isa user, has name $un;
-  chat_activity (chatting_user: $u, channel_with_chatters: $s);
-reduce $num_streams = count($s) groupby $un;
-sort $num_streams desc;"
 121,What are the names of teams associated with streams created after 2018?,"MATCH (s:Stream)-[:HAS_TEAM]->(t:Team)
 WHERE s.createdAt > date(""2018-01-01"")
 RETURN t.name","match
@@ -1129,14 +1096,6 @@ RETURN s, u","match
   $c has name $cn, has followers $f;
   $f < 1000;
 fetch { ""stream"": $sn, ""chatter"": $cn };"
-129,How many users have VIP status in more than one stream?,"MATCH (u:User)-[:VIP]->(s:Stream)
-WITH u, count(s) AS vip_count
-WHERE vip_count > 1
-RETURN count(u) AS user_count","match
-  $u isa user, has name $un;
-  vip_status (vip_user: $u, channel_with_vips: $s);
-reduce $vip_count = count($s) groupby $un;
-sort $vip_count desc;"
 130,Find streams that play 'Rust' and have more than 10000 followers.,"MATCH (s:Stream)-[:PLAYS]->(:Game {name: 'Rust'})
 WHERE s.followers > 10000
 RETURN s","match
@@ -1248,14 +1207,6 @@ LIMIT 3","match
 reduce $frequency = count($s) groupby $ln;
 sort $frequency desc;
 limit 3;"
-142,What are the top 5 streams with the longest descriptions?,"MATCH (s:Stream)
-WHERE s.description IS NOT NULL
-RETURN s.name, s.description
-ORDER BY size(s.description) DESC
-LIMIT 5","match
-  $s isa stream, has name $sn, has description $d;
-limit 5;
-fetch { ""name"": $sn, ""description"": $d };"
 143,List the top 5 games played by streams with over 1 million total views.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
 WHERE s.total_view_count > 1000000
 RETURN g.name AS game, count(*) AS stream_count
@@ -3113,22 +3064,6 @@ LIMIT 3","match
 sort $tvc desc;
 limit 3;
 fetch { ""stream_url"": $u };"
-347,Which users have chatted with more than 5 different streams?,"MATCH (u:User)-[:CHATTER]->(s:Stream)
-WITH u, count(distinct s) as num_streams
-WHERE num_streams > 5
-RETURN u.name as user, num_streams as streams_chatted_with","match
-  $u isa user, has name $un;
-  chat_activity (chatting_user: $u, channel_with_chatters: $s);
-reduce $num_streams = count($s) groupby $un;
-sort $num_streams desc;"
-348,List all users who are VIPs in at least two different streams.,"MATCH (u:User)-[:VIP]->(s:Stream)
-WITH u, count(distinct s) as num_vip_streams
-WHERE num_vip_streams >= 2
-RETURN u.name as user, num_vip_streams","match
-  $u isa user, has name $un;
-  vip_status (vip_user: $u, channel_with_vips: $s);
-reduce $num_vip_streams = count($s) groupby $un;
-sort $num_vip_streams desc;"
 349,Find streams that have both 'MODERATOR' and 'VIP' relationships.,"MATCH (s:Stream)
 WHERE exists{ (s)-[:MODERATOR]->(:User) } AND exists{ (s)-[:VIP]->(:User) }
 RETURN s","match
@@ -3187,18 +3122,6 @@ RETURN s.name AS stream, s.followers AS followerCount","match
   language_usage (channel: $s, used_language: $l);
   $s has name $sn, has followers $f;
 fetch { ""stream"": $sn, ""followerCount"": $f };"
-356,Which users are VIPs for the stream with the highest follower count?,"MATCH (s:Stream)
-WITH s
-ORDER BY s.followers DESC
-LIMIT 1
-MATCH (s)<-[:VIP]-(u:User)
-RETURN u.name AS user, s.name AS stream","match
-  $s isa stream, has name $sn, has followers $f;
-  vip_status (channel_with_vips: $s, vip_user: $u);
-  $u has name $un;
-sort $f desc;
-limit 1;
-fetch { ""user"": $un, ""stream"": $sn };"
 357,What are the names of users who have moderated other users?,"MATCH (u:User)-[:MODERATOR]->(otherUser:User)
 RETURN DISTINCT u.name","match
   moderation (moderating_user: $u, moderated_user: $other);
@@ -3711,14 +3634,6 @@ RETURN s.name AS stream, t.name AS team","match
   team_membership (member_stream: $s, organization: $t);
   $ca > 2015-01-01;
 fetch { ""stream"": $sn, ""team"": $tn };"
-423,"List the streams that have VIP users with less than 10,000 followers.","MATCH (s:Stream)-[:VIP]->(u:User)
-WHERE u.followers < 10000
-RETURN s","match
-  $s isa stream, has name $sn;
-  vip_status (channel_with_vips: $s, vip_channel: $v);
-  $v has followers $f;
-  $f < 10000;
-fetch { ""stream"": $sn };"
 424,What are the top 5 streams by total view count that also have a team?,"MATCH (s:Stream)-[:HAS_TEAM]->(:Team)
 RETURN s.name AS stream_name, s.total_view_count AS total_views
 ORDER BY s.total_view_count DESC
@@ -3889,14 +3804,6 @@ RETURN s","match
   game_play (streaming_channel: $s, played_game: $g);
   $g has name ""VALORANT"";
 fetch { ""name"": $sn, ""total_view_count"": $tvc, ""url"": $u, ""followers"": $f };"
-442,Show the 3 streams that have the longest descriptions.,"MATCH (s:Stream)
-WHERE s.description IS NOT NULL
-RETURN s.name, s.description
-ORDER BY size(s.description) DESC
-LIMIT 3","match
-  $s isa stream, has name $sn, has description $d;
-limit 3;
-fetch { ""name"": $sn, ""description"": $d };"
 443,List the URLs of the 3 newest streams in the database.,"MATCH (s:Stream)
 RETURN s.url AS stream_url
 ORDER BY s.createdAt DESC
@@ -4003,16 +3910,6 @@ RETURN s","match
   vip_status (channel_with_vips: $s, vip_user: $user);
   $user has name ""itsbigchase"";
 fetch { ""name"": $sn, ""url"": $u, ""followers"": $f, ""total_view_count"": $tvc };"
-454,Identify the top 3 games played by streams with a description containing 'hilarious moments'.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
-WHERE s.description CONTAINS 'hilarious moments'
-RETURN g.name AS game, count(*) AS count
-ORDER BY count DESC
-LIMIT 3","match
-  $s isa stream, has description $d;
-  $d like "".*hilarious moments.*"";
-  (streaming_channel: $s, played_game: $g) isa game_play;
-limit 3;
-fetch { ""game"": $g.name };"
 455,Show the streams that have more than 2 languages associated with them.,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)
 WITH s, count(l) as languageCount
 WHERE languageCount > 2
@@ -5047,3 +4944,119 @@ reduce $num_moderated_streams = count($s) groupby $un;
 sort $num_moderated_streams desc;
 limit 3;
 fetch { ""user"": $un, ""num_moderated_streams"": $num_moderated_streams };"
+104,List the games that have been played by more than five different streams.,"MATCH (g:Game)<-[:PLAYS]-(s:Stream)
+WITH g, count(distinct s) as numStreams
+WHERE numStreams > 5
+RETURN g.name as game, numStreams
+ORDER BY numStreams DESC","match
+  game_play (streaming_channel: $s, played_game: $g);
+  $g has name $gn;
+select $s, $gn;
+distinct;
+reduce $numStreams = count($s) groupby $gn;
+match $numStreams > 5;
+sort $numStreams desc;
+fetch {
+  ""game"": $gn,
+  ""numStreams"": $numStreams
+};"
+105,What are the names of users who are moderators for more than three streams?,"MATCH (u:User)-[:MODERATOR]->(s:Stream)
+WITH u, count(s) AS num_moderated_streams
+WHERE num_moderated_streams > 3
+RETURN u.name AS user_name","match
+  $u isa user, has name $un;
+  moderation (moderating_user: $u, moderated_channel: $s);
+reduce $num_moderated_streams = count($s) groupby $u;
+match $num_moderated_streams > 3;
+fetch { ""user_name"": $u.name };"
+113,Which users are VIPs on at least two different streams?,"MATCH (u:User)-[:VIP]->(s:Stream)
+WITH u, count(distinct s) as num_vip_streams
+WHERE num_vip_streams >= 2
+RETURN u.name as user, num_vip_streams","match
+  $u isa user, has name $un;
+  vip_status (vip_user: $u, channel_with_vips: $s);
+select $u, $un, $s;
+distinct;
+reduce $num_vip_streams = count($s) groupby $u, $un;
+match $num_vip_streams >= 2;
+fetch {
+  ""user"": $un,
+  ""num_vip_streams"": $num_vip_streams
+};"
+120,Which users are chatters on more than five different streams?,"MATCH (u:User)-[:CHATTER]->(s:Stream)
+WITH u, count(distinct s) AS num_streams
+WHERE num_streams > 5
+RETURN u.name AS user, num_streams","match
+  $u isa user, has name $un;
+  chat_activity (chatting_user: $u, channel_with_chatters: $s);
+select $u, $un, $s;
+distinct;
+reduce $num_streams = count($s) groupby $u, $un;
+match $num_streams > 5;
+fetch {
+  ""user"": $un,
+  ""num_streams"": $num_streams
+};"
+129,How many users have VIP status in more than one stream?,"MATCH (u:User)-[:VIP]->(s:Stream)
+WITH u, count(s) AS vip_count
+WHERE vip_count > 1
+RETURN count(u) AS user_count","match
+  $u isa user;
+  vip_status (vip_user: $u, channel_with_vips: $s);
+reduce $vip_count = count($s) groupby $u;
+match $vip_count > 1;
+reduce $user_count = count($u);"
+347,Which users have chatted with more than 5 different streams?,"MATCH (u:User)-[:CHATTER]->(s:Stream)
+WITH u, count(distinct s) as num_streams
+WHERE num_streams > 5
+RETURN u.name as user, num_streams as streams_chatted_with","match
+  $u isa user, has name $un;
+  $s isa stream;
+  chat_activity (chatting_user: $u, channel_with_chatters: $s);
+select $u, $s, $un;
+distinct;
+reduce $num_streams = count($s) groupby $u, $un;
+match $num_streams > 5;
+fetch {
+  ""user"": $un,
+  ""streams_chatted_with"": $num_streams
+};"
+348,List all users who are VIPs in at least two different streams.,"MATCH (u:User)-[:VIP]->(s:Stream)
+WITH u, count(distinct s) as num_vip_streams
+WHERE num_vip_streams >= 2
+RETURN u.name as user, num_vip_streams","match
+  $u isa user, has name $un;
+  vip_status (vip_user: $u, channel_with_vips: $s);
+reduce $num_vip_streams = count($s) groupby $u, $un;
+match $num_vip_streams >= 2;
+fetch {
+  ""user"": $un,
+  ""num_vip_streams"": $num_vip_streams
+};"
+356,Which users are VIPs for the stream with the highest follower count?,"MATCH (s:Stream)
+WITH s
+ORDER BY s.followers DESC
+LIMIT 1
+MATCH (s)<-[:VIP]-(u:User)
+RETURN u.name AS user, s.name AS stream","with fun max_followers() -> integer:
+  match $s isa stream, has followers $f;
+  return max($f);
+match
+  $s isa stream, has name $sn, has followers $f;
+  let $max = max_followers();
+  $f == $max;
+  vip_status (channel_with_vips: $s, vip_user: $u);
+  $u has name $un;
+fetch { ""user"": $un, ""stream"": $sn };"
+454,Identify the top 3 games played by streams with a description containing 'hilarious moments'.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
+WHERE s.description CONTAINS 'hilarious moments'
+RETURN g.name AS game, count(*) AS count
+ORDER BY count DESC
+LIMIT 3","match
+  $s isa stream, has description $d;
+  $d like "".*hilarious moments.*"";
+  game_play (streaming_channel: $s, played_game: $g);
+reduce $count = count($s) groupby $g;
+sort $count desc;
+limit 3;
+fetch { ""game"": $g.name, ""count"": $count };"

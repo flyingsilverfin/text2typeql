@@ -12,17 +12,17 @@
 | twitter | 493 | 0 | 493 | **100%** |
 | twitch | 533 | 28 | 561 | 95% |
 | recommendations | 655 | 98 | 753 | 87% |
-| movies | 729 | 0 | 729 | **100%** |
+| movies | 714 | 15 | 729 | 98% |
 | neoflix | 892 | 23 | 915 | 97% |
 | companies | 927 | 6 | 933 | **99%** |
 | gameofthrones | 374 | 18 | 392 | 95% |
-| **Total** | **4603** | **173** | **4776** | **96%** |
+| **Total** | **4588** | **188** | **4776** | **96%** |
 
 ### Validation Summary
 
 All databases complete with TypeDB validation and semantic review:
-- 4603 queries successfully converted (96%)
-- 173 queries failed due to TypeQL limitations (size(), collect(), date arithmetic, etc.)
+- 4588 queries successfully converted (96%)
+- 188 queries failed due to TypeQL limitations (size(), collect(), date arithmetic, etc.)
 
 ### Remaining Failures by Category (194 total)
 

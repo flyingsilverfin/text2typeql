@@ -126,3 +126,55 @@ WITH m, size(collect(distinct p.country)) AS num_countries
 ORDER BY num_countries DESC
 LIMIT 5
 RETURN m.title AS movie, num_countries AS number_of_countries",Schema mismatch: person entity doesn't have country attribute
+217,What are the first 5 movies with a release date on a weekend?,"MATCH (m:Movie)
+WHERE date(m.release_date).dayOfWeek IN [5, 6, 7]
+RETURN m.title, m.release_date
+ORDER BY m.release_date
+LIMIT 5","TypeQL limitation: No date component extraction functions (dayOfWeek, day, month, etc.) - cannot filter by day of week"
+240,Which 3 adult films have been released during a leap year?,"MATCH (a:Adult)
+WHERE a.release_date IS NOT NULL AND
+      date(a.release_date).year % 4 = 0 AND
+      date(a.release_date).month = 2 AND
+      date(a.release_date).day = 29
+RETURN a.title
+LIMIT 3","TypeQL limitation: No datetime component extraction functions (year, month, day). Cannot check for leap year (Feb 29) because TypeQL cannot extract date parts from datetime values for comparison."
+421,What are the first 5 actors who have starred in both a movie and an adult film?,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
+WHERE EXISTS {
+  (p)-[:CAST_FOR]->(:Adult)
+}
+RETURN p.name
+LIMIT 5","Schema limitation: adult entity does not play cast_for:film role in TypeQL schema, so actors cannot be linked to adult films via cast_for relation"
+444,Which 3 movies have the highest popularity and were released in the last 5 years?,"MATCH (m:Movie)
+WHERE m.release_date >= date() - duration('P5Y')
+RETURN m.title, m.popularity
+ORDER BY m.popularity DESC
+LIMIT 3",TypeQL limitation: No dynamic date functions. Cannot express date() - duration() for relative date calculations like last 5 years.
+524,Which movies have been produced by companies based in 'France'?,"MATCH (m:Movie)-[:PRODUCED_BY]->(c:ProductionCompany)-[:PRODUCED_IN_COUNTRY]->(country:Country {name: 'France'})
+RETURN m.title","Schema mismatch: Cypher expects ProductionCompany->PRODUCED_IN_COUNTRY->Country relation, but TypeQL schema only has media->produced_in_country->country. No relation exists between production_company and country entities."
+566,Which movies have a release date on a leap year?,"MATCH (m:Movie)
+WHERE m.release_date IS NOT NULL AND date(m.release_date).year % 4 = 0
+RETURN m.title, m.release_date",TypeQL limitation: Cannot extract year from datetime or perform modulo operations on date components. Leap year check (year % 4 == 0) requires date arithmetic functions not available in TypeQL.
+795,Who are the first 3 actors with roles in both movies and adult films?,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
+WHERE EXISTS {(p)-[:CAST_FOR]->(:Adult)}
+RETURN p.name
+LIMIT 3","Schema mismatch: adult entity does not play cast_for:film role in TypeQL schema, so CAST_FOR relationships to Adult nodes cannot be represented"
+796,List the first 3 actors with roles in both movies and videos.,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
+WHERE exists{ (p)-[:CAST_FOR]->(:Video) }
+RETURN p.name
+LIMIT 3","Schema mismatch: video entity does not have cast_for relationship in TypeQL schema. Videos only have crew_for, not cast_for. Cannot check for actors with roles in videos."
+821,Who are the first 3 directors who have worked on both movies and adult films?,"MATCH (p:Person)-[:CREW_FOR]->(m:Movie)
+WHERE (p)-[:CREW_FOR]->(:Adult)
+  AND exists{ (p)-[:CREW_FOR {job: 'Director'}]->(:Movie) }
+  AND exists{ (p)-[:CREW_FOR {job: 'Director'}]->(:Adult) }
+RETURN p.name
+LIMIT 3","Schema mismatch: adult entity does not play crew_for:film role in TypeQL schema, so directors for adult films cannot be queried"
+904,Name the top 5 movies with the most detailed overviews (measured by word count).,"MATCH (m:Movie)
+WHERE m.overview IS NOT NULL
+RETURN m.title, m.overview, size(split(m.overview, ' ')) AS wordCount
+ORDER BY wordCount DESC
+LIMIT 5",TypeQL limitation: No string split() or size() functions available. Cannot count words in string.
+904,Name the top 5 movies with the most detailed overviews (measured by word count).,"MATCH (m:Movie)
+WHERE m.overview IS NOT NULL
+RETURN m.title, m.overview, size(split(m.overview, ' ')) AS wordCount
+ORDER BY wordCount DESC
+LIMIT 5",
