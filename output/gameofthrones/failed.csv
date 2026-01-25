@@ -36,3 +36,7 @@ WITH c, max(c.fastrf_embedding) AS maxVal, min(c.fastrf_embedding) AS minVal
 RETURN c.name AS character, maxVal - minVal AS embeddingRange
 ORDER BY embeddingRange DESC
 LIMIT 3",Array min/max operations not supported in TypeQL
+368,Who are the characters with a fastrf_embedding value at the last position less than -0.5? Limit to 3 characters.,"MATCH (c:Character)
+WHERE c.fastrf_embedding[-1] < -0.5
+RETURN c.name
+LIMIT 3","TypeQL schema limitation: fastrf_embedding is stored as a double, not an array. TypeQL does not support array indexing to access fastrf_embedding[-1]. This query requires array data type support which is not available in the TypeQL schema."

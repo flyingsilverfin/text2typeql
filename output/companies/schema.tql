@@ -68,7 +68,7 @@ define
     plays invested_in:investor,
     plays board_member_of:organization,
     plays competes_with:competitor,
-    plays mentions:organization;
+    plays mentions:mentioned;
 
   entity industry_category,
     owns industry_category_name,
@@ -84,7 +84,8 @@ define
     owns city_id @key,
     owns city_summary,
     owns city_name,
-    plays located_in:city;
+    plays located_in:city,
+    plays mentions:mentioned;
 
   entity country sub place,
     owns country_name,
@@ -162,4 +163,4 @@ define
 
   relation mentions,
     relates article,
-    relates organization;
+    relates mentioned;

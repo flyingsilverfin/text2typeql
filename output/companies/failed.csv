@@ -1,14 +1,4 @@
 original_index,question,cypher,error
-292,List the top 3 organizations by the number of articles mentioning them in 2021.,"MATCH (o:Organization)<-[:MENTIONS]-(a:Article)
-WHERE a.date >= date(""2021-01-01"") AND a.date <= date(""2021-12-31"") 
-WITH o, count(a) as mentionCount
-ORDER BY mentionCount DESC
-LIMIT 3
-RETURN o.name as organization, mentionCount",Schema mismatch: article entity has no date attribute to filter by 2021
-305,Which 3 cities are mentioned most frequently in articles?,"MATCH (a:Article)-[:HAS_CHUNK]->(:Chunk)-[:MENTIONS]->(c:City)
-RETURN c.name AS city, count(*) AS mentions
-ORDER BY mentions DESC
-LIMIT 3","Schema mismatch: TypeQL schema has mentions(article, organization) but Cypher uses (Chunk)-[:MENTIONS]->(City). No chunk→city mention relation exists in schema."
 341,What are the names of organizations that have a CEO who is younger than 40 years old?,"MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)
 WHERE date().year - toInteger(left(ceo.id, 4)) < 40
 RETURN o.name",TypeQL lacks string manipulation (left()) and date functions (date().year) needed to extract birth year from person_id and compute age
