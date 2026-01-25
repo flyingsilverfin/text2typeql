@@ -173,8 +173,3 @@ WHERE m.overview IS NOT NULL
 RETURN m.title, m.overview, size(split(m.overview, ' ')) AS wordCount
 ORDER BY wordCount DESC
 LIMIT 5",TypeQL limitation: No string split() or size() functions available. Cannot count words in string.
-904,Name the top 5 movies with the most detailed overviews (measured by word count).,"MATCH (m:Movie)
-WHERE m.overview IS NOT NULL
-RETURN m.title, m.overview, size(split(m.overview, ' ')) AS wordCount
-ORDER BY wordCount DESC
-LIMIT 5",

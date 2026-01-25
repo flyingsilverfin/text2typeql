@@ -5172,16 +5172,3 @@ LIMIT 5","match
 sort $favorites desc;
 limit 5;
 fetch { ""text"": $text, ""favorites"": $favorites };"
-114,Find the top 3 tweets with the most retweets made by 'neo4j'.,"MATCH (u:User {screen_name: 'neo4j'})-[:POSTS]->(t:Tweet)
-WHERE exists{ (t)-[:RETWEETS]->(:Tweet) }
-RETURN t.text AS tweet_text, count{(t)-[:RETWEETS]->(:Tweet)} AS retweet_count
-ORDER BY retweet_count DESC
-LIMIT 3","match
-$u isa user, has screen_name ""neo4j"";
-$t isa tweet;
-posts (author: $u, content: $t);
-retweets (original_tweet: $t, retweeting_tweet: $rt);
-reduce $retweet_count = count($rt) groupby $t;
-sort $retweet_count desc;
-limit 3;
-fetch { ""tweet_text"": $t.text, ""retweet_count"": $retweet_count };"
