@@ -1,8 +1,4 @@
 original_index,question,cypher,error
-182,List the top 5 movies by the number of roles and their respective actors.,"MATCH (m:Movie)<-[ai:ACTED_IN]-(p:Person)
-RETURN m.title AS movie, collect(p.name) AS actors, size(ai.roles) AS numRoles
-ORDER BY numRoles DESC
-LIMIT 5",TypeQL does not support collect() aggregation - cannot return list of actors per movie while also grouping by movie for role count
 267,List the movies with exactly 3 roles in the ACTED_IN relationship.,"MATCH (m:Movie)<-[r:ACTED_IN]-(p:Person)
 WHERE size(r.roles) = 3
 RETURN m.title","TypeQL lacks size() function - cannot count elements within a string attribute. Neo4j stores roles as an array, but TypeQL schema has roles as a simple string."
@@ -18,10 +14,6 @@ WHERE m.tagline IS NOT NULL
 RETURN m.title, m.tagline
 ORDER BY size(m.tagline) DESC
 LIMIT 3",TypeQL limitation: no string length function to sort by longest taglines (size() equivalent not implemented)
-471,What are the top 3 movies by the number of roles available in the ACTED_IN relationship?,"MATCH (m:Movie)<-[r:ACTED_IN]-(p:Person)
-RETURN m.title AS movie, size(r.roles) AS numRoles
-ORDER BY numRoles DESC
-LIMIT 3","TypeQL limitation: Cannot count elements within a string attribute. Cypher size(r.roles) counts array elements, but TypeQL roles is a single string with no size() function equivalent."
 484,Find the top 3 longest relationships in terms of roles between a person and a movie.,"MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)
 RETURN p.name AS person, m.title AS movie, r.roles AS roles
 ORDER BY size(r.roles) DESC
@@ -30,33 +22,3 @@ LIMIT 3",TypeQL does not support size()/length() function for strings - cannot s
 WHERE left(p1.name, 1) = left(p2.name, 1)
 RETURN p1.name
 LIMIT 3",TypeQL limitation: No substring/left() function to extract and compare first characters of two different string values
-478,List 3 movies with exactly 3 roles in the ACTED_IN relationship.,"MATCH (m:Movie)<-[ai:ACTED_IN]-(p:Person)
-WHERE size(ai.roles) = 3
-RETURN m.title
-LIMIT 3","TypeQL has no size() function to count array elements. The query requires size(ai.roles)=3 to find roles arrays with exactly 3 elements, but TypeQL stores roles as a single string value and cannot count elements within it."
-556,List all the movies where the roles list contains more than 4 characters.,"MATCH (m:Movie)<-[ai:ACTED_IN]-(p:Person)
-WHERE EXISTS {
-  (m)<-[ai2:ACTED_IN]-(p2:Person)
-  WHERE size(ai2.roles) > 4
-}
-RETURN m.title AS movie, collect(p.name) AS actors","TypeQL limitation: Cannot count items in a string list attribute. The roles attribute is stored as a string value, and TypeDB has no function to count delimited items within a string."
-576,What are the first 3 movies with the longest role lists in 'ACTED_IN' relationships?,"MATCH (m:Movie)<-[r:ACTED_IN]-(p:Person)
-RETURN m.title AS movie, size(r.roles) AS roleCount
-ORDER BY roleCount DESC
-LIMIT 3",Unsupported: Cypher size(r.roles) counts items in a list property. TypeDB stores roles as a string attribute with no equivalent function to count delimited items within a string value.
-603,Show the first 3 movies with the most complex role lists in the 'ACTED_IN' relationship.,"MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)
-RETURN m.title, r.roles
-ORDER BY size(r.roles) DESC
-LIMIT 3",TypeQL limitation: Cannot implement size() function on string attribute to sort by complexity of role lists
-589,What are the roles list sizes for each movie Keanu Reeves has acted in?,"MATCH (p:Person {name: 'Keanu Reeves'})-[r:ACTED_IN]->(m:Movie)
-RETURN m.title, size(r.roles) AS roleCount","TypeQL limitation: No size() function to count items in a list/string attribute. The question asks for the number of roles in each acted_in relationship, but TypeDB cannot count elements within a string value."
-618,What are the top 3 shortest role lists in movies reviewed by persons born before 1960?,"MATCH (p:Person)-[:REVIEWED]->(m:Movie)<-[ai:ACTED_IN]-(a:Person)
-WHERE p.born < 1960
-RETURN m.title, ai.roles
-ORDER BY size(ai.roles)
-LIMIT 3","TypeQL limitation: Cannot sort by size/length of string attribute. Query requires size(roles) to find shortest role lists, but TypeQL has no string length function."
-619,Which movie has the most roles in the 'ACTED_IN' relationship and what are those roles?,"MATCH (m:Movie)<-[r:ACTED_IN]-(p:Person)
-WITH m, r
-ORDER BY size(r.roles) DESC
-LIMIT 1
-RETURN m.title AS movie, r.roles AS roles","TypeQL limitation: Cannot both aggregate (count roles to find max) and return individual role values in the same query. The question requires finding the movie with the most roles AND returning those roles, which requires aggregation followed by individual value retrieval - not expressible in a single TypeQL query."

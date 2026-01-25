@@ -9741,3 +9741,154 @@ fetch {
   ""actor"": $n,
   ""number_of_distinct_roles"": $num_roles
 };"
+182,List the top 5 movies by the number of roles and their respective actors.,"MATCH (m:Movie)<-[ai:ACTED_IN]-(p:Person)
+RETURN m.title AS movie, collect(p.name) AS actors, size(ai.roles) AS numRoles
+ORDER BY numRoles DESC
+LIMIT 5","with fun role_count($m: movie) -> integer:
+  match
+    $ai isa acted_in (film: $m);
+    $ai has roles $r;
+  return count;
+match
+  $m isa movie, has title $t;
+  let $count = role_count($m);
+sort $count desc;
+limit 5;
+fetch {
+  ""movie"": $t,
+  ""numRoles"": $count
+};"
+471,What are the top 3 movies by the number of roles available in the ACTED_IN relationship?,"MATCH (m:Movie)<-[r:ACTED_IN]-(p:Person)
+RETURN m.title AS movie, size(r.roles) AS numRoles
+ORDER BY numRoles DESC
+LIMIT 3","with fun role_count($m: movie) -> integer:
+  match
+    $ai isa acted_in (film: $m);
+    $ai has roles $r;
+  return count;
+match
+  $m isa movie, has title $t;
+  let $count = role_count($m);
+sort $count desc;
+limit 3;
+fetch {
+  ""movie"": $t,
+  ""numRoles"": $count
+};"
+478,List 3 movies with exactly 3 roles in the ACTED_IN relationship.,"MATCH (m:Movie)<-[ai:ACTED_IN]-(p:Person)
+WHERE size(ai.roles) = 3
+RETURN m.title
+LIMIT 3","with fun role_count($m: movie) -> integer:
+  match
+    $ai isa acted_in (film: $m);
+    $ai has roles $r;
+  return count;
+match
+  $m isa movie, has title $t;
+  let $count = role_count($m);
+  $count == 3;
+limit 3;
+fetch {
+  ""movie"": $t
+};"
+556,List all the movies where the roles list contains more than 4 characters.,"MATCH (m:Movie)<-[ai:ACTED_IN]-(p:Person)
+WHERE EXISTS {
+  (m)<-[ai2:ACTED_IN]-(p2:Person)
+  WHERE size(ai2.roles) > 4
+}
+RETURN m.title AS movie, collect(p.name) AS actors","with fun role_count($m: movie) -> integer:
+  match
+    $ai isa acted_in (film: $m);
+    $ai has roles $r;
+  return count;
+match
+  $m isa movie, has title $t;
+  let $count = role_count($m);
+  $count > 4;
+fetch {
+  ""movie"": $t
+};"
+576,What are the first 3 movies with the longest role lists in 'ACTED_IN' relationships?,"MATCH (m:Movie)<-[r:ACTED_IN]-(p:Person)
+RETURN m.title AS movie, size(r.roles) AS roleCount
+ORDER BY roleCount DESC
+LIMIT 3","with fun role_count($m: movie) -> integer:
+  match
+    $ai isa acted_in (film: $m);
+    $ai has roles $r;
+  return count;
+match
+  $m isa movie, has title $t;
+  let $count = role_count($m);
+sort $count desc;
+limit 3;
+fetch {
+  ""movie"": $t,
+  ""roleCount"": $count
+};"
+603,Show the first 3 movies with the most complex role lists in the 'ACTED_IN' relationship.,"MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)
+RETURN m.title, r.roles
+ORDER BY size(r.roles) DESC
+LIMIT 3","with fun role_count($m: movie) -> integer:
+  match
+    $ai isa acted_in (film: $m);
+    $ai has roles $r;
+  return count;
+match
+  $m isa movie, has title $t;
+  let $count = role_count($m);
+sort $count desc;
+limit 3;
+fetch {
+  ""movie"": $t,
+  ""roleCount"": $count
+};"
+589,What are the roles list sizes for each movie Keanu Reeves has acted in?,"MATCH (p:Person {name: 'Keanu Reeves'})-[r:ACTED_IN]->(m:Movie)
+RETURN m.title, size(r.roles) AS roleCount","match
+  $p isa person, has name ""Keanu Reeves"";
+  $m isa movie, has title $t;
+  $ai isa acted_in (film: $m, actor: $p);
+  $ai has roles $r;
+reduce $count = count($r) groupby $m, $t;
+fetch {
+  ""movie"": $t,
+  ""roleCount"": $count
+};"
+618,What are the top 3 shortest role lists in movies reviewed by persons born before 1960?,"MATCH (p:Person)-[:REVIEWED]->(m:Movie)<-[ai:ACTED_IN]-(a:Person)
+WHERE p.born < 1960
+RETURN m.title, ai.roles
+ORDER BY size(ai.roles)
+LIMIT 3","with fun role_count($m: movie) -> integer:
+  match
+    $ai isa acted_in (film: $m);
+    $ai has roles $r;
+  return count;
+match
+  $p isa person, has born $b;
+  $b < 1960;
+  reviewed (reviewer: $p, film: $m);
+  $m isa movie, has title $t;
+  let $count = role_count($m);
+sort $count asc;
+limit 3;
+fetch {
+  ""movie"": $t,
+  ""roleCount"": $count
+};"
+619,Which movie has the most roles in the 'ACTED_IN' relationship and what are those roles?,"MATCH (m:Movie)<-[r:ACTED_IN]-(p:Person)
+WITH m, r
+ORDER BY size(r.roles) DESC
+LIMIT 1
+RETURN m.title AS movie, r.roles AS roles","with fun role_count($m: movie) -> integer:
+  match
+    $ai isa acted_in (film: $m);
+    $ai has roles $r;
+  return count;
+match
+  $m isa movie, has title $t;
+  let $count = role_count($m);
+sort $count desc;
+limit 1;
+fetch {
+  ""movie"": $t,
+  ""roleCount"": $count
+};"
