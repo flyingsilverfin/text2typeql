@@ -40,9 +40,6 @@ WITH m, avg(m.runtime) AS avg_runtime
 WHERE m.runtime > avg_runtime
 RETURN m.title, m.runtime
 ORDER BY m.runtime DESC",TypeQL doesn't support comparing to computed aggregate (subquery)
-594,List the first 3 users who rated the adult film titled 'Standoff'.,"MATCH (u:User)-[:RATED]->(a:Adult {title: 'Standoff'})
-RETURN u
-LIMIT 3",Schema mismatch: adult entity doesn't play rated:rated_media role
 607,"Which 3 production companies are associated with the most number of genres across movies, videos, and adult films?","MATCH (c:ProductionCompany)-[:PRODUCED_BY]-(m)
 WHERE m:Movie OR m:Video OR m:Adult
 WITH c, count(distinct m) AS num_genres
@@ -54,21 +51,6 @@ WITH p, count(v) AS videoCount
 ORDER BY videoCount DESC
 LIMIT 3
 RETURN p.name AS person, videoCount",Schema mismatch: video doesn't play cast_for:film role
-666,Which 3 adult films have been rated by the most users?,"MATCH (a:Adult)<-[r:RATED]-(u:User)
-RETURN a.title, count(r) AS num_ratings
-ORDER BY num_ratings DESC
-LIMIT 3",Schema mismatch: adult entity doesn't play rated:rated_media role
-742,List the top 3 adult films that have been rated exactly 3 times.,"MATCH (a:Adult)<-[r:RATED]-(u:User)
-WITH a, count(r) AS ratingCount
-WHERE ratingCount = 3
-RETURN a.title AS title, a.release_date AS releaseDate
-ORDER BY a.popularity DESC
-LIMIT 3",Schema mismatch: adult entity doesn't play rated:rated_media role
-787,Who are the first 3 actors by number of roles in adult films?,"MATCH (p:Person)-[:CAST_FOR]->(a:Adult)
-WITH p, count(a) AS roles
-ORDER BY roles DESC
-LIMIT 3
-RETURN p.name AS actor, roles",Schema mismatch: adult doesn't play cast_for:film role
 809,Who are the first 3 actors by number of roles in videos with a status of 'Released'?,"MATCH (p:Person)-[:CAST_FOR]->(v:Video {status: 'Released'})
 RETURN p.name AS actor, count(*) AS num_roles
 ORDER BY num_roles DESC
@@ -101,17 +83,6 @@ WITH p, count(DISTINCT m.original_language) AS num_languages
 WHERE num_languages >= 3
 RETURN p.name
 LIMIT 3",TypeQL doesn't support HAVING clause (filter on aggregated count)
-855,Who are the first 3 directors to have made both adult films and videos?,"MATCH (p:Person)-[:CREW_FOR]->(a:Adult), (p)-[:CREW_FOR]->(v:Video)
-WHERE a.id IS NOT NULL AND v.id IS NOT NULL
-WITH p, count(DISTINCT a) AS numAdult, count(DISTINCT v) AS numVideo
-WHERE numAdult > 0 AND numVideo > 0
-RETURN p.name
-LIMIT 3",Schema mismatch: adult entity doesn't play crew_for:film role
-879,What are the top 3 actors who have played in the most number of adult films?,"MATCH (p:Person)-[:CAST_FOR]->(a:Adult)
-WITH p, count(a) AS num_adult_films
-ORDER BY num_adult_films DESC
-LIMIT 3
-RETURN p.name AS actor, num_adult_films",Schema mismatch: adult doesn't play cast_for:film role
 897,List the top 3 actors who have appeared in both movies and videos.,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
 WITH p, count(m) AS numMovies
 WHERE numMovies > 0
@@ -138,12 +109,6 @@ WHERE a.release_date IS NOT NULL AND
       date(a.release_date).day = 29
 RETURN a.title
 LIMIT 3","TypeQL limitation: No datetime component extraction functions (year, month, day). Cannot check for leap year (Feb 29) because TypeQL cannot extract date parts from datetime values for comparison."
-421,What are the first 5 actors who have starred in both a movie and an adult film?,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
-WHERE EXISTS {
-  (p)-[:CAST_FOR]->(:Adult)
-}
-RETURN p.name
-LIMIT 5","Schema limitation: adult entity does not play cast_for:film role in TypeQL schema, so actors cannot be linked to adult films via cast_for relation"
 444,Which 3 movies have the highest popularity and were released in the last 5 years?,"MATCH (m:Movie)
 WHERE m.release_date >= date() - duration('P5Y')
 RETURN m.title, m.popularity
@@ -154,20 +119,10 @@ RETURN m.title","Schema mismatch: Cypher expects ProductionCompany->PRODUCED_IN_
 566,Which movies have a release date on a leap year?,"MATCH (m:Movie)
 WHERE m.release_date IS NOT NULL AND date(m.release_date).year % 4 = 0
 RETURN m.title, m.release_date",TypeQL limitation: Cannot extract year from datetime or perform modulo operations on date components. Leap year check (year % 4 == 0) requires date arithmetic functions not available in TypeQL.
-795,Who are the first 3 actors with roles in both movies and adult films?,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
-WHERE EXISTS {(p)-[:CAST_FOR]->(:Adult)}
-RETURN p.name
-LIMIT 3","Schema mismatch: adult entity does not play cast_for:film role in TypeQL schema, so CAST_FOR relationships to Adult nodes cannot be represented"
 796,List the first 3 actors with roles in both movies and videos.,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
 WHERE exists{ (p)-[:CAST_FOR]->(:Video) }
 RETURN p.name
 LIMIT 3","Schema mismatch: video entity does not have cast_for relationship in TypeQL schema. Videos only have crew_for, not cast_for. Cannot check for actors with roles in videos."
-821,Who are the first 3 directors who have worked on both movies and adult films?,"MATCH (p:Person)-[:CREW_FOR]->(m:Movie)
-WHERE (p)-[:CREW_FOR]->(:Adult)
-  AND exists{ (p)-[:CREW_FOR {job: 'Director'}]->(:Movie) }
-  AND exists{ (p)-[:CREW_FOR {job: 'Director'}]->(:Adult) }
-RETURN p.name
-LIMIT 3","Schema mismatch: adult entity does not play crew_for:film role in TypeQL schema, so directors for adult films cannot be queried"
 904,Name the top 5 movies with the most detailed overviews (measured by word count).,"MATCH (m:Movie)
 WHERE m.overview IS NOT NULL
 RETURN m.title, m.overview, size(split(m.overview, ' ')) AS wordCount

@@ -721,7 +721,7 @@ fetch { ""title"": $title, ""revenue"": $revenue };"
 87,Find all adult movies that have been released.,"MATCH (a:Adult)
 WHERE a.status = 'Released'
 RETURN a.title, a.release_date","match
-  $a isa adult;
+  $a isa adult_video;
   $a has status $status;
   $a has title $title;
   $a has release_date $release_date;
@@ -734,7 +734,7 @@ WHERE a.average_vote IS NOT NULL
 RETURN a.title, a.average_vote
 ORDER BY a.average_vote DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has average_vote $average_vote;
   $a has title $title;
 sort $average_vote desc;
@@ -745,7 +745,7 @@ fetch {
 89,"Which adult movies have a budget greater than 500,000 dollars?","MATCH (a:Adult)
 WHERE a.budget > 500000
 RETURN a.title, a.budget","match
-  $a isa adult;
+  $a isa adult_video;
   $a has budget $budget;
   $a has title $title;
   $budget > 500000;
@@ -1030,7 +1030,7 @@ fetch {
 125,Which adult films have a runtime longer than 90 minutes?,"MATCH (a:Adult)
 WHERE a.runtime > 90
 RETURN a.title, a.runtime","match
-  $a isa adult;
+  $a isa adult_video;
   $a has runtime $runtime;
   $a has title $title;
   $runtime > 90;
@@ -1042,7 +1042,7 @@ WITH a, l
 ORDER BY a.average_vote DESC
 LIMIT 5
 RETURN a.title AS movie, l.name AS language","match
-  $a isa adult;
+  $a isa adult_video;
   $l isa language;
   $rel0 (media: $a, language: $l) isa original_language;
   $a has title $title_a;
@@ -1056,14 +1056,14 @@ fetch {
 128,Which adult films have been released after 2010?,"MATCH (a:Adult)
 WHERE a.release_date > date('2010-01-01')
 RETURN a.title, a.release_date","match
-  $m isa adult;
+  $m isa adult_video;
   $m has release_date $rd;
   $rd > 2010-01-01;
   $m has title $title;
 fetch { ""title"": $title, ""release_date"": $rd };"
 130,Which adult films are associated with the genre 'Horror'?,"MATCH (a:Adult)-[:IN_GENRE]->(g:Genre {name: 'Horror'})
 RETURN a.title","match
-  $a isa adult;
+  $a isa adult_video;
   $g isa genre, has genre_name 'Horror';
   $rel0 (media: $a, genre: $g) isa in_genre;
   $a has title $title_a;
@@ -1074,7 +1074,7 @@ fetch {
 RETURN a.title, a.popularity
 ORDER BY a.popularity DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has title $title;
   $a has popularity $popularity;
 sort $popularity desc;
@@ -1279,14 +1279,14 @@ RETURN g.name AS genre, count(*) AS count
 ORDER BY count DESC
 LIMIT 5","match
   $g isa genre, has genre_name $gn;
-  $m isa adult;
+  $m isa adult_video;
   (media: $m, genre: $g) isa in_genre;
 limit 50;
 fetch { ""genre"": $gn };"
 164,Which adult films have been produced by companies not based in the USA?,"MATCH (a:Adult)-[:PRODUCED_BY]->(c:ProductionCompany)
 WHERE NOT EXISTS { (c)-[:PRODUCED_IN_COUNTRY]->(:Country {name: 'United States of America'}) }
 RETURN a.title AS `Adult Film`, c.name AS `Production Company`","match
-  $a isa adult;
+  $a isa adult_video;
   $c isa production_company;
   $rel0 (media: $a, producer: $c) isa produced_by;
   $a has title $title_a;
@@ -1299,7 +1299,7 @@ WHERE a.runtime IS NOT NULL
 RETURN a.title, a.runtime
 ORDER BY a.runtime DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has runtime $runtime;
   $a has title $title;
 sort $runtime desc;
@@ -1312,7 +1312,7 @@ WHERE a.average_vote IS NOT NULL
 RETURN a.title, a.average_vote
 ORDER BY a.average_vote DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has average_vote $average_vote;
   $a has title $title;
 sort $average_vote desc;
@@ -1322,7 +1322,7 @@ fetch {
 };"
 167,Which adult films feature the keyword 'murder'?,"MATCH (a:Adult)-[:HAS_KEYWORD]->(k:Keyword {name: 'murder'})
 RETURN a.title","match
-  $a isa adult;
+  $a isa adult_video;
   $k isa keyword, has keyword_name 'murder';
   $rel0 (media: $a, keyword: $k) isa has_keyword;
   $a has title $title_a;
@@ -1343,7 +1343,7 @@ WHERE a.runtime IS NOT NULL
 RETURN a.title, a.runtime
 ORDER BY a.runtime DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has runtime $runtime;
   $a has title $title;
 sort $runtime desc;
@@ -1354,7 +1354,7 @@ fetch {
 170,Which adult films have a homepage listed?,"MATCH (a:Adult)
 WHERE a.homepage IS NOT NULL
 RETURN a.title, a.homepage","match
-  $a isa adult;
+  $a isa adult_video;
   $a has homepage $homepage;
   $a has title $title;
 fetch {
@@ -1364,11 +1364,11 @@ fetch {
 WHERE a.budget IS NOT NULL AND a.revenue IS NOT NULL
 RETURN a.title, a.revenue / a.budget AS efficiency
 ORDER BY efficiency DESC
-LIMIT 3","match $a isa adult; $a has budget $budget; $a has revenue $revenue; $a has title $title; limit 3; fetch { ""title"": $title, ""revenue"": $revenue, ""efficiency"": $budget };"
+LIMIT 3","match $a isa adult_video; $a has budget $budget; $a has revenue $revenue; $a has title $title; limit 3; fetch { ""title"": $title, ""revenue"": $revenue, ""efficiency"": $budget };"
 172,Which adult films have been released with the status 'In Production'?,"MATCH (a:Adult)
 WHERE a.status = 'In Production'
 RETURN a.title","match
-  $a isa adult;
+  $a isa adult_video;
   $a has status $status;
   $a has title $title;
   $status == ""In Production"";
@@ -1700,7 +1700,7 @@ fetch {
 RETURN a.title, a.release_date
 ORDER BY a.release_date
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $l isa language, has language_name 'it';
   $rel0 (media: $a, language: $l) isa spoken_in_language;
   $a has title $title_a;
@@ -1715,7 +1715,7 @@ WHERE a.tagline CONTAINS 'murder'
 RETURN a.title, a.tagline
 ORDER BY a.popularity DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has tagline $tagline;
   $a has title $title;
   $a has popularity $popularity;
@@ -1740,7 +1740,7 @@ fetch {
 RETURN a.title, a.popularity
 ORDER BY a.popularity DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has title $title;
   $a has popularity $popularity;
 sort $popularity desc;
@@ -1753,7 +1753,7 @@ WHERE a.budget IS NOT NULL
 RETURN a.title, a.budget
 ORDER BY a.budget DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has budget $budget;
   $a has title $title;
 sort $budget desc;
@@ -1869,7 +1869,7 @@ WHERE a.runtime > 100
 RETURN a.title
 ORDER BY a.title
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has runtime $runtime;
   $a has title $title;
   $runtime > 100;
@@ -1883,7 +1883,7 @@ WHERE a.poster_path = '/tzVK7nTnzUiVeFSZhOAIHmrgXUS.jpg'
 RETURN a.title, a.release_date, a.popularity
 ORDER BY a.popularity DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has poster_path $poster_path;
   $a has title $title;
   $a has release_date $release_date;
@@ -1898,7 +1898,7 @@ fetch {
 WHERE a.tagline CONTAINS 'love'
 RETURN a.title, a.tagline
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has tagline $tagline;
   $a has title $title;
   $tagline like "".*love.*"";
@@ -1911,7 +1911,7 @@ WHERE a.vote_count IS NOT NULL
 RETURN a.title, a.vote_count
 ORDER BY a.vote_count DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has vote_count $vote_count;
   $a has title $title;
 sort $vote_count desc;
@@ -1922,13 +1922,13 @@ fetch {
 244,Which 3 adult films have the lowest average votes but were produced in 'United States of America'?,"MATCH (a:Adult)-[:PRODUCED_IN_COUNTRY]->(:Country {name: 'United States of America'})
 RETURN a.title, a.average_vote
 ORDER BY a.average_vote
-LIMIT 3","match $a isa adult; $country isa country, has country_name 'United States of America'; (media: $a, country: $country) isa produced_in_country; $a has title $title; $a has average_vote $average_vote; sort $average_vote asc; limit 3; fetch { ""title"": $title, ""average_vote"": $average_vote };"
+LIMIT 3","match $a isa adult_video; $country isa country, has country_name 'United States of America'; (media: $a, country: $country) isa produced_in_country; $a has title $title; $a has average_vote $average_vote; sort $average_vote asc; limit 3; fetch { ""title"": $title, ""average_vote"": $average_vote };"
 246,"List the top 3 adult films with a budget under $10,000.","MATCH (a:Adult)
 WHERE a.budget < 10000
 RETURN a.title, a.budget
 ORDER BY a.budget DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has budget $budget;
   $a has title $title;
   $budget < 10000;
@@ -2179,7 +2179,7 @@ WHERE a.revenue IS NOT NULL
 RETURN a.title, a.revenue
 ORDER BY a.revenue DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has revenue $revenue;
   $a has title $title;
 sort $revenue desc;
@@ -2191,7 +2191,7 @@ fetch {
 RETURN a.title, a.vote_count
 ORDER BY a.vote_count DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has title $title;
   $a has vote_count $vote_count;
 sort $vote_count desc;
@@ -2203,7 +2203,7 @@ fetch {
 RETURN a.title, a.runtime
 ORDER BY a.runtime DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has title $title;
   $a has runtime $runtime;
 sort $runtime desc;
@@ -2216,7 +2216,7 @@ WHERE a.average_vote IS NOT NULL
 RETURN a.title, a.average_vote
 ORDER BY a.average_vote DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has average_vote $average_vote;
   $a has title $title;
 sort $average_vote desc;
@@ -2229,7 +2229,7 @@ WHERE a.budget > 500000
 RETURN a.title, a.budget
 ORDER BY a.budget DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has budget $budget;
   $a has title $title;
   $budget > 500000;
@@ -2243,7 +2243,7 @@ WHERE a.release_date IS NOT NULL
 RETURN a.title, a.release_date
 ORDER BY a.release_date
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has release_date $release_date;
   $a has title $title;
 sort $release_date asc;
@@ -2254,12 +2254,12 @@ fetch {
 286,Name the top 5 adult videos that were produced in Italy.,"MATCH (a:Adult)-[:PRODUCED_IN_COUNTRY]->(:Country {name: 'Italy'})
 RETURN a.title
 ORDER BY a.popularity DESC
-LIMIT 5","match $a isa adult; $country isa country, has country_name 'Italy'; (media: $a, country: $country) isa produced_in_country; $a has title $title; $a has popularity $popularity; sort $popularity desc; limit 5; fetch { ""title"": $title };"
+LIMIT 5","match $a isa adult_video; $country isa country, has country_name 'Italy'; (media: $a, country: $country) isa produced_in_country; $a has title $title; $a has popularity $popularity; sort $popularity desc; limit 5; fetch { ""title"": $title };"
 288,List 5 adult videos with a tagline containing the word 'sex'.,"MATCH (a:Adult)
 WHERE a.tagline CONTAINS 'sex'
 RETURN a.title, a.tagline
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has tagline $tagline;
   $a has title $title;
   $tagline like "".*sex.*"";
@@ -2272,7 +2272,7 @@ WHERE a.poster_path IS NOT NULL
 RETURN a.title, a.poster_path
 ORDER BY a.popularity DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has poster_path $poster_path;
   $a has title $title;
   $a has popularity $popularity;
@@ -2286,7 +2286,7 @@ WHERE a.revenue IS NOT NULL
 RETURN a.title, a.revenue
 ORDER BY a.revenue
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has revenue $revenue;
   $a has title $title;
 sort $revenue asc;
@@ -2298,7 +2298,7 @@ fetch {
 RETURN a.title, a.popularity
 ORDER BY a.popularity DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has title $title;
   $a has popularity $popularity;
 sort $popularity desc;
@@ -2531,7 +2531,7 @@ fetch {
 RETURN a.title, a.popularity
 ORDER BY a.popularity DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has title $title;
   $a has popularity $popularity;
 sort $popularity desc;
@@ -2669,7 +2669,7 @@ fetch {
 WHERE a.tagline = 'Humiliation. Rape. Murder. You know the drill.'
 RETURN a.title
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has tagline $tagline;
   $a has title $title;
   $tagline == ""Humiliation. Rape. Murder. You know the drill."";
@@ -2767,7 +2767,7 @@ WHERE a.runtime > 90
 RETURN a.title
 ORDER BY a.title
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has runtime $runtime;
   $a has title $title;
   $runtime > 90;
@@ -2842,7 +2842,7 @@ WHERE a.release_date >= date('2000-01-01')
 RETURN a.title, a.release_date
 ORDER BY a.release_date
 LIMIT 3","match
-  $m isa adult;
+  $m isa adult_video;
   $m has release_date $rd;
   $rd >= 2000-01-01;
   $m has title $title;
@@ -2979,7 +2979,7 @@ WHERE a.budget > 500000
 RETURN a.title
 ORDER BY a.budget DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has budget $budget;
   $a has title $title;
   $budget > 500000;
@@ -3205,7 +3205,7 @@ WHERE a.average_vote IS NOT NULL
 RETURN a.title, a.average_vote
 ORDER BY a.average_vote DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has average_vote $average_vote;
   $a has title $title;
 sort $average_vote desc;
@@ -3344,7 +3344,7 @@ limit 5;
 fetch { ""title"": $title, ""release_date"": $rd, ""tagline"": $tagline };"
 451,Name the first 3 adult films that were produced in the country 'Italy'.,"MATCH (a:Adult)-[:PRODUCED_IN_COUNTRY]->(:Country {name: 'Italy'})
 RETURN a.title
-LIMIT 3","match $a isa adult; $country isa country, has country_name 'Italy'; (media: $a, country: $country) isa produced_in_country; $a has title $title; limit 3; fetch { ""title"": $title };"
+LIMIT 3","match $a isa adult_video; $country isa country, has country_name 'Italy'; (media: $a, country: $country) isa produced_in_country; $a has title $title; limit 3; fetch { ""title"": $title };"
 453,List the top 5 highest revenue generating movies of all time.,"MATCH (m:Movie)
 WHERE m.revenue IS NOT NULL
 RETURN m.title, m.revenue
@@ -3451,7 +3451,7 @@ fetch {
 RETURN a.title, a.popularity
 ORDER BY a.popularity DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has title $title;
   $a has popularity $popularity;
 sort $popularity desc;
@@ -3498,7 +3498,7 @@ fetch {
 WHERE a.runtime > 90
 RETURN a.title
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has runtime $runtime;
   $a has title $title;
   $runtime > 90;
@@ -4277,7 +4277,7 @@ WHERE a.average_vote IS NOT NULL
 RETURN a.title, a.average_vote
 ORDER BY a.average_vote DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has average_vote $average_vote;
   $a has title $title;
 sort $average_vote desc;
@@ -4290,7 +4290,7 @@ WHERE a.budget IS NOT NULL
 RETURN a.title, a.budget
 ORDER BY a.budget DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has budget $budget;
   $a has title $title;
 sort $budget desc;
@@ -4399,7 +4399,7 @@ fetch { ""title"": $title };"
 WHERE a.tagline CONTAINS 'sex'
 RETURN a.title, a.tagline
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has tagline $tagline;
   $a has title $title;
   $tagline like "".*sex.*"";
@@ -4455,7 +4455,7 @@ fetch {
 RETURN a.title, a.popularity
 ORDER BY a.popularity DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has title $title;
   $a has popularity $popularity;
 sort $popularity desc;
@@ -4502,7 +4502,7 @@ fetch {
 RETURN a.title, a.average_vote
 ORDER BY a.average_vote
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has title $title;
   $a has average_vote $average_vote;
 sort $average_vote asc;
@@ -4552,7 +4552,7 @@ fetch {
 RETURN a.title, a.vote_count
 ORDER BY a.vote_count DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has title $title;
   $a has vote_count $vote_count;
 sort $vote_count desc;
@@ -4581,7 +4581,7 @@ WHERE a.runtime > 60
 RETURN a.title, a.runtime
 ORDER BY a.runtime DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has runtime $runtime;
   $a has title $title;
   $runtime > 60;
@@ -5057,7 +5057,7 @@ WHERE a.average_vote IS NOT NULL
 RETURN a.title, a.average_vote
 ORDER BY a.average_vote DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has average_vote $average_vote;
   $a has title $title;
 sort $average_vote desc;
@@ -5069,7 +5069,7 @@ fetch {
 WHERE a.budget < 50000
 RETURN a.title
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has budget $budget;
   $a has title $title;
   $budget < 50000;
@@ -5081,7 +5081,7 @@ fetch {
 RETURN a.title, a.popularity
 ORDER BY a.popularity DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $k isa keyword, has keyword_name 'jealousy';
   $rel0 (media: $a, keyword: $k) isa has_keyword;
   $a has title $title_a;
@@ -5096,7 +5096,7 @@ WHERE a.status = 'Released'
 RETURN a.title, a.runtime
 ORDER BY a.runtime DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has status $status;
   $a has title $title;
   $a has runtime $runtime;
@@ -5110,7 +5110,7 @@ fetch {
 WHERE a.homepage IS NOT NULL
 RETURN a.title, a.homepage
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has homepage $homepage;
   $a has title $title;
 limit 5;
@@ -5182,7 +5182,7 @@ WHERE a.status = 'Released'
 RETURN a.title, a.vote_count
 ORDER BY a.vote_count
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has status $status;
   $a has title $title;
   $a has vote_count $vote_count;
@@ -5236,7 +5236,7 @@ fetch {
 WHERE a.tagline = 'Humiliation. Rape. Murder. You know the drill.'
 RETURN a.title
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has tagline $tagline;
   $a has title $title;
   $tagline == ""Humiliation. Rape. Murder. You know the drill."";
@@ -5304,7 +5304,7 @@ WHERE a.average_vote IS NOT NULL
 RETURN a.title, a.average_vote
 ORDER BY a.average_vote DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has average_vote $average_vote;
   $a has title $title;
 sort $average_vote desc;
@@ -5346,7 +5346,7 @@ WHERE a.revenue IS NOT NULL
 RETURN a.title, a.revenue
 ORDER BY a.revenue DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has revenue $revenue;
   $a has title $title;
 sort $revenue desc;
@@ -5502,7 +5502,7 @@ WHERE a.average_vote IS NOT NULL
 RETURN a.title, a.average_vote
 ORDER BY a.average_vote DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has average_vote $average_vote;
   $a has title $title;
 sort $average_vote desc;
@@ -5524,7 +5524,7 @@ fetch {
 900,List the first 5 languages used in the original language of adult films.,"MATCH (a:Adult)-[:ORIGINAL_LANGUAGE]->(l:Language)
 RETURN DISTINCT l.name AS language
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $l isa language;
   $rel0 (media: $a, language: $l) isa original_language;
   $l has language_name $language_name_l;
@@ -5549,7 +5549,7 @@ fetch {
 WHERE a.tagline = 'Trust Will Get You Killed'
 RETURN a.title
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has tagline $tagline;
   $a has title $title;
   $tagline == ""Trust Will Get You Killed"";
@@ -5910,7 +5910,7 @@ RETURN c.name AS country, count(a) AS adultFilmCount
 ORDER BY adultFilmCount DESC
 LIMIT 3","match
   $c isa country, has country_name $cn;
-  $a isa adult;
+  $a isa adult_video;
   produced_in_country (media: $a, country: $c);
 reduce $count = count($a) groupby $c, $cn;
 sort $count desc;
@@ -5922,7 +5922,7 @@ ORDER BY adultFilmCount DESC
 LIMIT 3","match
   $c isa country, has country_name $name;
   produced_in_country (media: $a, country: $c);
-  $a isa adult;
+  $a isa adult_video;
 reduce $count = count($a) groupby $c, $name;
 sort $count desc;
 limit 3;
@@ -5933,7 +5933,7 @@ ORDER BY adultCount DESC
 LIMIT 3
 RETURN c.name AS productionCompany, adultCount","match
   $c isa production_company, has production_company_name $name;
-  $a isa adult;
+  $a isa adult_video;
   produced_by (producer: $c, media: $a);
 reduce $count = count($a) groupby $c, $name;
 sort $count desc;
@@ -6122,7 +6122,7 @@ RETURN c.name AS country, count(*) AS adultFilmCount
 ORDER BY adultFilmCount DESC
 LIMIT 5","match
   $c isa country, has country_name $cn;
-  $a isa adult;
+  $a isa adult_video;
   produced_in_country (media: $a, country: $c);
 reduce $count = count($a) groupby $c, $cn;
 sort $count desc;
@@ -6133,7 +6133,7 @@ RETURN l.name AS language, count(*) AS count
 ORDER BY count DESC
 LIMIT 3","match
   $l isa language, has language_name $ln;
-  $m isa adult;
+  $m isa adult_video;
   original_language (media: $m, language: $l);
 reduce $count = count($m) groupby $l, $ln;
 sort $count desc;
@@ -6341,7 +6341,7 @@ WHERE a.imdb_id STARTS WITH 'tt007'
 RETURN a.title, a.imdb_id
 ORDER BY a.imdb_id
 LIMIT 5","match
-$a isa adult;
+$a isa adult_video;
 $a has imdb_id $imdb_id;
 $imdb_id like ""^tt007.*"";
 $a has title $title;
@@ -6504,7 +6504,7 @@ WITH a, count(k) AS keywordCount
 RETURN a.title, keywordCount
 ORDER BY keywordCount DESC
 LIMIT 3","match
-  $a isa adult, has title $title;
+  $a isa adult_video, has title $title;
   has_keyword (media: $a, keyword: $k);
 reduce $keywordCount = count($k) groupby $a, $title;
 sort $keywordCount desc;
@@ -6519,7 +6519,7 @@ WHERE NOT EXISTS {
 }
 RETURN a.title
 LIMIT 3","match
-$a isa adult;
+$a isa adult_video;
 not { produced_in_country (media: $a, country: $c); };
 limit 3;
 fetch { ""title"": $a.title };"
@@ -6828,7 +6828,7 @@ fetch { ""genre"": $gn, ""movieCount"": $count };"
 RETURN l.name AS language, count(*) AS count
 ORDER BY count DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $l isa language, has language_name $ln;
   spoken_in_language (media: $a, language: $l);
 reduce $count = count($a) groupby $l, $ln;
@@ -7040,7 +7040,7 @@ fetch { ""company"": $cn, ""total_revenue"": $total_revenue };"
 RETURN c.name AS country, count(*) AS adultFilmCount
 ORDER BY adultFilmCount DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $c isa country, has country_name $cn;
   produced_in_country (media: $a, country: $c);
 reduce $count = count($a) groupby $c, $cn;
@@ -7076,7 +7076,7 @@ fetch {
 RETURN l.name AS language, count(*) AS count
 ORDER BY count DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $l isa language;
   original_language (media: $a, language: $l);
 reduce $count = count($a) groupby $l;
@@ -7407,7 +7407,7 @@ WITH a, count(k) AS keywordCount
 ORDER BY keywordCount DESC
 LIMIT 5
 RETURN a.title AS title, keywordCount","match
-  $a isa adult, has title $title;
+  $a isa adult_video, has title $title;
   has_keyword (media: $a, keyword: $k);
 reduce $count = count($k) groupby $a, $title;
 sort $count desc;
@@ -7479,7 +7479,7 @@ WHERE a.budget > 100000
 RETURN l.name AS language, count(*) AS count
 ORDER BY count DESC
 LIMIT 3","match
-  $a isa adult, has budget $budget;
+  $a isa adult_video, has budget $budget;
   $budget > 100000;
   spoken_in_language (media: $a, language: $l);
   $l has language_name $ln;
@@ -7533,7 +7533,7 @@ WHERE a.vote_count > 10
 RETURN l.name AS language, count(*) AS count
 ORDER BY count DESC
 LIMIT 3","match
-  $a isa adult, has vote_count $vc;
+  $a isa adult_video, has vote_count $vc;
   $vc > 10;
   $l isa language, has language_name $ln;
   spoken_in_language (media: $a, language: $l);
@@ -7585,7 +7585,7 @@ RETURN c.name AS country, count(a) AS adultFilmCount
 ORDER BY adultFilmCount DESC
 LIMIT 3","match
   $c isa country, has country_name $cn;
-  $a isa adult;
+  $a isa adult_video;
   produced_in_country (media: $a, country: $c);
 reduce $count = count($a) groupby $c, $cn;
 sort $count desc;
@@ -7990,7 +7990,7 @@ RETURN c.name AS country, count(*) AS count
 ORDER BY count DESC
 LIMIT 5","match
   $c isa country, has country_name $cn;
-  $m isa adult;
+  $m isa adult_video;
   produced_in_country (media: $m, country: $c);
 reduce $count = count($m) groupby $c, $cn;
 sort $count desc;
@@ -8001,7 +8001,7 @@ RETURN g.name AS genre, count(*) AS count
 ORDER BY count DESC
 LIMIT 3","match
   $g isa genre, has genre_name $gn;
-  $m isa adult;
+  $m isa adult_video;
   in_genre (media: $m, genre: $g);
 reduce $count = count($m) groupby $g, $gn;
 sort $count desc;
@@ -8038,7 +8038,7 @@ fetch {
 RETURN l.name AS language, count(*) AS count
 ORDER BY count DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $l isa language, has language_name $ln;
   original_language (media: $a, language: $l);
 reduce $count = count($a) groupby $l, $ln;
@@ -8215,7 +8215,7 @@ fetch {
 RETURN k.name AS keyword, count(*) AS frequency
 ORDER BY frequency DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $k isa keyword, has keyword_name $kn;
   has_keyword (media: $a, keyword: $k);
 reduce $frequency = count($a) groupby $k, $kn;
@@ -8226,7 +8226,7 @@ fetch { ""keyword"": $kn, ""frequency"": $frequency };"
 WHERE a.revenue = 0
 RETURN a.title
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $a has revenue $revenue;
   $revenue == 0.0;
   $a has title $title;
@@ -8286,7 +8286,7 @@ fetch { ""title"": $t, ""avg_rating"": $avg_rating };"
 RETURN c.name AS country, count(a) AS adultFilmCount
 ORDER BY adultFilmCount DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   produced_in_country (media: $a, country: $c);
 reduce $count = count($a) groupby $c;
 sort $count desc;
@@ -8396,7 +8396,7 @@ fetch { ""person"": $pn, ""num_crew_credits"": $count };"
 651,List the first 3 adult films that have been produced in the 'United States of America'.,"MATCH (a:Adult)-[:PRODUCED_IN_COUNTRY]->(:Country {name: 'United States of America'})
 RETURN a.title
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   $c isa country, has country_name ""United States of America"";
   produced_in_country (media: $a, country: $c);
 limit 3;
@@ -8418,7 +8418,7 @@ fetch { ""genre"": $gn, ""avg_popularity"": $avg_pop };"
 RETURN l.name AS language, count(*) AS count
 ORDER BY count DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   original_language (media: $a, language: $l);
   $l has language_name $ln;
 reduce $count = count($a) groupby $l, $ln;
@@ -8664,7 +8664,7 @@ fetch {
 RETURN a.title, a.average_vote
 ORDER BY a.average_vote DESC
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $c isa country, has country_name ""Italy"";
   produced_in_country (media: $a, country: $c);
   $a has title $title;
@@ -8754,7 +8754,7 @@ fetch {
 RETURN l.name AS language, count(*) AS count
 ORDER BY count DESC
 LIMIT 3","match
-  $a isa adult;
+  $a isa adult_video;
   spoken_in_language (media: $a, language: $l);
   $l has language_name $ln;
 reduce $count = count($a) groupby $l, $ln;
@@ -8818,7 +8818,7 @@ RETURN c.name AS company, count(a) AS num_adult_films
 ORDER BY num_adult_films DESC
 LIMIT 3","match
   $c isa production_company, has production_company_name $cn;
-  $m isa adult;
+  $m isa adult_video;
   produced_by (media: $m, producer: $c);
 reduce $count = count($m) groupby $c, $cn;
 sort $count desc;
@@ -9489,7 +9489,7 @@ RETURN l.name AS language, count(*) AS count
 ORDER BY count DESC
 LIMIT 5","match
   $l isa language, has language_name $ln;
-  $m isa adult;
+  $m isa adult_video;
   original_language (media: $m, language: $l);
 reduce $count = count($m) groupby $l, $ln;
 sort $count desc;
@@ -9500,7 +9500,7 @@ RETURN c.name AS company, count(a) AS num_adult_films
 ORDER BY num_adult_films DESC
 LIMIT 3","match
   $c isa production_company, has production_company_name $cn;
-  $m isa adult;
+  $m isa adult_video;
   produced_by (media: $m, producer: $c);
 reduce $count = count($m) groupby $c, $cn;
 sort $count desc;
@@ -9525,7 +9525,7 @@ RETURN c.name AS country, count(*) AS adultFilmCount
 ORDER BY adultFilmCount DESC
 LIMIT 3","match
   $c isa country, has country_name $cn;
-  $m isa adult, has runtime $rt;
+  $m isa adult_video, has runtime $rt;
   $rt > 60;
   produced_in_country (media: $m, country: $c);
 reduce $count = count($m) groupby $c, $cn;
@@ -9699,7 +9699,7 @@ ORDER BY adultCount DESC
 RETURN g.name AS genre, adultCount
 LIMIT 3","match
   $g isa genre, has genre_name $genre_name;
-  $a isa adult;
+  $a isa adult_video;
   in_genre (genre: $g, media: $a);
 reduce $count = count($a) groupby $g, $genre_name;
 sort $count desc;
@@ -10049,7 +10049,7 @@ WITH a, count(distinct l) as numLanguages
 ORDER BY numLanguages DESC
 LIMIT 5
 RETURN a.title as title, numLanguages","match
-  $a isa adult, has title $title;
+  $a isa adult_video, has title $title;
   spoken_in_language (media: $a, language: $l);
 select $a, $title, $l;
 distinct;
@@ -10423,7 +10423,7 @@ RETURN c.name AS country, count(a) AS adultFilmCount
 ORDER BY adultFilmCount DESC
 LIMIT 3","match
   $c isa country, has country_name $cn;
-  $m isa adult;
+  $m isa adult_video;
   produced_in_country (media: $m, country: $c);
 reduce $count = count($m) groupby $c, $cn;
 sort $count desc;
@@ -10435,7 +10435,7 @@ RETURN k.name, count(*) as count
 ORDER BY count DESC
 LIMIT 5","match
   $k isa keyword, has keyword_name $kn;
-  $m isa adult, has budget $budget;
+  $m isa adult_video, has budget $budget;
   has_keyword (media: $m, keyword: $k);
   $budget < 500000;
 reduce $count = count($m) groupby $k, $kn;
@@ -10532,7 +10532,7 @@ WHERE a.release_date > date('2010-01-01')
 RETURN a.title, a.release_date
 ORDER BY a.release_date
 LIMIT 5","match
-  $a isa adult;
+  $a isa adult_video;
   $a has release_date $release_date;
   $a has title $title;
   $release_date > 2010-01-01;
@@ -10665,7 +10665,7 @@ RETURN c.name AS country, count(a) AS adultFilmCount
 ORDER BY adultFilmCount DESC
 LIMIT 5","match
   $c isa country, has country_name $cn;
-  $m isa adult;
+  $m isa adult_video;
   produced_in_country (media: $m, country: $c);
 reduce $count = count($m) groupby $c, $cn;
 sort $count desc;
@@ -10690,7 +10690,7 @@ ORDER BY adultCount DESC
 LIMIT 5
 RETURN c.name AS productionCompany, adultCount","match
   $c isa production_company, has production_company_name $name;
-  $a isa adult;
+  $a isa adult_video;
   produced_by (producer: $c, media: $a);
 reduce $count = count($a) groupby $c, $name;
 sort $count desc;
@@ -10745,3 +10745,119 @@ reduce $count = count($m) groupby $l, $ln;
 sort $count desc;
 limit 3;
 fetch { ""language"": $ln, ""count"": $count };"
+594,List the first 3 users who rated the adult film titled 'Standoff'.,"MATCH (u:User)-[:RATED]->(a:Adult {title: 'Standoff'})
+RETURN u
+LIMIT 3","match
+$u isa user;
+$a isa adult_video, has title ""Standoff"";
+rated (reviewer: $u, rated_media: $a);
+limit 3;
+fetch { ""user"": $u.user_id };"
+666,Which 3 adult films have been rated by the most users?,"MATCH (a:Adult)<-[r:RATED]-(u:User)
+RETURN a.title, count(r) AS num_ratings
+ORDER BY num_ratings DESC
+LIMIT 3","match
+$a isa adult_video;
+$r isa rated (rated_media: $a);
+reduce $num_ratings = count($r) groupby $a;
+sort $num_ratings desc;
+limit 3;
+fetch { ""title"": $a.title, ""num_ratings"": $num_ratings };"
+742,List the top 3 adult films that have been rated exactly 3 times.,"MATCH (a:Adult)<-[r:RATED]-(u:User)
+WITH a, count(r) AS ratingCount
+WHERE ratingCount = 3
+RETURN a.title AS title, a.release_date AS releaseDate
+ORDER BY a.popularity DESC
+LIMIT 3","match
+$a isa adult_video;
+$r isa rated (rated_media: $a);
+reduce $rating_count = count($r) groupby $a;
+match
+$rating_count == 3;
+$a has popularity $pop;
+sort $pop desc;
+limit 3;
+fetch { ""title"": $a.title, ""releaseDate"": $a.release_date };"
+787,Who are the first 3 actors by number of roles in adult films?,"MATCH (p:Person)-[:CAST_FOR]->(a:Adult)
+WITH p, count(a) AS roles
+ORDER BY roles DESC
+LIMIT 3
+RETURN p.name AS actor, roles","match
+$p isa person;
+$a isa adult_video;
+cast_for (actor: $p, film: $a);
+reduce $roles = count($a) groupby $p;
+sort $roles desc;
+limit 3;
+fetch { ""actor"": $p.person_name, ""roles"": $roles };"
+855,Who are the first 3 directors to have made both adult films and videos?,"MATCH (p:Person)-[:CREW_FOR]->(a:Adult), (p)-[:CREW_FOR]->(v:Video)
+WHERE a.id IS NOT NULL AND v.id IS NOT NULL
+WITH p, count(DISTINCT a) AS numAdult, count(DISTINCT v) AS numVideo
+WHERE numAdult > 0 AND numVideo > 0
+RETURN p.name
+LIMIT 3","match
+$p isa person;
+$a isa adult_video;
+$r1 isa crew_for (crew_member: $p, film: $a), has job ""Director"";
+$v isa video;
+not { $v isa adult_video; };
+$r2 isa crew_for (crew_member: $p, film: $v), has job ""Director"";
+select $p;
+distinct;
+limit 3;
+fetch { ""name"": $p.person_name };"
+879,What are the top 3 actors who have played in the most number of adult films?,"MATCH (p:Person)-[:CAST_FOR]->(a:Adult)
+WITH p, count(a) AS num_adult_films
+ORDER BY num_adult_films DESC
+LIMIT 3
+RETURN p.name AS actor, num_adult_films","match
+$p isa person;
+$a isa adult_video;
+cast_for (actor: $p, film: $a);
+reduce $num_adult_films = count($a) groupby $p;
+sort $num_adult_films desc;
+limit 3;
+fetch { ""actor"": $p.person_name, ""num_adult_films"": $num_adult_films };"
+421,What are the first 5 actors who have starred in both a movie and an adult film?,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
+WHERE EXISTS {
+  (p)-[:CAST_FOR]->(:Adult)
+}
+RETURN p.name
+LIMIT 5","match
+$p isa person;
+$m isa movie;
+cast_for (actor: $p, film: $m);
+$a isa adult_video;
+cast_for (actor: $p, film: $a);
+select $p;
+distinct;
+limit 5;
+fetch { ""name"": $p.person_name };"
+795,Who are the first 3 actors with roles in both movies and adult films?,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
+WHERE EXISTS {(p)-[:CAST_FOR]->(:Adult)}
+RETURN p.name
+LIMIT 3","match
+$p isa person;
+$m isa movie;
+cast_for (actor: $p, film: $m);
+$a isa adult_video;
+cast_for (actor: $p, film: $a);
+select $p;
+distinct;
+limit 3;
+fetch { ""name"": $p.person_name };"
+821,Who are the first 3 directors who have worked on both movies and adult films?,"MATCH (p:Person)-[:CREW_FOR]->(m:Movie)
+WHERE (p)-[:CREW_FOR]->(:Adult)
+  AND exists{ (p)-[:CREW_FOR {job: 'Director'}]->(:Movie) }
+  AND exists{ (p)-[:CREW_FOR {job: 'Director'}]->(:Adult) }
+RETURN p.name
+LIMIT 3","match
+$p isa person;
+$r1 isa crew_for (crew_member: $p, film: $m), has job ""Director"";
+$m isa movie;
+$r2 isa crew_for (crew_member: $p, film: $a), has job ""Director"";
+$a isa adult_video;
+select $p;
+distinct;
+limit 3;
+fetch { ""name"": $p.person_name };"

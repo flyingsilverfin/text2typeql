@@ -49,8 +49,8 @@ define
   attribute timestamp value datetime;
   attribute rating value double;
 
-  # Entities
-  entity movie,
+  # Entities - Media type hierarchy
+  entity media,
     owns average_vote,
     owns overview,
     owns revenue,
@@ -78,57 +78,14 @@ define
     plays crew_for:film,
     plays rated:rated_media;
 
-  entity video,
-    owns tagline,
-    owns average_vote,
-    owns overview,
-    owns revenue,
-    owns poster_path,
-    owns vote_count,
-    owns title,
-    owns release_date,
-    owns status,
-    owns budget,
-    owns popularity,
-    owns imdb_id,
-    owns original_title,
-    owns movie_id @key,
-    owns runtime,
-    owns homepage,
-    plays original_language:media,
-    plays spoken_in_language:media,
-    plays produced_in_country:media,
-    plays in_genre:media,
-    plays produced_by:media,
-    plays has_keyword:media,
-    plays in_collection:media,
-    plays crew_for:film,
-    plays rated:rated_media;
+  entity movie sub media,
+    owns backdrop_path;
 
-  entity adult,
-    owns average_vote,
-    owns overview,
-    owns revenue,
-    owns poster_path,
-    owns vote_count,
-    owns title,
-    owns release_date,
-    owns status,
-    owns budget,
-    owns popularity,
-    owns imdb_id,
-    owns original_title,
-    owns movie_id @key,
-    owns runtime,
-    owns tagline,
-    owns homepage,
-    plays original_language:media,
-    plays spoken_in_language:media,
-    plays produced_in_country:media,
-    plays in_genre:media,
-    plays produced_by:media,
-    plays has_keyword:media;
+  entity video sub media;
 
+  entity adult_video sub video;
+
+  # Entities - Other
   entity language,
     owns language_id @key,
     owns language_name,
