@@ -95,7 +95,8 @@ define
   entity country,
     owns country_id @key,
     owns country_name,
-    plays produced_in_country:country;
+    plays produced_in_country:country,
+    plays born_in:country;
 
   entity genre,
     owns genre_id @key,
@@ -113,7 +114,8 @@ define
     owns collection_id @key,
     owns backdrop_path,
     owns poster_path,
-    plays in_collection:collection;
+    plays in_collection:collection,
+    plays in_genre:media;
 
   entity person,
     owns gender,
@@ -121,7 +123,8 @@ define
     owns person_id @key,
     owns person_name,
     plays cast_for:actor,
-    plays crew_for:crew_member;
+    plays crew_for:crew_member,
+    plays born_in:person;
 
   entity user,
     owns user_id @key,
@@ -202,3 +205,7 @@ define
   relation for_package,
     relates subscription,
     relates package;
+
+  relation born_in,
+    relates person,
+    relates country;

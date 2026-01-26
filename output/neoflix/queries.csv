@@ -10861,3 +10861,271 @@ select $p;
 distinct;
 limit 3;
 fetch { ""name"": $p.person_name };"
+80,List all movies that have a backdrop path available.,"MATCH (m:Movie)
+WHERE m.backdrop_path IS NOT NULL
+RETURN m.title","match
+$m isa movie, has backdrop_path $bp;
+fetch { ""title"": $m.title };"
+228,List the first 3 movies with a backdrop path that includes '/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg'.,"MATCH (m:Movie)
+WHERE m.backdrop_path IS NOT NULL AND m.backdrop_path CONTAINS '/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg'
+RETURN m.title
+LIMIT 3","match
+$m isa movie, has backdrop_path $bp;
+$bp like "".*9FBwqcd9IRruEDUrTdcaafOMKUq.*"";
+limit 3;
+fetch { ""title"": $m.title };"
+312,Which 3 videos have the most associated cast members?,"MATCH (v:Video)<-[:CAST_FOR]-(p:Person)
+RETURN v.title AS video, count(p) AS cast_members
+ORDER BY cast_members DESC
+LIMIT 3","match
+$v isa video;
+$p isa person;
+cast_for (actor: $p, film: $v);
+reduce $cast_members = count($p) groupby $v;
+sort $cast_members desc;
+limit 3;
+fetch { ""video"": $v.title, ""cast_members"": $cast_members };"
+362,Name the top 5 movies that have been produced in more than 3 countries.,"MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(c:Country)
+WITH m, count(c) AS countryCount
+WHERE countryCount > 3
+RETURN m.title
+ORDER BY m.popularity DESC
+LIMIT 5","match
+$m isa movie;
+$c isa country;
+produced_in_country (media: $m, country: $c);
+reduce $country_count = count($c) groupby $m;
+match
+$country_count > 3;
+$m has popularity $pop;
+sort $pop desc;
+limit 5;
+fetch { ""title"": $m.title };"
+457,Name the first 5 movies that have been rated by at least 50 users.,"MATCH (m:Movie)<-[r:RATED]-(:User)
+WITH m, count(r) AS num_ratings
+WHERE num_ratings >= 50
+RETURN m.title
+ORDER BY num_ratings DESC
+LIMIT 5","match
+$m isa movie;
+$r isa rated (rated_media: $m);
+reduce $num_ratings = count($r) groupby $m;
+match
+$num_ratings >= 50;
+sort $num_ratings desc;
+limit 5;
+fetch { ""title"": $m.title };"
+504,Which movies have been produced in the 'United States of America' and have an adult rating?,"MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(:Country {name: 'United States of America'})
+WHERE exists {(u:User)-[:RATED]->(a:Adult)<-[:RATED]-(u)-[:RATED]->(m)} 
+RETURN m.title","match
+$m isa movie;
+$co isa country, has country_name ""United States of America"";
+produced_in_country (media: $m, country: $co);
+$u isa user;
+$a isa adult_video;
+rated (reviewer: $u, rated_media: $a);
+rated (reviewer: $u, rated_media: $m);
+select $m;
+distinct;
+fetch { ""title"": $m.title };"
+527,Which movies have a runtime longer than the average runtime of all movies?,"MATCH (m:Movie)
+WITH m, avg(m.runtime) AS avg_runtime
+WHERE m.runtime > avg_runtime
+RETURN m.title, m.runtime
+ORDER BY m.runtime DESC","with fun avg_movie_runtime() -> double:
+  match $m isa movie, has runtime $r;
+  return mean($r);
+
+match
+$m isa movie, has runtime $r;
+let $avg = avg_movie_runtime();
+$r > $avg;
+sort $r desc;
+fetch { ""title"": $m.title, ""runtime"": $r };"
+607,"Which 3 production companies are associated with the most number of genres across movies, videos, and adult films?","MATCH (c:ProductionCompany)-[:PRODUCED_BY]-(m)
+WHERE m:Movie OR m:Video OR m:Adult
+WITH c, count(distinct m) AS num_genres
+RETURN c.name AS company, num_genres
+ORDER BY num_genres DESC
+LIMIT 3","match
+$c isa production_company;
+produced_by (media: $m, producer: $c);
+in_genre (media: $m, genre: $g);
+select $c, $g;
+distinct;
+reduce $num_genres = count($g) groupby $c;
+sort $num_genres desc;
+limit 3;
+fetch { ""company"": $c.production_company_name, ""num_genres"": $num_genres };"
+622,Which 3 people have acted in the most number of videos?,"MATCH (p:Person)-[:CAST_FOR]->(v:Video)
+WITH p, count(v) AS videoCount
+ORDER BY videoCount DESC
+LIMIT 3
+RETURN p.name AS person, videoCount","match
+$p isa person;
+$v isa video;
+cast_for (actor: $p, film: $v);
+reduce $video_count = count($v) groupby $p;
+sort $video_count desc;
+limit 3;
+fetch { ""person"": $p.person_name, ""videoCount"": $video_count };"
+809,Who are the first 3 actors by number of roles in videos with a status of 'Released'?,"MATCH (p:Person)-[:CAST_FOR]->(v:Video {status: 'Released'})
+RETURN p.name AS actor, count(*) AS num_roles
+ORDER BY num_roles DESC
+LIMIT 3","match
+$p isa person;
+$v isa video, has status ""Released"";
+cast_for (actor: $p, film: $v);
+reduce $num_roles = count($v) groupby $p;
+sort $num_roles desc;
+limit 3;
+fetch { ""actor"": $p.person_name, ""num_roles"": $num_roles };"
+831,Who are the first 3 actors to have starred in at least 3 movies from the 'Toy Story Collection'?,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)-[:IN_COLLECTION]->(c:Collection {name: 'Toy Story Collection'})
+WITH p, count(m) AS num_movies
+WHERE num_movies >= 3
+RETURN p.name
+ORDER BY num_movies DESC
+LIMIT 3","match
+$p isa person;
+$m isa movie;
+cast_for (actor: $p, film: $m);
+$c isa collection, has collection_name ""Toy Story Collection"";
+in_collection (media: $m, collection: $c);
+reduce $num_movies = count($m) groupby $p;
+match
+$num_movies >= 3;
+sort $num_movies desc;
+limit 3;
+fetch { ""name"": $p.person_name };"
+833,Who are the first 3 actors with the most roles in videos released after 2010?,"MATCH (p:Person)-[:CAST_FOR]->(v:Video)
+WHERE v.release_date > date('2010-01-01')
+WITH p, count(v) AS roles
+ORDER BY roles DESC
+LIMIT 3
+RETURN p.name AS actor, roles","match
+$p isa person;
+$v isa video, has release_date $rd;
+$rd > 2010-01-01T00:00:00;
+cast_for (actor: $p, film: $v);
+reduce $roles = count($v) groupby $p;
+sort $roles desc;
+limit 3;
+fetch { ""actor"": $p.person_name, ""roles"": $roles };"
+843,Who are the first 3 directors with movies in at least three different genres?,"MATCH (p:Person)-[:CREW_FOR {job: 'Director'}]->(m:Movie)
+WITH p, count(distinct m.id) AS num_movies, collect(distinct m.id) AS movie_ids
+WHERE num_movies >= 3
+WITH p, num_movies, movie_ids
+UNWIND movie_ids AS movie_id
+MATCH (m:Movie {id: movie_id})-[:IN_GENRE]->(g:Genre)
+WITH p, num_movies, collect(distinct g.name) AS genres
+WHERE size(genres) >= 3
+RETURN p.name AS director, num_movies, genres
+ORDER BY num_movies DESC
+LIMIT 3","match
+$p isa person;
+$cf isa crew_for (crew_member: $p, film: $m), has job ""Director"";
+$m isa movie;
+in_genre (media: $m, genre: $g);
+select $p, $g;
+distinct;
+reduce $num_genres = count($g) groupby $p;
+match
+$num_genres >= 3;
+sort $num_genres desc;
+limit 3;
+fetch { ""director"": $p.person_name, ""num_genres"": $num_genres };"
+853,List the first 3 actors who have appeared in at least three movies with different original languages.,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
+WITH p, count(DISTINCT m.original_language) AS num_languages
+WHERE num_languages >= 3
+RETURN p.name
+LIMIT 3","match
+$p isa person;
+$m isa movie;
+cast_for (actor: $p, film: $m);
+original_language (media: $m, language: $l);
+select $p, $l;
+distinct;
+reduce $num_languages = count($l) groupby $p;
+match
+$num_languages >= 3;
+limit 3;
+fetch { ""name"": $p.person_name };"
+897,List the top 3 actors who have appeared in both movies and videos.,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
+WITH p, count(m) AS numMovies
+WHERE numMovies > 0
+MATCH (p)-[:CAST_FOR]->(v:Video) 
+WITH p, numMovies, count(v) AS numVideos
+WHERE numVideos > 0
+RETURN p.name AS actor, numMovies, numVideos
+ORDER BY numMovies + numVideos DESC
+LIMIT 3","with fun movie_count($p: person) -> integer:
+  match cast_for (actor: $p, film: $m); $m isa movie;
+  return count;
+
+with fun video_count($p: person) -> integer:
+  match cast_for (actor: $p, film: $v); $v isa video;
+  return count;
+
+match
+$p isa person;
+let $num_movies = movie_count($p);
+let $num_videos = video_count($p);
+$num_movies > 0;
+$num_videos > 0;
+let $total = $num_movies + $num_videos;
+sort $total desc;
+limit 3;
+fetch { ""actor"": $p.person_name, ""numMovies"": $num_movies, ""numVideos"": $num_videos };"
+796,List the first 3 actors with roles in both movies and videos.,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
+WHERE exists{ (p)-[:CAST_FOR]->(:Video) }
+RETURN p.name
+LIMIT 3","match
+$p isa person;
+$m isa movie;
+cast_for (actor: $p, film: $m);
+$v isa video;
+cast_for (actor: $p, film: $v);
+select $p;
+distinct;
+limit 3;
+fetch { ""name"": $p.person_name };"
+225,What are the first 5 movies that have a genre change from their original genre in a collection?,"MATCH (m:Movie)-[:IN_COLLECTION]->(c:Collection)
+WHERE EXISTS {
+  (m)-[:IN_GENRE]->(g1:Genre)
+  WHERE NOT EXISTS {
+    (c)-[:IN_GENRE]->(g2:Genre)
+    WHERE g1.name = g2.name
+  }
+}
+RETURN m.title, c.name
+LIMIT 5","match
+$m isa movie;
+$c isa collection;
+in_collection (media: $m, collection: $c);
+in_genre (media: $m, genre: $g);
+not { in_genre (media: $c, genre: $g); };
+select $m, $c;
+distinct;
+limit 5;
+fetch { ""title"": $m.title, ""collection"": $c.collection_name };"
+524,Which movies have been produced by companies based in 'France'?,"MATCH (m:Movie)-[:PRODUCED_BY]->(c:ProductionCompany)-[:PRODUCED_IN_COUNTRY]->(country:Country {name: 'France'})
+RETURN m.title","match
+$m isa movie;
+$co isa country, has country_name ""France"";
+produced_in_country (media: $m, country: $co);
+fetch { ""title"": $m.title };"
+902,"List the top 5 movies with the most diverse cast, measured by the number of different countries actors come from.","MATCH (m:Movie)<-[:CAST_FOR]-(p:Person)
+WITH m, size(collect(distinct p.country)) AS num_countries
+ORDER BY num_countries DESC
+LIMIT 5
+RETURN m.title AS movie, num_countries AS number_of_countries","match
+$m isa movie;
+$p isa person;
+cast_for (actor: $p, film: $m);
+born_in (person: $p, country: $co);
+select $m, $co;
+distinct;
+reduce $num_countries = count($co) groupby $m;
+sort $num_countries desc;
+limit 5;
+fetch { ""movie"": $m.title, ""number_of_countries"": $num_countries };"

@@ -1,102 +1,4 @@
 original_index,question,cypher,error
-80,List all movies that have a backdrop path available.,"MATCH (m:Movie)
-WHERE m.backdrop_path IS NOT NULL
-RETURN m.title",Schema mismatch: movie entity doesn't have backdrop_path attribute
-225,What are the first 5 movies that have a genre change from their original genre in a collection?,"MATCH (m:Movie)-[:IN_COLLECTION]->(c:Collection)
-WHERE EXISTS {
-  (m)-[:IN_GENRE]->(g1:Genre)
-  WHERE NOT EXISTS {
-    (c)-[:IN_GENRE]->(g2:Genre)
-    WHERE g1.name = g2.name
-  }
-}
-RETURN m.title, c.name
-LIMIT 5",Schema mismatch: collection doesn't have IN_GENRE relation
-228,List the first 3 movies with a backdrop path that includes '/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg'.,"MATCH (m:Movie)
-WHERE m.backdrop_path IS NOT NULL AND m.backdrop_path CONTAINS '/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg'
-RETURN m.title
-LIMIT 3",Schema mismatch: movie entity doesn't have backdrop_path attribute
-312,Which 3 videos have the most associated cast members?,"MATCH (v:Video)<-[:CAST_FOR]-(p:Person)
-RETURN v.title AS video, count(p) AS cast_members
-ORDER BY cast_members DESC
-LIMIT 3",Schema mismatch: video doesn't play cast_for:film role (only movie does)
-362,Name the top 5 movies that have been produced in more than 3 countries.,"MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(c:Country)
-WITH m, count(c) AS countryCount
-WHERE countryCount > 3
-RETURN m.title
-ORDER BY m.popularity DESC
-LIMIT 5",TypeQL doesn't support HAVING clause (filter on aggregated count)
-457,Name the first 5 movies that have been rated by at least 50 users.,"MATCH (m:Movie)<-[r:RATED]-(:User)
-WITH m, count(r) AS num_ratings
-WHERE num_ratings >= 50
-RETURN m.title
-ORDER BY num_ratings DESC
-LIMIT 5",TypeQL doesn't support HAVING clause (filter on aggregated count)
-504,Which movies have been produced in the 'United States of America' and have an adult rating?,"MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(:Country {name: 'United States of America'})
-WHERE exists {(u:User)-[:RATED]->(a:Adult)<-[:RATED]-(u)-[:RATED]->(m)} 
-RETURN m.title",Complex nested EXISTS pattern not supported in TypeQL
-527,Which movies have a runtime longer than the average runtime of all movies?,"MATCH (m:Movie)
-WITH m, avg(m.runtime) AS avg_runtime
-WHERE m.runtime > avg_runtime
-RETURN m.title, m.runtime
-ORDER BY m.runtime DESC",TypeQL doesn't support comparing to computed aggregate (subquery)
-607,"Which 3 production companies are associated with the most number of genres across movies, videos, and adult films?","MATCH (c:ProductionCompany)-[:PRODUCED_BY]-(m)
-WHERE m:Movie OR m:Video OR m:Adult
-WITH c, count(distinct m) AS num_genres
-RETURN c.name AS company, num_genres
-ORDER BY num_genres DESC
-LIMIT 3",TypeQL doesn't support multi-type union queries with aggregate
-622,Which 3 people have acted in the most number of videos?,"MATCH (p:Person)-[:CAST_FOR]->(v:Video)
-WITH p, count(v) AS videoCount
-ORDER BY videoCount DESC
-LIMIT 3
-RETURN p.name AS person, videoCount",Schema mismatch: video doesn't play cast_for:film role
-809,Who are the first 3 actors by number of roles in videos with a status of 'Released'?,"MATCH (p:Person)-[:CAST_FOR]->(v:Video {status: 'Released'})
-RETURN p.name AS actor, count(*) AS num_roles
-ORDER BY num_roles DESC
-LIMIT 3",Schema mismatch: video doesn't play cast_for:film role
-831,Who are the first 3 actors to have starred in at least 3 movies from the 'Toy Story Collection'?,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)-[:IN_COLLECTION]->(c:Collection {name: 'Toy Story Collection'})
-WITH p, count(m) AS num_movies
-WHERE num_movies >= 3
-RETURN p.name
-ORDER BY num_movies DESC
-LIMIT 3",TypeQL doesn't support HAVING clause (filter on aggregated count)
-833,Who are the first 3 actors with the most roles in videos released after 2010?,"MATCH (p:Person)-[:CAST_FOR]->(v:Video)
-WHERE v.release_date > date('2010-01-01')
-WITH p, count(v) AS roles
-ORDER BY roles DESC
-LIMIT 3
-RETURN p.name AS actor, roles",Schema mismatch: video doesn't play cast_for:film role
-843,Who are the first 3 directors with movies in at least three different genres?,"MATCH (p:Person)-[:CREW_FOR {job: 'Director'}]->(m:Movie)
-WITH p, count(distinct m.id) AS num_movies, collect(distinct m.id) AS movie_ids
-WHERE num_movies >= 3
-WITH p, num_movies, movie_ids
-UNWIND movie_ids AS movie_id
-MATCH (m:Movie {id: movie_id})-[:IN_GENRE]->(g:Genre)
-WITH p, num_movies, collect(distinct g.name) AS genres
-WHERE size(genres) >= 3
-RETURN p.name AS director, num_movies, genres
-ORDER BY num_movies DESC
-LIMIT 3",TypeQL doesn't support HAVING clause (filter on aggregated count)
-853,List the first 3 actors who have appeared in at least three movies with different original languages.,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
-WITH p, count(DISTINCT m.original_language) AS num_languages
-WHERE num_languages >= 3
-RETURN p.name
-LIMIT 3",TypeQL doesn't support HAVING clause (filter on aggregated count)
-897,List the top 3 actors who have appeared in both movies and videos.,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
-WITH p, count(m) AS numMovies
-WHERE numMovies > 0
-MATCH (p)-[:CAST_FOR]->(v:Video) 
-WITH p, numMovies, count(v) AS numVideos
-WHERE numVideos > 0
-RETURN p.name AS actor, numMovies, numVideos
-ORDER BY numMovies + numVideos DESC
-LIMIT 3",Schema mismatch: video doesn't play cast_for:film role
-902,"List the top 5 movies with the most diverse cast, measured by the number of different countries actors come from.","MATCH (m:Movie)<-[:CAST_FOR]-(p:Person)
-WITH m, size(collect(distinct p.country)) AS num_countries
-ORDER BY num_countries DESC
-LIMIT 5
-RETURN m.title AS movie, num_countries AS number_of_countries",Schema mismatch: person entity doesn't have country attribute
 217,What are the first 5 movies with a release date on a weekend?,"MATCH (m:Movie)
 WHERE date(m.release_date).dayOfWeek IN [5, 6, 7]
 RETURN m.title, m.release_date
@@ -114,15 +16,9 @@ WHERE m.release_date >= date() - duration('P5Y')
 RETURN m.title, m.popularity
 ORDER BY m.popularity DESC
 LIMIT 3",TypeQL limitation: No dynamic date functions. Cannot express date() - duration() for relative date calculations like last 5 years.
-524,Which movies have been produced by companies based in 'France'?,"MATCH (m:Movie)-[:PRODUCED_BY]->(c:ProductionCompany)-[:PRODUCED_IN_COUNTRY]->(country:Country {name: 'France'})
-RETURN m.title","Schema mismatch: Cypher expects ProductionCompany->PRODUCED_IN_COUNTRY->Country relation, but TypeQL schema only has media->produced_in_country->country. No relation exists between production_company and country entities."
 566,Which movies have a release date on a leap year?,"MATCH (m:Movie)
 WHERE m.release_date IS NOT NULL AND date(m.release_date).year % 4 = 0
 RETURN m.title, m.release_date",TypeQL limitation: Cannot extract year from datetime or perform modulo operations on date components. Leap year check (year % 4 == 0) requires date arithmetic functions not available in TypeQL.
-796,List the first 3 actors with roles in both movies and videos.,"MATCH (p:Person)-[:CAST_FOR]->(m:Movie)
-WHERE exists{ (p)-[:CAST_FOR]->(:Video) }
-RETURN p.name
-LIMIT 3","Schema mismatch: video entity does not have cast_for relationship in TypeQL schema. Videos only have crew_for, not cast_for. Cannot check for actors with roles in videos."
 904,Name the top 5 movies with the most detailed overviews (measured by word count).,"MATCH (m:Movie)
 WHERE m.overview IS NOT NULL
 RETURN m.title, m.overview, size(split(m.overview, ' ')) AS wordCount
