@@ -5060,3 +5060,250 @@ reduce $count = count($s) groupby $g;
 sort $count desc;
 limit 3;
 fetch { ""game"": $g.name, ""count"": $count };"
+99,Which 3 users have moderated the most streams and users combined?,"MATCH (u:User)-[:MODERATOR]->(s)
+WHERE s:Stream OR s:User
+WITH u, count(s) AS moderations
+RETURN u.name AS user, moderations
+ORDER BY moderations DESC
+LIMIT 3","match
+$u isa user;
+$rel isa moderation (moderating_user: $u);
+reduce $count = count($rel) groupby $u;
+sort $count desc;
+limit 3;
+fetch { ""user"": $u.name, ""moderations"": $count };"
+152,Which 3 streams have the highest ratio of followers to total view count?,"MATCH (s:Stream)
+WHERE s.followers IS NOT NULL AND s.total_view_count IS NOT NULL
+RETURN s.name AS stream, toFloat(s.followers) / s.total_view_count AS follower_to_view_ratio
+ORDER BY follower_to_view_ratio DESC
+LIMIT 3","match
+$s isa stream, has followers $f, has total_view_count $v;
+$v > 0;
+let $ratio = $f / $v;
+sort $ratio desc;
+limit 3;
+fetch { ""stream"": $s.name, ""ratio"": $ratio };"
+459,Show the streams that have been moderated by a user more than once.,"MATCH (s:Stream)<-[:MODERATOR]-(u:User)
+WITH s, u, count(*) AS modCount
+WHERE modCount > 1
+RETURN s, u, modCount","match
+$s isa stream; $u isa user;
+$rel isa moderation (moderated_channel: $s, moderating_user: $u);
+reduce $count = count($rel) groupby $s, $u;
+match $count > 1;
+fetch { ""stream"": $s.name, ""user"": $u.name, ""count"": $count };"
+320,List the first 5 streams that have the most languages associated with them.,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)
+RETURN s.name AS stream, collect(l.name) AS languages
+ORDER BY size(collect(l.name)) DESC
+LIMIT 5","with fun language_count($s: stream) -> integer:
+  match language_usage (channel: $s, used_language: $l);
+  return count;
+
+match
+$s isa stream;
+let $lc = language_count($s);
+sort $lc desc;
+limit 5;
+fetch { ""stream"": $s.name, ""languages"": $lc };"
+306,Who are the first 5 moderators in streams that have changed games at least twice?,"MATCH (s:Stream)-[:PLAYS]->(:Game)
+WITH s, count(DISTINCT s) AS gameCount
+WHERE gameCount >= 2
+MATCH (s)<-[:MODERATOR]-(m:User)
+RETURN m.name AS moderator
+ORDER BY m.name
+LIMIT 5","with fun game_count($s: stream) -> integer:
+  match game_play (streaming_channel: $s, played_game: $g);
+  return count;
+
+match
+$s isa stream;
+let $gc = game_count($s);
+$gc >= 2;
+moderation (moderated_channel: $s, moderating_user: $m);
+$m has name $n;
+sort $n asc;
+limit 5;
+fetch { ""moderator"": $m.name };"
+438,Which users are VIPs for the stream with the highest follower count?,"MATCH (s:Stream)
+WITH s
+ORDER BY s.followers DESC
+LIMIT 1
+MATCH (s)<-[:VIP]-(u:User)
+RETURN u.name AS user, s.name AS stream","with fun max_followers() -> integer:
+  match $s isa stream, has followers $f;
+  return max($f);
+
+match
+$s isa stream, has followers $f;
+let $max = max_followers();
+$f == $max;
+vip_status (channel_with_vips: $s, vip_user: $u);
+fetch { ""user"": $u.name, ""stream"": $s.name };"
+535,Name the top 3 users who are moderators in the stream with the highest follower count.,"MATCH (s:Stream)
+WITH s
+ORDER BY s.followers DESC
+LIMIT 1
+MATCH (s)<-[:MODERATOR]-(u:User)
+RETURN u.name
+ORDER BY u.followers DESC
+LIMIT 3","with fun max_followers() -> integer:
+  match $s isa stream, has followers $f;
+  return max($f);
+
+match
+$s isa stream, has followers $f;
+let $max = max_followers();
+$f == $max;
+moderation (moderated_channel: $s, moderating_user: $u);
+limit 3;
+fetch { ""user"": $u.name };"
+314,Who are the first 3 moderators for the oldest stream?,"MATCH (s:Stream)<-[:MODERATOR]-(m:User)
+WITH s, m
+ORDER BY s.createdAt
+LIMIT 1
+RETURN s.name AS stream, collect(m.name)[..3] AS moderators","with fun oldest_stream_date() -> datetime:
+  match $s isa stream, has created_at $d;
+  return min($d);
+
+match
+$s isa stream, has created_at $d;
+let $oldest = oldest_stream_date();
+$d == $oldest;
+moderation (moderated_channel: $s, moderating_user: $m);
+limit 3;
+fetch { ""stream"": $s.name, ""moderator"": $m.name };"
+331,Who are the first 3 VIPs in streams with the most languages spoken?,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)
+WITH s, count(l) AS languageCount
+ORDER BY languageCount DESC
+LIMIT 1
+MATCH (s)-[:VIP]->(vip:User)
+RETURN vip.name
+LIMIT 3","with fun language_count($s: stream) -> integer:
+  match language_usage (channel: $s, used_language: $l);
+  return count;
+
+with fun max_language_count() -> integer:
+  match $s isa stream;
+  let $c = language_count($s);
+  return max($c);
+
+match
+$s isa stream;
+let $lc = language_count($s);
+let $max_lc = max_language_count();
+$lc == $max_lc;
+vip_status (channel_with_vips: $s, vip_user: $vip);
+limit 3;
+fetch { ""vip"": $vip.name };"
+265,"Which game has the fewest streams playing it, listing the first 3 streams?","MATCH (g:Game)<-[:PLAYS]-(s:Stream)
+WITH g, count(s) AS streamCount
+ORDER BY streamCount
+LIMIT 1
+MATCH (g)<-[:PLAYS]-(s:Stream)
+RETURN g.name AS game, s.name AS stream
+LIMIT 3","with fun stream_count($g: game) -> integer:
+  match game_play (streaming_channel: $s, played_game: $g);
+  return count;
+
+with fun min_stream_count() -> integer:
+  match $g isa game;
+  let $c = stream_count($g);
+  $c > 0;
+  return min($c);
+
+match
+$g isa game;
+let $count = stream_count($g);
+let $min = min_stream_count();
+$count == $min;
+game_play (streaming_channel: $s, played_game: $g);
+limit 3;
+fetch { ""game"": $g.name, ""stream"": $s.name };"
+291,Which game is streamed by the most teams and list the first 3 teams?,"MATCH (g:Game)<-[:PLAYS]-(s:Stream)<-[:HAS_TEAM]-(t:Team)
+WITH g, count(distinct t) as teamCount, collect(t.name) as teams
+ORDER BY teamCount DESC
+LIMIT 1
+RETURN g.name as game, teamCount, teams[..3] as topTeams","with fun team_count($g: game) -> integer:
+  match
+  game_play (streaming_channel: $s, played_game: $g);
+  team_membership (member_stream: $s, organization: $t);
+  return count;
+
+with fun max_team_count() -> integer:
+  match $g isa game;
+  let $c = team_count($g);
+  return max($c);
+
+match
+$g isa game;
+let $tc = team_count($g);
+let $max = max_team_count();
+$tc == $max;
+game_play (streaming_channel: $s, played_game: $g);
+team_membership (member_stream: $s, organization: $t);
+limit 3;
+fetch { ""game"": $g.name, ""team"": $t.name };"
+300,What are the first 3 streams that are part of a team with the most streams?,"MATCH (s:Stream)-[:HAS_TEAM]->(t:Team)
+WITH t, count(s) AS streamCount
+ORDER BY streamCount DESC
+LIMIT 1
+MATCH (s:Stream)-[:HAS_TEAM]->(t)
+RETURN s.name AS streamName
+LIMIT 3","with fun team_stream_count($t: team) -> integer:
+  match team_membership (member_stream: $s, organization: $t);
+  return count;
+
+with fun max_team_stream_count() -> integer:
+  match $t isa team;
+  let $c = team_stream_count($t);
+  return max($c);
+
+match
+$t isa team;
+let $sc = team_stream_count($t);
+let $max = max_team_stream_count();
+$sc == $max;
+team_membership (member_stream: $s, organization: $t);
+limit 3;
+fetch { ""stream"": $s.name };"
+473,Which streams are part of a team with the most streams associated?,"MATCH (t:Team)<-[:HAS_TEAM]-(s:Stream)
+WITH t, count(s) AS stream_count
+ORDER BY stream_count DESC
+LIMIT 1
+MATCH (t)<-[:HAS_TEAM]-(stream:Stream)
+RETURN stream","with fun team_stream_count($t: team) -> integer:
+  match team_membership (member_stream: $s, organization: $t);
+  return count;
+
+with fun max_team_stream_count() -> integer:
+  match $t isa team;
+  let $c = team_stream_count($t);
+  return max($c);
+
+match
+$t isa team;
+let $sc = team_stream_count($t);
+let $max = max_team_stream_count();
+$sc == $max;
+team_membership (member_stream: $s, organization: $t);
+fetch { ""stream"": $s.name };"
+491,List the top 5 streams that are part of the team with the newest creation date.,"MATCH (s:Stream)-[:HAS_TEAM]->(t:Team)
+WITH t
+ORDER BY t.createdAt DESC
+LIMIT 1
+MATCH (s:Stream)-[:HAS_TEAM]->(t)
+RETURN s.name AS stream, s.total_view_count AS views
+ORDER BY views DESC
+LIMIT 5","with fun newest_team_date() -> datetime:
+  match $t isa team, has created_at $d;
+  return max($d);
+
+match
+$t isa team, has created_at $d;
+let $newest = newest_team_date();
+$d == $newest;
+team_membership (member_stream: $s, organization: $t);
+$s has total_view_count $v;
+sort $v desc;
+limit 5;
+fetch { ""stream"": $s.name, ""views"": $v };"
