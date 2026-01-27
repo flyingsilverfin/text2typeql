@@ -4,11 +4,13 @@
 
 ## Overview
 
-Foundation models generate SQL and Cypher reasonably well thanks to large public corpora and benchmark datasets. TypeQL 3.0, released with TypeDB 3.0, has none of that. Very little TypeQL exists in the wild, and even frontier models struggle to produce correct queries without heavy prompting. This dataset addresses that gap.
+Foundation models generate SQL and Cypher reasonably well thanks to large public corpora and benchmark datasets. TypeQL 3.0, released with TypeDB 3.0, has little of that, and relies mostly on being close to natural language. Even frontier models struggle to produce correct queries without expensive reasoning sequences and context-heavy prompting. This dataset addresses that gap.
 
-**Text2TypeQL** provides supervised training data for fine-tuning models on TypeQL generation, a retrieval corpus for few-shot prompting and RAG, and a standardized evaluation benchmark for TypeQL generation quality. Each entry includes the English question, the original Cypher query (from the source dataset), and a validated TypeQL 3.0 query. Seven TypeQL schemas model the domains.
+**Text2TypeQL** provides supervised training data for fine-tuning models on TypeQL generation, a retrieval corpus for few-shot prompting and RAG, and a standardized evaluation benchmark for TypeQL generation quality. Each entry includes the English question, the original Cypher query (from the source dataset), and a validated TypeQL 3.0 query. Seven TypeQL schemas model the domains. Schemas were generated according to the loose Neo4j schema provided, and tweaked throughout the query generation process.
 
-The dataset was produced by converting Neo4j Labs' [text2cypher](https://github.com/neo4j-labs/text2cypher) benchmark using AI agents operating under a detailed TypeQL 3.0 reference, with every query validated against a live TypeDB instance and semantically reviewed to verify it correctly answers the English question.
+The dataset was produced by converting Neo4j Labs' [text2cypher](https://github.com/neo4j-labs/text2cypher) dataset, which itself was generated using AI. It was created using aagents operating under a detailed TypeQL 3.0 reference, with every query validated against a live TypeDB instance and semantically reviewed to verify it correctly answers the English question. About 5-10% of remaining queries were then manually prompted with extra information.
+
+Interestingly, the generation of TypeQL, which also relied on semantic validation against the schema, highlighted at least 30 cases (~1%) where Neo4j queries were incorrect against their own schema - but because it lacks a strong type system like TypeDB's, these were never found.
 
 ## Domains
 
@@ -56,14 +58,13 @@ df = pd.read_csv("dataset/all_queries.csv")
 
 # Filter by domain
 twitter = df[df["domain"] == "twitter"]
-
 # Load a single domain
 movies = pd.read_csv("dataset/movies/queries.csv")
 ```
 
 ## What the Type System Caught
 
-TypeDB's strict type system exposed roughly 30 queries across four databases where the original Cypher does not correctly answer the English question. Three patterns recurred:
+TypeDB's strict type system exposed roughly 30 queries (there may be more) across four databases where the original Cypher does not correctly answer the English question. Three patterns recurred:
 
 - **Wrong property**: Twitter queries checking `favorites` when the question asks about retweets. TypeQL's explicit `retweets` relation forces correct semantics.
 - **Wrong direction**: Companies queries reversing supplier/customer direction. TypeQL's `supplies (supplier: $x, customer: $y)` makes the reversal visible.
@@ -73,7 +74,7 @@ In each case the TypeQL was written to correctly answer the English question. De
 
 ## Failed Queries
 
-48 of 4,776 source queries (1%) cannot be expressed in TypeQL 3.0. They require features not yet supported: `size()` for string/list length, array indexing, epoch timestamp conversion, duration arithmetic, date component extraction, and `collect()` aggregation. Each is documented with its original Cypher and the specific missing capability in the per-domain READMEs.
+48 of 4,776 source queries (1%) cannot yet be expressed in TypeQL 3.0. They require features not yet supported: `size()` for string/list length, array indexing, epoch timestamp conversion, duration and date arithmetic, date component extraction, and `collect()` aggregation. Each is documented with its original Cypher and the specific missing capability in the per-domain READMEs.
 
 ## Source
 
