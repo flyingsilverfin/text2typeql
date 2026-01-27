@@ -57,7 +57,7 @@ The subagent handles the full pipeline:
 3. **Convert** using TypeDB 3.0 syntax
 4. **Validate** against TypeDB using: `python3 scripts/validate_typeql.py <database> --file /tmp/query.tql`
 5. **Semantic review**: Verify TypeQL answers the English question (ignore Cypher)
-6. **Write** to `queries.csv` (success) or `failed.csv` (after 3 attempts)
+6. **Write** to `queries.csv` (success) or document in `README.md` Failed Queries section (after 3 attempts)
 
 ### Validation Script
 
@@ -265,61 +265,31 @@ Each `output/<database>/` folder contains:
 |------|---------|--------|
 | `schema.tql` | TypeQL schema definition | TypeQL |
 | `neo4j_schema.json` | Original Neo4j schema | JSON |
+| `README.md` | Dataset status, failed queries (with Cypher + reason), and Cypher error notes | Markdown |
 | `queries.csv` | **Successfully validated** TypeQL queries | `original_index,question,cypher,typeql` |
-| `failed.csv` | Queries that **cannot be converted** (TypeQL limitations) | `original_index,question,cypher,error` |
-| `failed_review.csv` | Queries that **failed semantic review** (temporary) | `original_index,question,cypher,typeql,review_reason` |
+| `failed_review.csv` | Queries that **failed semantic review** (temporary, should be empty) | `original_index,question,cypher,typeql,review_reason` |
 
-### Workflow Rules
+### Where Queries Live
 
-1. **queries.csv** - Only contains queries that:
-   - Successfully converted from Cypher to TypeQL
-   - Validated against TypeDB (no syntax/type errors)
-   - Passed semantic review (TypeQL matches question intent)
+Queries are tracked in one of these locations:
 
-2. **failed.csv** - Contains queries that:
-   - Cannot be converted due to TypeQL limitations (size(), collect(), etc.)
-   - Have schema mismatches (Cypher uses attributes not in TypeQL schema)
-   - Failed validation after multiple conversion attempts
-
-3. **failed_review.csv** - Temporary file for semantic review:
-   - Created when reviewing queries for intent matching
-   - After fixing, queries move to either `queries.csv` (success) or `failed.csv` (unfixable)
-   - Should be empty or deleted when review is complete
+1. **`queries.csv`** - Successfully converted, validated, and semantically reviewed queries
+2. **`README.md` (Failed Queries section)** - Queries that cannot be converted due to TypeQL limitations (string functions, date arithmetic, array operations, etc.). Each entry includes the query index, original Cypher, and reason for failure.
+3. **`failed_review.csv`** (temporary) - Queries pending semantic review fixes. After fixing, queries move to `queries.csv` (success) or the README (unfixable). Should be empty when review is complete.
 
 ### Query Count Verification (CRITICAL)
 
-**Before committing any changes**, always verify that the total number of queries is preserved:
+**Before committing any changes**, verify that the total number of queries is preserved. The count of queries in `queries.csv` + failed queries documented in the README + any entries in `failed_review.csv` MUST equal the total in the original dataset.
 
-```bash
-# Count queries in all CSV files for a database
-python3 -c "
-import csv
-db = 'companies'  # Change as needed
-total = 0
-for f in ['queries.csv', 'failed.csv', 'failed_review.csv']:
-    try:
-        with open(f'output/{db}/{f}') as file:
-            total += len(list(csv.DictReader(file)))
-    except FileNotFoundError:
-        pass
-print(f'Total queries: {total}')
-"
-```
-
-**Rule**: The sum of queries across `queries.csv` + `failed.csv` + `failed_review.csv` MUST equal the total in the original dataset (recorded in `output/<database>/README.md`).
-
-If counts don't match:
-1. Check for CSV parsing issues (multi-line fields need proper quoting)
-2. Check for duplicate entries
-3. Restore from git if queries were lost: `git checkout HEAD -- output/<database>/queries.csv`
+Each README has a verification line like: `Total: 929 + 4 = 933 ✓`
 
 ### Retry Workflow
 
-When retrying a failed or semantically-failed query:
+When retrying a previously failed query:
 1. Attempt conversion using `/convert-query` skill
 2. Validate against TypeDB
-3. If **success**: Move to `queries.csv`, remove from source file
-4. If **failure**: Move to `failed.csv` with error description
+3. If **success**: Add to `queries.csv`, update README (remove from Failed Queries, update count)
+4. If **failure**: Document in README's Failed Queries section with the Cypher and reason
 
 ### Scripts
 
@@ -341,12 +311,6 @@ python3 scripts/csv_read_row.py output/<db>/queries.csv <index> --exists
 
 # Append successful conversion
 python3 scripts/csv_append_row.py output/<db>/queries.csv '{"original_index": N, "question": "...", "cypher": "...", "typeql": "..."}'
-
-# Append failed conversion
-python3 scripts/csv_append_row.py output/<db>/failed.csv '{"original_index": N, "question": "...", "cypher": "...", "error": "..."}'
-
-# Move row from failed to queries (with updated fields)
-python3 scripts/csv_move_row.py output/<db>/failed.csv output/<db>/queries.csv <index> '{"typeql": "..."}'
 ```
 
 ### Other Files
@@ -362,13 +326,13 @@ docs/
 
 ## Query Counts by Database
 
-| Database | Valid Queries |
-|----------|---------------|
-| twitter | 493 |
-| twitch | 561 |
-| movies | 729 |
-| neoflix | 915 |
-| recommendations | 753 |
-| companies | 933 |
-| gameofthrones | 392 |
-| **Total** | **4776** |
+| Database | Total Queries | Converted | Failed |
+|----------|--------------|-----------|--------|
+| twitter | 493 | 491 | 2 |
+| twitch | 561 | 553 | 8 |
+| movies | 729 | 723 | 6 |
+| neoflix | 915 | 910 | 5 |
+| recommendations | 753 | 741 | 12 |
+| companies | 933 | 929 | 4 |
+| gameofthrones | 392 | 381 | 11 |
+| **Total** | **4776** | **4728** | **48** |

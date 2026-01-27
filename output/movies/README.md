@@ -2,30 +2,67 @@
 
 **Total queries in original dataset: 729**
 
-## Final Status
+## Current Status
 - `queries.csv`: 723 successfully converted and validated queries
-- `failed.csv`: 6 queries that cannot be converted (TypeQL limitations)
+- 6 queries that cannot be converted (documented below in Failed Queries)
 
 Total: 723 + 6 = 729 ✓
 
-## Failed Queries
+## Failed Queries (6 total)
 
-### String length (`size()`) - 4 queries
+### Query 267
+**Reason:** TypeQL lacks `size()` for arrays — cannot count roles per individual ACTED_IN relationship. Unlike the 9 role-count queries converted using a `role_count(movie)` function, this needs per-relationship `size(r.roles) = 3`.
+```cypher
+MATCH (m:Movie)<-[r:ACTED_IN]-(p:Person)
+WHERE size(r.roles) = 3
+RETURN m.title
+```
 
-TypeQL has no string length function. Cypher's `size(string)` returns character count, which is used to filter or sort by string length.
+### Query 379
+**Reason:** No string length function — cannot filter by `size(tagline) > 30`.
+```cypher
+MATCH (m:Movie)
+WHERE m.tagline IS NOT NULL AND size(m.tagline) > 30
+RETURN m.title, m.tagline
+```
 
-| Index | Question | Reason |
-|-------|----------|--------|
-| 379 | Movies with taglines longer than 30 characters? | Cannot filter by `size(tagline) > 30` |
-| 408 | Who has the longest name among all actors? | Cannot sort by `size(p.name)` |
-| 459 | 3 movies with the longest taglines? | Cannot sort by `size(tagline)` |
-| 486 | Persons who follow someone with the same first letter in their name | No `substring()`/`left()` to extract and compare first characters |
+### Query 408
+**Reason:** No string length function — cannot sort by `size(p.name)`.
+```cypher
+MATCH (p:Person)-[:ACTED_IN]->(:Movie)
+RETURN p.name AS name
+ORDER BY size(p.name) DESC
+LIMIT 1
+```
 
-### Role list counting - 2 queries
+### Query 459
+**Reason:** No string length function — cannot sort by `size(tagline)`.
+```cypher
+MATCH (m:Movie)
+WHERE m.tagline IS NOT NULL
+RETURN m.title, m.tagline
+ORDER BY size(m.tagline) DESC
+LIMIT 3
+```
 
-These use `size(r.roles)` per individual ACTED_IN relationship (per actor-movie pair), not per movie. Unlike the 9 role-count queries converted using a `role_count(movie)` function, these require counting roles on a specific relationship instance.
+### Query 484
+**Reason:** TypeQL lacks `size()` for arrays — cannot sort by per-relationship role count.
+```cypher
+MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)
+RETURN p.name AS person, m.title AS movie, r.roles AS roles
+ORDER BY size(r.roles) DESC
+LIMIT 3
+```
 
-| Index | Question | Reason |
-|-------|----------|--------|
-| 267 | Movies with exactly 3 roles in ACTED_IN | Needs per-relationship `size(r.roles) = 3`, not total roles per movie |
-| 484 | Top 3 longest relationships by roles between a person and a movie | Needs per-relationship role count to sort by |
+### Query 486
+**Reason:** No `left()` / `substring()` function — cannot extract and compare first characters of two names.
+```cypher
+MATCH (p1:Person)-[:FOLLOWS]->(p2:Person)
+WHERE left(p1.name, 1) = left(p2.name, 1)
+RETURN p1.name
+LIMIT 3
+```
+
+## Original Cypher Errors
+
+No original Cypher interpretation errors were identified in this dataset. All semantic review issues were TypeQL translation errors (missing relation constraints, missing filters) that were fixed during the review process.

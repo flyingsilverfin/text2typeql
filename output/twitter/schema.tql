@@ -18,6 +18,7 @@ define
   attribute link_url value string;
   attribute source_name value string;
   attribute score value double;
+  attribute followed_at value datetime;
 
   entity user,
     owns betweenness,
@@ -75,7 +76,8 @@ define
 
   relation follows,
     relates follower,
-    relates followed;
+    relates followed,
+    owns followed_at;
 
   relation posts,
     relates author,

@@ -5172,3 +5172,57 @@ LIMIT 5","match
 sort $favorites desc;
 limit 5;
 fetch { ""text"": $text, ""favorites"": $favorites };"
+308,Who are the top 5 most recent users followed by 'Neo4j'?,"MATCH (me:Me {screen_name: 'neo4j'})-[:FOLLOWS]->(followed:User)
+RETURN followed.screen_name AS user, followed.followers AS followers
+ORDER BY followed.followers DESC
+LIMIT 5","match
+$me isa me, has screen_name ""neo4j"";
+$rel isa follows (follower: $me, followed: $followed);
+$rel has followed_at $fa;
+$followed has screen_name $sn;
+sort $fa desc;
+limit 5;
+fetch {
+  ""user"": $sn
+};"
+335,List the 5 most recent users who started following 'Neo4j'.,"MATCH (u:User)-[:FOLLOWS]->(me:Me {screen_name: 'neo4j'})
+RETURN u.screen_name, u.name
+ORDER BY u.following DESC
+LIMIT 5","match
+$me isa me, has screen_name ""neo4j"";
+$f isa follows (follower: $u, followed: $me);
+$f has followed_at $fa;
+$u has screen_name $sn;
+sort $fa desc;
+limit 5;
+fetch {
+  ""screen_name"": $sn,
+  ""name"": $u.name
+};"
+353,Which tweets have been amplified by 'Neo4j' and have more than 100 favorites?,"MATCH (me:Me {screen_name: 'neo4j'})-[:AMPLIFIES]->(u:User)<-[:MENTIONS]-(t:Tweet)
+WHERE t.favorites > 100
+RETURN t","match
+$me isa me, has screen_name ""neo4j"";
+amplifies (amplifier: $me, amplified_user: $u);
+mentions (source_tweet: $t, mentioned_user: $u);
+$t has favorites $fav;
+$fav > 100;
+fetch {
+  ""tweet"": $t.text,
+  ""favorites"": $t.favorites
+};"
+294,Identify the first 3 tweets by 'Me' that have been mentioned by another user.,"MATCH (me:Me)-[:POSTS]->(tweet:Tweet)<-[:MENTIONS]-(user:User)
+RETURN tweet.text, user.screen_name
+ORDER BY tweet.created_at
+LIMIT 3","match
+$me isa me;
+posts (author: $me, content: $t);
+mentions (source_tweet: $t, mentioned_user: $u);
+not { $u isa me; };
+$t has created_at $ca;
+sort $ca asc;
+limit 3;
+fetch {
+  ""text"": $t.text,
+  ""screen_name"": $u.screen_name
+};"
