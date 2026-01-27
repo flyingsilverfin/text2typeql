@@ -5515,8 +5515,7 @@ fetch { ""director"": $p.name, ""awards"": $count };"
 WHERE director.name =~ ""(?i).*\\b(Ms\\.|Miss|Mrs\\.|Madam|Madame|Mademoiselle|Frau|Fräulein|Señora|Señorita|Doña|Donna)\\b.*""
 RETURN movie.title
 LIMIT 5","match
-$p isa person, has name $n;
-$n like "".*(Ms\\.|Miss |Mrs\\.|Madam |Madame |Mademoiselle |Frau |Señora |Señorita |Doña |Donna ).*"";
+$p isa person, has gender ""female"";
 directed (director: $p, film: $m);
 limit 5;
 fetch { ""title"": $m.title };"
@@ -5582,8 +5581,7 @@ WHERE d.name =~ ""(?i).*\\b(Ms\\.|Miss|Mrs\\.|Frau|Fräulein|Mademoiselle|Madame
 RETURN m.title AS movie, m.imdbRating AS rating
 ORDER BY m.imdbRating DESC
 LIMIT 5","match
-$p isa person, has name $n;
-$n like "".*(Ms\\.|Miss |Mrs\\.|Madam |Madame |Mademoiselle |Frau |Señora |Señorita |Doña |Donna ).*"";
+$p isa person, has gender ""female"";
 directed (director: $p, film: $m);
 $m has imdb_rating $r;
 sort $r desc;
@@ -5652,3 +5650,207 @@ acted_in (actor: $p, film: $m1);
 acted_in (actor: $p, film: $m2);
 limit 3;
 fetch { ""actor"": $p.name, ""highest"": $m1.title, ""lowest"": $m2.title };"
+580,What are the top 5 movies with the most detailed biographies of their directors?,"MATCH (m:Movie)<-[:DIRECTED]-(d:Director)
+WHERE d.bio IS NOT NULL
+RETURN m.title AS movie, d.name AS director, d.bio AS bio
+ORDER BY size(d.bio) DESC
+LIMIT 5","match
+$d isa person, has bio $b;
+$m isa movie;
+directed (director: $d, film: $m);
+$b != """";
+sort $b desc;
+limit 5;
+fetch { ""movie"": $m.title, ""director"": $d.name, ""bio"": $b };"
+748,What are the top 5 movies with the most detailed biographies of their directors?,"MATCH (m:Movie)<-[:DIRECTED]-(d:Director)
+WHERE d.bio IS NOT NULL
+RETURN m.title AS movie, d.name AS director, d.bio AS bio
+ORDER BY size(d.bio) DESC
+LIMIT 5","match
+$d isa person, has bio $b;
+$m isa movie;
+directed (director: $d, film: $m);
+$b != """";
+sort $b desc;
+limit 5;
+fetch { ""movie"": $m.title, ""director"": $d.name, ""bio"": $b };"
+737,List the first 3 movies where the main language is not English but have an IMDb rating over 7.,"MATCH (m:Movie)
+WHERE m.languages[0] <> 'English' AND m.imdbRating > 7
+RETURN m.title, m.languages[0], m.imdbRating
+ORDER BY m.imdbRating DESC
+LIMIT 3","match
+$m isa movie, has imdb_rating $r;
+$r > 7.0;
+not { $m has languages ""English""; };
+limit 3;
+fetch { ""title"": $m.title, ""rating"": $r };"
+28,List the first 5 movies that have been rated by users from more than 10 different countries.,"MATCH (m:Movie)<-[r:RATED]-(u:User)
+WITH m, count(DISTINCT u.name) AS numCountries
+WHERE numCountries > 10
+RETURN m.title
+LIMIT 5","with fun user_country_count($m: movie) -> integer:
+  match
+  $r isa rated (film: $m, user: $u);
+  located_in (resident: $u, country: $c);
+  select $c;
+  distinct;
+  return count;
+
+match
+$m isa movie;
+let $cc = user_country_count($m);
+$cc > 10;
+limit 5;
+fetch { ""title"": $m.title, ""countries"": $cc };"
+585,Which 5 movies have the most distinct posters on IMDb?,"MATCH (m:Movie)
+WHERE m.poster IS NOT NULL
+RETURN m.title, m.poster
+ORDER BY m.poster
+LIMIT 5","with fun poster_count($m: movie) -> integer:
+  match $m has poster $p;
+  return count;
+
+match
+$m isa movie;
+let $pc = poster_count($m);
+$pc > 0;
+sort $pc desc;
+limit 5;
+fetch { ""title"": $m.title, ""posters"": $pc };"
+624,List all movies that have been rated by both male and female users.,"MATCH (m:Movie)
+WHERE exists{ (m)<-[:RATED]-(:User {name: 'Omar Huffman'}) }
+  AND exists{ (m)<-[:RATED]-(:User {name: 'Myrtle Potter'}) }
+RETURN m.title","match
+$m isa movie;
+$u1 isa user, has gender ""male"";
+$u2 isa user, has gender ""female"";
+rated (user: $u1, film: $m);
+rated (user: $u2, film: $m);
+select $m;
+distinct;
+fetch { ""title"": $m.title };"
+21,Which 5 movies have the most detailed plots (based on the length of the plot text)?,"MATCH (m:Movie)
+WHERE m.plot IS NOT NULL
+RETURN m.title, m.plot
+ORDER BY size(m.plot) DESC
+LIMIT 5","match
+$m isa movie, has plot $p;
+$p != """";
+sort $p desc;
+limit 5;
+fetch { ""title"": $m.title, ""plot"": $p };"
+148,Which movies have a plot description longer than 150 characters?,"MATCH (m:Movie)
+WHERE m.plot IS NOT NULL AND size(m.plot) > 150
+RETURN m.title, m.plot","match
+$m isa movie, has plot $p;
+$p like "".{150,}"";
+fetch { ""title"": $m.title, ""plot"": $p };"
+257,Which 3 movies have the most detailed plot descriptions (longest text)?,"MATCH (m:Movie)
+WHERE m.plot IS NOT NULL
+RETURN m.title, m.plot
+ORDER BY size(m.plot) DESC
+LIMIT 3","match
+$m isa movie, has plot $p;
+$p != """";
+sort $p desc;
+limit 3;
+fetch { ""title"": $m.title, ""plot"": $p };"
+272,Which 3 directors have the longest bios in the database?,"MATCH (d:Director)
+WHERE d.bio IS NOT NULL
+RETURN d.name, d.bio
+ORDER BY size(d.bio) DESC
+LIMIT 3","match
+$p isa person, has bio $b;
+directed (director: $p, film: $m);
+$b != """";
+select $p, $b;
+distinct;
+sort $b desc;
+limit 3;
+fetch { ""name"": $p.name, ""bio"": $b };"
+300,Show the top 5 actors with the longest bios.,"MATCH (a:Actor)
+WHERE a.bio IS NOT NULL
+RETURN a.name, a.bio
+ORDER BY size(a.bio) DESC
+LIMIT 5","match
+$p isa person, has bio $b;
+acted_in (actor: $p, film: $m);
+$b != """";
+select $p, $b;
+distinct;
+sort $b desc;
+limit 5;
+fetch { ""name"": $p.name, ""bio"": $b };"
+506,Which actors have the longest bio in the database?,"MATCH (a:Actor)
+RETURN a.name, a.bio
+ORDER BY size(a.bio) DESC
+LIMIT 1","match
+$p isa person, has bio $b;
+acted_in (actor: $p, film: $m);
+$b != """";
+select $p, $b;
+distinct;
+sort $b desc;
+limit 1;
+fetch { ""name"": $p.name, ""bio"": $b };"
+510,What are the top 5 movies with the most detailed plots (assuming plot length can be measured)?,"MATCH (m:Movie)
+WHERE m.plot IS NOT NULL
+RETURN m.title, m.plot
+ORDER BY size(m.plot) DESC
+LIMIT 5","match
+$m isa movie, has plot $p;
+$p != """";
+sort $p desc;
+limit 5;
+fetch { ""title"": $m.title, ""plot"": $p };"
+538,Which 5 movies have the most detailed (longest) plots?,"MATCH (m:Movie)
+WHERE m.plot IS NOT NULL
+RETURN m.title, m.plot
+ORDER BY size(m.plot) DESC
+LIMIT 5","match
+$m isa movie, has plot $p;
+$p != """";
+sort $p desc;
+limit 5;
+fetch { ""title"": $m.title, ""plot"": $p };"
+543,Which 5 directors have the longest bios on their profile?,"MATCH (d:Director)
+WHERE d.bio IS NOT NULL
+RETURN d.name, d.bio
+ORDER BY size(d.bio) DESC
+LIMIT 5","match
+$p isa person, has bio $b;
+directed (director: $p, film: $m);
+$b != """";
+select $p, $b;
+distinct;
+sort $b desc;
+limit 5;
+fetch { ""name"": $p.name, ""bio"": $b };"
+559,What are the top 5 movies with the longest plots?,"MATCH (m:Movie)
+WHERE m.plot IS NOT NULL
+RETURN m.title, m.plot
+ORDER BY size(m.plot) DESC
+LIMIT 5","match
+$m isa movie, has plot $p;
+$p != """";
+sort $p desc;
+limit 5;
+fetch { ""title"": $m.title, ""plot"": $p };"
+751,Which 3 actors have a bio longer than 1000 characters and have acted in more than 5 movies?,"MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)
+WHERE size(a.bio) > 1000
+WITH a, count(m) AS numMovies
+WHERE numMovies > 5
+RETURN a.name, a.bio, numMovies
+ORDER BY numMovies DESC
+LIMIT 3","with fun movie_count($p: person) -> integer:
+  match acted_in (actor: $p, film: $m);
+  return count;
+
+match
+$p isa person, has bio $b;
+$b like "".{1000,}"";
+let $mc = movie_count($p);
+$mc > 5;
+sort $mc desc;
+limit 3;
+fetch { ""name"": $p.name, ""bio"": $b, ""movies"": $mc };"

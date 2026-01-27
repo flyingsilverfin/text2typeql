@@ -1,27 +1,4 @@
 original_index,question,cypher,error
-21,Which 5 movies have the most detailed plots (based on the length of the plot text)?,"MATCH (m:Movie)
-WHERE m.plot IS NOT NULL
-RETURN m.title, m.plot
-ORDER BY size(m.plot) DESC
-LIMIT 5",Uses size() on string property - not directly supported
-148,Which movies have a plot description longer than 150 characters?,"MATCH (m:Movie)
-WHERE m.plot IS NOT NULL AND size(m.plot) > 150
-RETURN m.title, m.plot",Uses size() on string property - not directly supported
-257,Which 3 movies have the most detailed plot descriptions (longest text)?,"MATCH (m:Movie)
-WHERE m.plot IS NOT NULL
-RETURN m.title, m.plot
-ORDER BY size(m.plot) DESC
-LIMIT 3",Uses size() on string property - not directly supported
-272,Which 3 directors have the longest bios in the database?,"MATCH (d:Director)
-WHERE d.bio IS NOT NULL
-RETURN d.name, d.bio
-ORDER BY size(d.bio) DESC
-LIMIT 3",Uses size() on string property - not directly supported
-300,Show the top 5 actors with the longest bios.,"MATCH (a:Actor)
-WHERE a.bio IS NOT NULL
-RETURN a.name, a.bio
-ORDER BY size(a.bio) DESC
-LIMIT 5",Uses size() on string property - not directly supported
 404,List the top 3 movies with a released date on a Friday.,"MATCH (m:Movie)
 WHERE date(m.released).weekday = 5
 RETURN m.title, m.released
@@ -35,35 +12,11 @@ WITH d, m
 ORDER BY m.imdbRating DESC
 WITH d, collect(m)[0..5] AS topMovies
 RETURN d.name AS director, [movie IN topMovies | movie.title] AS movies, [movie IN topMovies | movie.imdbRating] AS ratings",Uses collect() aggregation which has no direct TypeQL equivalent
-506,Which actors have the longest bio in the database?,"MATCH (a:Actor)
-RETURN a.name, a.bio
-ORDER BY size(a.bio) DESC
-LIMIT 1",Uses size() on string property - not directly supported
-510,What are the top 5 movies with the most detailed plots (assuming plot length can be measured)?,"MATCH (m:Movie)
-WHERE m.plot IS NOT NULL
-RETURN m.title, m.plot
-ORDER BY size(m.plot) DESC
-LIMIT 5",Uses size() on string property - not directly supported
 537,List the first 3 users who rated a movie on its release day.,"MATCH (u:User)-[r:RATED]->(m:Movie)
 WHERE m.released = date(datetime({epochSeconds: r.timestamp}))
 RETURN u.name AS user, m.title AS movie, m.released AS releaseDate
 ORDER BY r.timestamp
 LIMIT 3",Uses epochSeconds which requires timestamp conversion
-538,Which 5 movies have the most detailed (longest) plots?,"MATCH (m:Movie)
-WHERE m.plot IS NOT NULL
-RETURN m.title, m.plot
-ORDER BY size(m.plot) DESC
-LIMIT 5",Uses size() on string property - not directly supported
-543,Which 5 directors have the longest bios on their profile?,"MATCH (d:Director)
-WHERE d.bio IS NOT NULL
-RETURN d.name, d.bio
-ORDER BY size(d.bio) DESC
-LIMIT 5",Uses size() on string property - not directly supported
-559,What are the top 5 movies with the longest plots?,"MATCH (m:Movie)
-WHERE m.plot IS NOT NULL
-RETURN m.title, m.plot
-ORDER BY size(m.plot) DESC
-LIMIT 5",Uses size() on string property - not directly supported
 570,What are the top 5 movies with the smallest gap between release and rating date?,"MATCH (m:Movie)<-[r:RATED]-(u:User)
 WITH m, r, u, datetime(m.released) AS releasedDate, datetime({epochSeconds: r.timestamp}) AS ratingDate
 WITH m, duration.between(releasedDate, ratingDate).days AS daysBetween
@@ -74,11 +27,6 @@ RETURN m.title AS movie, daysBetween AS daysBetweenReleaseAndRating",Uses durati
 WHERE size(split(d.bio, ' ')) > 500
 RETURN m.title
 LIMIT 3",Uses size(split()) which has no TypeQL equivalent
-580,What are the top 5 movies with the most detailed biographies of their directors?,"MATCH (m:Movie)<-[:DIRECTED]-(d:Director)
-WHERE d.bio IS NOT NULL
-RETURN m.title AS movie, d.name AS director, d.bio AS bio
-ORDER BY size(d.bio) DESC
-LIMIT 5",Uses size() on string property - not directly supported
 591,What are the top 5 movies with the most user ratings received in their first year of release?,"MATCH (m:Movie)<-[r:RATED]-(u:User)
 WHERE datetime(m.released).year = datetime(r.timestamp).year
 WITH m, count(r) AS ratingCount
@@ -101,39 +49,8 @@ WHERE size(split(m.plot, ' ')) > 100
 RETURN m.title, m.plot
 ORDER BY size(split(m.plot, ' ')) DESC
 LIMIT 5",Uses size(split()) which has no TypeQL equivalent
-737,List the first 3 movies where the main language is not English but have an IMDb rating over 7.,"MATCH (m:Movie)
-WHERE m.languages[0] <> 'English' AND m.imdbRating > 7
-RETURN m.title, m.languages[0], m.imdbRating
-ORDER BY m.imdbRating DESC
-LIMIT 3",Uses array indexing which has no TypeQL equivalent
 738,What are the top 5 movies released in the last 5 years?,"MATCH (m:Movie)
 WHERE m.released IS NOT NULL AND date(m.released) > date() - duration('P5Y')
 RETURN m.title, m.released, m.imdbRating
 ORDER BY m.imdbRating DESC
 LIMIT 5",Uses duration functions which have no TypeQL equivalent
-748,What are the top 5 movies with the most detailed biographies of their directors?,"MATCH (m:Movie)<-[:DIRECTED]-(d:Director)
-WHERE d.bio IS NOT NULL
-RETURN m.title AS movie, d.name AS director, d.bio AS bio
-ORDER BY size(d.bio) DESC
-LIMIT 5",Uses size() on string property - not directly supported
-751,Which 3 actors have a bio longer than 1000 characters and have acted in more than 5 movies?,"MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)
-WHERE size(a.bio) > 1000
-WITH a, count(m) AS numMovies
-WHERE numMovies > 5
-RETURN a.name, a.bio, numMovies
-ORDER BY numMovies DESC
-LIMIT 3",Uses size() on string property - not directly supported
-28,List the first 5 movies that have been rated by users from more than 10 different countries.,"MATCH (m:Movie)<-[r:RATED]-(u:User)
-WITH m, count(DISTINCT u.name) AS numCountries
-WHERE numCountries > 10
-RETURN m.title
-LIMIT 5",Schema mismatch: Question asks about user countries but User entity has no country attribute. Cypher counts distinct user names (misleadingly named numCountries) which cannot accurately answer the question about geographic diversity.
-585,Which 5 movies have the most distinct posters on IMDb?,"MATCH (m:Movie)
-WHERE m.poster IS NOT NULL
-RETURN m.title, m.poster
-ORDER BY m.poster
-LIMIT 5","Schema mismatch: Question asks for movies with most distinct posters, but schema defines poster as single-cardinality attribute (each movie has at most one poster). Counting distinct posters per movie is impossible - all movies would have count of 0 or 1. Original Cypher also fails to answer question correctly."
-624,List all movies that have been rated by both male and female users.,"MATCH (m:Movie)
-WHERE exists{ (m)<-[:RATED]-(:User {name: 'Omar Huffman'}) }
-  AND exists{ (m)<-[:RATED]-(:User {name: 'Myrtle Potter'}) }
-RETURN m.title","Schema limitation: Question asks for movies rated by male and female users, but the recommendations schema has no gender attribute for users. The original Cypher uses hardcoded user names as a workaround but this does not actually answer the question about gender."

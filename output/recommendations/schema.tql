@@ -29,6 +29,7 @@ define
   attribute age value integer;
   attribute description value string;
   attribute died_in value string;
+  attribute gender value string;
 
   entity movie,
     owns url,
@@ -44,7 +45,7 @@ define
     owns imdb_votes,
     owns imdb_id,
     owns year,
-    owns poster,
+    owns poster @card(0..),
     owns movie_id @key,
     owns tmdb_id,
     owns title,
@@ -63,7 +64,9 @@ define
     owns user_id @key,
     owns name,
     owns age,
-    plays rated:user;
+    owns gender @values("male", "female", "other"),
+    plays rated:user,
+    plays located_in:resident;
 
   entity person,
     owns url,
@@ -76,6 +79,7 @@ define
     owns born,
     owns imdb_id,
     owns poster,
+    owns gender @values("male", "female", "other"),
     plays acted_in:actor,
     plays directed:director;
 
@@ -107,3 +111,11 @@ define
   relation won,
     relates film,
     relates award;
+
+  entity country,
+    owns name @key,
+    plays located_in:country;
+
+  relation located_in,
+    relates resident,
+    relates country;
