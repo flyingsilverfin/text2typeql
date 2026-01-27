@@ -1,0 +1,89 @@
+define
+  # Attributes
+  attribute question_uuid value integer;
+  attribute question_link value string;
+  attribute accepted_answer_id value integer;
+  attribute creation_date value integer;
+  attribute view_count value integer;
+  attribute answer_count value integer;
+  attribute body_markdown value string;
+  attribute title value string;
+  attribute user_uuid value integer;
+  attribute display_name value string;
+  attribute name value string;
+  attribute tag_link value string;
+  attribute answer_uuid value integer;
+  attribute answer_link value string;
+  attribute is_accepted value boolean;
+  attribute score value integer;
+  attribute comment_uuid value integer;
+  attribute comment_link value string;
+
+  # Entities
+  entity question,
+    owns question_uuid @key,
+    owns question_link,
+    owns accepted_answer_id,
+    owns creation_date,
+    owns view_count,
+    owns answer_count,
+    owns body_markdown,
+    owns title,
+    plays tagged:question,
+    plays asked:question,
+    plays answered:question,
+    plays commented_on:question;
+
+  entity user,
+    owns user_uuid @key,
+    owns display_name,
+    plays asked:asker,
+    plays commented:commenter,
+    plays provided:provider;
+
+  entity tag,
+    owns name @key,
+    owns tag_link,
+    plays tagged:tag;
+
+  entity answer,
+    owns answer_uuid @key,
+    owns answer_link,
+    owns title,
+    owns is_accepted,
+    owns body_markdown,
+    owns score,
+    plays provided:answer,
+    plays answered:answer;
+
+  entity comment,
+    owns comment_uuid @key,
+    owns comment_link,
+    owns score,
+    plays commented:comment,
+    plays commented_on:comment;
+
+  # Relations
+  relation tagged,
+    relates question,
+    relates tag;
+
+  relation asked,
+    relates asker,
+    relates question;
+
+  relation commented,
+    relates commenter,
+    relates comment;
+
+  relation provided,
+    relates provider,
+    relates answer;
+
+  relation answered,
+    relates answer,
+    relates question;
+
+  relation commented_on,
+    relates comment,
+    relates question;

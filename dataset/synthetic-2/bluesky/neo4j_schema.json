@@ -1,0 +1,169 @@
+{
+  "node_props": {
+    "User": [
+      {
+        "property": "label",
+        "type": "STRING",
+        "values": [
+          "inchristbl.bsky.social",
+          "r0yart.bsky.social",
+          "chromevoid.bsky.social",
+          "samiraingold.art",
+          "sarahp.bsky.social"
+        ]
+      },
+      {
+        "property": "key",
+        "type": "STRING",
+        "values": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      {
+        "property": "y",
+        "type": "FLOAT",
+        "values": [
+          "6000.659",
+          "7032.724",
+          "4929.876",
+          "5621.208",
+          "-7333.085"
+        ]
+      },
+      {
+        "property": "color",
+        "type": "STRING",
+        "values": [
+          "#3CB371",
+          "#87CEFA",
+          "#4A708B"
+        ]
+      },
+      {
+        "property": "x",
+        "type": "FLOAT",
+        "values": [
+          "-4383.217",
+          "-4857.137",
+          "-3675.52",
+          "-4477.705",
+          "-3301.206"
+        ]
+      },
+      {
+        "property": "area",
+        "type": "FLOAT",
+        "values": [
+          "2.6",
+          "1.77",
+          "7.67",
+          "4.94",
+          "5.51"
+        ]
+      },
+      {
+        "property": "size",
+        "type": "FLOAT",
+        "values": [
+          "1.82",
+          "1.5",
+          "3.13",
+          "2.51",
+          "2.65"
+        ]
+      }
+    ]
+  },
+  "rel_props": {
+    "INTERACTED": [
+      {
+        "property": "weight",
+        "type": "INTEGER",
+        "values": [
+          "1",
+          "3.39",
+          "9.55"
+        ]
+      },
+      {
+        "property": "ogWeight",
+        "type": "INTEGER",
+        "values": [
+          "1",
+          "3"
+        ]
+      },
+      {
+        "property": "size",
+        "type": "FLOAT",
+        "values": [
+          "0.2",
+          "1.24",
+          "2.11"
+        ]
+      },
+      {
+        "property": "key",
+        "type": "STRING",
+        "values": [
+          "geid_68_0",
+          "geid_68_1",
+          "geid_68_2",
+          "geid_68_3",
+          "geid_68_4"
+        ]
+      }
+    ]
+  },
+  "relationships": [
+    {
+      "start": "User",
+      "type": "INTERACTED",
+      "end": "User"
+    }
+  ],
+  "metadata": {
+    "constraint": [
+      {
+        "id": 8,
+        "name": "user_key",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "User"
+        ],
+        "properties": [
+          "key"
+        ],
+        "ownedIndex": "user_key",
+        "propertyType": null
+      }
+    ],
+    "index": [
+      {
+        "label": "User",
+        "properties": [
+          "label"
+        ],
+        "size": 20405,
+        "type": "RANGE",
+        "valuesSelectivity": 0.924234256309728,
+        "distinctValues": 18859.0
+      },
+      {
+        "label": "User",
+        "properties": [
+          "key"
+        ],
+        "size": 20405,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 20405.0
+      }
+    ]
+  }
+}

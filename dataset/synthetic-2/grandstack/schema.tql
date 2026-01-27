@@ -1,0 +1,51 @@
+define
+  attribute address value string;
+  attribute location value string;
+  attribute city value string;
+  attribute state value string;
+  attribute business_id value string;
+  attribute name value string;
+  attribute user_id value string;
+  attribute date value datetime;
+  attribute text value string;
+  attribute stars value double;
+  attribute review_id value string;
+
+  entity business,
+    owns address,
+    owns location,
+    owns city,
+    owns state,
+    owns business_id @key,
+    owns name,
+    plays in_category:business,
+    plays reviews:reviewed_business;
+
+  entity user,
+    owns name,
+    owns user_id @key,
+    plays wrote:author;
+
+  entity review,
+    owns date,
+    owns text,
+    owns stars,
+    owns review_id @key,
+    plays wrote:review,
+    plays reviews:review;
+
+  entity category,
+    owns name @key,
+    plays in_category:category;
+
+  relation in_category,
+    relates business,
+    relates category;
+
+  relation wrote,
+    relates author,
+    relates review;
+
+  relation reviews,
+    relates review,
+    relates reviewed_business;

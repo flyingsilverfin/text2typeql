@@ -1,0 +1,33 @@
+define
+  # Attributes
+  attribute handle value string;
+  attribute user_key value string;
+  attribute x_coordinate value double;
+  attribute y_coordinate value double;
+  attribute color value string;
+  attribute area value double;
+  attribute size value double;
+  attribute weight value double;
+  attribute og_weight value integer;
+  attribute interaction_key value string;
+
+  # Entities
+  entity user,
+    owns handle,
+    owns user_key @key,
+    owns x_coordinate,
+    owns y_coordinate,
+    owns color,
+    owns area,
+    owns size,
+    plays interacted:source_user,
+    plays interacted:target_user;
+
+  # Relations
+  relation interacted,
+    relates source_user,
+    relates target_user,
+    owns weight,
+    owns og_weight,
+    owns size,
+    owns interaction_key;

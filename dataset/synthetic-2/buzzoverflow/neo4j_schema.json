@@ -1,0 +1,348 @@
+{
+  "node_props": {
+    "Question": [
+      {
+        "property": "favorites",
+        "type": "INTEGER",
+        "values": [
+          "0"
+        ]
+      },
+      {
+        "property": "answered",
+        "type": "BOOLEAN"
+      },
+      {
+        "property": "text",
+        "type": "STRING",
+        "values": [
+          "### This is:\r\nBug\r\n\r\n### Specifications\r\nOS: Win10",
+          "I was trying to create subscription using the libr",
+          "Using GraphQL with React and Drupal is pretty inte",
+          "Here&#39;s the data:\r\n\r\n[![enter image description",
+          "I have sensor that can sense 20 different things: "
+        ]
+      },
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "https://stackoverflow.com/questions/62224586/playg",
+          "https://stackoverflow.com/questions/62222652/graph",
+          "https://stackoverflow.com/questions/62222021/react",
+          "https://stackoverflow.com/questions/62220732/graph",
+          "https://stackoverflow.com/questions/62220505/using"
+        ]
+      },
+      {
+        "property": "createdAt",
+        "type": "DATE_TIME",
+        "min": "2020-06-05T16:57:19Z",
+        "max": "2020-06-05T21:49:16Z",
+        "distinct_count": 5
+      },
+      {
+        "property": "title",
+        "type": "STRING",
+        "values": [
+          "Playground is not loading with apollo-server-lambd",
+          "GraphQL subscription delay on first time",
+          "React w/ Apollo &amp; Drupal nodeQuery - how to de",
+          "GraphQL query giving me a a &quot;Cannot return nu",
+          "Using GraphQLResolveInfo in resolver"
+        ]
+      },
+      {
+        "property": "id",
+        "type": "INTEGER",
+        "min": "62220505",
+        "max": "62224586",
+        "distinct_count": 5
+      },
+      {
+        "property": "upVotes",
+        "type": "INTEGER",
+        "values": [
+          "0"
+        ]
+      },
+      {
+        "property": "score",
+        "type": "INTEGER",
+        "values": [
+          "-1",
+          "0"
+        ]
+      },
+      {
+        "property": "downVotes",
+        "type": "INTEGER",
+        "values": [
+          "1",
+          "0"
+        ]
+      }
+    ],
+    "Tag": [
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "aws-lambda",
+          "graphql",
+          "apollo",
+          "node.js",
+          "graphql-subscriptions",
+          "drupal-8",
+          "react-apollo",
+          "apollo-client",
+          "angular",
+          "angular8"
+        ],
+        "distinct_count": 1554
+      }
+    ],
+    "User": [
+      {
+        "property": "image",
+        "type": "STRING",
+        "values": [
+          "https://lh3.googleusercontent.com/-NcFYSuXU0nk/AAA",
+          "https://lh3.googleusercontent.com/a-/AOh14GgivQVqM",
+          "https://www.gravatar.com/avatar/abe65349ae3d314fa8",
+          "https://www.gravatar.com/avatar/57254856adf547299e",
+          "https://www.gravatar.com/avatar/d0446727d4eb365b07",
+          "https://www.gravatar.com/avatar/9c46e1aafdd2001f4b",
+          "https://lh3.googleusercontent.com/-m6PWf40GPuc/AAA",
+          "https://www.gravatar.com/avatar/b988693ff42463c94f",
+          "https://i.stack.imgur.com/TvsSL.png?s=128&g=1",
+          "https://i.stack.imgur.com/UH76y.jpg?s=128&g=1"
+        ],
+        "distinct_count": 6894
+      },
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "https://stackoverflow.com/users/10251021/alexandre",
+          "https://stackoverflow.com/users/13065972/abhijith-",
+          "https://stackoverflow.com/users/1429803/anthony-ga",
+          "https://stackoverflow.com/users/2957975/darkmatter",
+          "https://stackoverflow.com/users/2799999/gad0lin",
+          "https://stackoverflow.com/users/7075699/huy-nguyen",
+          "https://stackoverflow.com/users/11930438/muhammad-",
+          "https://stackoverflow.com/users/11971463/john-doe",
+          "https://stackoverflow.com/users/10129053/mrpbennet",
+          "https://stackoverflow.com/users/646334/chux"
+        ],
+        "distinct_count": 6947
+      },
+      {
+        "property": "id",
+        "type": "INTEGER",
+        "min": "751",
+        "max": "13681006",
+        "distinct_count": 6947
+      },
+      {
+        "property": "reputation",
+        "type": "INTEGER",
+        "min": "1",
+        "max": "420137",
+        "distinct_count": 2315
+      },
+      {
+        "property": "display_name",
+        "type": "STRING",
+        "values": [
+          "Alexandre Le",
+          "Abhijith v",
+          "anthony galligani",
+          "Darkmatter5",
+          "gad0lin",
+          "Huy Nguyen",
+          "Muhammad Usama Malik",
+          "John Doe",
+          "mrpbennett",
+          "Chux"
+        ],
+        "distinct_count": 6719
+      }
+    ]
+  },
+  "rel_props": {},
+  "relationships": [
+    {
+      "start": "Question",
+      "type": "TAGGED",
+      "end": "Tag"
+    },
+    {
+      "start": "User",
+      "type": "ASKED",
+      "end": "Question"
+    }
+  ],
+  "metadata": {
+    "constraint": [
+      {
+        "id": 61,
+        "name": "constraint_47e7f15d",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "User"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_47e7f15d",
+        "propertyType": null
+      },
+      {
+        "id": 59,
+        "name": "constraint_64b1b1cf",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Tag"
+        ],
+        "properties": [
+          "name"
+        ],
+        "ownedIndex": "constraint_64b1b1cf",
+        "propertyType": null
+      },
+      {
+        "id": 65,
+        "name": "constraint_939b067a",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Answer"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_939b067a",
+        "propertyType": null
+      },
+      {
+        "id": 63,
+        "name": "constraint_f06c84a5",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Question"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_f06c84a5",
+        "propertyType": null
+      }
+    ],
+    "index": [
+      {
+        "label": "Answer",
+        "properties": [
+          "id"
+        ],
+        "size": 0,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 0.0
+      },
+      {
+        "label": "Answer",
+        "properties": [
+          "createdAt"
+        ],
+        "size": 0,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 0.0
+      },
+      {
+        "label": "Question",
+        "properties": [
+          "createdAt"
+        ],
+        "size": 10000,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 10000.0
+      },
+      {
+        "label": "Question",
+        "properties": [
+          "text"
+        ],
+        "size": 0,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 0.0
+      },
+      {
+        "label": "Question",
+        "properties": [
+          "title"
+        ],
+        "size": 10000,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 10000.0
+      },
+      {
+        "label": "Question",
+        "properties": [
+          "id"
+        ],
+        "size": 10000,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 10000.0
+      },
+      {
+        "label": "Tag",
+        "properties": [
+          "name"
+        ],
+        "size": 1554,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 1554.0
+      },
+      {
+        "label": "User",
+        "properties": [
+          "display_name"
+        ],
+        "size": 6947,
+        "type": "RANGE",
+        "valuesSelectivity": 0.9671800777313948,
+        "distinctValues": 6719.0
+      },
+      {
+        "label": "User",
+        "properties": [
+          "name"
+        ],
+        "size": 0,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 0.0
+      },
+      {
+        "label": "User",
+        "properties": [
+          "id"
+        ],
+        "size": 6947,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 6947.0
+      }
+    ]
+  }
+}

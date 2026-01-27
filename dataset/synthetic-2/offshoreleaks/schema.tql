@@ -1,0 +1,238 @@
+define
+  # Shared attributes (used by multiple entity types)
+  attribute name value string;
+  attribute countries value string;
+  attribute country_codes value string;
+  attribute valid_until value string;
+  attribute source_id value string;
+  attribute node_id value integer;
+  attribute address value string;
+  attribute status value string;
+  attribute last_edit_timestamp value string;
+  attribute internal_id value string;
+  attribute incorporation_date value string;
+  attribute struck_off_date value string;
+  attribute jurisdiction value string;
+  attribute jurisdiction_description value string;
+  attribute note value string;
+  attribute closed_date value string;
+  attribute entity_type value string;
+
+  # Entity-specific attributes
+  attribute ibc_ruc value string;
+  attribute service_provider value string;
+  attribute inactivation_date value string;
+  attribute original_name value string;
+  attribute former_name value string;
+  attribute company_type value string;
+  attribute tax_stat_description value string;
+  attribute dorm_date value string;
+  attribute company_number value string;
+  attribute comments value string;
+  attribute entity_number value string;
+
+  # Officer-specific attributes
+  attribute icij_id value string;
+
+  # Address-specific attributes
+  attribute original_address value string;
+  attribute address_id value string;
+  attribute country_code value string;
+  attribute country value string;
+
+  # Other-specific attributes (none beyond shared)
+
+  # Intermediary-specific attributes
+  attribute registered_office value string;
+
+  # Relation attributes
+  attribute link value string;
+  attribute start_date value string;
+  attribute end_date value string;
+
+  # Entities
+  entity offshore_entity,
+    owns name,
+    owns countries,
+    owns country_codes,
+    owns valid_until,
+    owns source_id,
+    owns node_id @key,
+    owns address,
+    owns status,
+    owns last_edit_timestamp,
+    owns internal_id,
+    owns incorporation_date,
+    owns struck_off_date,
+    owns jurisdiction,
+    owns jurisdiction_description,
+    owns note,
+    owns closed_date,
+    owns entity_type,
+    owns ibc_ruc,
+    owns service_provider,
+    owns inactivation_date,
+    owns original_name,
+    owns former_name,
+    owns company_type,
+    owns tax_stat_description,
+    owns dorm_date,
+    owns company_number,
+    owns comments,
+    owns entity_number,
+    plays same_as:same_as_source,
+    plays same_as:same_as_target,
+    plays registered_address:registrant,
+    plays same_company_as:company1,
+    plays same_company_as:company2,
+    plays same_name_as:named_source,
+    plays same_name_as:named_target,
+    plays intermediary_of:offshore_entity,
+    plays officer_of:offshore_entity,
+    plays connected_to:connected_entity;
+
+  entity intermediary,
+    owns name,
+    owns countries,
+    owns country_codes,
+    owns valid_until,
+    owns source_id,
+    owns node_id @key,
+    owns address,
+    owns status,
+    owns last_edit_timestamp,
+    owns internal_id,
+    owns registered_office,
+    plays intermediary_of:intermediary,
+    plays registered_address:registrant,
+    plays officer_of:officer,
+    plays similar:similar_source,
+    plays similar:similar_target,
+    plays same_name_as:named_source,
+    plays same_name_as:named_target,
+    plays same_as:same_as_source;
+
+  entity officer,
+    owns name,
+    owns countries,
+    owns country_codes,
+    owns valid_until,
+    owns source_id,
+    owns node_id @key,
+    owns last_edit_timestamp,
+    owns icij_id,
+    owns note,
+    plays officer_of:officer,
+    plays registered_address:registrant,
+    plays similar:similar_source,
+    plays similar:similar_target,
+    plays same_name_as:named_source,
+    plays same_name_as:named_target,
+    plays same_as:same_as_target,
+    plays connected_to:connector,
+    plays same_id_as:id_source,
+    plays same_id_as:id_target;
+
+  entity postal_address,
+    owns name,
+    owns countries,
+    owns country_codes,
+    owns valid_until,
+    owns source_id,
+    owns node_id @key,
+    owns address,
+    owns last_edit_timestamp,
+    owns original_address,
+    owns icij_id,
+    owns address_id,
+    owns country_code,
+    owns country,
+    plays registered_address:registered_addr,
+    plays same_as:same_as_source,
+    plays same_as:same_as_target;
+
+  entity other,
+    owns name,
+    owns countries,
+    owns country_codes,
+    owns valid_until,
+    owns source_id,
+    owns node_id @key,
+    owns last_edit_timestamp,
+    owns incorporation_date,
+    owns struck_off_date,
+    owns jurisdiction,
+    owns jurisdiction_description,
+    owns note,
+    owns closed_date,
+    owns entity_type,
+    plays registered_address:registrant,
+    plays connected_to:connector,
+    plays same_name_as:named_source,
+    plays same_name_as:named_target,
+    plays officer_of:offshore_entity;
+
+  # Relations
+  relation same_as,
+    relates same_as_source,
+    relates same_as_target,
+    owns link;
+
+  relation registered_address,
+    relates registrant,
+    relates registered_addr,
+    owns link,
+    owns source_id,
+    owns valid_until;
+
+  relation same_company_as,
+    relates company1,
+    relates company2,
+    owns link,
+    owns source_id,
+    owns valid_until;
+
+  relation same_name_as,
+    relates named_source,
+    relates named_target,
+    owns link,
+    owns source_id,
+    owns valid_until;
+
+  relation intermediary_of,
+    relates intermediary,
+    relates offshore_entity,
+    owns link,
+    owns source_id,
+    owns valid_until,
+    owns start_date,
+    owns end_date;
+
+  relation officer_of,
+    relates officer,
+    relates offshore_entity,
+    owns link,
+    owns source_id,
+    owns valid_until,
+    owns start_date,
+    owns end_date,
+    owns status;
+
+  relation similar,
+    relates similar_source,
+    relates similar_target,
+    owns link;
+
+  relation connected_to,
+    relates connector,
+    relates connected_entity,
+    owns link,
+    owns source_id,
+    owns valid_until;
+
+  relation same_id_as,
+    relates id_source,
+    relates id_target,
+    owns link,
+    owns source_id,
+    owns valid_until;

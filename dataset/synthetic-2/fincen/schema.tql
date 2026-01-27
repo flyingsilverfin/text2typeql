@@ -1,0 +1,99 @@
+define
+  # Attributes
+  attribute name value string;
+  attribute code value string;
+  attribute tld value string;
+  attribute filing_id value string;
+  attribute entity_id value string;
+  attribute country_code value string;
+  attribute period_begin value datetime;
+  attribute period_end value datetime;
+  attribute originator_bank_id value string;
+  attribute sar_id value string;
+  attribute beneficiary_bank value string;
+  attribute filer_org_name_id value string;
+  attribute originator_bank_country value string;
+  attribute beneficiary_bank_country value string;
+  attribute filer_org_name value string;
+  attribute originator_iso value string;
+  attribute beneficiary_bank_id value string;
+  attribute origin_lat value string;
+  attribute origin_lng value string;
+  attribute end_date_format value string;
+  attribute begin_date_format value string;
+  attribute originator_bank value string;
+  attribute beneficiary_lat value string;
+  attribute beneficiary_iso value string;
+  attribute beneficiary_lng value string;
+  attribute begin_date value string;
+  attribute end_date value string;
+  attribute amount value integer;
+  attribute number value integer;
+
+  # Entities
+  entity country,
+    owns name,
+    owns code @key,
+    owns tld,
+    plays entity_country:country;
+
+  entity filing,
+    owns filing_id @key,
+    owns period_begin,
+    owns period_end,
+    owns originator_bank_id,
+    owns sar_id,
+    owns beneficiary_bank,
+    owns filer_org_name_id,
+    owns originator_bank_country,
+    owns beneficiary_bank_country,
+    owns filer_org_name,
+    owns originator_iso,
+    owns beneficiary_bank_id,
+    owns origin_lat,
+    owns origin_lng,
+    owns end_date_format,
+    owns begin_date_format,
+    owns originator_bank,
+    owns beneficiary_lat,
+    owns beneficiary_iso,
+    owns beneficiary_lng,
+    owns begin_date,
+    owns end_date,
+    owns amount,
+    owns number,
+    plays benefits:filing,
+    plays concerns:filing,
+    plays originator:filing,
+    plays filed:filing;
+
+  entity fincen_entity,
+    owns entity_id @key,
+    owns name,
+    owns country_code,
+    plays benefits:beneficiary,
+    plays concerns:concerned_entity,
+    plays originator:originating_entity,
+    plays filed:filer,
+    plays entity_country:fincen_entity;
+
+  # Relations
+  relation benefits,
+    relates filing,
+    relates beneficiary;
+
+  relation concerns,
+    relates filing,
+    relates concerned_entity;
+
+  relation originator,
+    relates filing,
+    relates originating_entity;
+
+  relation filed,
+    relates filer,
+    relates filing;
+
+  relation entity_country,
+    relates fincen_entity,
+    relates country;

@@ -1,0 +1,1428 @@
+{
+  "node_props": {
+    "Entity": [
+      {
+        "property": "countries",
+        "type": "STRING",
+        "values": [
+          "Hong Kong"
+        ]
+      },
+      {
+        "property": "ibcRUC",
+        "type": "STRING",
+        "values": [
+          "25221",
+          "25249",
+          "24138",
+          "24012",
+          "R25638"
+        ]
+      },
+      {
+        "property": "valid_until",
+        "type": "STRING",
+        "values": [
+          "The Panama Papers data is current through 2015"
+        ]
+      },
+      {
+        "property": "country_codes",
+        "type": "STRING",
+        "values": [
+          "HKG"
+        ]
+      },
+      {
+        "property": "service_provider",
+        "type": "STRING",
+        "values": [
+          "Appleby",
+          "Portcullis Trustnet",
+          "Mossack Fonseca",
+          "Commonwealth Trust Limited"
+        ],
+        "distinct_count": 4
+      },
+      {
+        "property": "address",
+        "type": "STRING",
+        "values": [
+          "ORION HOUSE SERVICES (HK) LIMITED ROOM 1401; 14/F.",
+          "LOYAL PORT LIMITED 8/F; CRAWFORD TOWER 99 JERVOIS "
+        ]
+      },
+      {
+        "property": "inactivation_date",
+        "type": "STRING",
+        "values": [
+          "18-FEB-2013",
+          "27-FEB-2014",
+          "15-FEB-2012",
+          "16-FEB-2009",
+          "15-MAY-2009"
+        ]
+      },
+      {
+        "property": "struck_off_date",
+        "type": "STRING",
+        "values": [
+          "15-FEB-2013",
+          "15-FEB-2014",
+          "15-FEB-2012",
+          "15-FEB-2009",
+          "15-FEB-2008"
+        ]
+      },
+      {
+        "property": "status",
+        "type": "STRING",
+        "values": [
+          "Defaulted",
+          "Changed agent"
+        ]
+      },
+      {
+        "property": "jurisdiction_description",
+        "type": "STRING",
+        "values": [
+          "Samoa"
+        ]
+      },
+      {
+        "property": "incorporation_date",
+        "type": "STRING",
+        "values": [
+          "23-MAR-2006",
+          "27-MAR-2006",
+          "10-JAN-2006",
+          "06-JAN-2006",
+          "19-APR-2006"
+        ]
+      },
+      {
+        "property": "original_name",
+        "type": "STRING",
+        "values": [
+          "TIANSHENG INDUSTRY AND TRADING CO., LTD.",
+          "NINGBO SUNRISE ENTERPRISES UNITED CO., LTD.",
+          "HOTFOCUS CO., LTD.",
+          "SKY-BLUE GIFTS & TOYS CO., LTD.",
+          "FORTUNEMAKER INVESTMENTS CORPORATION"
+        ]
+      },
+      {
+        "property": "jurisdiction",
+        "type": "STRING",
+        "values": [
+          "SAM"
+        ]
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "TIANSHENG INDUSTRY AND TRADING CO., LTD.",
+          "NINGBO SUNRISE ENTERPRISES UNITED CO., LTD.",
+          "HOTFOCUS CO., LTD.",
+          "SKY-BLUE GIFTS & TOYS CO., LTD.",
+          "FORTUNEMAKER INVESTMENTS CORPORATION"
+        ]
+      },
+      {
+        "property": "internal_id",
+        "type": "STRING",
+        "values": [
+          "1001256",
+          "1001263",
+          "1000896",
+          "1000914",
+          "1001266"
+        ]
+      },
+      {
+        "property": "lastEditTimestamp",
+        "type": "STRING",
+        "values": [
+          "1638311020926"
+        ]
+      },
+      {
+        "property": "node_id",
+        "type": "INTEGER",
+        "min": "10000001",
+        "max": "10000005",
+        "distinct_count": 5
+      },
+      {
+        "property": "sourceID",
+        "type": "STRING",
+        "values": [
+          "Panama Papers"
+        ]
+      },
+      {
+        "property": "former_name",
+        "type": "STRING",
+        "values": []
+      },
+      {
+        "property": "company_type",
+        "type": "STRING",
+        "values": []
+      },
+      {
+        "property": "tax_stat_description",
+        "type": "STRING",
+        "values": []
+      },
+      {
+        "property": "note",
+        "type": "STRING",
+        "values": []
+      },
+      {
+        "property": "dorm_date",
+        "type": "STRING",
+        "values": []
+      },
+      {
+        "property": "type",
+        "type": "STRING",
+        "values": []
+      },
+      {
+        "property": "closed_date",
+        "type": "STRING",
+        "values": []
+      },
+      {
+        "property": "company_number",
+        "type": "STRING",
+        "values": []
+      },
+      {
+        "property": "comments",
+        "type": "STRING",
+        "values": []
+      },
+      {
+        "property": "entity_number",
+        "type": "STRING",
+        "values": []
+      }
+    ],
+    "Intermediary": [
+      {
+        "property": "countries",
+        "type": "STRING",
+        "values": [
+          "South Africa",
+          "Liechtenstein",
+          "Monaco",
+          "Belgium",
+          "Lebanon"
+        ]
+      },
+      {
+        "property": "lastEditTimestamp",
+        "type": "STRING",
+        "values": [
+          "1638311034131"
+        ]
+      },
+      {
+        "property": "address",
+        "type": "STRING",
+        "values": [
+          "MICHAEL PAPAGEORGE; MR. 106 NICHOLSON STREET BROOK",
+          ""
+        ]
+      },
+      {
+        "property": "valid_until",
+        "type": "STRING",
+        "values": [
+          "The Panama Papers  data is current through 2015"
+        ]
+      },
+      {
+        "property": "country_codes",
+        "type": "STRING",
+        "values": [
+          "ZAF",
+          "LIE",
+          "MCO",
+          "BEL",
+          "LBN"
+        ]
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "MICHAEL PAPAGEORGE, MR.",
+          "CORFIDUCIA ANSTALT",
+          "DAVID, RONALD",
+          "DE  BOUTSELIS, JEAN-PIERRE",
+          "THE LEVANT LAWYERS (TLL)"
+        ]
+      },
+      {
+        "property": "status",
+        "type": "STRING",
+        "values": [
+          "UNRECOVERABLE ACCOUNTS",
+          "CLIENT IN REPRESENTATIVE TERRITORY",
+          "ACTIVE",
+          "INACTIVE",
+          "SUSPENDED",
+          "DELINQUENT",
+          "PROSPECT",
+          "SUSPENDED LEGAL",
+          "ACTIVE LEGAL"
+        ],
+        "distinct_count": 9
+      },
+      {
+        "property": "node_id",
+        "type": "INTEGER",
+        "min": "11000001",
+        "max": "11000005",
+        "distinct_count": 5
+      },
+      {
+        "property": "sourceID",
+        "type": "STRING",
+        "values": [
+          "Pandora Papers - Alem\u00e1n, Cordero, Galindo & Lee (Alcogal)",
+          "Paradise Papers - Appleby",
+          "Paradise Papers - Barbados corporate registry",
+          "Bahamas Leaks",
+          "Panama Papers",
+          "Paradise Papers - Nevis corporate registry",
+          "Paradise Papers - Bahamas corporate registry",
+          "Offshore Leaks",
+          "Paradise Papers - Aruba corporate registry"
+        ],
+        "distinct_count": 9
+      },
+      {
+        "property": "internal_id",
+        "type": "STRING",
+        "values": [
+          "10001",
+          "10004",
+          "10014",
+          "10015",
+          "10029"
+        ]
+      },
+      {
+        "property": "registered_office",
+        "type": "STRING",
+        "values": []
+      }
+    ],
+    "Officer": [
+      {
+        "property": "valid_until",
+        "type": "STRING",
+        "values": [
+          "The Panama Papers data is current through 2015"
+        ]
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "KIM SOO IN",
+          "Tian Yuan",
+          "GREGORY JOHN SOLOMON",
+          "MATSUDA MASUMI",
+          "HO THUY NGA"
+        ]
+      },
+      {
+        "property": "sourceID",
+        "type": "STRING",
+        "values": [
+          "Panama Papers"
+        ]
+      },
+      {
+        "property": "icij_id",
+        "type": "STRING",
+        "values": [
+          "E72326DEA50F1A9C2876E112AAEB42BC",
+          "58287E0FD37852000D9D5AB8B27A2581",
+          "F476011509FD5C2EF98E9B1D74913CCE",
+          "974F420B2324A23EAF46F20E178AF52C",
+          "06A0FC92656D09F63D966FE7BD076A45"
+        ]
+      },
+      {
+        "property": "node_id",
+        "type": "INTEGER",
+        "min": "12000001",
+        "max": "12000005",
+        "distinct_count": 5
+      },
+      {
+        "property": "lastEditTimestamp",
+        "type": "STRING",
+        "values": [
+          "1638311034062"
+        ]
+      },
+      {
+        "property": "country_codes",
+        "type": "STRING",
+        "values": [
+          "KOR",
+          "CHN",
+          "AUS",
+          "JPN",
+          "VNM"
+        ]
+      },
+      {
+        "property": "countries",
+        "type": "STRING",
+        "values": [
+          "South Korea",
+          "China",
+          "Australia",
+          "Japan",
+          "Viet Nam"
+        ]
+      },
+      {
+        "property": "note",
+        "type": "STRING",
+        "values": []
+      }
+    ],
+    "Address": [
+      {
+        "property": "original_address",
+        "type": "STRING",
+        "values": [
+          "ANNEX FREDERICK & SHIRLEY STS, P. O. BOX N-4805 NA",
+          "SUITE E-2,UNION COURT BUILDING, P. O. BOX N-8188 N",
+          "Lyford Cay House, Lyford Cay, P. O. BOX N-7785 NAS",
+          "P.O. BOX N-3708 BAHAMAS FINANCIAL CENTRE, P. O. BO",
+          "LYFORD CAY HOUSE, 3rd Floor, Lyford Cay, P. O. BOX"
+        ]
+      },
+      {
+        "property": "lastEditTimestamp",
+        "type": "STRING",
+        "values": [
+          "1638311020926"
+        ]
+      },
+      {
+        "property": "countries",
+        "type": "STRING",
+        "values": [
+          "Bahamas"
+        ]
+      },
+      {
+        "property": "address",
+        "type": "STRING",
+        "values": [
+          "ANNEX FREDERICK & SHIRLEY STS, P.O. BOX N-4805, NA",
+          "SUITE E-2,UNION COURT BUILDING, P.O. BOX N-8188, N",
+          "LYFORD CAY HOUSE, LYFORD CAY, P.O. BOX N-7785, NAS",
+          "P.O. BOX N-3708 BAHAMAS FINANCIAL CENTRE, P.O. BOX",
+          "LYFORD CAY HOUSE, 3RD FLOOR, LYFORD CAY, P.O. BOX "
+        ]
+      },
+      {
+        "property": "valid_until",
+        "type": "STRING",
+        "values": [
+          "The Bahamas Leaks data is current through early 20"
+        ]
+      },
+      {
+        "property": "icij_id",
+        "type": "STRING",
+        "values": [
+          "7C1AAD6896EFDED57D680B82E7ADF7AB",
+          "5CF92908D511A6A0F283B19EC3CFCBBA",
+          "ADA3C3D869753691DEA39AABCA652C86",
+          "900FA9A4DA30ED6C0B1AF471CA90F40C",
+          "C921353C797A114D3641EE4AB3CCA747"
+        ]
+      },
+      {
+        "property": "node_id",
+        "type": "INTEGER",
+        "min": "24000001",
+        "max": "24000005",
+        "distinct_count": 5
+      },
+      {
+        "property": "sourceID",
+        "type": "STRING",
+        "values": [
+          "Bahamas Leaks"
+        ]
+      },
+      {
+        "property": "country_codes",
+        "type": "STRING",
+        "values": [
+          "BHS"
+        ]
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": []
+      },
+      {
+        "property": "addressID",
+        "type": "STRING",
+        "values": []
+      },
+      {
+        "property": "country_code",
+        "type": "STRING",
+        "values": []
+      },
+      {
+        "property": "country",
+        "type": "STRING",
+        "values": []
+      }
+    ],
+    "Other": [
+      {
+        "property": "lastEditTimestamp",
+        "type": "STRING",
+        "values": [
+          "1638311068329",
+          "1638311074502",
+          "1638311074946",
+          "1638311075268",
+          "1638311075503"
+        ],
+        "distinct_count": 5
+      },
+      {
+        "property": "incorporation_date",
+        "type": "STRING",
+        "values": [
+          "18-MAY-1983",
+          "28-JUN-1989",
+          "19-JUL-1989",
+          "27-JUL-1989",
+          "01-AUG-1989",
+          "18-AUG-1989",
+          "22-AUG-1989",
+          "29-AUG-1989",
+          "04-SEP-1989",
+          "29-SEP-1988"
+        ],
+        "distinct_count": 834
+      },
+      {
+        "property": "struck_off_date",
+        "type": "STRING",
+        "values": [
+          "31-DEC-2002",
+          "24-JUL-2000",
+          "23-APR-2009",
+          "22-OCT-1996",
+          "30-DEC-2005",
+          "26-AUG-2005",
+          "31-DEC-1999",
+          "22-FEB-2005",
+          "10-SEP-2003",
+          "31-DEC-2000"
+        ],
+        "distinct_count": 39
+      },
+      {
+        "property": "jurisdiction",
+        "type": "STRING",
+        "values": [
+          "AW"
+        ],
+        "distinct_count": 1
+      },
+      {
+        "property": "jurisdiction_description",
+        "type": "STRING",
+        "values": [
+          "Aruba"
+        ],
+        "distinct_count": 1
+      },
+      {
+        "property": "valid_until",
+        "type": "STRING",
+        "values": [
+          "Aruba corporate registry data is current through 2",
+          "Appleby data is current through 2014"
+        ],
+        "distinct_count": 2
+      },
+      {
+        "property": "sourceID",
+        "type": "STRING",
+        "values": [
+          "Paradise Papers - Aruba corporate registry",
+          "Paradise Papers - Appleby"
+        ],
+        "distinct_count": 2
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "ANTAM ENTERPRISES N.V.",
+          "DEVIATION N.V.",
+          "ARIAZI N.V.",
+          "FLAIRUBA N.V.",
+          "S.L. ARUBA FISHERIES TRADING N.V.",
+          "PALCOHI ARUBA N.V.",
+          "CHEECHO (ARUBA) N.V.",
+          "WINTERGARDEN N.V.",
+          "CRUKEL (ARUBA) II N.V.",
+          "CARAMBOLA N.V."
+        ],
+        "distinct_count": 2892
+      },
+      {
+        "property": "type",
+        "type": "STRING",
+        "values": [
+          "LIMITED LIABILITY COMPANY",
+          "SOLE OWNERSHIP",
+          "FOREIGN FORMED CORPORATION"
+        ],
+        "distinct_count": 3
+      },
+      {
+        "property": "node_id",
+        "type": "INTEGER",
+        "min": "80000012",
+        "max": "85050056",
+        "distinct_count": 2919
+      },
+      {
+        "property": "closed_date",
+        "type": "STRING",
+        "values": [
+          "28-NOV-2012",
+          "19-MAY-2004",
+          "29-OCT-2007",
+          "05-SEP-2016",
+          "18-DEC-2007",
+          "22-DEC-1999",
+          "04-DEC-2002",
+          "03-MAR-2010",
+          "08-APR-2011",
+          "22-JUN-1999"
+        ],
+        "distinct_count": 112
+      },
+      {
+        "property": "note",
+        "type": "STRING",
+        "values": [
+          "Closed date stands for Cancelled date.",
+          "Closed date stands for Liquidation date."
+        ],
+        "distinct_count": 2
+      },
+      {
+        "property": "countries",
+        "type": "STRING",
+        "values": [
+          "Bermuda;Isle of Man",
+          "Cayman Islands",
+          "Isle of Man",
+          "Isle of Man;United Kingdom",
+          "Bahrain",
+          "Guernsey",
+          "Latvia",
+          "British Virgin Islands;Isle of Man",
+          "Mauritius",
+          "British Virgin Islands"
+        ],
+        "distinct_count": 63
+      },
+      {
+        "property": "country_codes",
+        "type": "STRING",
+        "values": [
+          "BMU;IMN",
+          "CYM",
+          "IMN",
+          "IMN;GBR",
+          "BHR",
+          "GGY",
+          "LVA",
+          "VGB;IMN",
+          "MUS",
+          "VGB"
+        ],
+        "distinct_count": 63
+      }
+    ]
+  },
+  "rel_props": {
+    "registered_address": [
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "registered address"
+        ]
+      },
+      {
+        "property": "sourceID",
+        "type": "STRING",
+        "values": [
+          "Panama Papers"
+        ]
+      },
+      {
+        "property": "valid_until",
+        "type": "STRING",
+        "values": []
+      }
+    ],
+    "intermediary_of": [
+      {
+        "property": "valid_until",
+        "type": "STRING",
+        "values": [
+          "The Panama Papers data is current through 2015"
+        ]
+      },
+      {
+        "property": "sourceID",
+        "type": "STRING",
+        "values": [
+          "Panama Papers"
+        ]
+      },
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "intermediary of"
+        ]
+      },
+      {
+        "property": "end_date",
+        "type": "STRING",
+        "values": []
+      },
+      {
+        "property": "start_date",
+        "type": "STRING",
+        "values": []
+      }
+    ],
+    "officer_of": [
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "shareholder of"
+        ]
+      },
+      {
+        "property": "valid_until",
+        "type": "STRING",
+        "values": [
+          "The Panama Papers data is current through 2015"
+        ]
+      },
+      {
+        "property": "sourceID",
+        "type": "STRING",
+        "values": [
+          "Panama Papers"
+        ]
+      },
+      {
+        "property": "start_date",
+        "type": "STRING",
+        "values": [
+          "19-NOV-1999",
+          "30-MAR-2012",
+          "14-JAN-2010",
+          "23-JUL-2012",
+          "13-SEP-2010"
+        ]
+      },
+      {
+        "property": "end_date",
+        "type": "STRING",
+        "values": [
+          "04-JUL-2000",
+          "06-JUL-2012",
+          ""
+        ]
+      },
+      {
+        "property": "status",
+        "type": "STRING",
+        "values": []
+      }
+    ],
+    "similar": [
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "similar name and address as"
+        ]
+      }
+    ],
+    "same_as": [
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "same name and registration date as",
+          "same address as",
+          "same as"
+        ],
+        "distinct_count": 3
+      }
+    ],
+    "same_name_as": [
+      {
+        "property": "sourceID",
+        "type": "STRING",
+        "values": [
+          "Bahamas Leaks"
+        ]
+      },
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "same name as"
+        ]
+      },
+      {
+        "property": "valid_until",
+        "type": "STRING",
+        "values": [
+          "The Bahamas Leaks data is current through early 20"
+        ]
+      }
+    ],
+    "same_company_as": [
+      {
+        "property": "valid_until",
+        "type": "STRING",
+        "values": [
+          "The Bahamas Leaks data is current through early 20"
+        ]
+      },
+      {
+        "property": "sourceID",
+        "type": "STRING",
+        "values": [
+          "Bahamas Leaks"
+        ]
+      },
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "same company as"
+        ]
+      }
+    ],
+    "same_id_as": [
+      {
+        "property": "sourceID",
+        "type": "STRING",
+        "values": [
+          "Paradise Papers - Malta corporate registry"
+        ],
+        "distinct_count": 1
+      },
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "same id as"
+        ],
+        "distinct_count": 1
+      },
+      {
+        "property": "valid_until",
+        "type": "STRING",
+        "values": [
+          "Malta corporate registry data is current through 2"
+        ],
+        "distinct_count": 1
+      }
+    ],
+    "connected_to": [
+      {
+        "property": "valid_until",
+        "type": "STRING",
+        "values": [
+          "Aruba corporate registry data is current through 2"
+        ]
+      },
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "connected to"
+        ]
+      },
+      {
+        "property": "sourceID",
+        "type": "STRING",
+        "values": [
+          "Paradise Papers - Aruba corporate registry"
+        ]
+      }
+    ]
+  },
+  "relationships": [
+    {
+      "start": "Entity",
+      "type": "same_as",
+      "end": "Entity"
+    },
+    {
+      "start": "Entity",
+      "type": "registered_address",
+      "end": "Address"
+    },
+    {
+      "start": "Entity",
+      "type": "same_company_as",
+      "end": "Entity"
+    },
+    {
+      "start": "Entity",
+      "type": "same_name_as",
+      "end": "Other"
+    },
+    {
+      "start": "Entity",
+      "type": "same_name_as",
+      "end": "Entity"
+    },
+    {
+      "start": "Intermediary",
+      "type": "intermediary_of",
+      "end": "Entity"
+    },
+    {
+      "start": "Intermediary",
+      "type": "registered_address",
+      "end": "Address"
+    },
+    {
+      "start": "Intermediary",
+      "type": "officer_of",
+      "end": "Entity"
+    },
+    {
+      "start": "Intermediary",
+      "type": "similar",
+      "end": "Officer"
+    },
+    {
+      "start": "Intermediary",
+      "type": "same_name_as",
+      "end": "Intermediary"
+    },
+    {
+      "start": "Intermediary",
+      "type": "same_name_as",
+      "end": "Officer"
+    },
+    {
+      "start": "Intermediary",
+      "type": "same_as",
+      "end": "Officer"
+    },
+    {
+      "start": "Officer",
+      "type": "officer_of",
+      "end": "Entity"
+    },
+    {
+      "start": "Officer",
+      "type": "officer_of",
+      "end": "Other"
+    },
+    {
+      "start": "Officer",
+      "type": "registered_address",
+      "end": "Address"
+    },
+    {
+      "start": "Officer",
+      "type": "similar",
+      "end": "Officer"
+    },
+    {
+      "start": "Officer",
+      "type": "similar",
+      "end": "Intermediary"
+    },
+    {
+      "start": "Officer",
+      "type": "same_name_as",
+      "end": "Officer"
+    },
+    {
+      "start": "Officer",
+      "type": "connected_to",
+      "end": "Entity"
+    },
+    {
+      "start": "Officer",
+      "type": "same_id_as",
+      "end": "Officer"
+    },
+    {
+      "start": "Address",
+      "type": "same_as",
+      "end": "Address"
+    },
+    {
+      "start": "Other",
+      "type": "registered_address",
+      "end": "Address"
+    },
+    {
+      "start": "Other",
+      "type": "connected_to",
+      "end": "Entity"
+    },
+    {
+      "start": "Other",
+      "type": "same_name_as",
+      "end": "Entity"
+    },
+    {
+      "start": "Other",
+      "type": "same_name_as",
+      "end": "Officer"
+    },
+    {
+      "start": "Other",
+      "type": "same_name_as",
+      "end": "Other"
+    }
+  ],
+  "metadata": {
+    "constraint": [
+      {
+        "id": 91,
+        "name": "Address_node_id",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Address"
+        ],
+        "properties": [
+          "node_id"
+        ],
+        "ownedIndex": "Address_node_id",
+        "propertyType": null
+      },
+      {
+        "id": 99,
+        "name": "Entity_node_id",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Entity"
+        ],
+        "properties": [
+          "node_id"
+        ],
+        "ownedIndex": "Entity_node_id",
+        "propertyType": null
+      },
+      {
+        "id": 97,
+        "name": "Intermediary_node_id",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Intermediary"
+        ],
+        "properties": [
+          "node_id"
+        ],
+        "ownedIndex": "Intermediary_node_id",
+        "propertyType": null
+      },
+      {
+        "id": 93,
+        "name": "Officer_node_id",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Officer"
+        ],
+        "properties": [
+          "node_id"
+        ],
+        "ownedIndex": "Officer_node_id",
+        "propertyType": null
+      },
+      {
+        "id": 95,
+        "name": "Other_node_id",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Other"
+        ],
+        "properties": [
+          "node_id"
+        ],
+        "ownedIndex": "Other_node_id",
+        "propertyType": null
+      }
+    ],
+    "index": [
+      {
+        "label": "Address",
+        "properties": [
+          "countries"
+        ],
+        "size": 265805,
+        "type": "RANGE",
+        "valuesSelectivity": 0.0008916310829367393,
+        "distinctValues": 237.0
+      },
+      {
+        "label": "Address",
+        "properties": [
+          "country_codes"
+        ],
+        "size": 265805,
+        "type": "RANGE",
+        "valuesSelectivity": 0.0008276744229792517,
+        "distinctValues": 220.0
+      },
+      {
+        "label": "Address",
+        "properties": [
+          "sourceID"
+        ],
+        "size": 390995,
+        "type": "RANGE",
+        "valuesSelectivity": 3.0690929551528794e-05,
+        "distinctValues": 12.0
+      },
+      {
+        "label": "Address",
+        "properties": [
+          "lastEditTimestamp"
+        ],
+        "size": 390995,
+        "type": "RANGE",
+        "valuesSelectivity": 9.207278865458637e-05,
+        "distinctValues": 36.0
+      },
+      {
+        "label": "Address",
+        "properties": [
+          "node_id"
+        ],
+        "size": 390995,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 390995.0
+      },
+      {
+        "label": "Entity",
+        "properties": [
+          "struck_off_date"
+        ],
+        "size": 461101,
+        "type": "RANGE",
+        "valuesSelectivity": 0.01968332317648411,
+        "distinctValues": 9076.0
+      },
+      {
+        "label": "Entity",
+        "properties": [
+          "status"
+        ],
+        "size": 355454,
+        "type": "RANGE",
+        "valuesSelectivity": 0.00015191839169062665,
+        "distinctValues": 54.00000000000001
+      },
+      {
+        "label": "Entity",
+        "properties": [
+          "incorporation_date"
+        ],
+        "size": 785244,
+        "type": "RANGE",
+        "valuesSelectivity": 0.02362195699680609,
+        "distinctValues": 18549.0
+      },
+      {
+        "label": "Entity",
+        "properties": [
+          "inactivation_date"
+        ],
+        "size": 213647,
+        "type": "RANGE",
+        "valuesSelectivity": 0.03227754192663599,
+        "distinctValues": 6895.999999999999
+      },
+      {
+        "label": "Entity",
+        "properties": [
+          "service_provider"
+        ],
+        "size": 344086,
+        "type": "RANGE",
+        "valuesSelectivity": 1.1625000726562546e-05,
+        "distinctValues": 4.0
+      },
+      {
+        "label": "Entity",
+        "properties": [
+          "sourceID"
+        ],
+        "size": 802817,
+        "type": "RANGE",
+        "valuesSelectivity": 1.7438594349646306e-05,
+        "distinctValues": 13.999999999999998
+      },
+      {
+        "label": "Entity",
+        "properties": [
+          "jurisdiction"
+        ],
+        "size": 798965,
+        "type": "RANGE",
+        "valuesSelectivity": 0.00010012954259573323,
+        "distinctValues": 80.0
+      },
+      {
+        "label": "Entity",
+        "properties": [
+          "name"
+        ],
+        "size": 802792,
+        "type": "RANGE",
+        "valuesSelectivity": 0.959800296963597,
+        "distinctValues": 770520.0
+      },
+      {
+        "label": "Entity",
+        "properties": [
+          "lastEditTimestamp"
+        ],
+        "size": 802817,
+        "type": "RANGE",
+        "valuesSelectivity": 6.850876351646764e-05,
+        "distinctValues": 55.0
+      },
+      {
+        "label": "Entity",
+        "properties": [
+          "country_codes"
+        ],
+        "size": 501943,
+        "type": "RANGE",
+        "valuesSelectivity": 0.001924521310188607,
+        "distinctValues": 966.0
+      },
+      {
+        "label": "Entity",
+        "properties": [
+          "countries"
+        ],
+        "size": 501943,
+        "type": "RANGE",
+        "valuesSelectivity": 0.0019285058263587699,
+        "distinctValues": 968.0
+      },
+      {
+        "label": "Entity",
+        "properties": [
+          "node_id"
+        ],
+        "size": 802817,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 802817.0
+      },
+      {
+        "label": "Intermediary",
+        "properties": [
+          "lastEditTimestamp"
+        ],
+        "size": 26768,
+        "type": "RANGE",
+        "valuesSelectivity": 0.0007845188284518828,
+        "distinctValues": 21.0
+      },
+      {
+        "label": "Intermediary",
+        "properties": [
+          "countries"
+        ],
+        "size": 23154,
+        "type": "RANGE",
+        "valuesSelectivity": 0.012352077394834586,
+        "distinctValues": 286.0
+      },
+      {
+        "label": "Intermediary",
+        "properties": [
+          "country_codes"
+        ],
+        "size": 23154,
+        "type": "RANGE",
+        "valuesSelectivity": 0.012352077394834586,
+        "distinctValues": 286.0
+      },
+      {
+        "label": "Intermediary",
+        "properties": [
+          "status"
+        ],
+        "size": 12621,
+        "type": "RANGE",
+        "valuesSelectivity": 0.0007130972189208462,
+        "distinctValues": 9.0
+      },
+      {
+        "label": "Intermediary",
+        "properties": [
+          "name"
+        ],
+        "size": 26767,
+        "type": "RANGE",
+        "valuesSelectivity": 0.9559905854223484,
+        "distinctValues": 25589.0
+      },
+      {
+        "label": "Intermediary",
+        "properties": [
+          "sourceID"
+        ],
+        "size": 26768,
+        "type": "RANGE",
+        "valuesSelectivity": 0.00033622235505080696,
+        "distinctValues": 9.0
+      },
+      {
+        "label": "Intermediary",
+        "properties": [
+          "node_id"
+        ],
+        "size": 26768,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 26768.0
+      },
+      {
+        "label": "Officer",
+        "properties": [
+          "lastEditTimestamp"
+        ],
+        "size": 746949,
+        "type": "RANGE",
+        "valuesSelectivity": 7.497165134433543e-05,
+        "distinctValues": 56.0
+      },
+      {
+        "label": "Officer",
+        "properties": [
+          "country_codes"
+        ],
+        "size": 449598,
+        "type": "RANGE",
+        "valuesSelectivity": 0.009815435122042358,
+        "distinctValues": 4413.0
+      },
+      {
+        "label": "Officer",
+        "properties": [
+          "countries"
+        ],
+        "size": 449579,
+        "type": "RANGE",
+        "valuesSelectivity": 0.008423436148040723,
+        "distinctValues": 3787.0000000000005
+      },
+      {
+        "label": "Officer",
+        "properties": [
+          "name"
+        ],
+        "size": 746890,
+        "type": "RANGE",
+        "valuesSelectivity": 0.7020136834071952,
+        "distinctValues": 524327.0
+      },
+      {
+        "label": "Officer",
+        "properties": [
+          "sourceID"
+        ],
+        "size": 746949,
+        "type": "RANGE",
+        "valuesSelectivity": 1.8742912836083856e-05,
+        "distinctValues": 14.0
+      },
+      {
+        "label": "Officer",
+        "properties": [
+          "node_id"
+        ],
+        "size": 746949,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 746949.0
+      },
+      {
+        "label": "Other",
+        "properties": [
+          "lastEditTimestamp"
+        ],
+        "size": 2919,
+        "type": "RANGE",
+        "valuesSelectivity": 0.0017129153819801302,
+        "distinctValues": 5.0
+      },
+      {
+        "label": "Other",
+        "properties": [
+          "node_id"
+        ],
+        "size": 2919,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 2919.0
+      }
+    ]
+  }
+}

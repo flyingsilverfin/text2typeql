@@ -1,0 +1,187 @@
+{
+  "node_props": {
+    "Business": [
+      {
+        "property": "address",
+        "type": "STRING",
+        "values": [
+          "301 E Main St",
+          "200 W Pine St",
+          "313 N 1st St W",
+          "1151 W Broadway St",
+          "201 E Front St",
+          "723 California Dr",
+          "121 W Broadway St",
+          "716 N San Mateo Dr",
+          "111 E 5th Ave"
+        ],
+        "distinct_count": 9
+      },
+      {
+        "property": "location",
+        "type": "POINT"
+      },
+      {
+        "property": "city",
+        "type": "STRING",
+        "values": [
+          "Missoula",
+          "Burlingame",
+          "San Mateo"
+        ],
+        "distinct_count": 3
+      },
+      {
+        "property": "state",
+        "type": "STRING",
+        "values": [
+          "MT",
+          "CA"
+        ],
+        "distinct_count": 2
+      },
+      {
+        "property": "businessId",
+        "type": "STRING",
+        "values": [
+          "b5",
+          "b3",
+          "b1",
+          "b2",
+          "b4",
+          "b7",
+          "b6",
+          "b8",
+          "b9"
+        ],
+        "distinct_count": 9
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Missoula Public Library",
+          "Ninja Mike's",
+          "KettleHouse Brewing Co.",
+          "Imagine Nation Brewing",
+          "Market on Front",
+          "Hanabi",
+          "Zootown Brew",
+          "Ducky's Car Wash",
+          "Neo4j"
+        ],
+        "distinct_count": 9
+      }
+    ],
+    "User": [
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Will",
+          "Bob",
+          "Jenny",
+          "Angie"
+        ],
+        "distinct_count": 4
+      },
+      {
+        "property": "userId",
+        "type": "STRING",
+        "values": [
+          "u1",
+          "u2",
+          "u3",
+          "u4"
+        ],
+        "distinct_count": 4
+      }
+    ],
+    "Review": [
+      {
+        "property": "date",
+        "type": "DATE",
+        "min": "2015-08-29",
+        "max": "2018-09-10",
+        "distinct_count": 12
+      },
+      {
+        "property": "text",
+        "type": "STRING",
+        "values": [
+          "Not a great selection of books, but fortunately th",
+          "Best breakfast sandwich at the Farmer's Market. Al",
+          "Great IPA selection!",
+          "Awesome full-service car wash. Love Ducky's!",
+          "The world's leading graph database HQ!"
+        ],
+        "distinct_count": 5
+      },
+      {
+        "property": "stars",
+        "type": "FLOAT",
+        "min": "3.0",
+        "max": "5.0",
+        "distinct_count": 3
+      },
+      {
+        "property": "reviewId",
+        "type": "STRING",
+        "values": [
+          "r7",
+          "r5",
+          "r1",
+          "r10",
+          "r6",
+          "r9",
+          "r4",
+          "r2",
+          "r8",
+          "r3"
+        ],
+        "distinct_count": 12
+      }
+    ],
+    "Category": [
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Library",
+          "Breakfast",
+          "Restaurant",
+          "Brewery",
+          "Beer",
+          "Deli",
+          "Cafe",
+          "Coffee",
+          "Ramen",
+          "Car Wash"
+        ],
+        "distinct_count": 11
+      }
+    ]
+  },
+  "rel_props": {},
+  "relationships": [
+    {
+      "start": "Business",
+      "type": "IN_CATEGORY",
+      "end": "Category"
+    },
+    {
+      "start": "User",
+      "type": "WROTE",
+      "end": "Review"
+    },
+    {
+      "start": "Review",
+      "type": "REVIEWS",
+      "end": "Business"
+    }
+  ],
+  "metadata": {
+    "constraint": [],
+    "index": []
+  }
+}

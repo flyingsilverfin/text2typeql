@@ -1,0 +1,59 @@
+define
+  # Attributes
+  attribute favorites value integer;
+  attribute answered value boolean;
+  attribute text value string;
+  attribute link value string;
+  attribute created_at value datetime;
+  attribute title value string;
+  attribute question_id value integer;
+  attribute up_votes value integer;
+  attribute score value integer;
+  attribute down_votes value integer;
+  attribute tag_name value string;
+  attribute image value string;
+  attribute user_link value string;
+  attribute user_id value integer;
+  attribute reputation value integer;
+  attribute display_name value string;
+  attribute answer_id value integer;
+
+  # Entities
+  entity question,
+    owns favorites,
+    owns answered,
+    owns text,
+    owns link,
+    owns created_at,
+    owns title,
+    owns question_id @key,
+    owns up_votes,
+    owns score,
+    owns down_votes,
+    plays tagged:tagged_question,
+    plays asked:asked_question;
+
+  entity tag,
+    owns tag_name @key,
+    plays tagged:tag;
+
+  entity user,
+    owns image,
+    owns user_link,
+    owns user_id @key,
+    owns reputation,
+    owns display_name,
+    plays asked:asker;
+
+  entity answer,
+    owns answer_id @key,
+    owns created_at;
+
+  # Relations
+  relation tagged,
+    relates tagged_question,
+    relates tag;
+
+  relation asked,
+    relates asker,
+    relates asked_question;

@@ -1,0 +1,959 @@
+{
+  "node_props": {
+    "Product": [
+      {
+        "property": "productName",
+        "type": "STRING",
+        "values": [
+          "Chai",
+          "Chang",
+          "Aniseed Syrup",
+          "Chef Anton's Cajun Seasoning",
+          "Chef Anton's Gumbo Mix",
+          "Grandma's Boysenberry Spread",
+          "Uncle Bob's Organic Dried Pears",
+          "Northwoods Cranberry Sauce",
+          "Mishi Kobe Niku",
+          "Ikura"
+        ],
+        "distinct_count": 77
+      },
+      {
+        "property": "quantityPerUnit",
+        "type": "STRING",
+        "values": [
+          "10 boxes x 20 bags",
+          "24 - 12 oz bottles",
+          "12 - 550 ml bottles",
+          "48 - 6 oz jars",
+          "36 boxes",
+          "12 - 8 oz jars",
+          "12 - 1 lb pkgs.",
+          "12 - 12 oz jars",
+          "18 - 500 g pkgs.",
+          "12 - 200 ml jars"
+        ],
+        "distinct_count": 70
+      },
+      {
+        "property": "unitsOnOrder",
+        "type": "INTEGER",
+        "min": "0",
+        "max": "100",
+        "distinct_count": 10
+      },
+      {
+        "property": "supplierID",
+        "type": "STRING",
+        "values": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "distinct_count": 29
+      },
+      {
+        "property": "productID",
+        "type": "STRING",
+        "values": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "distinct_count": 77
+      },
+      {
+        "property": "discontinued",
+        "type": "BOOLEAN"
+      },
+      {
+        "property": "categoryID",
+        "type": "STRING",
+        "values": [
+          "1",
+          "2",
+          "7",
+          "6",
+          "8",
+          "4",
+          "3",
+          "5"
+        ],
+        "distinct_count": 8
+      },
+      {
+        "property": "reorderLevel",
+        "type": "INTEGER",
+        "min": "0",
+        "max": "30",
+        "distinct_count": 7
+      },
+      {
+        "property": "unitsInStock",
+        "type": "INTEGER",
+        "min": "0",
+        "max": "125",
+        "distinct_count": 51
+      },
+      {
+        "property": "unitPrice",
+        "type": "FLOAT",
+        "min": "2.5",
+        "max": "263.5",
+        "distinct_count": 62
+      }
+    ],
+    "Category": [
+      {
+        "property": "picture",
+        "type": "STRING",
+        "values": [
+          "0x151C2F00020000000D000E0014002100FFFFFFFF4269746D"
+        ],
+        "distinct_count": 1
+      },
+      {
+        "property": "categoryID",
+        "type": "STRING",
+        "values": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8"
+        ],
+        "distinct_count": 8
+      },
+      {
+        "property": "description",
+        "type": "STRING",
+        "values": [
+          "Soft drinks, coffees, teas, beers, and ales",
+          "Sweet and savory sauces, relishes, spreads, and se",
+          "Desserts, candies, and sweet breads",
+          "Cheeses",
+          "Breads, crackers, pasta, and cereal",
+          "Prepared meats",
+          "Dried fruit and bean curd",
+          "Seaweed and fish"
+        ],
+        "distinct_count": 8
+      },
+      {
+        "property": "categoryName",
+        "type": "STRING",
+        "values": [
+          "Beverages",
+          "Condiments",
+          "Confections",
+          "Dairy Products",
+          "Grains/Cereals",
+          "Meat/Poultry",
+          "Produce",
+          "Seafood"
+        ],
+        "distinct_count": 8
+      }
+    ],
+    "Supplier": [
+      {
+        "property": "companyName",
+        "type": "STRING",
+        "values": [
+          "Exotic Liquids",
+          "New Orleans Cajun Delights",
+          "Grandma Kelly's Homestead",
+          "Tokyo Traders",
+          "Cooperativa de Quesos 'Las Cabras'",
+          "Mayumi's",
+          "Pavlova",
+          "Specialty Biscuits",
+          "PB Kn\u00e4ckebr\u00f6d AB",
+          "Refrescos Americanas LTDA"
+        ],
+        "distinct_count": 29
+      },
+      {
+        "property": "contactName",
+        "type": "STRING",
+        "values": [
+          "Charlotte Cooper",
+          "Shelley Burke",
+          "Regina Murphy",
+          "Yoshi Nagase",
+          "Antonio del Valle Saavedra",
+          "Mayumi Ohno",
+          " Ltd.",
+          "Lars Peterson",
+          "Carlos Diaz",
+          "Petra Winkler"
+        ],
+        "distinct_count": 28
+      },
+      {
+        "property": "homePage",
+        "type": "STRING",
+        "values": [
+          "NULL",
+          "#CAJUN.HTM#",
+          "Mayumi's (on the World Wide Web)#http://www.micros",
+          "(03) 444-6588",
+          "Plutzer (on the World Wide Web)#http://www.microso",
+          "(0544) 60603",
+          "(1) 03.83.00.62",
+          "(02) 555-4873",
+          "(089) 6547667",
+          "38.76.98.58"
+        ],
+        "distinct_count": 10
+      },
+      {
+        "property": "phone",
+        "type": "STRING",
+        "values": [
+          "(171) 555-2222",
+          "(100) 555-4822",
+          "(313) 555-5735",
+          "(03) 3555-5011",
+          "(98) 598 76 54",
+          "(06) 431-7877",
+          "Australia",
+          "UK",
+          "031-987 65 43",
+          "(11) 555 4640"
+        ],
+        "distinct_count": 25
+      },
+      {
+        "property": "postalCode",
+        "type": "STRING",
+        "values": [
+          "EC1 4SD",
+          "70117",
+          "48104",
+          "100",
+          "33007",
+          "545",
+          "Victoria",
+          "NULL",
+          "S-345 67",
+          "5442"
+        ],
+        "distinct_count": 23
+      },
+      {
+        "property": "contactTitle",
+        "type": "STRING",
+        "values": [
+          "Purchasing Manager",
+          "Order Administrator",
+          "Sales Representative",
+          "Marketing Manager",
+          "Export Administrator",
+          "Marketing Representative",
+          "Ian Devling",
+          "Peter Wilson",
+          "Sales Agent",
+          "Sales Manager"
+        ],
+        "distinct_count": 18
+      },
+      {
+        "property": "region",
+        "type": "STRING",
+        "values": [
+          "NULL",
+          "LA",
+          "MI",
+          "Asturias",
+          "Melbourne",
+          "Manchester",
+          "Ravenna",
+          "OR",
+          "Paris",
+          "MA"
+        ],
+        "distinct_count": 16
+      },
+      {
+        "property": "address",
+        "type": "STRING",
+        "values": [
+          "49 Gilbert St.",
+          "P.O. Box 78934",
+          "707 Oxford Rd.",
+          "9-8 Sekimai Musashino-shi",
+          "Calle del Rosal 4",
+          "92 Setsuko Chuo-ku",
+          "Marketing Manager",
+          "Sales Representative",
+          "Kaloadagatan 13",
+          "Av. das Americanas 12.890"
+        ],
+        "distinct_count": 28
+      },
+      {
+        "property": "fax",
+        "type": "STRING",
+        "values": [
+          "NULL",
+          "(313) 555-3349",
+          "(03) 444-2343",
+          "(161) 555-4448",
+          "031-987 65 91",
+          "(04721) 8714",
+          "(0544) 60323",
+          "(1) 03.83.00.68",
+          "(617) 555-3389",
+          "555-8787"
+        ],
+        "distinct_count": 17
+      },
+      {
+        "property": "supplierID",
+        "type": "STRING",
+        "values": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "distinct_count": 29
+      },
+      {
+        "property": "country",
+        "type": "STRING",
+        "values": [
+          "UK",
+          "USA",
+          "Japan",
+          "Spain",
+          "3058",
+          "M14 GSD",
+          "Sweden",
+          "Brazil",
+          "Germany",
+          "48100"
+        ],
+        "distinct_count": 21
+      },
+      {
+        "property": "city",
+        "type": "STRING",
+        "values": [
+          "London",
+          "New Orleans",
+          "Ann Arbor",
+          "Tokyo",
+          "Oviedo",
+          "Osaka",
+          "74 Rose St. Moonie Ponds",
+          "29 King's Way",
+          "G\u00f6teborg",
+          "Sao Paulo"
+        ],
+        "distinct_count": 29
+      }
+    ],
+    "Customer": [
+      {
+        "property": "fax",
+        "type": "STRING",
+        "values": [
+          "030-0076545",
+          "(5) 555-3745",
+          "NULL",
+          "(171) 555-6750",
+          "0921-12 34 67",
+          "0621-08924",
+          "88.60.15.32",
+          "(91) 555 91 99",
+          "91.24.45.41",
+          "(604) 555-3745"
+        ],
+        "distinct_count": 70
+      },
+      {
+        "property": "companyName",
+        "type": "STRING",
+        "values": [
+          "Alfreds Futterkiste",
+          "Ana Trujillo Emparedados y helados",
+          "Antonio Moreno Taquer\u00eda",
+          "Around the Horn",
+          "Berglunds snabbk\u00f6p",
+          "Blauer See Delikatessen",
+          "Blondesddsl p\u00e8re et fils",
+          "B\u00f3lido Comidas preparadas",
+          "Bon app'",
+          "Bottom-Dollar Markets"
+        ],
+        "distinct_count": 91
+      },
+      {
+        "property": "customerID",
+        "type": "STRING",
+        "values": [
+          "ALFKI",
+          "ANATR",
+          "ANTON",
+          "AROUT",
+          "BERGS",
+          "BLAUS",
+          "BLONP",
+          "BOLID",
+          "BONAP",
+          "BOTTM"
+        ],
+        "distinct_count": 91
+      },
+      {
+        "property": "phone",
+        "type": "STRING",
+        "values": [
+          "030-0074321",
+          "(5) 555-4729",
+          "(5) 555-3932",
+          "(171) 555-7788",
+          "0921-12 34 65",
+          "0621-08460",
+          "88.60.15.31",
+          "(91) 555 22 82",
+          "91.24.45.40",
+          "(604) 555-4729"
+        ],
+        "distinct_count": 91
+      },
+      {
+        "property": "contactName",
+        "type": "STRING",
+        "values": [
+          "Maria Anders",
+          "Ana Trujillo",
+          "Antonio Moreno",
+          "Thomas Hardy",
+          "Christina Berglund",
+          "Hanna Moos",
+          "Fr\u00e9d\u00e9rique Citeaux",
+          "Mart\u00edn Sommer",
+          "Laurence Lebihan",
+          "Elizabeth Lincoln"
+        ],
+        "distinct_count": 91
+      },
+      {
+        "property": "contactTitle",
+        "type": "STRING",
+        "values": [
+          "Sales Representative",
+          "Owner",
+          "Order Administrator",
+          "Marketing Manager",
+          "Accounting Manager",
+          "Sales Agent",
+          "Sales Associate",
+          "Sales Manager",
+          "Marketing Assistant",
+          "Assistant Sales Agent"
+        ],
+        "distinct_count": 12
+      },
+      {
+        "property": "region",
+        "type": "STRING",
+        "values": [
+          "NULL",
+          "BC",
+          "SP",
+          "OR",
+          "DF",
+          "RJ",
+          "T\u00e1chira",
+          "Co. Cork",
+          "Isle of Wight",
+          "WA"
+        ],
+        "distinct_count": 19
+      },
+      {
+        "property": "address",
+        "type": "STRING",
+        "values": [
+          "Obere Str. 57",
+          "Avda. de la Constituci\u00f3n 2222",
+          "Mataderos  2312",
+          "120 Hanover Sq.",
+          "Berguvsv\u00e4gen  8",
+          "Forsterstr. 57",
+          "24, place Kl\u00e9ber",
+          "C/ Araquil, 67",
+          " 12, rue des Bouchers",
+          "23 Tsawassen Blvd."
+        ],
+        "distinct_count": 91
+      },
+      {
+        "property": "postalCode",
+        "type": "STRING",
+        "values": [
+          "12209",
+          "5021",
+          "5023",
+          "WA1 1DP",
+          "S-958 22",
+          "68306",
+          "67000",
+          "28023",
+          "13008",
+          "T2F 8M4"
+        ],
+        "distinct_count": 86
+      },
+      {
+        "property": "country",
+        "type": "STRING",
+        "values": [
+          "Germany",
+          "Mexico",
+          "UK",
+          "Sweden",
+          "France",
+          "Spain",
+          "Canada",
+          "Argentina",
+          "Switzerland",
+          "Brazil"
+        ],
+        "distinct_count": 21
+      },
+      {
+        "property": "city",
+        "type": "STRING",
+        "values": [
+          "Berlin",
+          "M\u00e9xico D.F.",
+          "London",
+          "Lule\u00e5",
+          "Mannheim",
+          "Strasbourg",
+          "Madrid",
+          "Marseille",
+          "Tsawassen",
+          "Buenos Aires"
+        ],
+        "distinct_count": 69
+      }
+    ],
+    "Order": [
+      {
+        "property": "shipName",
+        "type": "STRING",
+        "values": [
+          "Vins et alcools Chevalier",
+          "Toms Spezialit\u00e4ten",
+          "Hanari Carnes",
+          "Victuailles en stock",
+          "Supr\u00eames d\u00e9lices",
+          "Chop-suey Chinese",
+          "Richter Supermarkt",
+          "Wellington Importadora",
+          "HILARION-Abastos",
+          "Ernst Handel"
+        ],
+        "distinct_count": 90
+      },
+      {
+        "property": "requiredDate",
+        "type": "STRING",
+        "values": [
+          "1996-08-01 00:00:00.000",
+          "1996-08-16 00:00:00.000",
+          "1996-08-05 00:00:00.000",
+          "1996-08-06 00:00:00.000",
+          "1996-07-24 00:00:00.000",
+          "1996-08-08 00:00:00.000",
+          "1996-08-09 00:00:00.000",
+          "1996-08-12 00:00:00.000",
+          "1996-08-13 00:00:00.000",
+          "1996-08-14 00:00:00.000"
+        ],
+        "distinct_count": 454
+      },
+      {
+        "property": "shipCity",
+        "type": "STRING",
+        "values": [
+          "Reims",
+          "M\u00fcnster",
+          " 67",
+          " rue du Commerce",
+          " 255",
+          "Bern",
+          "Gen\u00e8ve",
+          " 12",
+          "San Crist\u00f3bal",
+          "Graz"
+        ],
+        "distinct_count": 74
+      },
+      {
+        "property": "employeeID",
+        "type": "STRING",
+        "values": [
+          "5",
+          "6",
+          "4",
+          "3",
+          "9",
+          "1",
+          "8",
+          "2",
+          "7"
+        ],
+        "distinct_count": 9
+      },
+      {
+        "property": "shipPostalCode",
+        "type": "STRING",
+        "values": [
+          "51100",
+          "44087",
+          "RJ",
+          "NULL",
+          "3012",
+          "1204",
+          "SP",
+          "5022",
+          "8010",
+          "05022"
+        ],
+        "distinct_count": 66
+      },
+      {
+        "property": "shippedDate",
+        "type": "STRING",
+        "values": [
+          "1996-07-16 00:00:00.000",
+          "1996-07-10 00:00:00.000",
+          "1996-07-12 00:00:00.000",
+          "1996-07-15 00:00:00.000",
+          "1996-07-11 00:00:00.000",
+          "1996-07-23 00:00:00.000",
+          "1996-07-17 00:00:00.000",
+          "1996-07-22 00:00:00.000",
+          "1996-07-25 00:00:00.000",
+          "1996-07-29 00:00:00.000"
+        ],
+        "distinct_count": 388
+      },
+      {
+        "property": "freight",
+        "type": "STRING",
+        "values": [
+          "32.38",
+          "11.61",
+          "65.83",
+          "41.34",
+          "51.30",
+          "58.17",
+          "22.98",
+          "148.33",
+          "13.97",
+          "81.91"
+        ],
+        "distinct_count": 799
+      },
+      {
+        "property": "orderDate",
+        "type": "STRING",
+        "values": [
+          "1996-07-04 00:00:00.000",
+          "1996-07-05 00:00:00.000",
+          "1996-07-08 00:00:00.000",
+          "1996-07-09 00:00:00.000",
+          "1996-07-10 00:00:00.000",
+          "1996-07-11 00:00:00.000",
+          "1996-07-12 00:00:00.000",
+          "1996-07-15 00:00:00.000",
+          "1996-07-16 00:00:00.000",
+          "1996-07-17 00:00:00.000"
+        ],
+        "distinct_count": 480
+      },
+      {
+        "property": "orderID",
+        "type": "STRING",
+        "values": [
+          "10248",
+          "10249",
+          "10250",
+          "10251",
+          "10252",
+          "10253",
+          "10254",
+          "10255",
+          "10256",
+          "10257"
+        ],
+        "distinct_count": 830
+      },
+      {
+        "property": "shipAddress",
+        "type": "STRING",
+        "values": [
+          "59 rue de l'Abbaye",
+          "Luisenstr. 48",
+          "Rua do Pa\u00e7o",
+          "2",
+          "Boulevard Tirou",
+          "Hauptstr. 31",
+          "Starenweg 5",
+          "Rua do Mercado",
+          "Carrera 22 con Ave. Carlos Soublette #8-35",
+          "Kirchgasse 6"
+        ],
+        "distinct_count": 88
+      },
+      {
+        "property": "customerID",
+        "type": "STRING",
+        "values": [
+          "VINET",
+          "TOMSP",
+          "HANAR",
+          "VICTE",
+          "SUPRD",
+          "CHOPS",
+          "RICSU",
+          "WELLI",
+          "HILAA",
+          "ERNSH"
+        ],
+        "distinct_count": 89
+      },
+      {
+        "property": "shipCountry",
+        "type": "STRING",
+        "values": [
+          "France",
+          "Germany",
+          "05454-876",
+          "69004",
+          "B-6000",
+          "Switzerland",
+          "08737-363",
+          "Venezuela",
+          "Austria",
+          "Mexico"
+        ],
+        "distinct_count": 40
+      },
+      {
+        "property": "shipVia",
+        "type": "STRING",
+        "values": [
+          "3",
+          "1",
+          "2"
+        ],
+        "distinct_count": 3
+      },
+      {
+        "property": "shipRegion",
+        "type": "STRING",
+        "values": [
+          "NULL",
+          "Rio de Janeiro",
+          "Lyon",
+          "Charleroi",
+          "Resende",
+          "T\u00e1chira",
+          "NM",
+          "Strasbourg",
+          "DF",
+          "WA"
+        ],
+        "distinct_count": 33
+      }
+    ]
+  },
+  "rel_props": {
+    "ORDERS": [
+      {
+        "property": "orderID",
+        "type": "STRING",
+        "values": [
+          "10248",
+          "10249",
+          "10250",
+          "10251",
+          "10252",
+          "10253",
+          "10254",
+          "10255",
+          "10256",
+          "10257"
+        ],
+        "distinct_count": 830
+      },
+      {
+        "property": "unitPrice",
+        "type": "STRING",
+        "values": [
+          "34.80",
+          "14.00",
+          "9.80",
+          "18.60",
+          "42.40",
+          "16.80",
+          "7.70",
+          "15.60",
+          "27.20",
+          "2.00"
+        ],
+        "distinct_count": 116
+      },
+      {
+        "property": "productID",
+        "type": "STRING",
+        "values": [
+          "72",
+          "11",
+          "42",
+          "14",
+          "51",
+          "65",
+          "41",
+          "22",
+          "57",
+          "60"
+        ],
+        "distinct_count": 77
+      },
+      {
+        "property": "quantity",
+        "type": "INTEGER",
+        "min": "1",
+        "max": "130",
+        "distinct_count": 55
+      },
+      {
+        "property": "discount",
+        "type": "STRING",
+        "values": [
+          "0",
+          "0.15",
+          "0.05",
+          "0.2",
+          "0.25",
+          "0.1",
+          "0.02",
+          "0.03",
+          "0.06",
+          "0.01"
+        ],
+        "distinct_count": 11
+      }
+    ]
+  },
+  "relationships": [
+    {
+      "start": "Product",
+      "type": "PART_OF",
+      "end": "Category"
+    },
+    {
+      "start": "Supplier",
+      "type": "SUPPLIES",
+      "end": "Product"
+    },
+    {
+      "start": "Customer",
+      "type": "PURCHASED",
+      "end": "Order"
+    },
+    {
+      "start": "Order",
+      "type": "ORDERS",
+      "end": "Product"
+    }
+  ],
+  "metadata": {
+    "constraint": [],
+    "index": [
+      {
+        "label": "Category",
+        "properties": [
+          "categoryID"
+        ],
+        "size": 8,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 8.0
+      },
+      {
+        "label": "Customer",
+        "properties": [
+          "customerID"
+        ],
+        "size": 91,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 91.0
+      },
+      {
+        "label": "Order",
+        "properties": [
+          "orderID"
+        ],
+        "size": 830,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 830.0
+      },
+      {
+        "label": "Product",
+        "properties": [
+          "productID"
+        ],
+        "size": 77,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 77.0
+      },
+      {
+        "label": "Supplier",
+        "properties": [
+          "supplierID"
+        ],
+        "size": 29,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 29.0
+      }
+    ]
+  }
+}

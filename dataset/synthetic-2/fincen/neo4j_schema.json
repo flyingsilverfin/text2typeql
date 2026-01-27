@@ -1,0 +1,654 @@
+{
+  "node_props": {
+    "Country": [
+      {
+        "property": "location",
+        "type": "POINT"
+      },
+      {
+        "property": "code",
+        "type": "STRING",
+        "values": [
+          "AFG",
+          "ALB",
+          "DZA",
+          "ASM",
+          "AND",
+          "AGO",
+          "AIA",
+          "ATA",
+          "ATG",
+          "ARG"
+        ],
+        "distinct_count": 254
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Afghanistan",
+          "Albania",
+          "Algeria",
+          "American Samoa",
+          "Andorra",
+          "Angola",
+          "Anguilla",
+          "Antarctica",
+          "Antigua and Barbuda",
+          "Argentina"
+        ],
+        "distinct_count": 254
+      },
+      {
+        "property": "tld",
+        "type": "STRING",
+        "values": [
+          "AF",
+          "AL",
+          "DZ",
+          "AS",
+          "AD",
+          "AO",
+          "AI",
+          "AQ",
+          "AG",
+          "AR"
+        ],
+        "distinct_count": 243
+      }
+    ],
+    "Filing": [
+      {
+        "property": "begin",
+        "type": "DATE_TIME",
+        "min": "2000-02-08T00:00:00Z",
+        "max": "2017-09-05T00:00:00Z",
+        "distinct_count": 1762
+      },
+      {
+        "property": "end",
+        "type": "DATE_TIME",
+        "min": "2000-02-08T00:00:00Z",
+        "max": "2017-11-03T00:00:00Z",
+        "distinct_count": 1751
+      },
+      {
+        "property": "originator_bank_id",
+        "type": "STRING",
+        "values": [
+          "cimb-bank-berhad",
+          "barclays-bank-plc-ho-uk",
+          "natwest-offshore",
+          "evrofinance-mosnarbank",
+          "latvian-trade-commercial-bank",
+          "vtb-north-west",
+          "dbs-bank-ltd",
+          "unicredit-bank-austria-ag",
+          "kazkommertsbank",
+          "transcredit-bank"
+        ],
+        "distinct_count": 891
+      },
+      {
+        "property": "sar_id",
+        "type": "STRING",
+        "values": [
+          "3297",
+          "2924",
+          "2345",
+          "2354",
+          "3244",
+          "2778",
+          "2355",
+          "3176",
+          "4314",
+          "4031"
+        ],
+        "distinct_count": 534
+      },
+      {
+        "property": "beneficiary_bank",
+        "type": "STRING",
+        "values": [
+          "Barclays Bank Plc",
+          "Skandinaviska Enskilda Banken",
+          "Commonwealth Bank of Australia",
+          "DNB Nor Bank Asa",
+          "Marfin Popular Bank Public Co Ltd",
+          "Alcoa Inc",
+          "Piraeus Bank",
+          "Credit To Euroclear Bank SA",
+          "LTB Bank",
+          "Credit Toltb Bank"
+        ],
+        "distinct_count": 1112
+      },
+      {
+        "property": "filer_org_name_id",
+        "type": "STRING",
+        "values": [
+          "the-bank-of-new-york-mellon-corp",
+          "societe-generale-sa",
+          "deutsche-bank-ag",
+          "standard-chartered-plc",
+          "mitsubishi-ufj-financial-group-inc",
+          "ofg-bancorp",
+          "bank-of-america-corp",
+          "barclays-plc",
+          "china-investment-corporation",
+          "jp-morgan-chase-co"
+        ],
+        "distinct_count": 26
+      },
+      {
+        "property": "originator_bank_country",
+        "type": "STRING",
+        "values": [
+          "Singapore",
+          "United Kingdom",
+          "Gibraltar",
+          "Russia",
+          "Latvia",
+          "Austria",
+          "Kazakhstan",
+          "United Arab Emirates",
+          "United States",
+          "Lebanon"
+        ],
+        "distinct_count": 119
+      },
+      {
+        "property": "beneficiary_bank_country",
+        "type": "STRING",
+        "values": [
+          "United Kingdom",
+          "Sweden",
+          "Australia",
+          "Norway",
+          "Cyprus",
+          "United States",
+          "Bulgaria",
+          "Belgium",
+          "Latvia",
+          "Malaysia"
+        ],
+        "distinct_count": 111
+      },
+      {
+        "property": "filer_org_name",
+        "type": "STRING",
+        "values": [
+          "The Bank of New York Mellon Corp.",
+          "Soci\u00e9t\u00e9 G\u00e9n\u00e9rale SA",
+          "Deutsche Bank AG",
+          "Standard Chartered Plc",
+          "Mitsubishi UFJ Financial Group, Inc.",
+          "OFG Bancorp",
+          "Bank of America Corp.",
+          "Barclays Plc",
+          "China Investment Corporation",
+          "JP Morgan Chase & Co."
+        ],
+        "distinct_count": 26
+      },
+      {
+        "property": "originator_iso",
+        "type": "STRING",
+        "values": [
+          "SGP",
+          "GBR",
+          "GIB",
+          "RUS",
+          "LVA",
+          "AUT",
+          "KAZ",
+          "ARE",
+          "USA",
+          "LBN"
+        ],
+        "distinct_count": 117
+      },
+      {
+        "property": "beneficiary_bank_id",
+        "type": "STRING",
+        "values": [
+          "barclays-bank-plc-london-england-gbr",
+          "skandinaviska-enskilda-banken-stockholm-sweden-swe",
+          "commonwealth-bank-of-australia-sydney-australia-au",
+          "dnb-nor-bank-asa-oslo-norway-nor",
+          "marfin-popular-bank-public-co-ltd-nicosia-cyprus-c",
+          "alcoa-inc-pittsburgh-pa-usa",
+          "piraeus-bank-sofia-bulgaria-bgr",
+          "credit-to-euroclear-bank-sa-brussels-belgium-bel",
+          "ltb-bank-riga-latvia-lva",
+          "credit-toltb-bank-riga-latvia-lva"
+        ],
+        "distinct_count": 1389
+      },
+      {
+        "property": "origin_lat",
+        "type": "STRING",
+        "values": [
+          "1.3667",
+          "54",
+          "36.1833",
+          "60",
+          "57",
+          "47.3333",
+          "48",
+          "24",
+          "38",
+          "33.8333"
+        ],
+        "distinct_count": 97
+      },
+      {
+        "property": "origin_lng",
+        "type": "STRING",
+        "values": [
+          "103.8",
+          "-2",
+          "-5.3667",
+          "100",
+          "25",
+          "13.3333",
+          "68",
+          "54",
+          "-97",
+          "35.8333"
+        ],
+        "distinct_count": 96
+      },
+      {
+        "property": "end_date_format",
+        "type": "STRING",
+        "values": [
+          "2015-09-25T00:00:00Z",
+          "2012-07-05T00:00:00Z",
+          "2012-06-20T00:00:00Z",
+          "2012-05-31T00:00:00Z",
+          "2012-05-29T00:00:00Z",
+          "2012-05-22T00:00:00Z",
+          "2012-05-21T00:00:00Z",
+          "2012-05-15T00:00:00Z",
+          "2012-05-14T00:00:00Z",
+          "2012-05-11T00:00:00Z"
+        ],
+        "distinct_count": 1751
+      },
+      {
+        "property": "begin_date_format",
+        "type": "STRING",
+        "values": [
+          "2015-03-25T00:00:00Z",
+          "2015-03-30T00:00:00Z",
+          "2012-07-05T00:00:00Z",
+          "2012-06-20T00:00:00Z",
+          "2012-05-31T00:00:00Z",
+          "2012-05-29T00:00:00Z",
+          "2012-05-22T00:00:00Z",
+          "2012-05-21T00:00:00Z",
+          "2012-05-15T00:00:00Z",
+          "2012-05-14T00:00:00Z"
+        ],
+        "distinct_count": 1762
+      },
+      {
+        "property": "originator_bank",
+        "type": "STRING",
+        "values": [
+          "CIMB Bank Berhad",
+          "Barclays Bank Plc Ho UK",
+          " Natwest Offshore",
+          "Natwest Offshore",
+          "Evrofinance Mosnarbank",
+          "Latvian Trade Commercial Bank",
+          "VTB North-West",
+          "DBS Bank Ltd",
+          "UniCredit Bank Austria AG",
+          "Kazkommertsbank"
+        ],
+        "distinct_count": 967
+      },
+      {
+        "property": "beneficiary_lat",
+        "type": "STRING",
+        "values": [
+          "54",
+          "62",
+          "-27",
+          "35",
+          "38",
+          "43",
+          "50.8333",
+          "57",
+          "2.5",
+          "1.3667"
+        ],
+        "distinct_count": 91
+      },
+      {
+        "property": "beneficiary_iso",
+        "type": "STRING",
+        "values": [
+          "GBR",
+          "SWE",
+          "AUS",
+          "NOR",
+          "CYP",
+          "USA",
+          "BGR",
+          "BEL",
+          "LVA",
+          "MYS"
+        ],
+        "distinct_count": 107
+      },
+      {
+        "property": "beneficiary_lng",
+        "type": "STRING",
+        "values": [
+          "-2",
+          "15",
+          "133",
+          "10",
+          "33",
+          "-97",
+          "25",
+          "4",
+          "112.5",
+          "103.8"
+        ],
+        "distinct_count": 89
+      },
+      {
+        "property": "begin_date",
+        "type": "STRING",
+        "values": [
+          "Mar 25, 2015",
+          "Mar 30, 2015",
+          "Jul 5, 2012",
+          "Jun 20, 2012",
+          "May 31, 2012",
+          "May 29, 2012",
+          "May 22, 2012",
+          "May 21, 2012",
+          "May 15, 2012",
+          "May 14, 2012"
+        ],
+        "distinct_count": 1762
+      },
+      {
+        "property": "id",
+        "type": "STRING",
+        "values": [
+          "223254",
+          "223255",
+          "223258",
+          "223259",
+          "223260",
+          "223261",
+          "223262",
+          "223263",
+          "223264",
+          "223265"
+        ],
+        "distinct_count": 4507
+      },
+      {
+        "property": "end_date",
+        "type": "STRING",
+        "values": [
+          "Sep 25, 2015",
+          "Jul 5, 2012",
+          "Jun 20, 2012",
+          "May 31, 2012",
+          "May 29, 2012",
+          "May 22, 2012",
+          "May 21, 2012",
+          "May 15, 2012",
+          "May 14, 2012",
+          "May 11, 2012"
+        ],
+        "distinct_count": 1751
+      },
+      {
+        "property": "amount",
+        "type": "INTEGER",
+        "min": "1.18",
+        "max": "2721000000",
+        "distinct_count": 3579
+      },
+      {
+        "property": "number",
+        "type": "INTEGER",
+        "min": "1",
+        "max": "174",
+        "distinct_count": 73
+      }
+    ],
+    "Entity": [
+      {
+        "property": "id",
+        "type": "STRING",
+        "values": [
+          "the-bank-of-new-york-mellon-corp",
+          "societe-generale-sa",
+          "standard-chartered-plc",
+          "deutsche-bank-ag",
+          "jp-morgan-chase-co",
+          "the-northern-trust-company",
+          "bank-of-america-corp",
+          "barclays-plc",
+          "china-investment-corporation",
+          "the-royal-bank-of-scotland-plc"
+        ],
+        "distinct_count": 2755
+      },
+      {
+        "property": "location",
+        "type": "POINT"
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "The Bank of New York Mellon Corp.",
+          "Soci\u00e9t\u00e9 G\u00e9n\u00e9rale SA",
+          "Standard Chartered Plc",
+          "Deutsche Bank AG",
+          "JP Morgan Chase & Co.",
+          "The Northern Trust Company",
+          "Bank of America Corp.",
+          "Barclays Plc",
+          "China Investment Corporation",
+          "The Royal Bank Of Scotland Plc"
+        ],
+        "distinct_count": 1805
+      },
+      {
+        "property": "country",
+        "type": "STRING",
+        "values": [
+          "CHN",
+          "CYP",
+          "NZL",
+          "KHM",
+          "SGP",
+          "KAZ",
+          "EGY",
+          "ARE",
+          "BEL",
+          "CHE"
+        ],
+        "distinct_count": 99
+      }
+    ]
+  },
+  "rel_props": {},
+  "relationships": [
+    {
+      "start": "Filing",
+      "type": "BENEFITS",
+      "end": "Entity"
+    },
+    {
+      "start": "Filing",
+      "type": "CONCERNS",
+      "end": "Entity"
+    },
+    {
+      "start": "Filing",
+      "type": "ORIGINATOR",
+      "end": "Entity"
+    },
+    {
+      "start": "Entity",
+      "type": "FILED",
+      "end": "Filing"
+    },
+    {
+      "start": "Entity",
+      "type": "COUNTRY",
+      "end": "Country"
+    }
+  ],
+  "metadata": {
+    "constraint": [
+      {
+        "id": 21,
+        "name": "constraint_7c28e5f7",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Filing"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_7c28e5f7",
+        "propertyType": null
+      },
+      {
+        "id": 25,
+        "name": "constraint_96870fc7",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Country"
+        ],
+        "properties": [
+          "code"
+        ],
+        "ownedIndex": "constraint_96870fc7",
+        "propertyType": null
+      },
+      {
+        "id": 23,
+        "name": "constraint_ea922423",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Entity"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_ea922423",
+        "propertyType": null
+      }
+    ],
+    "index": [
+      {
+        "label": "Country",
+        "properties": [
+          "name"
+        ],
+        "size": 254,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 254.0
+      },
+      {
+        "label": "Country",
+        "properties": [
+          "code"
+        ],
+        "size": 254,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 254.0
+      },
+      {
+        "label": "Entity",
+        "properties": [
+          "name"
+        ],
+        "size": 2763,
+        "type": "RANGE",
+        "valuesSelectivity": 0.6539992761491132,
+        "distinctValues": 1806.9999999999998
+      },
+      {
+        "label": "Entity",
+        "properties": [
+          "id"
+        ],
+        "size": 2763,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 2763.0
+      },
+      {
+        "label": "Filing",
+        "properties": [
+          "amount"
+        ],
+        "size": 4507,
+        "type": "RANGE",
+        "valuesSelectivity": 0.7940980696694031,
+        "distinctValues": 3579.0
+      },
+      {
+        "label": "Filing",
+        "properties": [
+          "end"
+        ],
+        "size": 4501,
+        "type": "RANGE",
+        "valuesSelectivity": 0.389024661186403,
+        "distinctValues": 1751.0
+      },
+      {
+        "label": "Filing",
+        "properties": [
+          "begin"
+        ],
+        "size": 4501,
+        "type": "RANGE",
+        "valuesSelectivity": 0.3914685625416574,
+        "distinctValues": 1762.0
+      },
+      {
+        "label": "Filing",
+        "properties": [
+          "sar_id"
+        ],
+        "size": 4507,
+        "type": "RANGE",
+        "valuesSelectivity": 0.11848236077213224,
+        "distinctValues": 534.0
+      },
+      {
+        "label": "Filing",
+        "properties": [
+          "id"
+        ],
+        "size": 4507,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 4507.0
+      }
+    ]
+  }
+}

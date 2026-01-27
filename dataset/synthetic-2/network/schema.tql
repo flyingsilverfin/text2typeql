@@ -1,0 +1,186 @@
+define
+  # Attributes
+  attribute name value string;
+  attribute location value string;
+  attribute ip value string;
+  attribute zone value integer;
+  attribute size value integer;
+  attribute rack_number value integer;
+  attribute type_id value integer;
+  attribute machine_type value string;
+  attribute ram value integer;
+  attribute disk value integer;
+  attribute cpu value integer;
+  attribute start_time value integer;
+  attribute pid value integer;
+  attribute port_number value integer;
+
+  # Entities
+  entity data_center,
+    owns name @key,
+    owns location,
+    plays dc_contains:data_center;
+
+  entity router,
+    owns name @key,
+    owns zone,
+    plays dc_contains:contained_equipment,
+    plays routes:routing_device;
+
+  entity egress,
+    owns name @key,
+    plays dc_contains:contained_equipment,
+    plays routes:routing_device;
+
+  entity interface,
+    owns ip @key,
+    plays routes:routed_interface,
+    plays exposes:exposing_interface,
+    plays connects:interface;
+
+  entity network,
+    owns ip @key,
+    owns size,
+    owns zone,
+    plays routes:routing_device;
+
+  entity network_zone,
+    owns ip @key,
+    owns size,
+    owns zone,
+    plays routes:routing_device;
+
+  entity rack,
+    owns name @key,
+    owns zone,
+    owns rack_number,
+    plays dc_contains:contained_equipment,
+    plays holds:containing_rack;
+
+  entity switch,
+    owns ip @key,
+    owns rack_number,
+    plays holds:held_equipment,
+    plays routes:routing_device;
+
+  entity machine_type_spec,
+    owns type_id @key,
+    owns machine_type,
+    owns name,
+    owns ram,
+    owns disk,
+    owns cpu,
+    plays typed_as:spec;
+
+  entity machine,
+    owns name @key,
+    plays holds:held_equipment,
+    plays runs:host_machine,
+    plays routes:routing_device,
+    plays typed_as:machine;
+
+  entity software,
+    owns name @key,
+    plays has_version:versioned_software,
+    plays depends_on:dependent,
+    plays depends_on:dependency,
+    plays instance_of:template;
+
+  entity os,
+    owns name,
+    owns start_time,
+    plays runs:running_process,
+    plays instance_of:running_instance;
+
+  entity service,
+    owns name,
+    owns start_time,
+    owns pid,
+    plays runs:running_process,
+    plays listens:listening_process,
+    plays depends_on:dependent,
+    plays depends_on:dependency,
+    plays instance_of:running_instance,
+    plays instance_of:template;
+
+  entity application,
+    owns name,
+    owns start_time,
+    owns pid,
+    plays runs:running_process,
+    plays listens:listening_process,
+    plays depends_on:dependent,
+    plays depends_on:dependency,
+    plays instance_of:running_instance,
+    plays instance_of:template;
+
+  entity version,
+    owns name,
+    plays has_version:release_version,
+    plays instance_of:template,
+    plays depends_on:dependency,
+    plays previous:newer_version,
+    plays previous:older_version;
+
+  entity process,
+    owns name,
+    owns start_time,
+    owns pid,
+    plays runs:running_process,
+    plays listens:listening_process,
+    plays depends_on:dependent,
+    plays depends_on:dependency,
+    plays instance_of:running_instance;
+
+  entity port,
+    owns port_number @key,
+    plays exposes:exposed_port,
+    plays listens:listened_port;
+
+  # Relations
+  relation dc_contains,
+    relates data_center,
+    relates contained_equipment;
+
+  relation routes,
+    relates routing_device,
+    relates routed_interface;
+
+  relation exposes,
+    relates exposing_interface,
+    relates exposed_port;
+
+  relation connects,
+    relates interface;
+
+  relation holds,
+    relates containing_rack,
+    relates held_equipment;
+
+  relation runs,
+    relates host_machine,
+    relates running_process;
+
+  relation typed_as,
+    relates machine,
+    relates spec;
+
+  relation has_version,
+    relates versioned_software,
+    relates release_version;
+
+  relation depends_on,
+    relates dependent,
+    relates dependency;
+
+  relation instance_of,
+    relates running_instance,
+    relates template;
+
+  relation listens,
+    relates listening_process,
+    relates listened_port;
+
+  relation previous,
+    relates newer_version,
+    relates older_version;

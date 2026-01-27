@@ -1,0 +1,142 @@
+define
+  # Attributes - Product
+  attribute product_name value string;
+  attribute quantity_per_unit value string;
+  attribute units_on_order value integer;
+  attribute product_id value string;
+  attribute discontinued value boolean;
+  attribute reorder_level value integer;
+  attribute units_in_stock value integer;
+  attribute unit_price value double;
+
+  # Attributes - Category
+  attribute category_id value string;
+  attribute picture value string;
+  attribute description value string;
+  attribute category_name value string;
+
+  # Attributes - Supplier & Customer (shared)
+  attribute company_name value string;
+  attribute contact_name value string;
+  attribute contact_title value string;
+  attribute phone value string;
+  attribute fax value string;
+  attribute address value string;
+  attribute city value string;
+  attribute region value string;
+  attribute postal_code value string;
+  attribute country value string;
+  attribute home_page value string;
+
+  # Attributes - Supplier
+  attribute supplier_id value string;
+
+  # Attributes - Customer
+  attribute customer_id value string;
+
+  # Attributes - Order
+  attribute order_id value string;
+  attribute order_date value string;
+  attribute required_date value string;
+  attribute shipped_date value string;
+  attribute freight value string;
+  attribute ship_name value string;
+  attribute ship_address value string;
+  attribute ship_city value string;
+  attribute ship_region value string;
+  attribute ship_postal_code value string;
+  attribute ship_country value string;
+  attribute ship_via value string;
+  attribute employee_id value string;
+
+  # Attributes - ORDERS relation (order line items)
+  attribute order_unit_price value double;
+  attribute quantity value integer;
+  attribute discount value double;
+
+  # Entities
+  entity product,
+    owns product_name,
+    owns quantity_per_unit,
+    owns units_on_order,
+    owns product_id @key,
+    owns discontinued,
+    owns reorder_level,
+    owns units_in_stock,
+    owns unit_price,
+    plays part_of:product,
+    plays supplies:product,
+    plays orders:product;
+
+  entity category,
+    owns picture,
+    owns category_id @key,
+    owns description,
+    owns category_name,
+    plays part_of:category;
+
+  entity supplier,
+    owns company_name,
+    owns contact_name,
+    owns home_page,
+    owns phone,
+    owns postal_code,
+    owns contact_title,
+    owns region,
+    owns address,
+    owns fax,
+    owns supplier_id @key,
+    owns country,
+    owns city,
+    plays supplies:supplier;
+
+  entity customer,
+    owns fax,
+    owns company_name,
+    owns customer_id @key,
+    owns phone,
+    owns contact_name,
+    owns contact_title,
+    owns region,
+    owns address,
+    owns postal_code,
+    owns country,
+    owns city,
+    plays purchased:customer;
+
+  entity order,
+    owns ship_name,
+    owns required_date,
+    owns ship_city,
+    owns employee_id,
+    owns ship_postal_code,
+    owns shipped_date,
+    owns freight,
+    owns order_date,
+    owns order_id @key,
+    owns ship_address,
+    owns ship_country,
+    owns ship_via,
+    owns ship_region,
+    plays purchased:order,
+    plays orders:order;
+
+  # Relations
+  relation part_of,
+    relates product,
+    relates category;
+
+  relation supplies,
+    relates supplier,
+    relates product;
+
+  relation purchased,
+    relates customer,
+    relates order;
+
+  relation orders,
+    relates order,
+    relates product,
+    owns order_unit_price,
+    owns quantity,
+    owns discount;

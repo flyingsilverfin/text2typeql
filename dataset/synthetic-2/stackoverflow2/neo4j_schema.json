@@ -1,0 +1,417 @@
+{
+  "node_props": {
+    "Question": [
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "https://stackoverflow.com/q/65697972",
+          "https://stackoverflow.com/q/65697147",
+          "https://stackoverflow.com/q/65694121",
+          "https://stackoverflow.com/q/65691774",
+          "https://stackoverflow.com/q/65690692",
+          "https://stackoverflow.com/q/65690563",
+          "https://stackoverflow.com/q/65687157",
+          "https://stackoverflow.com/q/65686699",
+          "https://stackoverflow.com/q/65683749",
+          "https://stackoverflow.com/q/65682935"
+        ],
+        "distinct_count": 1589
+      },
+      {
+        "property": "accepted_answer_id",
+        "type": "INTEGER",
+        "min": "61447621",
+        "max": "69272967",
+        "distinct_count": 619
+      },
+      {
+        "property": "creation_date",
+        "type": "INTEGER",
+        "min": "1587746198",
+        "max": "1632249176",
+        "distinct_count": 1589
+      },
+      {
+        "property": "view_count",
+        "type": "INTEGER",
+        "min": "4",
+        "max": "1851",
+        "distinct_count": 217
+      },
+      {
+        "property": "answer_count",
+        "type": "INTEGER",
+        "min": "0",
+        "max": "4",
+        "distinct_count": 5
+      },
+      {
+        "property": "body_markdown",
+        "type": "STRING",
+        "values": [
+          "I want to create a graph from my recursive JSON fi",
+          "I have a dataset in java which contains an &quot;I",
+          "Given the schema\r\n\r\n```graphql\r\ntype User {\r\n  id:",
+          "I am having trouble updating nodes in a neo4j-data",
+          "My graph has the following entities:\r\n\r\n- Post\r\n- ",
+          "Well first thing this is my code\r\n\r\n    LOAD CSV W",
+          "I am trying to run following Neo4j cypher Query:\r\n",
+          "In the neomodel documentation it&#39;s possible to",
+          "Trying the option of going with ETL as in Producti",
+          "I\u2019m a total beginner in Cypher and I\u2019m struggling "
+        ],
+        "distinct_count": 1576
+      },
+      {
+        "property": "uuid",
+        "type": "INTEGER",
+        "min": "61413144",
+        "max": "69273945",
+        "distinct_count": 1589
+      },
+      {
+        "property": "title",
+        "type": "STRING",
+        "values": [
+          "Create graph from recursive JSON data using apoc.l",
+          "Specify a certain column as id values in Neo4j Spa",
+          "Why are non-unique indexes dropped and created whe",
+          "py2neo doesn&#39;t update database nodes",
+          "Unwind with Multiple OPTIONAL MATCH returns duplic",
+          "Neo.ClientError.Statement.ExternalResourceFailed e",
+          "LIMIT not working inside apoc procedure apoc.cyphe",
+          "Neomodel: specify neo4j database name in connectio",
+          "Neo4j ETL takes time to migrate from RDBMS to Grap",
+          "Cypher to show relationships of hidden nodes"
+        ],
+        "distinct_count": 1588
+      }
+    ],
+    "User": [
+      {
+        "property": "uuid",
+        "type": "INTEGER",
+        "min": "deleted",
+        "max": "16922964",
+        "distinct_count": 1365
+      },
+      {
+        "property": "display_name",
+        "type": "STRING",
+        "values": [
+          "schernichkin",
+          "Damian Grzanka",
+          "sandrooco",
+          "Bobis",
+          "wanderingcatto",
+          "bguegan",
+          "Swordfish",
+          "Chris Wohlert",
+          "zulfi123786",
+          "Florian Bauer"
+        ],
+        "distinct_count": 1354
+      }
+    ],
+    "Tag": [
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "neo4j",
+          "subgraph",
+          "graph",
+          "cypher",
+          "graph-databases",
+          "neo4j-apoc",
+          "database",
+          "spring-boot",
+          "grandstack",
+          "search"
+        ],
+        "distinct_count": 476
+      },
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "https://stackoverflow.com/questions/tagged/neo4j",
+          "https://stackoverflow.com/questions/tagged/subgrap",
+          "https://stackoverflow.com/questions/tagged/graph",
+          "https://stackoverflow.com/questions/tagged/cypher",
+          "https://stackoverflow.com/questions/tagged/graph-d",
+          "https://stackoverflow.com/questions/tagged/neo4j-a",
+          "https://stackoverflow.com/questions/tagged/databas",
+          "https://stackoverflow.com/questions/tagged/spring-",
+          "https://stackoverflow.com/questions/tagged/grandst",
+          "https://stackoverflow.com/questions/tagged/search"
+        ],
+        "distinct_count": 421
+      }
+    ],
+    "Answer": [
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "https://stackoverflow.com/a/69272967",
+          "https://stackoverflow.com/a/69267009",
+          "https://stackoverflow.com/a/69263731",
+          "https://stackoverflow.com/a/69263260",
+          "https://stackoverflow.com/a/69263576",
+          "https://stackoverflow.com/a/69251760",
+          "https://stackoverflow.com/a/69273018",
+          "https://stackoverflow.com/a/69255357",
+          "https://stackoverflow.com/a/69253457",
+          "https://stackoverflow.com/a/69256380"
+        ],
+        "distinct_count": 1367
+      },
+      {
+        "property": "title",
+        "type": "STRING",
+        "values": [
+          "Return &#39;biggest fan of a tag&#39; neo4j",
+          "How to simplify neo4j query with multiple CASE&#39",
+          "Returning same path after &quot;count&quot; operat",
+          "Neo4j - Get the relationship that have the latest ",
+          "Neo4j modeling relationship query",
+          "How to add additional stop words to a Neo4j Full-t",
+          "Neo4j query using only one core of my machine",
+          "Substitute for @additionalLabels in Neo4j GraphQL ",
+          "Graphileon Proxy Feature issue",
+          "Neo4j Procedure and Transactions"
+        ],
+        "distinct_count": 1142
+      },
+      {
+        "property": "is_accepted",
+        "type": "BOOLEAN"
+      },
+      {
+        "property": "body_markdown",
+        "type": "STRING",
+        "values": [
+          "The error is here:\r\n\r\n```\r\nWHERE COUNT(posted) &lt",
+          "perhaps something along the line of this, using CO",
+          "Without testing, I think this would solve the issu",
+          "these are a couple of options depending what you e",
+          "I think the definition of &#39;competing&#39; shou",
+          "AFAIK, it is not possible to write a custom analyz",
+          "You can use `CALL apoc.periodic.iterate()` to do p",
+          "There is no workaround for this at this time(20/09",
+          "The `body` must also be JSON so you need to do:\r\n\r",
+          "I figured this out and will share for those it may"
+        ],
+        "distinct_count": 1364
+      },
+      {
+        "property": "score",
+        "type": "INTEGER",
+        "min": "-2",
+        "max": "6",
+        "distinct_count": 8
+      },
+      {
+        "property": "uuid",
+        "type": "INTEGER",
+        "min": "61445468",
+        "max": "69273049",
+        "distinct_count": 1367
+      }
+    ],
+    "Comment": [
+      {
+        "property": "score",
+        "type": "INTEGER",
+        "min": "0",
+        "max": "3",
+        "distinct_count": 4
+      },
+      {
+        "property": "uuid",
+        "type": "INTEGER",
+        "min": "108645245",
+        "max": "122427099",
+        "distinct_count": 1396
+      },
+      {
+        "property": "link",
+        "type": "STRING",
+        "values": [
+          "https://stackoverflow.com/questions/69208813/confi",
+          "https://stackoverflow.com/questions/69199782/neo4j",
+          "https://stackoverflow.com/questions/69177409/how-t",
+          "https://stackoverflow.com/questions/69163777/conne",
+          "https://stackoverflow.com/questions/69158730/neo4j",
+          "https://stackoverflow.com/questions/69147992/not-a",
+          "https://stackoverflow.com/questions/69118543/sprin",
+          "https://stackoverflow.com/questions/69107479/neo4j",
+          "https://stackoverflow.com/questions/69104919/py2ne",
+          "https://stackoverflow.com/questions/69098868/short"
+        ],
+        "distinct_count": 546
+      }
+    ]
+  },
+  "rel_props": {},
+  "relationships": [
+    {
+      "start": "Question",
+      "type": "TAGGED",
+      "end": "Tag"
+    },
+    {
+      "start": "User",
+      "type": "ASKED",
+      "end": "Question"
+    },
+    {
+      "start": "User",
+      "type": "COMMENTED",
+      "end": "Comment"
+    },
+    {
+      "start": "User",
+      "type": "PROVIDED",
+      "end": "Answer"
+    },
+    {
+      "start": "Answer",
+      "type": "ANSWERED",
+      "end": "Question"
+    },
+    {
+      "start": "Comment",
+      "type": "COMMENTED_ON",
+      "end": "Question"
+    }
+  ],
+  "metadata": {
+    "constraint": [
+      {
+        "id": 20,
+        "name": "constraint_32ea8862",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Comment"
+        ],
+        "properties": [
+          "uuid"
+        ],
+        "ownedIndex": "constraint_32ea8862",
+        "propertyType": null
+      },
+      {
+        "id": 18,
+        "name": "constraint_401df8db",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Question"
+        ],
+        "properties": [
+          "uuid"
+        ],
+        "ownedIndex": "constraint_401df8db",
+        "propertyType": null
+      },
+      {
+        "id": 14,
+        "name": "constraint_64b1b1cf",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Tag"
+        ],
+        "properties": [
+          "name"
+        ],
+        "ownedIndex": "constraint_64b1b1cf",
+        "propertyType": null
+      },
+      {
+        "id": 22,
+        "name": "constraint_7e29bbac",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Answer"
+        ],
+        "properties": [
+          "uuid"
+        ],
+        "ownedIndex": "constraint_7e29bbac",
+        "propertyType": null
+      },
+      {
+        "id": 16,
+        "name": "constraint_b13a3b7d",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "User"
+        ],
+        "properties": [
+          "uuid"
+        ],
+        "ownedIndex": "constraint_b13a3b7d",
+        "propertyType": null
+      }
+    ],
+    "index": [
+      {
+        "label": "Answer",
+        "properties": [
+          "uuid"
+        ],
+        "size": 1367,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 1367.0
+      },
+      {
+        "label": "Comment",
+        "properties": [
+          "uuid"
+        ],
+        "size": 1396,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 1396.0
+      },
+      {
+        "label": "Question",
+        "properties": [
+          "uuid"
+        ],
+        "size": 1589,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 1589.0
+      },
+      {
+        "label": "Tag",
+        "properties": [
+          "name"
+        ],
+        "size": 476,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 476.0
+      },
+      {
+        "label": "User",
+        "properties": [
+          "uuid"
+        ],
+        "size": 1365,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 1365.0
+      }
+    ]
+  }
+}
