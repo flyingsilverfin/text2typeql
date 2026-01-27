@@ -6,7 +6,7 @@ Always read the following files when starting a session:
 - `README.md` - Dataset card and project overview
 - `pipeline/README.md` - Pipeline docs, progress, and remaining tasks
 - `plan.md` - Implementation plan (if it exists)
-- `dataset/<database>/README.md` - Query counts for each database being worked on
+- `dataset/<source>/<database>/README.md` - Query counts for each database being worked on
 
 ## Updating Documentation
 
@@ -19,7 +19,11 @@ When learning new TypeQL patterns or syntax rules, update ALL of these files:
 
 Pipeline to convert Neo4j text2cypher datasets to TypeQL format for training text-to-TypeQL models.
 
-**Source**: https://github.com/neo4j-labs/text2cypher (datasets/synthetic_opus_demodbs/)
+**Source**: https://github.com/neo4j-labs/text2cypher
+
+Two source datasets:
+- **synthetic-1**: `datasets/synthetic_opus_demodbs/` -- 7 databases, 4,776 valid queries (4,728 converted)
+- **synthetic-2**: `datasets/synthetic_gpt4o_demodbs/` -- 15 databases, 9,267 valid queries (pending)
 
 ## Important: Sequential Processing
 
@@ -29,7 +33,8 @@ Pipeline to convert Neo4j text2cypher datasets to TypeQL format for training tex
 
 Use this skill for query conversion (requires TypeDB server running):
 
-- `/convert-query <database> <index>` - Convert a single Cypher query to TypeQL with validation, writes directly to CSV
+- `/convert-query <database> <index>` - Convert from synthetic-1 (default)
+- `/convert-query <database> <index> --source synthetic-2` - Convert from synthetic-2
 
 ## Quick Start
 
@@ -39,11 +44,13 @@ typedb server --development-mode.enabled=true
 
 # Run pipeline
 python pipeline/main.py setup                      # Clone Neo4j dataset
-python pipeline/main.py list-schemas               # List available schemas
+python pipeline/main.py list-schemas               # List schemas (synthetic-1)
+python pipeline/main.py list-schemas --source synthetic-2  # List schemas (synthetic-2)
 python pipeline/main.py convert-schema movies      # Convert schema
 
 # Use skill for query conversion (agent-based, no API costs)
 /convert-query movies 0
+/convert-query movies 0 --source synthetic-2
 ```
 
 ## Agent-Based Query Conversion
@@ -52,8 +59,8 @@ python pipeline/main.py convert-schema movies      # Convert schema
 
 The subagent handles the full pipeline:
 
-1. **Get query**: `python3 pipeline/scripts/get_query.py <database> <index>` (or from `failed_review.csv`)
-2. **Load schema**: `dataset/<database>/schema.tql`
+1. **Get query**: `python3 pipeline/scripts/get_query.py <database> <index> --source <source>` (or from `failed_review.csv`)
+2. **Load schema**: `dataset/<source>/<database>/schema.tql`
 3. **Convert** using TypeDB 3.0 syntax
 4. **Validate** against TypeDB using: `python3 pipeline/scripts/validate_typeql.py <database> --file /tmp/query.tql`
 5. **Semantic review**: Verify TypeQL answers the English question (ignore Cypher)
@@ -87,6 +94,11 @@ Before writing to CSV, verify WITHOUT looking at Cypher:
 ```
 Use Task tool with subagent_type=convert-query-runner
 Prompt: "Convert query <index> from the <database> database"
+```
+
+For synthetic-2:
+```
+Prompt: "Convert query <index> from the <database> database --source synthetic-2"
 ```
 
 When providing hints or specific patterns to use, include them in the subagent prompt:
@@ -224,12 +236,25 @@ reduce $count = count($rel) groupby $comm;  # Works - $rel bound outside disjunc
 ## Database Names
 
 TypeDB databases are prefixed: `text2typeql_<database>`
+
+**synthetic-1** (7 databases):
 - `text2typeql_twitter`
 - `text2typeql_twitch`
 - `text2typeql_movies`
 - `text2typeql_neoflix`
 - `text2typeql_recommendations`
 - `text2typeql_companies`
+- `text2typeql_gameofthrones`
+
+**synthetic-2** (15 databases -- includes all of the above plus):
+- `text2typeql_bluesky`
+- `text2typeql_buzzoverflow`
+- `text2typeql_fincen`
+- `text2typeql_grandstack`
+- `text2typeql_network`
+- `text2typeql_northwind`
+- `text2typeql_offshoreleaks`
+- `text2typeql_stackoverflow2`
 
 ## Semantic Review Process
 
@@ -244,7 +269,7 @@ After conversion, review queries to verify TypeQL matches the English question:
 
 ### Key Files for Review
 - **Full guidance**: `pipeline/docs/semantic_review_notes.md`
-- **Move helper**: `python3 pipeline/scripts/review_helper.py <database> <index1> [index2...] --reason "reason"`
+- **Move helper**: `python3 pipeline/scripts/review_helper.py <database> <index1> [index2...] --reason "reason" --source <source>`
 
 ### Common Semantic Mismatches
 | Question Pattern | Common Mistake | Correct Approach |
@@ -259,7 +284,7 @@ After conversion, review queries to verify TypeQL matches the English question:
 
 ### Dataset Files (per database)
 
-Each `dataset/<database>/` folder contains:
+Each `dataset/<source>/<database>/` folder contains:
 
 | File | Purpose | Format |
 |------|---------|--------|
@@ -297,20 +322,20 @@ When retrying a previously failed query:
 
 ```
 pipeline/scripts/
-  get_query.py           # Get source query by database and index
+  get_query.py           # Get source query by database and index (--source)
   csv_read_row.py        # Read single row from CSV by original_index
   csv_append_row.py      # Append row to CSV (creates with header if needed)
   csv_move_row.py        # Move row between CSVs atomically
-  review_helper.py       # Move queries during review
+  review_helper.py       # Move queries during review (--source)
 ```
 
 **CSV Script Usage:**
 ```bash
 # Check if query already processed
-python3 pipeline/scripts/csv_read_row.py dataset/<db>/queries.csv <index> --exists
+python3 pipeline/scripts/csv_read_row.py dataset/<source>/<db>/queries.csv <index> --exists
 
 # Append successful conversion
-python3 pipeline/scripts/csv_append_row.py dataset/<db>/queries.csv '{"original_index": N, "question": "...", "cypher": "...", "typeql": "..."}'
+python3 pipeline/scripts/csv_append_row.py dataset/<source>/<db>/queries.csv '{"original_index": N, "question": "...", "cypher": "...", "typeql": "..."}'
 ```
 
 ### Other Files
@@ -326,6 +351,8 @@ pipeline/docs/
 
 ## Query Counts by Database
 
+### synthetic-1 (opus) -- fully converted
+
 | Database | Total Queries | Converted | Failed |
 |----------|--------------|-----------|--------|
 | twitter | 493 | 491 | 2 |
@@ -336,3 +363,24 @@ pipeline/docs/
 | companies | 933 | 929 | 4 |
 | gameofthrones | 392 | 381 | 11 |
 | **Total** | **4776** | **4728** | **48** |
+
+### synthetic-2 (gpt4o) -- pending
+
+| Database | Valid Queries | Converted | Failed |
+|----------|-------------|-----------|--------|
+| twitter | 502 | 0 | 0 |
+| twitch | 576 | 0 | 0 |
+| movies | 738 | 0 | 0 |
+| neoflix | 923 | 0 | 0 |
+| recommendations | 775 | 0 | 0 |
+| companies | 966 | 0 | 0 |
+| gameofthrones | 393 | 0 | 0 |
+| bluesky | 135 | 0 | 0 |
+| buzzoverflow | 592 | 0 | 0 |
+| fincen | 614 | 0 | 0 |
+| grandstack | 807 | 0 | 0 |
+| network | 625 | 0 | 0 |
+| northwind | 807 | 0 | 0 |
+| offshoreleaks | 507 | 0 | 0 |
+| stackoverflow2 | 307 | 0 | 0 |
+| **Total** | **9267** | **0** | **0** |

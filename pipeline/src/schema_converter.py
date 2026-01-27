@@ -8,9 +8,10 @@ import anthropic
 from .config import (
     ANTHROPIC_API_KEY,
     DEFAULT_MODEL,
+    DEFAULT_SOURCE,
     MAX_RETRIES,
     PROMPTS_DIR,
-    get_output_dir,
+    get_dataset_dir,
 )
 from .neo4j_parser import Neo4jSchema, get_schema
 from .typedb_validator import TypeDBValidator, ValidationResult
@@ -131,7 +132,8 @@ def convert_schema(
 def convert_and_save_schema(
     database: str,
     validator: TypeDBValidator = None,
-    model: str = None
+    model: str = None,
+    source: str = DEFAULT_SOURCE,
 ) -> tuple[bool, str, list[str]]:
     """
     Convert a Neo4j schema and save to output directory.
@@ -140,12 +142,13 @@ def convert_and_save_schema(
         database: Database name to convert
         validator: TypeDB validator (optional)
         model: Claude model to use
+        source: Source dataset name (e.g. "synthetic-1", "synthetic-2")
 
     Returns:
         Tuple of (success, typeql_schema, errors)
     """
     # Get the Neo4j schema
-    neo4j_schema = get_schema(database)
+    neo4j_schema = get_schema(database, source=source)
 
     # Convert
     typeql_schema, errors = convert_schema(
@@ -155,7 +158,7 @@ def convert_and_save_schema(
     )
 
     # Save outputs
-    output_dir = get_output_dir(database)
+    output_dir = get_dataset_dir(database, source)
 
     # Save TypeQL schema
     schema_path = output_dir / "schema.tql"
@@ -182,9 +185,9 @@ def convert_and_save_schema(
     return success, typeql_schema, errors
 
 
-def load_schema(database: str) -> str | None:
+def load_schema(database: str, source: str = DEFAULT_SOURCE) -> str | None:
     """Load a previously converted TypeQL schema."""
-    output_dir = get_output_dir(database)
+    output_dir = get_dataset_dir(database, source)
     schema_path = output_dir / "schema.tql"
 
     if schema_path.exists():
@@ -192,9 +195,9 @@ def load_schema(database: str) -> str | None:
     return None
 
 
-def is_schema_approved(database: str) -> bool:
+def is_schema_approved(database: str, source: str = DEFAULT_SOURCE) -> bool:
     """Check if a schema has been manually approved."""
-    output_dir = get_output_dir(database)
+    output_dir = get_dataset_dir(database, source)
     status_path = output_dir / "status.json"
 
     if status_path.exists():
@@ -203,9 +206,9 @@ def is_schema_approved(database: str) -> bool:
     return False
 
 
-def approve_schema(database: str) -> bool:
+def approve_schema(database: str, source: str = DEFAULT_SOURCE) -> bool:
     """Mark a schema as manually approved."""
-    output_dir = get_output_dir(database)
+    output_dir = get_dataset_dir(database, source)
     status_path = output_dir / "status.json"
 
     if not status_path.exists():

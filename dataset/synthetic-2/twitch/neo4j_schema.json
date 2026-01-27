@@ -1,0 +1,383 @@
+{
+  "node_props": {
+    "Stream": [
+      {
+        "property": "createdAt",
+        "type": "DATE_TIME",
+        "min": "2007-05-22T10:39:53.259969Z",
+        "max": "2021-05-09T14:16:40.370294Z",
+        "distinct_count": 5743
+      },
+      {
+        "property": "id",
+        "type": "STRING",
+        "values": [
+          "129004176",
+          "26490481",
+          "50988750",
+          "213749122",
+          "30104304",
+          "238320465",
+          "10985633",
+          "160504245",
+          "50597026",
+          "125387632"
+        ],
+        "distinct_count": 5743
+      },
+      {
+        "property": "description",
+        "type": "STRING",
+        "values": [
+          "Welcome to my Channel, I'm Big Chase, 31 living in",
+          "I'm a variety streamer(kind of). Been streaming 8 ",
+          "\u611f\u8b1d\u3057\u307e\u3059\u3002",
+          "\u0422\u043e\u043f\u043e\u0432\u0430\u044f \u0441\u0442\u0443\u0434\u0438\u044f \u0432 \u043c\u0438\u0440\u0435 \u043f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u043e\u0433\u043e \u043a\u0438\u0431\u0435\u0440\u0441\u043f\u043e\u0440\u0442",
+          "Maximilian's Livestream Of Hype! Modern fighting g",
+          "PRO GAMING TEAM JUPITER #JUPWIN",
+          "\u697d\u3057\u3093\u3067\u30b2\u30fc\u30e0\u3057\u3066\u3044\u304d\u307e\u3059",
+          "spawns at midnight (pst)",
+          "On se tape des immenses barres.",
+          "Welcome to my stream! My name is Amouranth and I l"
+        ],
+        "distinct_count": 4967
+      },
+      {
+        "property": "url",
+        "type": "STRING",
+        "values": [
+          "https://www.twitch.tv/itsbigchase",
+          "https://www.twitch.tv/summit1g",
+          "https://www.twitch.tv/stylishnoob4",
+          "https://www.twitch.tv/dota2mc_ru",
+          "https://www.twitch.tv/maximilian_dood",
+          "https://www.twitch.tv/jupiter_gg",
+          "https://www.twitch.tv/spygea",
+          "https://www.twitch.tv/39daph",
+          "https://www.twitch.tv/ponce",
+          "https://www.twitch.tv/amouranth"
+        ],
+        "distinct_count": 5787
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "itsbigchase",
+          "summit1g",
+          "stylishnoob4",
+          "dota2mc_ru",
+          "maximilian_dood",
+          "jupiter_gg",
+          "spygea",
+          "39daph",
+          "ponce",
+          "amouranth"
+        ],
+        "distinct_count": 5787
+      },
+      {
+        "property": "followers",
+        "type": "INTEGER",
+        "min": "0",
+        "max": "10243195",
+        "distinct_count": 5663
+      },
+      {
+        "property": "total_view_count",
+        "type": "INTEGER",
+        "min": "21",
+        "max": "1451487256",
+        "distinct_count": 5738
+      }
+    ],
+    "Game": [
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Rust",
+          "DayZ",
+          "VALORANT",
+          "Dota 2",
+          "Resident Evil Village",
+          "Rocket League",
+          "Just Chatting",
+          "Fortnite",
+          "Grand Theft Auto V",
+          "Call of Duty: Warzone"
+        ],
+        "distinct_count": 594
+      }
+    ],
+    "Language": [
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "en",
+          "ja",
+          "en-gb",
+          "fr",
+          "it",
+          "ko",
+          "ru",
+          "es",
+          "de",
+          "zh-tw"
+        ],
+        "distinct_count": 29
+      }
+    ],
+    "User": [
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "itsbigchase",
+          "summit1g",
+          "stylishnoob4",
+          "dota2mc_ru",
+          "maximilian_dood"
+        ]
+      }
+    ],
+    "Team": [
+      {
+        "property": "createdAt",
+        "type": "DATE_TIME",
+        "min": "2011-10-11T23:59:43.548701Z",
+        "max": "2021-05-07T17:19:09.946382Z",
+        "distinct_count": 1468
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "ESO Stream Team",
+          "N3RDFUSION",
+          "The Household",
+          "The Bean Bandits",
+          "Cloud9",
+          "fantasyexpo",
+          "THE CULT",
+          "COLLAB",
+          "UBISOFT Korea",
+          "\ub178\uc7bc\uc838\uc2a4"
+        ],
+        "distinct_count": 1466
+      },
+      {
+        "property": "id",
+        "type": "STRING",
+        "values": [
+          "5893",
+          "1886",
+          "2717",
+          "719",
+          "735",
+          "3553",
+          "3255",
+          "9102",
+          "5257",
+          "3679"
+        ],
+        "distinct_count": 1468
+      }
+    ]
+  },
+  "rel_props": {},
+  "relationships": [
+    {
+      "start": "Stream",
+      "type": "PLAYS",
+      "end": "Game"
+    },
+    {
+      "start": "Stream",
+      "type": "HAS_LANGUAGE",
+      "end": "Language"
+    },
+    {
+      "start": "Stream",
+      "type": "MODERATOR",
+      "end": "Stream"
+    },
+    {
+      "start": "Stream",
+      "type": "MODERATOR",
+      "end": "User"
+    },
+    {
+      "start": "Stream",
+      "type": "CHATTER",
+      "end": "Stream"
+    },
+    {
+      "start": "Stream",
+      "type": "CHATTER",
+      "end": "User"
+    },
+    {
+      "start": "Stream",
+      "type": "HAS_TEAM",
+      "end": "Team"
+    },
+    {
+      "start": "Stream",
+      "type": "VIP",
+      "end": "Stream"
+    },
+    {
+      "start": "Stream",
+      "type": "VIP",
+      "end": "User"
+    },
+    {
+      "start": "User",
+      "type": "CHATTER",
+      "end": "Stream"
+    },
+    {
+      "start": "User",
+      "type": "CHATTER",
+      "end": "User"
+    },
+    {
+      "start": "User",
+      "type": "MODERATOR",
+      "end": "Stream"
+    },
+    {
+      "start": "User",
+      "type": "MODERATOR",
+      "end": "User"
+    }
+  ],
+  "metadata": {
+    "constraint": [
+      {
+        "id": 15,
+        "name": "constraint_2b4f13ce",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Stream"
+        ],
+        "properties": [
+          "name"
+        ],
+        "ownedIndex": "constraint_2b4f13ce",
+        "propertyType": null
+      },
+      {
+        "id": 19,
+        "name": "constraint_5018efe5",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Language"
+        ],
+        "properties": [
+          "name"
+        ],
+        "ownedIndex": "constraint_5018efe5",
+        "propertyType": null
+      },
+      {
+        "id": 13,
+        "name": "constraint_5101b27d",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Team"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_5101b27d",
+        "propertyType": null
+      },
+      {
+        "id": 21,
+        "name": "constraint_952bbd70",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "User"
+        ],
+        "properties": [
+          "name"
+        ],
+        "ownedIndex": "constraint_952bbd70",
+        "propertyType": null
+      },
+      {
+        "id": 17,
+        "name": "constraint_d7191a75",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Game"
+        ],
+        "properties": [
+          "name"
+        ],
+        "ownedIndex": "constraint_d7191a75",
+        "propertyType": null
+      }
+    ],
+    "index": [
+      {
+        "label": "Game",
+        "properties": [
+          "name"
+        ],
+        "size": 594,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 594.0
+      },
+      {
+        "label": "Language",
+        "properties": [
+          "name"
+        ],
+        "size": 29,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 29.0
+      },
+      {
+        "label": "Stream",
+        "properties": [
+          "name"
+        ],
+        "size": 5787,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 5787.0
+      },
+      {
+        "label": "Team",
+        "properties": [
+          "id"
+        ],
+        "size": 1468,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 1468.0
+      },
+      {
+        "label": "User",
+        "properties": [
+          "name"
+        ],
+        "size": 10514229,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 10514229.0
+      }
+    ]
+  }
+}

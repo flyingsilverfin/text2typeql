@@ -1,0 +1,211 @@
+define
+  # Attributes
+  attribute average_vote value double;
+  attribute overview value string;
+  attribute revenue value double;
+  attribute vote_count value integer;
+  attribute tagline value string;
+  attribute budget value integer;
+  attribute title value string;
+  attribute poster_path value string;
+  attribute imdb_id value string;
+  attribute status value string;
+  attribute runtime value double;
+  attribute popularity value double;
+  attribute homepage value string;
+  attribute release_date value datetime;
+  attribute movie_id value integer;
+  attribute original_title value string;
+  attribute language_id value string;
+  attribute language_name value string;
+  attribute country_id value string;
+  attribute country_name value string;
+  attribute genre_id value integer;
+  attribute genre_name value string;
+  attribute production_company_id value integer;
+  attribute production_company_name value string;
+  attribute collection_name value string;
+  attribute collection_id value integer;
+  attribute backdrop_path value string;
+  attribute gender value integer;
+  attribute profile_path value string;
+  attribute person_id value integer;
+  attribute person_name value string;
+  attribute user_id value string;
+  attribute keyword_id value integer;
+  attribute keyword_name value string;
+  attribute package_price value double;
+  attribute package_duration value string;
+  attribute package_id value integer;
+  attribute package_name value string;
+  attribute expires_at value datetime;
+  attribute subscription_id value string;
+  attribute credit_id value string;
+  attribute cast_order value integer;
+  attribute character value string;
+  attribute cast_id value integer;
+  attribute job value string;
+  attribute department value string;
+  attribute timestamp value datetime;
+  attribute rating value double;
+
+  # Entities - Media type hierarchy
+  entity media,
+    owns average_vote,
+    owns overview,
+    owns revenue,
+    owns vote_count,
+    owns tagline,
+    owns budget,
+    owns title,
+    owns poster_path,
+    owns imdb_id,
+    owns status,
+    owns runtime,
+    owns popularity,
+    owns homepage,
+    owns release_date,
+    owns movie_id @key,
+    owns original_title,
+    plays original_language:media,
+    plays spoken_in_language:media,
+    plays produced_in_country:media,
+    plays in_genre:media,
+    plays produced_by:media,
+    plays has_keyword:media,
+    plays in_collection:media,
+    plays cast_for:film,
+    plays crew_for:film,
+    plays rated:rated_media;
+
+  entity movie sub media,
+    owns backdrop_path;
+
+  entity video sub media;
+
+  entity adult_video sub video;
+
+  # Entities - Other
+  entity language,
+    owns language_id @key,
+    owns language_name,
+    plays original_language:language,
+    plays spoken_in_language:language;
+
+  entity country,
+    owns country_id @key,
+    owns country_name,
+    plays produced_in_country:country,
+    plays born_in:country;
+
+  entity genre,
+    owns genre_id @key,
+    owns genre_name,
+    plays in_genre:genre,
+    plays provides_access_to:genre;
+
+  entity production_company,
+    owns production_company_id @key,
+    owns production_company_name,
+    plays produced_by:producer;
+
+  entity collection,
+    owns collection_name,
+    owns collection_id @key,
+    owns backdrop_path,
+    owns poster_path,
+    plays in_collection:collection,
+    plays in_genre:media;
+
+  entity person,
+    owns gender,
+    owns profile_path,
+    owns person_id @key,
+    owns person_name,
+    plays cast_for:actor,
+    plays crew_for:crew_member,
+    plays born_in:person;
+
+  entity user,
+    owns user_id @key,
+    plays rated:reviewer;
+
+  entity keyword,
+    owns keyword_id @key,
+    owns keyword_name,
+    plays has_keyword:keyword;
+
+  entity package,
+    owns package_price,
+    owns package_duration,
+    owns package_id @key,
+    owns package_name,
+    plays provides_access_to:package,
+    plays for_package:package;
+
+  entity subscription,
+    owns expires_at,
+    owns subscription_id @key,
+    plays for_package:subscription;
+
+  # Relations
+  relation original_language,
+    relates media,
+    relates language;
+
+  relation spoken_in_language,
+    relates media,
+    relates language;
+
+  relation produced_in_country,
+    relates media,
+    relates country;
+
+  relation in_genre,
+    relates media,
+    relates genre;
+
+  relation produced_by,
+    relates media,
+    relates producer;
+
+  relation has_keyword,
+    relates media,
+    relates keyword;
+
+  relation in_collection,
+    relates media,
+    relates collection;
+
+  relation cast_for,
+    relates actor,
+    relates film,
+    owns credit_id,
+    owns cast_order,
+    owns character,
+    owns cast_id;
+
+  relation crew_for,
+    relates crew_member,
+    relates film,
+    owns credit_id,
+    owns job,
+    owns department;
+
+  relation rated,
+    relates reviewer,
+    relates rated_media,
+    owns timestamp,
+    owns rating;
+
+  relation provides_access_to,
+    relates package,
+    relates genre;
+
+  relation for_package,
+    relates subscription,
+    relates package;
+
+  relation born_in,
+    relates person,
+    relates country;

@@ -1,0 +1,80 @@
+define
+  attribute name value string;
+  attribute created_at value datetime;
+  attribute stream_id value string;
+  attribute description value string;
+  attribute url value string;
+  attribute followers value integer;
+  attribute total_view_count value integer;
+  attribute team_id value string;
+
+  entity stream,
+    owns name @key,
+    owns created_at,
+    owns stream_id,
+    owns description,
+    owns url,
+    owns followers,
+    owns total_view_count,
+    plays game_play:streaming_channel,
+    plays language_usage:channel,
+    plays moderation:moderated_channel,
+    plays moderation:moderating_channel,
+    plays chat_activity:chatting_channel,
+    plays chat_activity:channel_with_chatters,
+    plays team_membership:member_stream,
+    plays vip_status:vip_channel,
+    plays vip_status:channel_with_vips;
+
+  entity game,
+    owns name @key,
+    plays game_play:played_game;
+
+  entity language,
+    owns name @key,
+    plays language_usage:used_language;
+
+  entity user,
+    owns name @key,
+    owns followers,
+    plays chat_activity:chatting_user,
+    plays chat_activity:user_with_chatters,
+    plays moderation:moderated_user,
+    plays moderation:moderating_user,
+    plays vip_status:vip_user;
+
+  entity team,
+    owns created_at,
+    owns name,
+    owns team_id @key,
+    owns followers,
+    plays team_membership:organization;
+
+  relation game_play,
+    relates streaming_channel,
+    relates played_game;
+
+  relation language_usage,
+    relates channel,
+    relates used_language;
+
+  relation moderation,
+    relates moderating_channel,
+    relates moderated_channel,
+    relates moderating_user,
+    relates moderated_user;
+
+  relation chat_activity,
+    relates chatting_channel,
+    relates channel_with_chatters,
+    relates chatting_user,
+    relates user_with_chatters;
+
+  relation team_membership,
+    relates member_stream,
+    relates organization;
+
+  relation vip_status,
+    relates vip_channel,
+    relates channel_with_vips,
+    relates vip_user;

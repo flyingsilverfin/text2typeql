@@ -1,0 +1,166 @@
+define
+  # Attributes
+  attribute name value string;
+  attribute person_id value string;
+  attribute summary value string;
+  attribute revenue value double;
+  attribute motto value string;
+  attribute nbr_employees value integer;
+  attribute is_dissolved value boolean;
+  attribute organization_id value string;
+  attribute is_public value boolean;
+  attribute industry_category_name value string;
+  attribute industry_category_id value string;
+  attribute city_id value string;
+  attribute city_summary value string;
+  attribute city_name value string;
+  attribute country_name value string;
+  attribute country_id value string;
+  attribute country_summary value string;
+  attribute article_id value string;
+  attribute sentiment value double;
+  attribute author value string;
+  attribute site_name value string;
+  attribute article_summary value string;
+  attribute date value datetime;
+  attribute title value string;
+  attribute text value string;
+  attribute embedding value string;
+  attribute embedding_google value string;
+  attribute question value string;
+  attribute cypher value string;
+  attribute fewshot_id value integer;
+  attribute population value integer;
+  attribute start-date value datetime;
+  attribute founding-date value datetime;
+  attribute patent-count value integer;
+
+  # Entities
+  entity person,
+    owns name,
+    owns person_id @key,
+    owns summary,
+    plays parent_of:parent,
+    plays parent_of:child,
+    plays ceo_of:ceo,
+    plays invested_in:investor,
+    plays board_member_of:member;
+
+  entity organization,
+    owns name,
+    owns organization_id @key,
+    owns summary,
+    owns revenue,
+    owns motto,
+    owns nbr_employees,
+    owns is_dissolved,
+    owns is_public,
+    owns founding-date,
+    owns patent-count,
+    plays located_in:organization,
+    plays ceo_of:organization,
+    plays in_category:organization,
+    plays subsidiary_of:parent,
+    plays subsidiary_of:subsidiary,
+    plays supplies:supplier,
+    plays supplies:customer,
+    plays invested_in:organization,
+    plays invested_in:investor,
+    plays board_member_of:organization,
+    plays competes_with:competitor,
+    plays mentions:mentioned;
+
+  entity industry_category,
+    owns industry_category_name,
+    owns industry_category_id @key,
+    plays in_category:category;
+
+  entity place,
+    owns population,
+    plays location-contains:parent,
+    plays location-contains:child;
+
+  entity city sub place,
+    owns city_id @key,
+    owns city_summary,
+    owns city_name,
+    plays located_in:city,
+    plays mentions:mentioned;
+
+  entity country sub place,
+    owns country_name,
+    owns country_id @key,
+    owns country_summary;
+
+  entity article,
+    owns article_id @key,
+    owns sentiment,
+    owns author,
+    owns site_name,
+    owns article_summary,
+    owns date,
+    owns title,
+    plays has_chunk:article,
+    plays mentions:article;
+
+  entity chunk,
+    owns text,
+    owns embedding,
+    owns embedding_google,
+    plays has_chunk:chunk;
+
+  entity fewshot,
+    owns question,
+    owns cypher,
+    owns fewshot_id @key,
+    owns embedding;
+
+  # Relations
+  relation parent_of,
+    relates parent,
+    relates child;
+
+  relation located_in,
+    relates organization,
+    relates city;
+
+  relation ceo_of,
+    relates organization,
+    relates ceo,
+    owns start-date;
+
+  relation in_category,
+    relates organization,
+    relates category;
+
+  relation subsidiary_of,
+    relates parent,
+    relates subsidiary;
+
+  relation supplies,
+    relates supplier,
+    relates customer;
+
+  relation invested_in,
+    relates organization,
+    relates investor;
+
+  relation board_member_of,
+    relates organization,
+    relates member,
+    owns start-date;
+
+  relation competes_with,
+    relates competitor;
+
+  relation location-contains,
+    relates parent,
+    relates child;
+
+  relation has_chunk,
+    relates article,
+    relates chunk;
+
+  relation mentions,
+    relates article,
+    relates mentioned;

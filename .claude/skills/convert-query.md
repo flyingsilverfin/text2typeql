@@ -4,10 +4,10 @@ Convert a single Cypher query to TypeQL.
 
 ## Usage
 ```
-/convert-query <database> <index> [--source failed_review]
+/convert-query <database> <index> [--source synthetic-1|synthetic-2] [--source failed_review]
 ```
 
-By default, reads from the original Neo4j dataset. Use `--source failed_review` to re-convert queries from `failed_review.csv`.
+By default, reads from the original Neo4j dataset (synthetic-1). Use `--source synthetic-2` for the GPT4O dataset. Use `--source failed_review` to re-convert queries from `failed_review.csv`.
 
 ## CRITICAL: Use Validation Script
 
@@ -23,14 +23,16 @@ Returns "OK" on success, error message on failure. This is the ONLY way to valid
 
 ```bash
 # Check if already converted
-python3 pipeline/scripts/csv_read_row.py dataset/<db>/queries.csv <index> --exists
+python3 pipeline/scripts/csv_read_row.py dataset/<source>/<db>/queries.csv <index> --exists
 
 # Append success
-python3 pipeline/scripts/csv_append_row.py dataset/<db>/queries.csv '{"original_index": N, "question": "...", "cypher": "...", "typeql": "..."}'
+python3 pipeline/scripts/csv_append_row.py dataset/<source>/<db>/queries.csv '{"original_index": N, "question": "...", "cypher": "...", "typeql": "..."}'
 
 # Append failure
-python3 pipeline/scripts/csv_append_row.py dataset/<db>/failed.csv '{"original_index": N, "question": "...", "cypher": "...", "error": "..."}'
+python3 pipeline/scripts/csv_append_row.py dataset/<source>/<db>/failed.csv '{"original_index": N, "question": "...", "cypher": "...", "error": "..."}'
 ```
+
+Where `<source>` is `synthetic-1` (default) or `synthetic-2`.
 
 **Be concise.** Do not output full queries in explanations. Stop immediately after writing result.
 
@@ -40,8 +42,8 @@ python3 pipeline/scripts/csv_append_row.py dataset/<db>/failed.csv '{"original_i
 
 ### 1. Check if Already Done
 ```bash
-python3 pipeline/scripts/csv_read_row.py dataset/<database>/queries.csv <index> --exists
-python3 pipeline/scripts/csv_read_row.py dataset/<database>/failed.csv <index> --exists
+python3 pipeline/scripts/csv_read_row.py dataset/<source>/<database>/queries.csv <index> --exists
+python3 pipeline/scripts/csv_read_row.py dataset/<source>/<database>/failed.csv <index> --exists
 ```
 If either returns `true`, report "already processed" and STOP.
 
@@ -51,17 +53,17 @@ If either returns `true`, report "already processed" and STOP.
 
 **Default (from original dataset):**
 ```bash
-python3 pipeline/scripts/get_query.py <database> <index>
+python3 pipeline/scripts/get_query.py <database> <index> --source <source>
 ```
 
 **From failed_review.csv:**
 ```bash
-python3 pipeline/scripts/csv_read_row.py dataset/<database>/failed_review.csv <index>
+python3 pipeline/scripts/csv_read_row.py dataset/<source>/<database>/failed_review.csv <index>
 ```
 This returns JSON with `original_index`, `question`, `cypher`, `typeql` (previous attempt), and `review_reason`.
 
 ### 3. Load Schema
-Read `dataset/<database>/schema.tql` for entity types, relations, and role names.
+Read `dataset/<source>/<database>/schema.tql` for entity types, relations, and role names.
 
 ### 4. Convert to TypeQL
 
@@ -102,22 +104,22 @@ Before saving, verify (without looking at Cypher):
 
 **Success (from original dataset):**
 ```bash
-python3 pipeline/scripts/csv_append_row.py dataset/<database>/queries.csv '{"original_index": <index>, "question": "<escaped>", "cypher": "<escaped>", "typeql": "<escaped>"}'
+python3 pipeline/scripts/csv_append_row.py dataset/<source>/<database>/queries.csv '{"original_index": <index>, "question": "<escaped>", "cypher": "<escaped>", "typeql": "<escaped>"}'
 ```
 
 **Success (from failed_review.csv):**
 ```bash
-python3 pipeline/scripts/csv_move_row.py dataset/<database>/failed_review.csv dataset/<database>/queries.csv <index> '{"typeql": "<new_typeql>"}'
+python3 pipeline/scripts/csv_move_row.py dataset/<source>/<database>/failed_review.csv dataset/<source>/<database>/queries.csv <index> '{"typeql": "<new_typeql>"}'
 ```
 
 **Failure after 3 attempts (from original dataset):**
 ```bash
-python3 pipeline/scripts/csv_append_row.py dataset/<database>/failed.csv '{"original_index": <index>, "question": "<escaped>", "cypher": "<escaped>", "error": "<reason>"}'
+python3 pipeline/scripts/csv_append_row.py dataset/<source>/<database>/failed.csv '{"original_index": <index>, "question": "<escaped>", "cypher": "<escaped>", "error": "<reason>"}'
 ```
 
 **Failure after 3 attempts (from failed_review.csv):**
 ```bash
-python3 pipeline/scripts/csv_move_row.py dataset/<database>/failed_review.csv dataset/<database>/failed.csv <index> '{"error": "<reason>"}'
+python3 pipeline/scripts/csv_move_row.py dataset/<source>/<database>/failed_review.csv dataset/<source>/<database>/failed.csv <index> '{"error": "<reason>"}'
 ```
 
 **JSON escaping:** Use `json.dumps()` in Python or escape `"` as `\"` and newlines as `\n`.

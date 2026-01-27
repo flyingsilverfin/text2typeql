@@ -1,0 +1,221 @@
+{
+  "node_props": {
+    "Movie": [
+      {
+        "property": "title",
+        "type": "STRING",
+        "values": [
+          "The Matrix",
+          "The Matrix Reloaded",
+          "The Matrix Revolutions",
+          "The Devil's Advocate",
+          "A Few Good Men",
+          "Top Gun",
+          "Jerry Maguire",
+          "Stand By Me",
+          "As Good as It Gets",
+          "What Dreams May Come"
+        ],
+        "distinct_count": 38
+      },
+      {
+        "property": "votes",
+        "type": "INTEGER",
+        "min": "1",
+        "max": "5259",
+        "distinct_count": 31
+      },
+      {
+        "property": "tagline",
+        "type": "STRING",
+        "values": [
+          "Welcome to the Real World",
+          "Free your mind",
+          "Everything that has a beginning has an end",
+          "Evil has its winning ways",
+          "In the heart of the nation's capital, in a courtho",
+          "I feel the need, the need for speed.",
+          "The rest of his life begins now.",
+          "For some, it's the last real taste of innocence, a",
+          "A comedy from the heart that goes for the throat.",
+          "After life there is more. The end is just the begi"
+        ],
+        "distinct_count": 37
+      },
+      {
+        "property": "released",
+        "type": "INTEGER",
+        "min": "1975",
+        "max": "2012",
+        "distinct_count": 18
+      }
+    ],
+    "Person": [
+      {
+        "property": "born",
+        "type": "INTEGER",
+        "min": "1929",
+        "max": "1996",
+        "distinct_count": 51
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Keanu Reeves",
+          "Carrie-Anne Moss",
+          "Laurence Fishburne",
+          "Hugo Weaving",
+          "Lilly Wachowski",
+          "Lana Wachowski",
+          "Joel Silver",
+          "Emil Eifrem",
+          "Charlize Theron",
+          "Al Pacino"
+        ],
+        "distinct_count": 133
+      }
+    ]
+  },
+  "rel_props": {
+    "ACTED_IN": [
+      {
+        "property": "roles",
+        "type": "LIST",
+        "max_size": 6,
+        "min_size": 1
+      }
+    ],
+    "REVIEWED": [
+      {
+        "property": "summary",
+        "type": "STRING",
+        "values": [
+          "Pretty funny at times",
+          "A solid romp",
+          "Silly, but fun",
+          "You had me at Jerry",
+          "An amazing journey",
+          "Slapstick redeemed only by the Robin Williams and ",
+          "Dark, but compelling",
+          "The coolest football movie ever",
+          "Fun, but a little far fetched"
+        ],
+        "distinct_count": 9
+      },
+      {
+        "property": "rating",
+        "type": "INTEGER",
+        "min": "45",
+        "max": "100",
+        "distinct_count": 8
+      }
+    ]
+  },
+  "relationships": [
+    {
+      "start": "Person",
+      "type": "ACTED_IN",
+      "end": "Movie"
+    },
+    {
+      "start": "Person",
+      "type": "DIRECTED",
+      "end": "Movie"
+    },
+    {
+      "start": "Person",
+      "type": "PRODUCED",
+      "end": "Movie"
+    },
+    {
+      "start": "Person",
+      "type": "WROTE",
+      "end": "Movie"
+    },
+    {
+      "start": "Person",
+      "type": "FOLLOWS",
+      "end": "Person"
+    },
+    {
+      "start": "Person",
+      "type": "REVIEWED",
+      "end": "Movie"
+    }
+  ],
+  "metadata": {
+    "constraint": [
+      {
+        "id": 13,
+        "name": "constraint_3044d997",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Movie"
+        ],
+        "properties": [
+          "title"
+        ],
+        "ownedIndex": "constraint_3044d997",
+        "propertyType": null
+      },
+      {
+        "id": 11,
+        "name": "constraint_e26b1a8b",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Person"
+        ],
+        "properties": [
+          "name"
+        ],
+        "ownedIndex": "constraint_e26b1a8b",
+        "propertyType": null
+      }
+    ],
+    "index": [
+      {
+        "label": "Movie",
+        "properties": [
+          "title"
+        ],
+        "size": 38,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 38.0
+      },
+      {
+        "label": "Person",
+        "properties": [
+          "born"
+        ],
+        "size": 128,
+        "type": "RANGE",
+        "valuesSelectivity": 0.3984375,
+        "distinctValues": 51.0
+      },
+      {
+        "label": "Person",
+        "properties": [
+          "released"
+        ],
+        "size": 0,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 0.0
+      },
+      {
+        "label": "Person",
+        "properties": [
+          "name"
+        ],
+        "size": 133,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 133.0
+      }
+    ]
+  }
+}

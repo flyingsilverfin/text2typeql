@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Extract the Nth query for a database from the source CSV."""
+"""Extract a batch of queries for a database from the source CSV.
+Usage: get_batch.py <database> <start_index> <count> [--source synthetic-1|synthetic-2]
+Returns JSON array of {index, question, cypher} objects."""
 
 import csv
 import json
@@ -28,11 +30,10 @@ def is_excluded(row: dict, source_config: dict) -> bool:
         return str(value).strip().lower() == "true"
     return False
 
-def get_query(database: str, index: int, source: str = "synthetic-1") -> dict:
-    """Get query at index for database (0-indexed within valid queries for that db)."""
+def get_batch(database: str, start: int, count: int, source: str = "synthetic-1") -> list:
     config = SOURCES[source]
     csv_path = config["csv_path"]
-
+    results = []
     with open(csv_path, 'r') as f:
         reader = csv.DictReader(f)
         idx = 0
@@ -43,16 +44,16 @@ def get_query(database: str, index: int, source: str = "synthetic-1") -> dict:
                 continue
             if is_excluded(row, config):
                 continue
-
-            if idx == index:
-                return {
-                    'index': index,
+            if idx >= start and idx < start + count:
+                results.append({
+                    'index': idx,
                     'question': row['question'],
                     'cypher': row['cypher']
-                }
+                })
+            if idx >= start + count:
+                break
             idx += 1
-
-    return None
+    return results
 
 if __name__ == '__main__':
     source = "synthetic-1"
@@ -66,8 +67,8 @@ if __name__ == '__main__':
             args.append(sys.argv[i])
             i += 1
 
-    if len(args) != 2:
-        print("Usage: get_query.py <database> <index> [--source synthetic-1|synthetic-2]", file=sys.stderr)
+    if len(args) != 3:
+        print("Usage: get_batch.py <database> <start_index> <count> [--source synthetic-1|synthetic-2]", file=sys.stderr)
         sys.exit(1)
 
     if source not in SOURCES:
@@ -75,11 +76,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     database = args[0]
-    index = int(args[1])
-
-    result = get_query(database, index, source)
-    if result:
-        print(json.dumps(result, indent=2))
-    else:
-        print(f"No query found at index {index} for {database}", file=sys.stderr)
-        sys.exit(1)
+    start = int(args[1])
+    count = int(args[2])
+    results = get_batch(database, start, count, source)
+    print(json.dumps(results))

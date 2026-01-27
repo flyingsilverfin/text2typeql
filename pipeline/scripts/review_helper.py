@@ -4,11 +4,13 @@
 import csv
 import sys
 
-def move_to_failed_review(database: str, indices: list[int], reason: str = ""):
+DEFAULT_SOURCE = "synthetic-1"
+
+def move_to_failed_review(database: str, indices: list[int], reason: str = "", source: str = DEFAULT_SOURCE):
     """Move queries at given indices from queries.csv to failed_review.csv"""
 
-    queries_path = f"/opt/text2typeql/dataset/{database}/queries.csv"
-    failed_path = f"/opt/text2typeql/dataset/{database}/failed_review.csv"
+    queries_path = f"/opt/text2typeql/dataset/{source}/{database}/queries.csv"
+    failed_path = f"/opt/text2typeql/dataset/{source}/{database}/failed_review.csv"
 
     # Read all queries
     with open(queries_path, 'r') as f:
@@ -52,11 +54,12 @@ def move_to_failed_review(database: str, indices: list[int], reason: str = ""):
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print("Usage: review_helper.py <database> <index1> [index2] ... [--reason 'reason']")
+        print("Usage: review_helper.py <database> <index1> [index2] ... [--reason 'reason'] [--source synthetic-1|synthetic-2]")
         sys.exit(1)
 
     database = sys.argv[1]
     reason = ""
+    source = DEFAULT_SOURCE
     indices = []
 
     i = 2
@@ -64,8 +67,11 @@ if __name__ == '__main__':
         if sys.argv[i] == '--reason':
             reason = sys.argv[i + 1]
             i += 2
+        elif sys.argv[i] == '--source':
+            source = sys.argv[i + 1]
+            i += 2
         else:
             indices.append(int(sys.argv[i]))
             i += 1
 
-    move_to_failed_review(database, indices, reason)
+    move_to_failed_review(database, indices, reason, source)

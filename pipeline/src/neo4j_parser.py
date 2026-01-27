@@ -7,7 +7,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from .config import SCHEMAS_CSV, QUERIES_CSV
+from .config import (
+    DEFAULT_SOURCE,
+    get_source_queries_csv,
+    get_source_schemas_csv,
+    is_query_excluded,
+)
 
 
 @dataclass
@@ -20,7 +25,7 @@ class QueryRecord:
     syntax_error: bool
     timeout: bool
     returns_results: bool
-    false_schema: bool
+    excluded: bool
 
 
 @dataclass
@@ -37,17 +42,18 @@ class Neo4jSchema:
         return json.dumps(self.raw_json, indent=indent)
 
 
-def parse_schemas(csv_path: Path = None) -> dict[str, Neo4jSchema]:
+def parse_schemas(csv_path: Path = None, source: str = DEFAULT_SOURCE) -> dict[str, Neo4jSchema]:
     """
     Parse Neo4j schemas from CSV file.
 
     Args:
-        csv_path: Path to text2cypher_schemas.csv
+        csv_path: Path to text2cypher_schemas.csv (overrides source)
+        source: Source dataset name (e.g. "synthetic-1", "synthetic-2")
 
     Returns:
         Dictionary mapping database names to Neo4jSchema objects
     """
-    csv_path = csv_path or SCHEMAS_CSV
+    csv_path = csv_path or get_source_schemas_csv(source)
 
     if not csv_path.exists():
         raise FileNotFoundError(
@@ -76,19 +82,21 @@ def parse_schemas(csv_path: Path = None) -> dict[str, Neo4jSchema]:
 
 def parse_queries(
     csv_path: Path = None,
-    database: str = None
+    database: str = None,
+    source: str = DEFAULT_SOURCE,
 ) -> list[QueryRecord]:
     """
     Parse queries from CSV file.
 
     Args:
-        csv_path: Path to text2cypher_claudeopus.csv
+        csv_path: Path to queries CSV (overrides source)
         database: Filter to specific database (optional)
+        source: Source dataset name (e.g. "synthetic-1", "synthetic-2")
 
     Returns:
         List of QueryRecord objects
     """
-    csv_path = csv_path or QUERIES_CSV
+    csv_path = csv_path or get_source_queries_csv(source)
 
     if not csv_path.exists():
         raise FileNotFoundError(
@@ -103,10 +111,7 @@ def parse_queries(
 
     queries = []
     for _, row in df.iterrows():
-        # false_schema is NaN when valid, or contains a string describing the issue
-        false_schema_val = row.get('false_schema', None)
-        has_false_schema = pd.notna(false_schema_val) and false_schema_val != ''
-
+        row_dict = row.to_dict()
         queries.append(QueryRecord(
             question=row['question'],
             cypher=row['cypher'],
@@ -115,7 +120,7 @@ def parse_queries(
             syntax_error=bool(row.get('syntax_error', False)),
             timeout=bool(row.get('timeout', False)),
             returns_results=bool(row.get('returns_results', True)),
-            false_schema=has_false_schema
+            excluded=is_query_excluded(row_dict, source)
         ))
 
     return queries
@@ -127,23 +132,23 @@ def filter_valid_queries(queries: list[QueryRecord]) -> list[QueryRecord]:
 
     Excludes queries with:
     - syntax_error: True
-    - false_schema: True
+    - excluded: True (false_schema for opus, no_cypher for gpt4o)
     """
     return [
         q for q in queries
-        if not q.syntax_error and not q.false_schema
+        if not q.syntax_error and not q.excluded
     ]
 
 
-def list_databases(csv_path: Path = None) -> list[str]:
+def list_databases(csv_path: Path = None, source: str = DEFAULT_SOURCE) -> list[str]:
     """List all available database names from schemas CSV."""
-    schemas = parse_schemas(csv_path)
+    schemas = parse_schemas(csv_path, source=source)
     return sorted(schemas.keys())
 
 
-def get_schema(database: str, csv_path: Path = None) -> Neo4jSchema:
+def get_schema(database: str, csv_path: Path = None, source: str = DEFAULT_SOURCE) -> Neo4jSchema:
     """Get schema for a specific database."""
-    schemas = parse_schemas(csv_path)
+    schemas = parse_schemas(csv_path, source=source)
     if database not in schemas:
         available = ', '.join(sorted(schemas.keys()))
         raise ValueError(
@@ -152,14 +157,14 @@ def get_schema(database: str, csv_path: Path = None) -> Neo4jSchema:
     return schemas[database]
 
 
-def get_query_count(database: str, csv_path: Path = None) -> dict:
+def get_query_count(database: str, csv_path: Path = None, source: str = DEFAULT_SOURCE) -> dict:
     """Get query statistics for a database."""
-    queries = parse_queries(csv_path, database)
+    queries = parse_queries(csv_path, database, source=source)
     valid = filter_valid_queries(queries)
 
     return {
         'total': len(queries),
         'valid': len(valid),
         'syntax_errors': sum(1 for q in queries if q.syntax_error),
-        'false_schema': sum(1 for q in queries if q.false_schema)
+        'excluded': sum(1 for q in queries if q.excluded)
     }

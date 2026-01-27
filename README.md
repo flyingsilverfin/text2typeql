@@ -1,35 +1,67 @@
 # Text2TypeQL
 
-4,728 natural-language questions paired with validated TypeQL 3.0 queries across 7 domains.
+4,728 natural-language questions paired with validated TypeQL 3.0 queries across 7 domains, with 9,267 more pending conversion.
 
 ## Overview
 
 Foundation models generate SQL and Cypher reasonably well thanks to large public corpora and benchmark datasets. TypeQL 3.0, released with TypeDB 3.0, has little of that, and relies mostly on being close to natural language. Even frontier models struggle to produce correct queries without expensive reasoning sequences and context-heavy prompting. This dataset addresses that gap.
 
-**Text2TypeQL** provides supervised training data for fine-tuning models on TypeQL generation, a retrieval corpus for few-shot prompting and RAG, and a standardized evaluation benchmark for TypeQL generation quality. Each entry includes the English question, the original Cypher query (from the source dataset), and a validated TypeQL 3.0 query. Seven TypeQL schemas model the domains. Schemas were generated according to the loose Neo4j schema provided, and tweaked throughout the query generation process.
+**Text2TypeQL** provides supervised training data for fine-tuning models on TypeQL generation, a retrieval corpus for few-shot prompting and RAG, and a standardized evaluation benchmark for TypeQL generation quality. Each entry includes the English question, the original Cypher query (from the source dataset), and a validated TypeQL 3.0 query. TypeQL schemas model the domains. Schemas were generated according to the loose Neo4j schema provided, and tweaked throughout the query generation process.
 
-The dataset was produced by converting Neo4j Labs' [text2cypher](https://github.com/neo4j-labs/text2cypher) dataset, which itself was generated using AI. It was created using aagents operating under a detailed TypeQL 3.0 reference, with every query validated against a live TypeDB instance and semantically reviewed to verify it correctly answers the English question. About 5-10% of remaining queries were then manually prompted with extra information.
+The dataset was produced by converting Neo4j Labs' [text2cypher](https://github.com/neo4j-labs/text2cypher) dataset, which itself was generated using AI. It was created using agents operating under a detailed TypeQL 3.0 reference, with every query validated against a live TypeDB instance and semantically reviewed to verify it correctly answers the English question. About 5-10% of remaining queries were then manually prompted with extra information.
 
 Interestingly, the generation of TypeQL, which also relied on semantic validation against the schema, highlighted at least 30 cases (~0.75%) where Neo4j queries were incorrect against their own schema - but because it lacks a strong type system like TypeDB's, these were never found.
 
+## Source Datasets
+
+Two Neo4j text2cypher source datasets are used:
+
+| Source | Neo4j Directory | Databases | Valid Queries | Status |
+|--------|----------------|-----------|---------------|--------|
+| `synthetic-1` | `synthetic_opus_demodbs` | 7 | 4,776 | 4,728 converted |
+| `synthetic-2` | `synthetic_gpt4o_demodbs` | 15 | 9,267 | pending |
+
 ## Domains
+
+### synthetic-1 (fully converted)
 
 | Domain | Queries | Description |
 |--------|---------|-------------|
-| [twitter](dataset/twitter/) | 491 | Users, tweets, hashtags, retweets, follows |
-| [twitch](dataset/twitch/) | 553 | Streamers, games, teams, subscriptions |
-| [movies](dataset/movies/) | 723 | Actors, directors, producers, reviews, roles |
-| [neoflix](dataset/neoflix/) | 910 | Movies, ratings, genres, subscriptions |
-| [recommendations](dataset/recommendations/) | 741 | Users, movies, genres, ratings, actors |
-| [companies](dataset/companies/) | 929 | Organizations, subsidiaries, CEOs, articles |
-| [gameofthrones](dataset/gameofthrones/) | 381 | Characters, houses, battles, interactions |
+| [twitter](dataset/synthetic-1/twitter/) | 491 | Users, tweets, hashtags, retweets, follows |
+| [twitch](dataset/synthetic-1/twitch/) | 553 | Streamers, games, teams, subscriptions |
+| [movies](dataset/synthetic-1/movies/) | 723 | Actors, directors, producers, reviews, roles |
+| [neoflix](dataset/synthetic-1/neoflix/) | 910 | Movies, ratings, genres, subscriptions |
+| [recommendations](dataset/synthetic-1/recommendations/) | 741 | Users, movies, genres, ratings, actors |
+| [companies](dataset/synthetic-1/companies/) | 929 | Organizations, subsidiaries, CEOs, articles |
+| [gameofthrones](dataset/synthetic-1/gameofthrones/) | 381 | Characters, houses, battles, interactions |
 | **Total** | **4,728** | + 48 documented failures |
+
+### synthetic-2 (pending conversion)
+
+| Domain | Valid Queries | Description |
+|--------|-------------|-------------|
+| [twitter](dataset/synthetic-2/twitter/) | 502 | Users, tweets, hashtags, retweets, follows |
+| [twitch](dataset/synthetic-2/twitch/) | 576 | Streamers, games, teams, subscriptions |
+| [movies](dataset/synthetic-2/movies/) | 738 | Actors, directors, producers, reviews, roles |
+| [neoflix](dataset/synthetic-2/neoflix/) | 923 | Movies, ratings, genres, subscriptions |
+| [recommendations](dataset/synthetic-2/recommendations/) | 775 | Users, movies, genres, ratings, actors |
+| [companies](dataset/synthetic-2/companies/) | 966 | Organizations, subsidiaries, CEOs, articles |
+| [gameofthrones](dataset/synthetic-2/gameofthrones/) | 393 | Characters, houses, battles, interactions |
+| [bluesky](dataset/synthetic-2/bluesky/) | 135 | Social network posts and interactions |
+| [buzzoverflow](dataset/synthetic-2/buzzoverflow/) | 592 | Q&A platform (Stack Overflow-like) |
+| [fincen](dataset/synthetic-2/fincen/) | 614 | Financial crime reports and filings |
+| [grandstack](dataset/synthetic-2/grandstack/) | 807 | Movie reviews (GRANDstack demo) |
+| [network](dataset/synthetic-2/network/) | 625 | Computer network topology |
+| [northwind](dataset/synthetic-2/northwind/) | 807 | Products, orders, suppliers (Northwind) |
+| [offshoreleaks](dataset/synthetic-2/offshoreleaks/) | 507 | Offshore financial entities |
+| [stackoverflow2](dataset/synthetic-2/stackoverflow2/) | 307 | Q&A platform variant |
+| **Total** | **9,267** | |
 
 ## Data Format
 
 ### Merged dataset
 
-`dataset/all_queries.csv` contains all queries in one file:
+`dataset/synthetic-1/all_queries.csv` contains all converted queries for synthetic-1:
 
 | Column | Description |
 |--------|-------------|
@@ -41,7 +73,7 @@ Interestingly, the generation of TypeQL, which also relied on semantic validatio
 
 ### Per-domain files
 
-Each `dataset/<domain>/` directory contains:
+Each `dataset/<source>/<domain>/` directory contains:
 
 - `schema.tql` -- TypeQL schema definition
 - `queries.csv` -- Query pairs (`original_index`, `question`, `cypher`, `typeql`)
@@ -53,13 +85,14 @@ Each `dataset/<domain>/` directory contains:
 ```python
 import pandas as pd
 
-# Load all queries
-df = pd.read_csv("dataset/all_queries.csv")
+# Load all synthetic-1 queries
+df = pd.read_csv("dataset/synthetic-1/all_queries.csv")
 
 # Filter by domain
 twitter = df[df["domain"] == "twitter"]
+
 # Load a single domain
-movies = pd.read_csv("dataset/movies/queries.csv")
+movies = pd.read_csv("dataset/synthetic-1/movies/queries.csv")
 ```
 
 ## What the Type System Caught
@@ -74,11 +107,11 @@ In each case the TypeQL was written to correctly answer the English question. De
 
 ## Failed Queries
 
-48 of 4,776 source queries (1%) cannot yet be expressed in TypeQL 3.0. They require features not yet supported: `size()` for string/list length, array indexing, epoch timestamp conversion, duration and date arithmetic, date component extraction, and `collect()` aggregation. Each is documented with its original Cypher and the specific missing capability in the per-domain READMEs.
+48 of 4,776 source queries (1%) from synthetic-1 cannot yet be expressed in TypeQL 3.0. They require features not yet supported: `size()` for string/list length, array indexing, epoch timestamp conversion, duration and date arithmetic, date component extraction, and `collect()` aggregation. Each is documented with its original Cypher and the specific missing capability in the per-domain READMEs.
 
 ## Source
 
-Derived from Neo4j Labs' [text2cypher](https://github.com/neo4j-labs/text2cypher) benchmark (`datasets/synthetic_opus_demodbs/`). Full credit to Neo4j Labs for creating and open-sourcing the original dataset.
+Derived from Neo4j Labs' [text2cypher](https://github.com/neo4j-labs/text2cypher) benchmark (`datasets/synthetic_opus_demodbs/` and `datasets/synthetic_gpt4o_demodbs/`). Full credit to Neo4j Labs for creating and open-sourcing the original dataset.
 
 ## Conversion Pipeline
 

@@ -1,0 +1,518 @@
+{
+  "node_props": {
+    "User": [
+      {
+        "property": "betweenness",
+        "type": "FLOAT",
+        "values": [
+          "3.49332601E8",
+          "0.0"
+        ]
+      },
+      {
+        "property": "location",
+        "type": "STRING",
+        "values": [
+          "Graphs Are Everywhere",
+          "Jezero Crater, Mars",
+          "",
+          "Nigeria"
+        ]
+      },
+      {
+        "property": "followers",
+        "type": "INTEGER",
+        "values": [
+          "34507",
+          "2617355",
+          "0",
+          "35",
+          "71"
+        ]
+      },
+      {
+        "property": "following",
+        "type": "INTEGER",
+        "values": [
+          "10124",
+          "45",
+          "0",
+          "35",
+          "71"
+        ]
+      },
+      {
+        "property": "profile_image_url",
+        "type": "STRING",
+        "values": [
+          "http://pbs.twimg.com/profile_images/11837552737537",
+          "http://pbs.twimg.com/profile_images/12356362801652",
+          "http://pbs.twimg.com/profile_images/13703060708459",
+          "http://pbs.twimg.com/profile_images/2566078294/rkk",
+          "http://pbs.twimg.com/profile_images/12523769466730"
+        ]
+      },
+      {
+        "property": "screen_name",
+        "type": "STRING",
+        "values": [
+          "neo4j",
+          "NASAPersevere",
+          "pranitahakim1",
+          "galeister",
+          "rhema_beth"
+        ]
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Neo4j",
+          "NASA's Perseverance Mars Rover",
+          "pranitahakim",
+          "Galeister",
+          "Amosun BethRhema"
+        ]
+      },
+      {
+        "property": "url",
+        "type": "STRING",
+        "values": [
+          "https://t.co/JSIaZFJEaE",
+          "https://t.co/GpTOmL7zGl"
+        ]
+      },
+      {
+        "property": "statuses",
+        "type": "INTEGER",
+        "values": [
+          "512"
+        ]
+      }
+    ],
+    "Me": [
+      {
+        "property": "profile_image_url",
+        "type": "STRING",
+        "values": [
+          "http://pbs.twimg.com/profile_images/11837552737537"
+        ],
+        "distinct_count": 1
+      },
+      {
+        "property": "betweenness",
+        "type": "FLOAT",
+        "min": "3.49332601E8",
+        "max": "3.49332601E8",
+        "distinct_count": 1
+      },
+      {
+        "property": "following",
+        "type": "INTEGER",
+        "min": "10124",
+        "max": "10124",
+        "distinct_count": 1
+      },
+      {
+        "property": "url",
+        "type": "STRING",
+        "values": [
+          "https://t.co/JSIaZFJEaE"
+        ],
+        "distinct_count": 1
+      },
+      {
+        "property": "location",
+        "type": "STRING",
+        "values": [
+          "Graphs Are Everywhere"
+        ],
+        "distinct_count": 1
+      },
+      {
+        "property": "followers",
+        "type": "INTEGER",
+        "min": "34507",
+        "max": "34507",
+        "distinct_count": 1
+      },
+      {
+        "property": "screen_name",
+        "type": "STRING",
+        "values": [
+          "neo4j"
+        ],
+        "distinct_count": 1
+      },
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Neo4j"
+        ],
+        "distinct_count": 1
+      }
+    ],
+    "Tweet": [
+      {
+        "property": "created_at",
+        "type": "DATE_TIME",
+        "min": "2020-12-06T05:12:02Z",
+        "max": "2021-03-16T15:30:07Z",
+        "distinct_count": 2146
+      },
+      {
+        "property": "id",
+        "type": "INTEGER",
+        "min": "690028662083612672",
+        "max": "1371846247913512966",
+        "distinct_count": 2407
+      },
+      {
+        "property": "id_str",
+        "type": "STRING",
+        "values": [
+          "1371815021265747970",
+          "1371778287970705408",
+          "1371687808847519748",
+          "1371787098945114113",
+          "1371673079517171712",
+          "1371773486348255233",
+          "1371672671419826177",
+          "1371846247913512966",
+          "1371748138491510786",
+          "1371627279936282624"
+        ],
+        "distinct_count": 2146
+      },
+      {
+        "property": "text",
+        "type": "STRING",
+        "values": [
+          "Proud to help @educationgovuk deliver critical ser",
+          "[Webinar] Produktdatenmanagement mit der Graphdate",
+          "[Webinar] Graph Data Science with #Neo4j \u2013 Italy\n\n",
+          "RT @rotnroll666: Neo4j Cypher-DSL 2021.1 released ",
+          "Discover how financial institutions can use graph ",
+          "RT @ElLazal: Today at 3pm UTC @lyonwj and I are go",
+          "[Virtual Conference] Javaland 2021 \u2013 Was macht SRE",
+          "[Live Demo] Graph Algorithms Playground \u2013 Asia Pac",
+          "CASE STUDY // Automotive Manufacturer Reduces Time",
+          "@insideBigData features Neo4j's recently appointed"
+        ],
+        "distinct_count": 1670
+      },
+      {
+        "property": "favorites",
+        "type": "INTEGER",
+        "min": "0",
+        "max": "394",
+        "distinct_count": 44
+      },
+      {
+        "property": "import_method",
+        "type": "STRING",
+        "values": [
+          "user"
+        ],
+        "distinct_count": 1
+      }
+    ],
+    "Hashtag": [
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "education",
+          "neo4jauraenterprise",
+          "neo4j",
+          "antimoneylaundering",
+          "graphdatabases",
+          "automotive",
+          "iam",
+          "auraenterprise",
+          "graphes",
+          "cloud"
+        ],
+        "distinct_count": 344
+      }
+    ],
+    "Link": [
+      {
+        "property": "url",
+        "type": "STRING",
+        "values": [
+          "https://twitter.com/i/web/status/13718150212657479",
+          "https://twitter.com/i/web/status/13717782879707054",
+          "https://twitter.com/i/web/status/13716878088475197",
+          "http://neo4j-contrib.github.io/cypher-dsl/current/",
+          "https://twitter.com/i/web/status/13717481384915107",
+          "https://twitter.com/i/web/status/13716730795171717",
+          "https://twitter.com/i/web/status/13718462479135129",
+          "https://twitter.com/i/web/status/13716726714198261",
+          "https://twitter.com/i/web/status/13716146925280256",
+          "https://buff.ly/39Zwfui"
+        ],
+        "distinct_count": 1548
+      }
+    ],
+    "Source": [
+      {
+        "property": "name",
+        "type": "STRING",
+        "values": [
+          "Buffer",
+          "Tweetbot for i\u039fS",
+          "TweetDeck",
+          "Twitter Web App",
+          "SocialPilot.co",
+          "startup.jobs",
+          "Twitter for Android",
+          "HubSpot",
+          "Tweetbot for Mac",
+          "Twitter for iPhone"
+        ],
+        "distinct_count": 27
+      }
+    ]
+  },
+  "rel_props": {
+    "SIMILAR_TO": [
+      {
+        "property": "score",
+        "type": "FLOAT",
+        "min": "0.0030581039755351682",
+        "max": "1.0",
+        "distinct_count": 71
+      }
+    ]
+  },
+  "relationships": [
+    {
+      "start": "User",
+      "type": "FOLLOWS",
+      "end": "User"
+    },
+    {
+      "start": "User",
+      "type": "FOLLOWS",
+      "end": "Me"
+    },
+    {
+      "start": "User",
+      "type": "POSTS",
+      "end": "Tweet"
+    },
+    {
+      "start": "User",
+      "type": "INTERACTS_WITH",
+      "end": "User"
+    },
+    {
+      "start": "User",
+      "type": "SIMILAR_TO",
+      "end": "User"
+    },
+    {
+      "start": "User",
+      "type": "SIMILAR_TO",
+      "end": "Me"
+    },
+    {
+      "start": "Me",
+      "type": "FOLLOWS",
+      "end": "User"
+    },
+    {
+      "start": "Me",
+      "type": "POSTS",
+      "end": "Tweet"
+    },
+    {
+      "start": "Me",
+      "type": "INTERACTS_WITH",
+      "end": "User"
+    },
+    {
+      "start": "Me",
+      "type": "RT_MENTIONS",
+      "end": "User"
+    },
+    {
+      "start": "Me",
+      "type": "AMPLIFIES",
+      "end": "User"
+    },
+    {
+      "start": "Tweet",
+      "type": "MENTIONS",
+      "end": "User"
+    },
+    {
+      "start": "Tweet",
+      "type": "MENTIONS",
+      "end": "Me"
+    },
+    {
+      "start": "Tweet",
+      "type": "USING",
+      "end": "Source"
+    },
+    {
+      "start": "Tweet",
+      "type": "TAGS",
+      "end": "Hashtag"
+    },
+    {
+      "start": "Tweet",
+      "type": "CONTAINS",
+      "end": "Link"
+    },
+    {
+      "start": "Tweet",
+      "type": "RETWEETS",
+      "end": "Tweet"
+    },
+    {
+      "start": "Tweet",
+      "type": "REPLY_TO",
+      "end": "Tweet"
+    }
+  ],
+  "metadata": {
+    "constraint": [
+      {
+        "id": 19,
+        "name": "constraint_189951f0",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Source"
+        ],
+        "properties": [
+          "name"
+        ],
+        "ownedIndex": "constraint_189951f0",
+        "propertyType": null
+      },
+      {
+        "id": 21,
+        "name": "constraint_5f75e2f6",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Tweet"
+        ],
+        "properties": [
+          "id"
+        ],
+        "ownedIndex": "constraint_5f75e2f6",
+        "propertyType": null
+      },
+      {
+        "id": 17,
+        "name": "constraint_71a506e6",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Hashtag"
+        ],
+        "properties": [
+          "name"
+        ],
+        "ownedIndex": "constraint_71a506e6",
+        "propertyType": null
+      },
+      {
+        "id": 15,
+        "name": "constraint_9191d2a4",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "User"
+        ],
+        "properties": [
+          "screen_name"
+        ],
+        "ownedIndex": "constraint_9191d2a4",
+        "propertyType": null
+      },
+      {
+        "id": 23,
+        "name": "constraint_d198d4ee",
+        "type": "UNIQUENESS",
+        "entityType": "NODE",
+        "labelsOrTypes": [
+          "Link"
+        ],
+        "properties": [
+          "url"
+        ],
+        "ownedIndex": "constraint_d198d4ee",
+        "propertyType": null
+      }
+    ],
+    "index": [
+      {
+        "label": "Hashtag",
+        "properties": [
+          "name"
+        ],
+        "size": 344,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 344.0
+      },
+      {
+        "label": "Link",
+        "properties": [
+          "url"
+        ],
+        "size": 1561,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 1561.0
+      },
+      {
+        "label": "Source",
+        "properties": [
+          "name"
+        ],
+        "size": 27,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 27.0
+      },
+      {
+        "label": "Tweet",
+        "properties": [
+          "id"
+        ],
+        "size": 2407,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 2407.0
+      },
+      {
+        "label": "Tweet",
+        "properties": [
+          "created_at"
+        ],
+        "size": 2146,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 2146.0
+      },
+      {
+        "label": "User",
+        "properties": [
+          "screen_name"
+        ],
+        "size": 38986,
+        "type": "RANGE",
+        "valuesSelectivity": 1.0,
+        "distinctValues": 38986.0
+      }
+    ]
+  }
+}

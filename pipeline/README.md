@@ -6,6 +6,13 @@ Conversion pipeline that transforms Neo4j text2cypher datasets into validated Ty
 
 This pipeline converts Cypher queries from the [Neo4j Labs text2cypher](https://github.com/neo4j-labs/text2cypher) benchmark into TypeQL format. The output lives in `../dataset/`.
 
+### Source Datasets
+
+| Source | Directory | Neo4j Source | Databases | Queries |
+|--------|-----------|-------------|-----------|---------|
+| `synthetic-1` | `dataset/synthetic-1/` | `synthetic_opus_demodbs` | 7 | 4,776 valid |
+| `synthetic-2` | `dataset/synthetic-2/` | `synthetic_gpt4o_demodbs` | 15 | 9,267 valid |
+
 ### Pipeline Stages
 
 1. **Schema conversion** -- Neo4j schemas manually translated to TypeQL 3.0 (entity types, relations with explicit roles, attributes)
@@ -23,45 +30,40 @@ typedb server --development-mode.enabled=true
 # Clone source dataset
 python pipeline/main.py setup
 
-# List available schemas
+# List available schemas (default: synthetic-1)
 python pipeline/main.py list-schemas
+python pipeline/main.py list-schemas --source synthetic-2
 
 # Convert a schema
-python pipeline/main.py convert-schema movies
+python pipeline/main.py convert-schema movies --source synthetic-2
 
 # Convert a single query (via Claude Code skill)
 /convert-query movies 0
+/convert-query movies 0 --source synthetic-2
 ```
 
 ## Project Structure
 
 ```
 pipeline/
-  main.py                 # CLI entry point
+  main.py                 # CLI entry point (--source option on all commands)
   mcp_server.py           # MCP server for tool integration
   requirements.txt        # Python dependencies
   src/                    # Pipeline source code
-    config.py             # Path and connection configuration
+    config.py             # Path, source, and connection configuration
     schema_converter.py   # Neo4j → TypeQL schema conversion
-    query_converter.py    # Query conversion logic
-    batch_converter.py    # Batch conversion runner
-    mcp_batch_runner.py   # MCP-based batch runner
-    neo4j_parser.py       # Neo4j dataset parser
+    neo4j_parser.py       # Neo4j dataset parser (source-aware)
     typedb_validator.py   # TypeDB validation client
   scripts/                # Utility scripts
     validate_typeql.py    # Validate TypeQL against TypeDB
-    get_query.py          # Extract query by database and index
+    get_query.py          # Extract query by database, index, and source
+    get_batch.py          # Extract batch of queries
     csv_read_row.py       # Read single CSV row by index
     csv_append_row.py     # Append row to CSV
     csv_move_row.py       # Move row between CSVs
     review_helper.py      # Move queries during semantic review
-    merge_dataset.py      # Generate dataset/all_queries.csv
+    merge_dataset.py      # Generate all_queries.csv (per-source or merged)
     batch_validate.py     # Batch validate queries
-    deep_semantic_review.py    # Deep semantic analysis
-    final_semantic_check.py    # Final semantic verification
-    move_semantic_failures.py  # Bulk move semantic failures
-    validate_companies.py      # Companies-specific validation
-    bulk_fix_schema_changes.py # Bulk fix after schema changes
   prompts/                # Prompt templates for AI agents
   docs/                   # Pipeline documentation
     typeql_reference.md   # TypeQL 3.0 reference guide
@@ -69,11 +71,14 @@ pipeline/
     suggestions.md        # Validated advanced pattern examples
   data/                   # Source data (gitignored)
     text2cypher/          # Cloned Neo4j dataset
+      datasets/
+        synthetic_opus_demodbs/    # Source for synthetic-1
+        synthetic_gpt4o_demodbs/   # Source for synthetic-2
 ```
 
 ## Conversion Status
 
-All 7 databases fully converted.
+### synthetic-1 (opus) -- All 7 databases fully converted
 
 | Database | Valid | Failed | Total |
 |----------|-------|--------|-------|
@@ -85,6 +90,27 @@ All 7 databases fully converted.
 | companies | 929 | 4 | 933 |
 | gameofthrones | 381 | 11 | 392 |
 | **Total** | **4,728** | **48** | **4,776** |
+
+### synthetic-2 (gpt4o) -- Not yet started
+
+| Database | Valid Queries | Status |
+|----------|-------------|--------|
+| twitter | 502 | pending |
+| twitch | 576 | pending |
+| movies | 738 | pending |
+| neoflix | 923 | pending |
+| recommendations | 775 | pending |
+| companies | 966 | pending |
+| gameofthrones | 393 | pending |
+| bluesky | 135 | pending (new) |
+| buzzoverflow | 592 | pending (new) |
+| fincen | 614 | pending (new) |
+| grandstack | 807 | pending (new) |
+| network | 625 | pending (new) |
+| northwind | 807 | pending (new) |
+| offshoreleaks | 507 | pending (new) |
+| stackoverflow2 | 307 | pending (new) |
+| **Total** | **9,267** | |
 
 ### Failed Query Categories
 
@@ -114,13 +140,13 @@ python3 pipeline/scripts/validate_typeql.py <database> 'match $x isa user; limit
 
 ```bash
 # Read a row
-python3 pipeline/scripts/csv_read_row.py dataset/<db>/queries.csv <index>
+python3 pipeline/scripts/csv_read_row.py dataset/<source>/<db>/queries.csv <index>
 
 # Check if row exists
-python3 pipeline/scripts/csv_read_row.py dataset/<db>/queries.csv <index> --exists
+python3 pipeline/scripts/csv_read_row.py dataset/<source>/<db>/queries.csv <index> --exists
 
 # Append a row
-python3 pipeline/scripts/csv_append_row.py dataset/<db>/queries.csv '{"original_index": 0, "question": "...", "cypher": "...", "typeql": "..."}'
+python3 pipeline/scripts/csv_append_row.py dataset/<source>/<db>/queries.csv '{"original_index": 0, "question": "...", "cypher": "...", "typeql": "..."}'
 
 # Move a row between CSVs
 python3 pipeline/scripts/csv_move_row.py <source.csv> <dest.csv> <index> '{"typeql": "..."}'
@@ -129,18 +155,12 @@ python3 pipeline/scripts/csv_move_row.py <source.csv> <dest.csv> <index> '{"type
 ### Dataset Merge
 
 ```bash
-# Regenerate the merged dataset
+# Merge a single source
+python3 pipeline/scripts/merge_dataset.py --source synthetic-1
+
+# Merge all sources into dataset/all_queries.csv
 python3 pipeline/scripts/merge_dataset.py
 ```
-
-## MCP Server
-
-The MCP server (`mcp_server.py`) provides tools for integration with Claude Code:
-
-- `convert_query` -- Get schema context for converting a query
-- `validate_typeql` -- Validate TypeQL against running TypeDB
-- `get_schema` -- Get TypeQL schema for a database
-- `list_databases` -- List available databases
 
 ## Known Limitations / Future Work
 

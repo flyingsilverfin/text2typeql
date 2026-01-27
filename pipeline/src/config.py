@@ -12,7 +12,24 @@ OUTPUT_DIR = DATASET_DIR                           # backward compat alias
 PROJECT_ROOT = REPO_ROOT                           # backward compat alias
 PROMPTS_DIR = PIPELINE_ROOT / "prompts"
 
-# Neo4j dataset paths
+# Source dataset configurations
+SOURCES = {
+    "synthetic-1": {
+        "neo4j_dir_name": "synthetic_opus_demodbs",
+        "csv_filename": "text2cypher_claudeopus.csv",
+        "exclude_column": "false_schema",
+        "exclude_check": "notempty",  # excluded if column is non-empty string
+    },
+    "synthetic-2": {
+        "neo4j_dir_name": "synthetic_gpt4o_demodbs",
+        "csv_filename": "text2cypher_gpt4o.csv",
+        "exclude_column": "no_cypher",
+        "exclude_check": "true",  # excluded if value == "True"
+    },
+}
+DEFAULT_SOURCE = "synthetic-1"
+
+# Neo4j dataset paths (backward compat, point to synthetic-1)
 TEXT2CYPHER_DIR = DATA_DIR / "text2cypher" / "datasets" / "synthetic_opus_demodbs"
 SCHEMAS_CSV = TEXT2CYPHER_DIR / "text2cypher_schemas.csv"
 QUERIES_CSV = TEXT2CYPHER_DIR / "text2cypher_claudeopus.csv"
@@ -31,9 +48,46 @@ MAX_RETRIES = 3
 SCHEMA_VALIDATION_DB = "text2typeql_validation"
 
 
-def get_dataset_dir(database_name: str) -> Path:
-    """Get dataset directory for a specific database."""
-    dataset_dir = DATASET_DIR / database_name
+def get_source_config(source: str) -> dict:
+    """Get configuration for a source dataset."""
+    if source not in SOURCES:
+        raise ValueError(f"Unknown source '{source}'. Available: {list(SOURCES.keys())}")
+    return SOURCES[source]
+
+
+def get_source_text2cypher_dir(source: str) -> Path:
+    """Get the Neo4j text2cypher directory for a source."""
+    config = get_source_config(source)
+    return DATA_DIR / "text2cypher" / "datasets" / config["neo4j_dir_name"]
+
+
+def get_source_queries_csv(source: str) -> Path:
+    """Get the queries CSV path for a source."""
+    config = get_source_config(source)
+    return get_source_text2cypher_dir(source) / config["csv_filename"]
+
+
+def get_source_schemas_csv(source: str) -> Path:
+    """Get the schemas CSV path for a source (identical across sources)."""
+    return get_source_text2cypher_dir(source) / "text2cypher_schemas.csv"
+
+
+def is_query_excluded(row: dict, source: str) -> bool:
+    """Check if a query row should be excluded based on source-specific column."""
+    config = get_source_config(source)
+    col = config["exclude_column"]
+    check = config["exclude_check"]
+    value = row.get(col, "")
+    if check == "notempty":
+        return bool(value and str(value).strip())
+    elif check == "true":
+        return str(value).strip().lower() == "true"
+    return False
+
+
+def get_dataset_dir(database_name: str, source: str = DEFAULT_SOURCE) -> Path:
+    """Get dataset directory for a specific database and source."""
+    dataset_dir = DATASET_DIR / source / database_name
     dataset_dir.mkdir(parents=True, exist_ok=True)
     return dataset_dir
 
