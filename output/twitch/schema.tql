@@ -36,6 +36,7 @@ define
 
   entity user,
     owns name @key,
+    owns followers,
     plays chat_activity:chatting_user,
     plays chat_activity:user_with_chatters,
     plays moderation:moderated_user,
@@ -46,6 +47,7 @@ define
     owns created_at,
     owns name,
     owns team_id @key,
+    owns followers,
     plays team_membership:organization;
 
   relation game_play,

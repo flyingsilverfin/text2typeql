@@ -3,17 +3,18 @@
 **Total queries in original dataset: 561**
 
 ## Current Status
-- `queries.csv`: 544 successfully converted and validated queries
-- `failed.csv`: 17 queries that cannot be converted (TypeQL limitations)
+- `queries.csv`: 553 successfully converted and validated queries
+- `failed.csv`: 8 queries that cannot be converted (TypeQL limitations)
 
 The sum of queries across all CSV files must equal 561.
 
-## Failed Query Categories (17 total)
+## Failed Query Categories (8 total)
 
 | Count | Reason |
 |-------|--------|
-| 6 | String functions (`size()`, `split()`, `left()`) not available in TypeQL |
-| 4 | Schema mismatch: User/Team entities lack `followers` attribute (only Stream has it) |
-| 3 | Schema error: Cypher references wrong relationship direction or missing attributes |
-| 2 | Datetime arithmetic (`datetime() - duration()`) not available |
-| 2 | String length sorting (`ORDER BY size(...)`) not available |
+| 2 | String function: `left()` for first-letter comparison not available |
+| 2 | Schema incompatibility: Cypher references User→Stream `PLAYS` relation that doesn't exist |
+| 1 | Schema mismatch: User entity lacks `description` attribute + requires `split()` |
+| 1 | Schema incompatibility: no timestamp on VIP relation for duration calculation |
+| 1 | Datetime arithmetic (`datetime() - duration()`) not available |
+| 1 | String function: `size()` for shortest name ordering not available |

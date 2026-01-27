@@ -5,26 +5,10 @@ WHERE userCount > 5
 RETURN s.name as streamName, s.url as streamUrl, userCount
 ORDER BY userCount DESC
 LIMIT 5","Cypher schema error: PLAYS goes Stream->Game, not User->Stream. Query asks for streams played by users which is incorrect."
-173,Which 3 streams have the most complex descriptions based on word count?,"MATCH (s:Stream)
-WHERE s.description IS NOT NULL
-RETURN s.name, s.description, size(split(s.description, ' ')) AS word_count
-ORDER BY word_count DESC
-LIMIT 3",String function: requires split() and size() which are not available in TypeQL 3.x
 180,What are the first 3 streams that have a chatter with a description longer than 50 words?,"MATCH (s:Stream)<-[:CHATTER]-(u:User)
 WHERE size(split(u.description, ' ')) > 50
 RETURN s.name, s.url
 LIMIT 3","Schema error: User entity doesn't have description attribute, also requires split() function"
-182,List the top 5 streams with the most complex URLs.,"MATCH (s:Stream)
-WHERE s.url IS NOT NULL
-RETURN s.url AS url, s.name AS name
-ORDER BY size(s.url) DESC
-LIMIT 5",String function: requires size(url) which is not available in TypeQL 3.x
-184,Which 3 streams have the most VIP users who also have more than 5000 followers?,"MATCH (s:Stream)-[:VIP]->(u:User)
-WHERE u.followers > 5000
-WITH s, count(u) AS vipCount
-RETURN s.name AS streamName, vipCount
-ORDER BY vipCount DESC
-LIMIT 3","Complex aggregation: requires counting VIP users with filtering (followers > 5000), then ordering by count"
 227,Which streams are played by users with a name containing 'doduik' and have a total view count above 3000?,"MATCH (s:Stream)<-[:PLAYS]-(u:User)
 WHERE u.name CONTAINS 'doduik' AND s.total_view_count > 3000
 RETURN s",Schema incompatibility - Cypher query references attributes or relationships not available in TypeQL schema
@@ -38,11 +22,6 @@ WITH s, count(chatter) AS chatterCount
 RETURN s.name AS streamName, chatterCount
 ORDER BY chatterCount DESC
 LIMIT 3",Datetime arithmetic: requires datetime() - duration('P1M') which TypeQL doesn't support. Also requires aggregation with ordering.
-288,List the top 3 games played by streams with a description length over 50 characters.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
-WHERE size(s.description) > 50
-RETURN g.name AS game, count(*) AS streams
-ORDER BY streams DESC
-LIMIT 3",String function + aggregation: requires size(description) and then count(*) grouped by game
 304,List the first 3 streams that have a game and team name starting with the same letter.,"MATCH (s:Stream)-[:PLAYS]->(g:Game), (s)-[:HAS_TEAM]->(t:Team)
 WHERE left(g.name, 1) = left(t.name, 1)
 RETURN s.name AS stream, g.name AS game, t.name AS team
@@ -53,30 +32,7 @@ WITH s, u
 ORDER BY r.createdAt
 LIMIT 3
 RETURN s.name AS stream, u.name AS user",Schema incompatibility - Cypher query references attributes or relationships not available in TypeQL schema
-321,"Which streams have been moderated by users with the most followers, listing the top 3?","MATCH (s:Stream)<-[:MODERATOR]-(u:User)
-WITH s, max(u.followers) AS max_followers
-ORDER BY max_followers DESC
-LIMIT 3
-RETURN s.name AS stream, max_followers","Aggregation: requires max(followers) grouped by stream, then ordering"
 322,Name the first 5 streams that have a game with the shortest name.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
 RETURN s.name AS stream, g.name AS game
 ORDER BY size(g.name)
 LIMIT 5",String function: requires size(game.name) for ordering
-323,"List the first 3 games that have been featured in streams with a team having over 1,000 followers.","MATCH (s:Stream)-[:HAS_TEAM]->(t:Team), (s)-[:PLAYS]->(g:Game)
-WHERE t.followers > 1000
-RETURN g.name AS game
-ORDER BY g.name
-LIMIT 3",Schema incompatibility - Cypher query references attributes or relationships not available in TypeQL schema
-142,What are the top 5 streams with the longest descriptions?,"MATCH (s:Stream)
-WHERE s.description IS NOT NULL
-RETURN s.name, s.description
-ORDER BY size(s.description) DESC
-LIMIT 5",TypeQL lacks string length function - cannot sort by size(description)
-423,"List the streams that have VIP users with less than 10,000 followers.","MATCH (s:Stream)-[:VIP]->(u:User)
-WHERE u.followers < 10000
-RETURN s","Schema mismatch: Cypher references u.followers on User entity, but in TypeQL schema users do not have a followers attribute (only streams have followers)."
-442,Show the 3 streams that have the longest descriptions.,"MATCH (s:Stream)
-WHERE s.description IS NOT NULL
-RETURN s.name, s.description
-ORDER BY size(s.description) DESC
-LIMIT 3",TypeQL has no string length function. Cannot sort by description length (Cypher size() not supported).

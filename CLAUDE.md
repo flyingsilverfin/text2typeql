@@ -48,7 +48,9 @@ python main.py convert-schema movies      # Convert schema
 
 ## Agent-Based Query Conversion
 
-The primary method for query conversion uses Claude Code subagents directly (no API costs):
+**IMPORTANT: Always use the `convert-query-runner` subagent for TypeQL query generation and conversion.** Do NOT write TypeQL queries directly in the main conversation — always delegate to the specialized subagent via `Task tool with subagent_type=convert-query-runner`. This ensures consistent validation, semantic review, and CSV routing.
+
+The subagent handles the full pipeline:
 
 1. **Get query**: `python3 scripts/get_query.py <database> <index>` (or from `failed_review.csv`)
 2. **Load schema**: `output/<database>/schema.tql`
@@ -81,9 +83,15 @@ Before writing to CSV, verify WITHOUT looking at Cypher:
 
 **IMPORTANT: Process queries SEQUENTIALLY, not in parallel.** Parallel writes to the same CSV file can cause race conditions.
 
-To convert a single query using the dedicated agent:
+**ALWAYS use the subagent for any TypeQL query writing/conversion:**
 ```
 Use Task tool with subagent_type=convert-query-runner
+Prompt: "Convert query <index> from the <database> database"
+```
+
+When providing hints or specific patterns to use, include them in the subagent prompt:
+```
+Prompt: "Convert query <index> from <database>. Hint: use reduce with max() groupby for the aggregation."
 ```
 
 For re-converting queries from `failed_review.csv`:
