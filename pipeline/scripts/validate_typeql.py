@@ -115,13 +115,8 @@ def main():
             # Query passed as argument
             typeql = sys.argv[2]
     else:
-        # Try reading from stdin
-        if not sys.stdin.isatty():
-            typeql = sys.stdin.read()
-        else:
-            print("Error: No query provided", file=sys.stderr)
-            print(__doc__)
-            sys.exit(1)
+        print("Error: No query provided. Use --file <path> or --stdin flag, or pass query as argument.", file=sys.stderr)
+        sys.exit(1)
 
     success, message = validate_query(database, typeql)
     print(message)

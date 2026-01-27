@@ -1,0 +1,11 @@
+original_index,question,cypher,typeql
+0,Find the top 3 users interacted with by 'sarahp.bsky.social'.,"MATCH (u1:User {label: 'sarahp.bsky.social'})-[:INTERACTED]->(u2:User)
+RETURN u2.label AS interactedUser, COUNT(*) AS interactionCount
+ORDER BY interactionCount DESC
+LIMIT 3","match
+$u1 isa user, has handle ""sarahp.bsky.social"";
+$rel isa interacted (source_user: $u1, target_user: $u2);
+reduce $count = count($rel) groupby $u2;
+sort $count desc;
+limit 3;
+fetch { ""interactedUser"": $u2.handle, ""interactionCount"": $count };"

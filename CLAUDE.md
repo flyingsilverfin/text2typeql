@@ -1,12 +1,14 @@
 # Text2TypeQL - Project Notes
 
-## Important: First Steps
+## Important: First Steps (Main Session Only)
 
-Always read the following files when starting a session:
+When starting a **main interactive session** (NOT when running as a subagent), read these files:
 - `README.md` - Dataset card and project overview
 - `pipeline/README.md` - Pipeline docs, progress, and remaining tasks
 - `plan.md` - Implementation plan (if it exists)
 - `dataset/<source>/<database>/README.md` - Query counts for each database being worked on
+
+**Subagents** (e.g., `convert-query-runner`) should NOT read these files — they have self-contained instructions.
 
 ## Updating Documentation
 
@@ -53,46 +55,17 @@ python pipeline/main.py convert-schema movies      # Convert schema
 /convert-query movies 0 --source synthetic-2
 ```
 
-## Agent-Based Query Conversion
+## Agent-Based Query Conversion (Main Session Only)
 
-**IMPORTANT: Always use the `convert-query-runner` subagent for TypeQL query generation and conversion.** Do NOT write TypeQL queries directly in the main conversation — always delegate to the specialized subagent via `Task tool with subagent_type=convert-query-runner`. This ensures consistent validation, semantic review, and CSV routing.
+**NOTE: This section is for the MAIN interactive session only. If you are a subagent (e.g., `convert-query-runner`), IGNORE this entire section — do the conversion work directly using your own instructions.**
 
-The subagent handles the full pipeline:
-
-1. **Get query**: `python3 pipeline/scripts/get_query.py <database> <index> --source <source>` (or from `failed_review.csv`)
-2. **Load schema**: `dataset/<source>/<database>/schema.tql`
-3. **Convert** using TypeDB 3.0 syntax
-4. **Validate** against TypeDB using: `python3 pipeline/scripts/validate_typeql.py <database> --file /tmp/query.tql`
-5. **Semantic review**: Verify TypeQL answers the English question (ignore Cypher)
-6. **Write** to `queries.csv` (success) or document in `README.md` Failed Queries section (after 3 attempts)
-
-### Validation Script
-
-```bash
-# Write query to temp file and validate
-cat > /tmp/query.tql << 'EOF'
-<your typeql here>
-EOF
-python3 pipeline/scripts/validate_typeql.py <database> --file /tmp/query.tql
-# Returns "OK" and exit 0 on success, error message and exit 1 on failure
-```
-
-### Semantic Review Checklist (Step 5)
-
-Before writing to CSV, verify WITHOUT looking at Cypher:
-- Returns correct entity type (question asks for users → return users)
-- Includes ALL conditions from question (public AND 50+ employees)
-- Has correct aggregation ("top 3 by count" → needs `reduce count groupby`, `sort`, `limit`)
-- Relation directions correct (supplier OF vs supplies TO)
-- Numeric thresholds correct (1 million = 1000000)
-
-### Spawning Conversion Agents
+In the main session, always delegate TypeQL query conversion to the `convert-query-runner` subagent. Do NOT write TypeQL queries directly in the main conversation — use the Task tool to spawn the subagent. This ensures consistent validation, semantic review, and CSV routing.
 
 **IMPORTANT: Process queries SEQUENTIALLY, not in parallel.** Parallel writes to the same CSV file can cause race conditions.
 
-**ALWAYS use the subagent for any TypeQL query writing/conversion:**
+Set `max_turns: 15` to prevent runaway execution:
 ```
-Use Task tool with subagent_type=convert-query-runner
+Use Task tool with subagent_type=convert-query-runner, max_turns=15
 Prompt: "Convert query <index> from the <database> database"
 ```
 
@@ -108,7 +81,7 @@ Prompt: "Convert query <index> from <database>. Hint: use reduce with max() grou
 
 For re-converting queries from `failed_review.csv`:
 ```
-/convert-query <database> <index> --source failed_review
+Prompt: "Convert query <index> from <database> --source failed_review"
 ```
 
 ## TypeDB 3.0 Query Syntax
