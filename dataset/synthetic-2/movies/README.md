@@ -2,14 +2,16 @@
 
 **Source:** `synthetic_gpt4o_demodbs` (Neo4j text2cypher)
 
-**Total valid queries in source: 738** (of 767 total)
+**Total valid queries: 738**
+
+Actors, directors, producers, reviews, roles. Schema shared with synthetic-1.
 
 ## Current Status
-- `queries.csv`: 0 converted queries (not yet started)
+- `queries.csv`: 0 converted queries
 - 0 failed queries
 
-Total: 0 + 0 = 0 / 738
+Total: 0 + 0 = 0 / 738 pending
 
 ## Failed Queries
 
-(none yet)
+_None yet._

@@ -19,7 +19,7 @@ Two Neo4j text2cypher source datasets are used:
 | Source | Neo4j Directory | Databases | Valid Queries | Status |
 |--------|----------------|-----------|---------------|--------|
 | `synthetic-1` | `synthetic_opus_demodbs` | 7 | 4,776 | 4,728 converted |
-| `synthetic-2` | `synthetic_gpt4o_demodbs` | 15 | 9,267 | pending |
+| `synthetic-2` | `synthetic_gpt4o_demodbs` | 15 | 9,267 | schemas ready |
 
 ## Domains
 
@@ -108,6 +108,12 @@ In each case the TypeQL was written to correctly answer the English question. De
 ## Failed Queries
 
 48 of 4,776 source queries (1%) from synthetic-1 cannot yet be expressed in TypeQL 3.0. They require features not yet supported: `size()` for string/list length, array indexing, epoch timestamp conversion, duration and date arithmetic, date component extraction, and `collect()` aggregation. Each is documented with its original Cypher and the specific missing capability in the per-domain READMEs.
+
+## TODO
+
+- [ ] Convert synthetic-2 queries (9,267 valid queries across 15 databases)
+- [ ] Standardize use of `_` in TypeQL variable names across all queries
+- [ ] Regularize synthetic-1 TypeQL queries to use updated relation syntax: `reltype (role: $var)` instead of `$r (role: $var) isa reltype`
 
 ## Source
 

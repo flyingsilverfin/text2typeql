@@ -2,14 +2,16 @@
 
 **Source:** `synthetic_gpt4o_demodbs` (Neo4j text2cypher)
 
-**Total valid queries in source: 502** (of 520 total)
+**Total valid queries: 502**
+
+Users, tweets, hashtags, retweets, follows. Schema shared with synthetic-1.
 
 ## Current Status
-- `queries.csv`: 0 converted queries (not yet started)
+- `queries.csv`: 0 converted queries
 - 0 failed queries
 
-Total: 0 + 0 = 0 / 502
+Total: 0 + 0 = 0 / 502 pending
 
 ## Failed Queries
 
-(none yet)
+_None yet._

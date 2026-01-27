@@ -1,15 +1,17 @@
-# Gameofthrones Dataset
+# Game of Thrones Dataset
 
 **Source:** `synthetic_gpt4o_demodbs` (Neo4j text2cypher)
 
-**Total valid queries in source: 393** (of 399 total)
+**Total valid queries: 393**
+
+Characters, houses, battles, interactions. Schema shared with synthetic-1.
 
 ## Current Status
-- `queries.csv`: 0 converted queries (not yet started)
+- `queries.csv`: 0 converted queries
 - 0 failed queries
 
-Total: 0 + 0 = 0 / 393
+Total: 0 + 0 = 0 / 393 pending
 
 ## Failed Queries
 
-(none yet)
+_None yet._

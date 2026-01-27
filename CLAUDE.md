@@ -364,7 +364,7 @@ pipeline/docs/
 | gameofthrones | 392 | 381 | 11 |
 | **Total** | **4776** | **4728** | **48** |
 
-### synthetic-2 (gpt4o) -- pending
+### synthetic-2 (gpt4o) -- schemas ready, queries pending
 
 | Database | Valid Queries | Converted | Failed |
 |----------|-------------|-----------|--------|

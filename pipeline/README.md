@@ -91,25 +91,25 @@ pipeline/
 | gameofthrones | 381 | 11 | 392 |
 | **Total** | **4,728** | **48** | **4,776** |
 
-### synthetic-2 (gpt4o) -- Not yet started
+### synthetic-2 (gpt4o) -- Schemas converted, queries pending
 
 | Database | Valid Queries | Status |
 |----------|-------------|--------|
-| twitter | 502 | pending |
-| twitch | 576 | pending |
-| movies | 738 | pending |
-| neoflix | 923 | pending |
-| recommendations | 775 | pending |
-| companies | 966 | pending |
-| gameofthrones | 393 | pending |
-| bluesky | 135 | pending (new) |
-| buzzoverflow | 592 | pending (new) |
-| fincen | 614 | pending (new) |
-| grandstack | 807 | pending (new) |
-| network | 625 | pending (new) |
-| northwind | 807 | pending (new) |
-| offshoreleaks | 507 | pending (new) |
-| stackoverflow2 | 307 | pending (new) |
+| twitter | 502 | schema ready |
+| twitch | 576 | schema ready |
+| movies | 738 | schema ready |
+| neoflix | 923 | schema ready |
+| recommendations | 775 | schema ready |
+| companies | 966 | schema ready |
+| gameofthrones | 393 | schema ready |
+| bluesky | 135 | schema ready |
+| buzzoverflow | 592 | schema ready |
+| fincen | 614 | schema ready |
+| grandstack | 807 | schema ready |
+| network | 625 | schema ready |
+| northwind | 807 | schema ready |
+| offshoreleaks | 507 | schema ready |
+| stackoverflow2 | 307 | schema ready |
 | **Total** | **9,267** | |
 
 ### Failed Query Categories

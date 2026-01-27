@@ -1,15 +1,17 @@
-# Buzzoverflow Dataset
+# BuzzOverflow Dataset
 
 **Source:** `synthetic_gpt4o_demodbs` (Neo4j text2cypher)
 
-**Total valid queries in source: 592** (of 627 total)
+**Total valid queries: 592**
+
+Q&A platform questions, answers, tags, users.
 
 ## Current Status
-- `queries.csv`: 0 converted queries (not yet started)
+- `queries.csv`: 0 converted queries
 - 0 failed queries
 
-Total: 0 + 0 = 0 / 592
+Total: 0 + 0 = 0 / 592 pending
 
 ## Failed Queries
 
-(none yet)
+_None yet._
