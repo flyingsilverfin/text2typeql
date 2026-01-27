@@ -13,7 +13,7 @@ Foundation models generate SQL and Cypher reasonably well. Large public corpora,
 - **Corporate graphs** (Companies) -- organizations, subsidiaries, CEOs, articles, cities
 - **Fiction networks** (Game of Thrones) -- characters, houses, battles, interactions
 
-Of the 4,776 source queries, 4,724 were successfully converted and validated (98.9%). The remaining 52 are documented with precise reasons for failure. Each successful entry includes the English question, the original Cypher query, and the validated TypeQL. The dataset also ships with seven TypeQL schemas modelling each domain.
+Of the 4,776 source queries, 4,728 were successfully converted and validated (99%). The remaining 48 are documented with precise reasons for failure. Each successful entry includes the English question, the original Cypher query, and the validated TypeQL. The dataset also ships with seven TypeQL schemas modelling each domain.
 
 ## Where It Comes From
 
@@ -31,15 +31,25 @@ The conversion pipeline had five stages, each catching a different class of erro
 
 **Semantic review.** A second pass verified that each TypeQL query actually answers the English question -- not just that it is valid TypeQL. This caught wrong relation directions (e.g., "tweets retweeted by others" versus "tweets that retweet others"), missing filter conditions, incorrect aggregation targets, and cases where optional-match semantics required `try {}` blocks rather than mandatory patterns.
 
-**Failure documentation.** Queries that genuinely cannot be expressed in TypeQL 3.0 were documented with specific reasons: string length functions (`size()`), array index access, epoch timestamp conversion, duration arithmetic, `collect()` aggregation, and similar gaps. These 52 entries provide a clear picture of TypeQL's current functional boundaries.
+**Failure documentation.** Queries that genuinely cannot be expressed in TypeQL 3.0 were documented with specific reasons: string length functions (`size()`), array index access, epoch timestamp conversion, duration arithmetic, `collect()` aggregation, and similar gaps. These 48 entries provide a clear picture of TypeQL's current functional boundaries.
 
 The dataset exercises a broad range of TypeQL 3.0 features: custom functions (`with fun`), chained reduce for HAVING-equivalent post-aggregation filtering, `let` expressions for computed values, type variables for polymorphic matching across relation types, negation, disjunction, and regex patterns via `like`.
+
+## What the Type System Caught
+
+Two categories of issues surfaced during conversion that were not anticipated but turned out to be valuable signals.
+
+**Queries that cannot be expressed in TypeQL.** 48 of the 4,776 source queries require language features that TypeQL 3.0 does not yet support: string length functions (`size()`), array indexing and iteration, epoch timestamp conversion, duration arithmetic, date component extraction (`weekday`, `year`), and `collect()` aggregation. Each is documented with its original Cypher and the specific missing capability. Rather than noise, these 48 entries constitute a precise feature-gap analysis -- a checklist of what TypeQL would need to achieve full parity with Cypher's function library.
+
+**Original Cypher queries that were incorrect.** More unexpectedly, TypeDB's strict type system exposed roughly 30 queries across four databases where the original Cypher does not correctly answer the English question. These were not TypeQL bugs -- the Cypher itself was wrong, and the looseness of Cypher's schema allowed the errors to go undetected. Three patterns recurred. First, *wrong property*: eight Twitter queries check `t.favorites` (likes) when the question asks about retweets. TypeQL has no property that conflates the two -- the `retweets` relation must be explicitly matched, forcing the correct semantics. Second, *wrong direction*: five Companies queries reverse the supplier/customer direction in the `HAS_SUPPLIER` relationship. TypeQL's `supplies (supplier: $x, customer: $y)` requires an explicit role assignment, making the reversal immediately visible. Third, *wrong traversal path*: several Twitter queries traverse `(user)-[:FOLLOWS]->(:Me)-[:POSTS]->(tweet)`, returning tweets by Me rather than tweets by followers. TypeQL's role-based relation syntax (`posts (author: $u, content: $t)`) forces the converter to specify which entity is the author, eliminating the ambiguity. In each case the TypeQL was written to correctly answer the English question rather than reproduce the Cypher's mistake.
+
+These findings suggest that a strongly typed query language can serve as a static analysis layer over a dataset -- catching semantic errors that pass silently in more permissive systems.
 
 ## How This Helps
 
 **Fine-tuning.** The dataset provides supervised training data for fine-tuning smaller, faster models (Llama, Mistral, Phi, and similar) on TypeQL generation. This enables local, low-latency, cost-effective text-to-TypeQL without relying on frontier model APIs.
 
-**Few-shot prompting and RAG.** The 4,724 validated examples serve as a rich retrieval corpus for retrieval-augmented generation or few-shot in-context learning. Given a user's natural-language question, a system can retrieve similar questions from the dataset and include their TypeQL as examples in the prompt.
+**Few-shot prompting and RAG.** The 4,728 validated examples serve as a rich retrieval corpus for retrieval-augmented generation or few-shot in-context learning. Given a user's natural-language question, a system can retrieve similar questions from the dataset and include their TypeQL as examples in the prompt.
 
 **Evaluation benchmark.** The dataset provides a standardized measure of TypeQL generation quality, analogous to what text2cypher provides for Cypher. Researchers and engineers can evaluate model accuracy against known-good queries across varying complexity levels.
 
@@ -49,4 +59,4 @@ The dataset exercises a broad range of TypeQL 3.0 features: custom functions (`w
 
 ## Get Involved
 
-The dataset is available on GitHub. We welcome contributions: additional domains, alternative TypeQL formulations for existing queries, or conversions of the 52 currently-failed queries as TypeQL gains new features. The pipeline and tooling are included in the repository, so extending the dataset follows the same validated workflow.
+The dataset is available on GitHub. We welcome contributions: additional domains, alternative TypeQL formulations for existing queries, or conversions of the 48 currently-failed queries as TypeQL gains new features. The pipeline and tooling are included in the repository, so extending the dataset follows the same validated workflow.
