@@ -32,7 +32,7 @@ def fix_typeql(typeql: str) -> str:
     return fixed
 
 def main():
-    input_file = "output/companies/queries.csv"
+    input_file = "dataset/companies/queries.csv"
 
     # Read with proper multi-line handling
     with open(input_file, 'r', newline='') as f:

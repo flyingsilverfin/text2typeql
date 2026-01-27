@@ -52,7 +52,7 @@ def validate_query(typeql: str) -> tuple[bool, str]:
         os.unlink(temp_file)
 
 def main():
-    input_file = sys.argv[1] if len(sys.argv) > 1 else "output/companies/queries.csv"
+    input_file = sys.argv[1] if len(sys.argv) > 1 else "dataset/companies/queries.csv"
 
     with open(input_file, 'r') as f:
         reader = csv.DictReader(f)
@@ -89,9 +89,9 @@ def main():
         print(f"\nFailed indices: {[f['index'] for f in failures]}")
 
         # Save failures to JSON for processing
-        with open('output/companies/validation_failures.json', 'w') as f:
+        with open('dataset/companies/validation_failures.json', 'w') as f:
             json.dump(failures, f, indent=2)
-        print(f"\nFailures saved to output/companies/validation_failures.json")
+        print(f"\nFailures saved to dataset/companies/validation_failures.json")
 
 if __name__ == "__main__":
     main()

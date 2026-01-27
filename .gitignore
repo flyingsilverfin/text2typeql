@@ -24,7 +24,7 @@ build/
 Thumbs.db
 
 # Data (cloned repos)
-data/text2cypher/
+pipeline/data/text2cypher/
 
 # TypeDB binaries
 typedb-all-*/

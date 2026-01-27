@@ -13,14 +13,14 @@ When given a database name and query index, you will:
 1. **Invoke the convert-query skill**: Use `/convert-query <database> <index>` to perform the conversion with TypeDB validation.
 
 2. **Route the result based on outcome**:
-   - **Success**: The skill writes directly to `output/<database>/queries.csv` - confirm completion
-   - **Conversion/Validation Failure**: Append to `output/<database>/failed.csv` using:
+   - **Success**: The skill writes directly to `dataset/<database>/queries.csv` - confirm completion
+   - **Conversion/Validation Failure**: Append to `dataset/<database>/failed.csv` using:
      ```bash
-     python3 scripts/csv_append_row.py output/<database>/failed.csv '{"original_index": <index>, "question": "<question>", "cypher": "<cypher>", "error": "<error_description>"}'
+     python3 pipeline/scripts/csv_append_row.py dataset/<database>/failed.csv '{"original_index": <index>, "question": "<question>", "cypher": "<cypher>", "error": "<error_description>"}'
      ```
-   - **Semantic Validation Failure**: Append to `output/<database>/failed_review.csv` using:
+   - **Semantic Validation Failure**: Append to `dataset/<database>/failed_review.csv` using:
      ```bash
-     python3 scripts/csv_append_row.py output/<database>/failed_review.csv '{"original_index": <index>, "question": "<question>", "cypher": "<cypher>", "typeql": "<attempted_typeql>", "review_reason": "<reason>"}'
+     python3 pipeline/scripts/csv_append_row.py dataset/<database>/failed_review.csv '{"original_index": <index>, "question": "<question>", "cypher": "<cypher>", "typeql": "<attempted_typeql>", "review_reason": "<reason>"}'
      ```
 
 ## Failure Classification
@@ -32,8 +32,8 @@ When given a database name and query index, you will:
 
 1. **Check first**: Before converting, verify the query hasn't already been processed:
    ```bash
-   python3 scripts/csv_read_row.py output/<database>/queries.csv <index> --exists
-   python3 scripts/csv_read_row.py output/<database>/failed.csv <index> --exists
+   python3 pipeline/scripts/csv_read_row.py dataset/<database>/queries.csv <index> --exists
+   python3 pipeline/scripts/csv_read_row.py dataset/<database>/failed.csv <index> --exists
    ```
 
 2. **Escape JSON properly**: When using csv_append_row.py, ensure all quotes in the JSON are properly escaped.

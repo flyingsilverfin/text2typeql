@@ -94,7 +94,7 @@ def move_row(source_path: str, dest_path: str, original_index: int, extra_fields
 if __name__ == '__main__':
     if len(sys.argv) < 4:
         print("Usage: csv_move_row.py <source_csv> <dest_csv> <original_index> [extra_json]", file=sys.stderr)
-        print("Example: csv_move_row.py output/movies/failed.csv output/movies/queries.csv 42 '{\"typeql\": \"match ...\"}'", file=sys.stderr)
+        print("Example: csv_move_row.py dataset/movies/failed.csv dataset/movies/queries.csv 42 '{\"typeql\": \"match ...\"}'", file=sys.stderr)
         sys.exit(1)
 
     source_path = sys.argv[1]

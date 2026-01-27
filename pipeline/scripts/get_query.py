@@ -7,7 +7,7 @@ import sys
 
 def get_query(database: str, index: int) -> dict:
     """Get query at index for database (0-indexed within valid queries for that db)."""
-    csv_path = "/opt/text2typeql/data/text2cypher/datasets/synthetic_opus_demodbs/text2cypher_claudeopus.csv"
+    csv_path = "/opt/text2typeql/pipeline/data/text2cypher/datasets/synthetic_opus_demodbs/text2cypher_claudeopus.csv"
 
     with open(csv_path, 'r') as f:
         reader = csv.DictReader(f)

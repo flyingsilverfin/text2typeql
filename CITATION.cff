@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+title: "Text2TypeQL: Natural Language to TypeQL 3.0 Query Dataset"
+message: "If you use this dataset, please cite it using the metadata from this file."
+type: dataset
+url: "https://github.com/vaticle/text2typeql"
+repository-code: "https://github.com/vaticle/text2typeql"
+license: Apache-2.0
+date-released: "2025-01-27"
+keywords:
+  - typeql
+  - typedb
+  - text-to-query
+  - natural-language-to-query
+  - dataset
+  - benchmark
+abstract: >-
+  4,728 natural-language questions paired with validated TypeQL 3.0 queries
+  across 7 domains (twitter, twitch, movies, neoflix, recommendations,
+  companies, gameofthrones). Derived from Neo4j Labs' text2cypher benchmark
+  with full TypeDB validation and semantic review.

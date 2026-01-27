@@ -7,8 +7,8 @@ import sys
 def move_to_failed_review(database: str, indices: list[int], reason: str = ""):
     """Move queries at given indices from queries.csv to failed_review.csv"""
 
-    queries_path = f"/opt/text2typeql/output/{database}/queries.csv"
-    failed_path = f"/opt/text2typeql/output/{database}/failed_review.csv"
+    queries_path = f"/opt/text2typeql/dataset/{database}/queries.csv"
+    failed_path = f"/opt/text2typeql/dataset/{database}/failed_review.csv"
 
     # Read all queries
     with open(queries_path, 'r') as f:

@@ -4,10 +4,13 @@ import os
 from pathlib import Path
 
 # Project paths
-PROJECT_ROOT = Path(__file__).parent.parent
-DATA_DIR = PROJECT_ROOT / "data"
-OUTPUT_DIR = PROJECT_ROOT / "output"
-PROMPTS_DIR = PROJECT_ROOT / "prompts"
+PIPELINE_ROOT = Path(__file__).parent.parent      # pipeline/
+REPO_ROOT = PIPELINE_ROOT.parent                   # repository root
+DATASET_DIR = REPO_ROOT / "dataset"                # dataset/ at repo root
+DATA_DIR = PIPELINE_ROOT / "data"                  # pipeline/data/
+OUTPUT_DIR = DATASET_DIR                           # backward compat alias
+PROJECT_ROOT = REPO_ROOT                           # backward compat alias
+PROMPTS_DIR = PIPELINE_ROOT / "prompts"
 
 # Neo4j dataset paths
 TEXT2CYPHER_DIR = DATA_DIR / "text2cypher" / "datasets" / "synthetic_opus_demodbs"
@@ -28,11 +31,15 @@ MAX_RETRIES = 3
 SCHEMA_VALIDATION_DB = "text2typeql_validation"
 
 
-def get_output_dir(database_name: str) -> Path:
-    """Get output directory for a specific database."""
-    output_dir = OUTPUT_DIR / database_name
-    output_dir.mkdir(parents=True, exist_ok=True)
-    return output_dir
+def get_dataset_dir(database_name: str) -> Path:
+    """Get dataset directory for a specific database."""
+    dataset_dir = DATASET_DIR / database_name
+    dataset_dir.mkdir(parents=True, exist_ok=True)
+    return dataset_dir
+
+
+# Backward compatibility alias
+get_output_dir = get_dataset_dir
 
 
 def ensure_dirs():

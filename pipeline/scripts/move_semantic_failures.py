@@ -24,8 +24,8 @@ for cat, indices in categories.items():
         index_reasons[str(idx)] = reason_map[cat]
 
 # Read queries.csv
-queries_path = '/opt/text2typeql/output/companies/queries.csv'
-failed_path = '/opt/text2typeql/output/companies/failed_review.csv'
+queries_path = '/opt/text2typeql/dataset/companies/queries.csv'
+failed_path = '/opt/text2typeql/dataset/companies/failed_review.csv'
 
 with open(queries_path, 'r') as f:
     rows = list(csv.DictReader(f))

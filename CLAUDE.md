@@ -3,17 +3,17 @@
 ## Important: First Steps
 
 Always read the following files when starting a session:
-- `README.md` - Project overview and setup instructions
-- `progress.md` - Current progress and next steps (if it exists)
+- `README.md` - Dataset card and project overview
+- `pipeline/README.md` - Pipeline docs, progress, and remaining tasks
 - `plan.md` - Implementation plan (if it exists)
-- `output/<database>/README.md` - Query counts for each database being worked on
+- `dataset/<database>/README.md` - Query counts for each database being worked on
 
 ## Updating Documentation
 
 When learning new TypeQL patterns or syntax rules, update ALL of these files:
 - `CLAUDE.md` - This file (quick reference)
 - `.claude/skills/convert-query.md` - Conversion skill (comprehensive reference)
-- `docs/suggestions.md` - Validated examples of advanced patterns
+- `pipeline/docs/suggestions.md` - Validated examples of advanced patterns
 
 ## Project Overview
 
@@ -38,9 +38,9 @@ Use this skill for query conversion (requires TypeDB server running):
 typedb server --development-mode.enabled=true
 
 # Run pipeline
-python main.py setup                      # Clone Neo4j dataset
-python main.py list-schemas               # List available schemas
-python main.py convert-schema movies      # Convert schema
+python pipeline/main.py setup                      # Clone Neo4j dataset
+python pipeline/main.py list-schemas               # List available schemas
+python pipeline/main.py convert-schema movies      # Convert schema
 
 # Use skill for query conversion (agent-based, no API costs)
 /convert-query movies 0
@@ -52,10 +52,10 @@ python main.py convert-schema movies      # Convert schema
 
 The subagent handles the full pipeline:
 
-1. **Get query**: `python3 scripts/get_query.py <database> <index>` (or from `failed_review.csv`)
-2. **Load schema**: `output/<database>/schema.tql`
+1. **Get query**: `python3 pipeline/scripts/get_query.py <database> <index>` (or from `failed_review.csv`)
+2. **Load schema**: `dataset/<database>/schema.tql`
 3. **Convert** using TypeDB 3.0 syntax
-4. **Validate** against TypeDB using: `python3 scripts/validate_typeql.py <database> --file /tmp/query.tql`
+4. **Validate** against TypeDB using: `python3 pipeline/scripts/validate_typeql.py <database> --file /tmp/query.tql`
 5. **Semantic review**: Verify TypeQL answers the English question (ignore Cypher)
 6. **Write** to `queries.csv` (success) or document in `README.md` Failed Queries section (after 3 attempts)
 
@@ -66,7 +66,7 @@ The subagent handles the full pipeline:
 cat > /tmp/query.tql << 'EOF'
 <your typeql here>
 EOF
-python3 scripts/validate_typeql.py <database> --file /tmp/query.tql
+python3 pipeline/scripts/validate_typeql.py <database> --file /tmp/query.tql
 # Returns "OK" and exit 0 on success, error message and exit 1 on failure
 ```
 
@@ -243,8 +243,8 @@ After conversion, review queries to verify TypeQL matches the English question:
 5. **OPTIONAL MATCH** - Must use `try { }` for left-join semantics
 
 ### Key Files for Review
-- **Full guidance**: `docs/semantic_review_notes.md`
-- **Move helper**: `python3 scripts/review_helper.py <database> <index1> [index2...] --reason "reason"`
+- **Full guidance**: `pipeline/docs/semantic_review_notes.md`
+- **Move helper**: `python3 pipeline/scripts/review_helper.py <database> <index1> [index2...] --reason "reason"`
 
 ### Common Semantic Mismatches
 | Question Pattern | Common Mistake | Correct Approach |
@@ -257,9 +257,9 @@ After conversion, review queries to verify TypeQL matches the English question:
 
 ## File Structure & Workflow
 
-### Output Files (per database)
+### Dataset Files (per database)
 
-Each `output/<database>/` folder contains:
+Each `dataset/<database>/` folder contains:
 
 | File | Purpose | Format |
 |------|---------|--------|
@@ -296,7 +296,7 @@ When retrying a previously failed query:
 **CRITICAL: Never read entire CSV files.** Use these scripts to prevent context overflow:
 
 ```
-scripts/
+pipeline/scripts/
   get_query.py           # Get source query by database and index
   csv_read_row.py        # Read single row from CSV by original_index
   csv_append_row.py      # Append row to CSV (creates with header if needed)
@@ -307,16 +307,16 @@ scripts/
 **CSV Script Usage:**
 ```bash
 # Check if query already processed
-python3 scripts/csv_read_row.py output/<db>/queries.csv <index> --exists
+python3 pipeline/scripts/csv_read_row.py dataset/<db>/queries.csv <index> --exists
 
 # Append successful conversion
-python3 scripts/csv_append_row.py output/<db>/queries.csv '{"original_index": N, "question": "...", "cypher": "...", "typeql": "..."}'
+python3 pipeline/scripts/csv_append_row.py dataset/<db>/queries.csv '{"original_index": N, "question": "...", "cypher": "...", "typeql": "..."}'
 ```
 
 ### Other Files
 
 ```
-docs/
+pipeline/docs/
   semantic_review_notes.md  # Full review guidance
   typeql_reference.md       # Comprehensive TypeQL 3.0 reference (read only when needed)
 

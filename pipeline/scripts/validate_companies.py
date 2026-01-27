@@ -159,7 +159,7 @@ def semantic_review(index: int, question: str, cypher: str, typeql: str) -> tupl
 def main():
     """Main validation loop."""
     # Read queries
-    with open('/opt/text2typeql/output/companies/queries.csv', 'r') as f:
+    with open('/opt/text2typeql/dataset/companies/queries.csv', 'r') as f:
         reader = csv.DictReader(f)
         queries = list(reader)
 

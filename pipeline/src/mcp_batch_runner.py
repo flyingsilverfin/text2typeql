@@ -22,9 +22,10 @@ from typing import Optional
 import pandas as pd
 
 # Paths
-PROJECT_ROOT = Path(__file__).parent.parent
-OUTPUT_DIR = PROJECT_ROOT / "output"
-DATA_DIR = PROJECT_ROOT / "data"
+PIPELINE_ROOT = Path(__file__).parent.parent
+REPO_ROOT = PIPELINE_ROOT.parent
+OUTPUT_DIR = REPO_ROOT / "dataset"
+DATA_DIR = PIPELINE_ROOT / "data"
 
 
 def get_total_queries(database: str) -> int:
@@ -238,8 +239,8 @@ def get_conversion_prompt(database: str, query: dict) -> str:
 4. If validation fails, carefully read the error, fix the query, and retry (up to 3 total attempts).
 
 5. Write the result using the Write tool to:
-   - SUCCESS: /home/user/text2typeql/output/{database}/result_{original_idx}.json
-   - FAILURE (after 3 tries): /home/user/text2typeql/output/{database}/failed_{original_idx}.json
+   - SUCCESS: /home/user/text2typeql/dataset/{database}/result_{original_idx}.json
+   - FAILURE (after 3 tries): /home/user/text2typeql/dataset/{database}/failed_{original_idx}.json
 
 ## TypeQL 3.x Quick Reference
 

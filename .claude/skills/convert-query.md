@@ -13,7 +13,7 @@ By default, reads from the original Neo4j dataset. Use `--source failed_review` 
 
 **ALWAYS validate using the script - NEVER use typedb console directly:**
 ```bash
-python3 scripts/validate_typeql.py <database> --file /tmp/query.tql
+python3 pipeline/scripts/validate_typeql.py <database> --file /tmp/query.tql
 ```
 Returns "OK" on success, error message on failure. This is the ONLY way to validate.
 
@@ -23,13 +23,13 @@ Returns "OK" on success, error message on failure. This is the ONLY way to valid
 
 ```bash
 # Check if already converted
-python3 scripts/csv_read_row.py output/<db>/queries.csv <index> --exists
+python3 pipeline/scripts/csv_read_row.py dataset/<db>/queries.csv <index> --exists
 
 # Append success
-python3 scripts/csv_append_row.py output/<db>/queries.csv '{"original_index": N, "question": "...", "cypher": "...", "typeql": "..."}'
+python3 pipeline/scripts/csv_append_row.py dataset/<db>/queries.csv '{"original_index": N, "question": "...", "cypher": "...", "typeql": "..."}'
 
 # Append failure
-python3 scripts/csv_append_row.py output/<db>/failed.csv '{"original_index": N, "question": "...", "cypher": "...", "error": "..."}'
+python3 pipeline/scripts/csv_append_row.py dataset/<db>/failed.csv '{"original_index": N, "question": "...", "cypher": "...", "error": "..."}'
 ```
 
 **Be concise.** Do not output full queries in explanations. Stop immediately after writing result.
@@ -40,8 +40,8 @@ python3 scripts/csv_append_row.py output/<db>/failed.csv '{"original_index": N, 
 
 ### 1. Check if Already Done
 ```bash
-python3 scripts/csv_read_row.py output/<database>/queries.csv <index> --exists
-python3 scripts/csv_read_row.py output/<database>/failed.csv <index> --exists
+python3 pipeline/scripts/csv_read_row.py dataset/<database>/queries.csv <index> --exists
+python3 pipeline/scripts/csv_read_row.py dataset/<database>/failed.csv <index> --exists
 ```
 If either returns `true`, report "already processed" and STOP.
 
@@ -51,17 +51,17 @@ If either returns `true`, report "already processed" and STOP.
 
 **Default (from original dataset):**
 ```bash
-python3 scripts/get_query.py <database> <index>
+python3 pipeline/scripts/get_query.py <database> <index>
 ```
 
 **From failed_review.csv:**
 ```bash
-python3 scripts/csv_read_row.py output/<database>/failed_review.csv <index>
+python3 pipeline/scripts/csv_read_row.py dataset/<database>/failed_review.csv <index>
 ```
 This returns JSON with `original_index`, `question`, `cypher`, `typeql` (previous attempt), and `review_reason`.
 
 ### 3. Load Schema
-Read `output/<database>/schema.tql` for entity types, relations, and role names.
+Read `dataset/<database>/schema.tql` for entity types, relations, and role names.
 
 ### 4. Convert to TypeQL
 
@@ -71,7 +71,7 @@ Read `output/<database>/schema.tql` for entity types, relations, and role names.
 - Fetch: `fetch { "prop": $entity.prop };`
 - Bind for filter/sort: `$p has age $a; $a > 25; sort $a;`
 
-For complex patterns, read `docs/typeql_reference.md`.
+For complex patterns, read `pipeline/docs/typeql_reference.md`.
 
 ### 5. Validate Against TypeDB
 
@@ -81,13 +81,13 @@ cat > /tmp/query.tql << 'EOF'
 <your typeql here>
 EOF
 
-python3 scripts/validate_typeql.py <database> --file /tmp/query.tql
+python3 pipeline/scripts/validate_typeql.py <database> --file /tmp/query.tql
 # Returns "OK" and exit 0 on success, error message and exit 1 on failure
 ```
 
 Or validate inline (careful with escaping):
 ```bash
-python3 scripts/validate_typeql.py <database> 'match $x isa organization; limit 1; fetch { "n": $x.name };'
+python3 pipeline/scripts/validate_typeql.py <database> 'match $x isa organization; limit 1; fetch { "n": $x.name };'
 ```
 
 ### 6. Semantic Review
@@ -102,22 +102,22 @@ Before saving, verify (without looking at Cypher):
 
 **Success (from original dataset):**
 ```bash
-python3 scripts/csv_append_row.py output/<database>/queries.csv '{"original_index": <index>, "question": "<escaped>", "cypher": "<escaped>", "typeql": "<escaped>"}'
+python3 pipeline/scripts/csv_append_row.py dataset/<database>/queries.csv '{"original_index": <index>, "question": "<escaped>", "cypher": "<escaped>", "typeql": "<escaped>"}'
 ```
 
 **Success (from failed_review.csv):**
 ```bash
-python3 scripts/csv_move_row.py output/<database>/failed_review.csv output/<database>/queries.csv <index> '{"typeql": "<new_typeql>"}'
+python3 pipeline/scripts/csv_move_row.py dataset/<database>/failed_review.csv dataset/<database>/queries.csv <index> '{"typeql": "<new_typeql>"}'
 ```
 
 **Failure after 3 attempts (from original dataset):**
 ```bash
-python3 scripts/csv_append_row.py output/<database>/failed.csv '{"original_index": <index>, "question": "<escaped>", "cypher": "<escaped>", "error": "<reason>"}'
+python3 pipeline/scripts/csv_append_row.py dataset/<database>/failed.csv '{"original_index": <index>, "question": "<escaped>", "cypher": "<escaped>", "error": "<reason>"}'
 ```
 
 **Failure after 3 attempts (from failed_review.csv):**
 ```bash
-python3 scripts/csv_move_row.py output/<database>/failed_review.csv output/<database>/failed.csv <index> '{"error": "<reason>"}'
+python3 pipeline/scripts/csv_move_row.py dataset/<database>/failed_review.csv dataset/<database>/failed.csv <index> '{"error": "<reason>"}'
 ```
 
 **JSON escaping:** Use `json.dumps()` in Python or escape `"` as `\"` and newlines as `\n`.

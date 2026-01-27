@@ -49,7 +49,7 @@ def append_row(csv_path: str, row_data: dict) -> bool:
 if __name__ == '__main__':
     if len(sys.argv) < 3:
         print("Usage: csv_append_row.py <csv_path> '<json_row>'", file=sys.stderr)
-        print("Example: csv_append_row.py output/movies/queries.csv '{\"original_index\": 0, \"question\": \"...\", \"cypher\": \"...\", \"typeql\": \"...\"}'", file=sys.stderr)
+        print("Example: csv_append_row.py dataset/movies/queries.csv '{\"original_index\": 0, \"question\": \"...\", \"cypher\": \"...\", \"typeql\": \"...\"}'", file=sys.stderr)
         sys.exit(1)
 
     csv_path = sys.argv[1]

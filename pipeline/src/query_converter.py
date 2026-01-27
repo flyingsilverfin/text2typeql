@@ -188,7 +188,7 @@ def convert_queries(
     if not skip_approved_check and not is_schema_approved(database):
         raise ValueError(
             f"Schema for '{database}' has not been approved. "
-            f"Review output/{database}/schema.tql and run "
+            f"Review dataset/{database}/schema.tql and run "
             f"'python main.py approve-schema {database}' to approve."
         )
 

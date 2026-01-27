@@ -151,7 +151,7 @@ def analyze_query_match(idx, question, cypher, typeql):
 
 def main():
     # Read queries
-    with open('/opt/text2typeql/output/companies/queries.csv', 'r') as f:
+    with open('/opt/text2typeql/dataset/companies/queries.csv', 'r') as f:
         reader = csv.DictReader(f)
         queries = list(reader)
 
