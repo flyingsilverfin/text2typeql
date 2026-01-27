@@ -26,6 +26,9 @@ define
   attribute rating value double;
   attribute timestamp value integer;
   attribute character_role value string;
+  attribute age value integer;
+  attribute description value string;
+  attribute died_in value string;
 
   entity movie,
     owns url,
@@ -49,7 +52,8 @@ define
     plays in_genre:film,
     plays rated:film,
     plays acted_in:film,
-    plays directed:film;
+    plays directed:film,
+    plays won:film;
 
   entity genre,
     owns name @key,
@@ -58,6 +62,7 @@ define
   entity user,
     owns user_id @key,
     owns name,
+    owns age,
     plays rated:user;
 
   entity person,
@@ -65,6 +70,7 @@ define
     owns name,
     owns tmdb_id @key,
     owns born_in,
+    owns died_in,
     owns bio,
     owns died,
     owns born,
@@ -92,3 +98,12 @@ define
     relates director,
     relates film,
     owns character_role;
+
+  entity award,
+    owns name @key,
+    owns description,
+    plays won:award;
+
+  relation won,
+    relates film,
+    relates award;

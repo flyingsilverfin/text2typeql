@@ -5487,3 +5487,168 @@ let $half = $total / 2;
 $ne > $half;
 limit 3;
 fetch { ""title"": $m.title };"
+46,Identify the first 3 movies that have been rated by users younger than 25.,"MATCH (u:User)-[r:RATED]->(m:Movie)
+WHERE u.age < 25
+RETURN m.title
+LIMIT 3","match
+$u isa user, has age $a;
+$a < 25;
+$r isa rated (user: $u, film: $m);
+limit 3;
+fetch { ""title"": $m.title };"
+184,What are the top 5 directors who have directed movies that won an academy award?,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
+WHERE m.plot CONTAINS 'Academy Award'
+WITH d, count(m) AS awardCount
+ORDER BY awardCount DESC
+LIMIT 5
+RETURN d.name AS director, awardCount","match
+$p isa person;
+directed (director: $p, film: $m);
+won (film: $m, award: $aw);
+$aw has name $an;
+$an like "".*Academy Award.*"";
+reduce $count = count($m) groupby $p;
+sort $count desc;
+limit 5;
+fetch { ""director"": $p.name, ""awards"": $count };"
+255,List the first 5 movies that have been directed by women.,"MATCH (director:Person)-[:DIRECTED]->(movie:Movie)
+WHERE director.name =~ ""(?i).*\\b(Ms\\.|Miss|Mrs\\.|Madam|Madame|Mademoiselle|Frau|Fräulein|Señora|Señorita|Doña|Donna)\\b.*""
+RETURN movie.title
+LIMIT 5","match
+$p isa person, has name $n;
+$n like "".*(Ms\\.|Miss |Mrs\\.|Madam |Madame |Mademoiselle |Frau |Señora |Señorita |Doña |Donna ).*"";
+directed (director: $p, film: $m);
+limit 5;
+fetch { ""title"": $m.title };"
+273,List the first 5 actors who were born and died in the same country.,"MATCH (a:Actor)
+WHERE a.bornIn IS NOT NULL AND a.bornIn = a.diedIn
+RETURN a.name AS actor, a.bornIn AS country
+LIMIT 5","match
+$p isa person, has born_in $bi, has died_in $di;
+$bi == $di;
+limit 5;
+fetch { ""actor"": $p.name, ""country"": $bi };"
+391,Which three movies have been rated by the youngest users on average?,"MATCH (m:Movie)<-[r:RATED]-(u:User)
+WITH m, avg(u.age) AS avgAge, count(r) AS numRatings
+WHERE numRatings > 10
+RETURN m.title, avgAge
+ORDER BY avgAge
+LIMIT 3","match
+$m isa movie;
+$u isa user, has age $a;
+$r isa rated (user: $u, film: $m);
+reduce $count = count($r), $avg_age = mean($a) groupby $m;
+match $count > 10;
+sort $avg_age asc;
+limit 3;
+fetch { ""title"": $m.title, ""avg_age"": $avg_age };"
+400,Which three directors have directed movies that have won any cinematic awards?,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
+WHERE exists{ (m)-[:WON]->(:Award) }
+RETURN d.name AS director
+LIMIT 3","match
+$p isa person;
+directed (director: $p, film: $m);
+won (film: $m, award: $aw);
+select $p;
+distinct;
+limit 3;
+fetch { ""director"": $p.name };"
+401,Which three directors have directed movies that have won any cinematic awards?,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
+WHERE exists{ (m)-[:WON]->(:Award) }
+RETURN d.name AS director
+LIMIT 3","match
+$p isa person;
+directed (director: $p, film: $m);
+won (film: $m, award: $aw);
+select $p;
+distinct;
+limit 3;
+fetch { ""director"": $p.name };"
+423,What are the first 3 movies with a main actor over the age of 50 at the time of filming?,"MATCH (m:Movie)<-[:ACTED_IN]-(a:Actor)
+WHERE date(m.released) - a.born > duration('P50Y')
+RETURN m.title, a.name, duration.between(a.born, date(m.released)).years as age
+ORDER BY m.released
+LIMIT 3","match
+$m isa movie, has year $y;
+$p isa person, has born $b;
+acted_in (actor: $p, film: $m);
+let $threshold = $y - 50;
+$b < $threshold;
+limit 3;
+fetch { ""title"": $m.title, ""actor"": $p.name };"
+42,Show the top 5 highest IMDb rated movies directed by female directors.,"MATCH (m:Movie)<-[:DIRECTED]-(d:Person)
+WHERE d.name =~ ""(?i).*\\b(Ms\\.|Miss|Mrs\\.|Frau|Fräulein|Mademoiselle|Madame|Mlle\\.|Mme\\.|Señora|Señorita|Doña).*""
+   OR exists{ (d)-[:ACTED_IN]->(:Movie) }
+RETURN m.title AS movie, m.imdbRating AS rating
+ORDER BY m.imdbRating DESC
+LIMIT 5","match
+$p isa person, has name $n;
+$n like "".*(Ms\\.|Miss |Mrs\\.|Madam |Madame |Mademoiselle |Frau |Señora |Señorita |Doña |Donna ).*"";
+directed (director: $p, film: $m);
+$m has imdb_rating $r;
+sort $r desc;
+limit 5;
+fetch { ""movie"": $m.title, ""rating"": $r };"
+488,List all movies that have won an award and have been directed by a director born in the UK.,"MATCH (m:Movie)<-[:DIRECTED]-(d:Director {bornIn: 'UK'})
+WHERE exists{ (m)-[:WON]->(:Award) }
+RETURN m.title, d.name","match
+$p isa person, has born_in ""UK"";
+directed (director: $p, film: $m);
+won (film: $m, award: $aw);
+fetch { ""title"": $m.title, ""director"": $p.name };"
+489,List all movies that have won an award and have been directed by a director born in the UK.,"MATCH (m:Movie)<-[:DIRECTED]-(d:Director {bornIn: 'UK'})
+WHERE exists{ (m)-[:WON]->(:Award) }
+RETURN m.title, d.name","match
+$p isa person, has born_in ""UK"";
+directed (director: $p, film: $m);
+won (film: $m, award: $aw);
+fetch { ""title"": $m.title, ""director"": $p.name };"
+22,Show the top 3 movies that have been rated by the oldest users.,"MATCH (m:Movie)<-[r:RATED]-(u:User)
+WITH m, u, r
+ORDER BY u.born ASC
+LIMIT 3
+RETURN m.title AS movie, u.name AS user, r.rating AS rating","match
+$u isa user, has age $a;
+$r isa rated (user: $u, film: $m);
+$r has rating $rt;
+sort $a desc;
+limit 3;
+fetch { ""movie"": $m.title, ""user"": $u.name, ""rating"": $rt };"
+242,Show the first 3 movies that have been rated by the youngest users.,"MATCH (m:Movie)<-[r:RATED]-(u:User)
+WITH m, u, r
+ORDER BY u.born DESC, r.timestamp
+RETURN m.title AS movie, u.name AS user
+LIMIT 3","match
+$u isa user, has age $a;
+$r isa rated (user: $u, film: $m);
+sort $a asc;
+limit 3;
+fetch { ""movie"": $m.title, ""user"": $u.name };"
+736,Which 3 actors have acted in both a highest and lowest grossing movie?,"MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)
+WITH a, m
+ORDER BY m.revenue DESC
+WITH a, collect(m)[0] AS highestGrossingMovie, collect(m)[-1] AS lowestGrossingMovie
+WHERE exists{ (a)-[:ACTED_IN]->(highestGrossingMovie) } 
+  AND exists{ (a)-[:ACTED_IN]->(lowestGrossingMovie) }
+RETURN a.name AS actor, highestGrossingMovie.title AS highestGrossingMovie, lowestGrossingMovie.title AS lowestGrossingMovie
+LIMIT 3","with fun max_revenue() -> integer:
+  match $m isa movie, has revenue $r;
+  return max($r);
+
+with fun min_revenue() -> integer:
+  match $m isa movie, has revenue $r;
+  $r > 0;
+  return min($r);
+
+match
+$p isa person;
+$m1 isa movie, has revenue $r1;
+$m2 isa movie, has revenue $r2;
+let $max = max_revenue();
+let $min = min_revenue();
+$r1 == $max;
+$r2 == $min;
+acted_in (actor: $p, film: $m1);
+acted_in (actor: $p, film: $m2);
+limit 3;
+fetch { ""actor"": $p.name, ""highest"": $m1.title, ""lowest"": $m2.title };"

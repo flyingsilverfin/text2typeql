@@ -4,29 +4,9 @@ WHERE m.plot IS NOT NULL
 RETURN m.title, m.plot
 ORDER BY size(m.plot) DESC
 LIMIT 5",Uses size() on string property - not directly supported
-42,Show the top 5 highest IMDb rated movies directed by female directors.,"MATCH (m:Movie)<-[:DIRECTED]-(d:Person)
-WHERE d.name =~ ""(?i).*\\b(Ms\\.|Miss|Mrs\\.|Frau|Fräulein|Mademoiselle|Madame|Mlle\\.|Mme\\.|Señora|Señorita|Doña).*""
-   OR exists{ (d)-[:ACTED_IN]->(:Movie) }
-RETURN m.title AS movie, m.imdbRating AS rating
-ORDER BY m.imdbRating DESC
-LIMIT 5",Uses regex matching pattern
-46,Identify the first 3 movies that have been rated by users younger than 25.,"MATCH (u:User)-[r:RATED]->(m:Movie)
-WHERE u.age < 25
-RETURN m.title
-LIMIT 3",Uses user age which doesn't exist in schema
 148,Which movies have a plot description longer than 150 characters?,"MATCH (m:Movie)
 WHERE m.plot IS NOT NULL AND size(m.plot) > 150
 RETURN m.title, m.plot",Uses size() on string property - not directly supported
-184,What are the top 5 directors who have directed movies that won an academy award?,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
-WHERE m.plot CONTAINS 'Academy Award'
-WITH d, count(m) AS awardCount
-ORDER BY awardCount DESC
-LIMIT 5
-RETURN d.name AS director, awardCount",Uses Award/WON which don't exist in schema
-255,List the first 5 movies that have been directed by women.,"MATCH (director:Person)-[:DIRECTED]->(movie:Movie)
-WHERE director.name =~ ""(?i).*\\b(Ms\\.|Miss|Mrs\\.|Madam|Madame|Mademoiselle|Frau|Fräulein|Señora|Señorita|Doña|Donna)\\b.*""
-RETURN movie.title
-LIMIT 5",Uses regex matching pattern
 257,Which 3 movies have the most detailed plot descriptions (longest text)?,"MATCH (m:Movie)
 WHERE m.plot IS NOT NULL
 RETURN m.title, m.plot
@@ -37,39 +17,16 @@ WHERE d.bio IS NOT NULL
 RETURN d.name, d.bio
 ORDER BY size(d.bio) DESC
 LIMIT 3",Uses size() on string property - not directly supported
-273,List the first 5 actors who were born and died in the same country.,"MATCH (a:Actor)
-WHERE a.bornIn IS NOT NULL AND a.bornIn = a.diedIn
-RETURN a.name AS actor, a.bornIn AS country
-LIMIT 5",Uses diedIn which doesn't exist in schema
 300,Show the top 5 actors with the longest bios.,"MATCH (a:Actor)
 WHERE a.bio IS NOT NULL
 RETURN a.name, a.bio
 ORDER BY size(a.bio) DESC
 LIMIT 5",Uses size() on string property - not directly supported
-391,Which three movies have been rated by the youngest users on average?,"MATCH (m:Movie)<-[r:RATED]-(u:User)
-WITH m, avg(u.age) AS avgAge, count(r) AS numRatings
-WHERE numRatings > 10
-RETURN m.title, avgAge
-ORDER BY avgAge
-LIMIT 3",Uses user age which doesn't exist in schema
-400,Which three directors have directed movies that have won any cinematic awards?,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
-WHERE exists{ (m)-[:WON]->(:Award) }
-RETURN d.name AS director
-LIMIT 3",Uses Award/WON which don't exist in schema
-401,Which three directors have directed movies that have won any cinematic awards?,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
-WHERE exists{ (m)-[:WON]->(:Award) }
-RETURN d.name AS director
-LIMIT 3",Uses Award/WON which don't exist in schema
 404,List the top 3 movies with a released date on a Friday.,"MATCH (m:Movie)
 WHERE date(m.released).weekday = 5
 RETURN m.title, m.released
 ORDER BY m.released DESC
 LIMIT 3",Uses weekday function which has no TypeQL equivalent
-423,What are the first 3 movies with a main actor over the age of 50 at the time of filming?,"MATCH (m:Movie)<-[:ACTED_IN]-(a:Actor)
-WHERE date(m.released) - a.born > duration('P50Y')
-RETURN m.title, a.name, duration.between(a.born, date(m.released)).years as age
-ORDER BY m.released
-LIMIT 3",Uses duration functions which have no TypeQL equivalent
 447,Find all users who rated a movie on its release date.,"MATCH (u:User)-[r:RATED]->(m:Movie)
 WHERE m.released = date(datetime({epochSeconds: r.timestamp}))
 RETURN u, r, m",Uses epochSeconds which requires timestamp conversion
@@ -78,12 +35,6 @@ WITH d, m
 ORDER BY m.imdbRating DESC
 WITH d, collect(m)[0..5] AS topMovies
 RETURN d.name AS director, [movie IN topMovies | movie.title] AS movies, [movie IN topMovies | movie.imdbRating] AS ratings",Uses collect() aggregation which has no direct TypeQL equivalent
-488,List all movies that have won an award and have been directed by a director born in the UK.,"MATCH (m:Movie)<-[:DIRECTED]-(d:Director {bornIn: 'UK'})
-WHERE exists{ (m)-[:WON]->(:Award) }
-RETURN m.title, d.name",Uses Award/WON which don't exist in schema
-489,List all movies that have won an award and have been directed by a director born in the UK.,"MATCH (m:Movie)<-[:DIRECTED]-(d:Director {bornIn: 'UK'})
-WHERE exists{ (m)-[:WON]->(:Award) }
-RETURN m.title, d.name",Uses Award/WON which don't exist in schema
 506,Which actors have the longest bio in the database?,"MATCH (a:Actor)
 RETURN a.name, a.bio
 ORDER BY size(a.bio) DESC
@@ -150,14 +101,6 @@ WHERE size(split(m.plot, ' ')) > 100
 RETURN m.title, m.plot
 ORDER BY size(split(m.plot, ' ')) DESC
 LIMIT 5",Uses size(split()) which has no TypeQL equivalent
-736,Which 3 actors have acted in both a highest and lowest grossing movie?,"MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)
-WITH a, m
-ORDER BY m.revenue DESC
-WITH a, collect(m)[0] AS highestGrossingMovie, collect(m)[-1] AS lowestGrossingMovie
-WHERE exists{ (a)-[:ACTED_IN]->(highestGrossingMovie) } 
-  AND exists{ (a)-[:ACTED_IN]->(lowestGrossingMovie) }
-RETURN a.name AS actor, highestGrossingMovie.title AS highestGrossingMovie, lowestGrossingMovie.title AS lowestGrossingMovie
-LIMIT 3",Uses collect() aggregation which has no direct TypeQL equivalent
 737,List the first 3 movies where the main language is not English but have an IMDb rating over 7.,"MATCH (m:Movie)
 WHERE m.languages[0] <> 'English' AND m.imdbRating > 7
 RETURN m.title, m.languages[0], m.imdbRating
@@ -180,21 +123,11 @@ WHERE numMovies > 5
 RETURN a.name, a.bio, numMovies
 ORDER BY numMovies DESC
 LIMIT 3",Uses size() on string property - not directly supported
-22,Show the top 3 movies that have been rated by the oldest users.,"MATCH (m:Movie)<-[r:RATED]-(u:User)
-WITH m, u, r
-ORDER BY u.born ASC
-LIMIT 3
-RETURN m.title AS movie, u.name AS user, r.rating AS rating",Schema mismatch: Question asks for oldest users (by birth date) but user entity has no born attribute in TypeQL schema. Only person entity has born attribute. Cannot correctly convert this query.
 28,List the first 5 movies that have been rated by users from more than 10 different countries.,"MATCH (m:Movie)<-[r:RATED]-(u:User)
 WITH m, count(DISTINCT u.name) AS numCountries
 WHERE numCountries > 10
 RETURN m.title
 LIMIT 5",Schema mismatch: Question asks about user countries but User entity has no country attribute. Cypher counts distinct user names (misleadingly named numCountries) which cannot accurately answer the question about geographic diversity.
-242,Show the first 3 movies that have been rated by the youngest users.,"MATCH (m:Movie)<-[r:RATED]-(u:User)
-WITH m, u, r
-ORDER BY u.born DESC, r.timestamp
-RETURN m.title AS movie, u.name AS user
-LIMIT 3","Schema mismatch: Cypher query sorts by u.born (user birth date) to find youngest users, but TypeQL user entity does not have a born attribute. Only person entity has born. Cannot correctly answer the question."
 585,Which 5 movies have the most distinct posters on IMDb?,"MATCH (m:Movie)
 WHERE m.poster IS NOT NULL
 RETURN m.title, m.poster
