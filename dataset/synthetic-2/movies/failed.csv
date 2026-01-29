@@ -1,0 +1,4 @@
+original_index,question,cypher,error
+11,List the movies with exactly two roles in their ACTED_IN relationships.,"MATCH (m:Movie)<-[r:ACTED_IN]-(p:Person)
+WHERE size(r.roles) = 2
+RETURN m.title AS MovieTitle","Unsupported feature: size() on array property. Cypher uses size(r.roles) to count elements in a list-valued property, which has no TypeQL equivalent."
