@@ -10,7 +10,7 @@ Foundation models generate SQL and Cypher reasonably well thanks to large public
 
 The dataset was produced by converting Neo4j Labs' [text2cypher](https://github.com/neo4j-labs/text2cypher) dataset, which itself was generated using AI. It was created using agents operating under a detailed TypeQL 3.0 reference, with every query validated against a live TypeDB instance and semantically reviewed to verify it correctly answers the English question. About 5-10% of remaining queries were then manually prompted with extra information.
 
-Interestingly, the generation of TypeQL, which also relied on semantic validation against the schema, highlighted at least 30 cases (~0.75%) where Neo4j queries were incorrect against their own schema - but because it lacks a strong type system like TypeDB's, these were never found.
+Interestingly, the generation of TypeQL, which also relied on semantic validation against the schema, highlighted at least 30 cases in the synthetic-1 dataset (not done for second dataset yet), i.e. ~0.75% where Neo4j queries were incorrect against their own schema - but because it lacks a strong type system like TypeDB's, these were never found.
 
 ## Source Datasets
 
