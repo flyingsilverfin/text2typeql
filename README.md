@@ -130,7 +130,7 @@ See [pipeline/](pipeline/) for the tooling used to produce this dataset, includi
 @software{text2typeql,
   title  = {Text2TypeQL: Natural Language to TypeQL 3.0 Query Dataset},
   year   = {2025},
-  url    = {https://github.com/vaticle/text2typeql},
+  url    = {https://github.com/typedb-osi/text2typeql},
   note   = {11,968 validated query pairs across 15 domains, derived from Neo4j Labs text2cypher}
 }
 ```
