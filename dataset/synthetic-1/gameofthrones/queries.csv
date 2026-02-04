@@ -414,7 +414,7 @@ ORDER BY interactions DESC
 LIMIT 5","match
   $c isa character, has name $cn;
   $target isa character, has name ""Roose-Bolton"";
-  $rel (character1: $c, character2: $target) isa interacts1, has weight $w;
+  $rel isa interacts1 (character1: $c, character2: $target), has weight $w;
 sort $w desc;
 limit 5;
 fetch { ""character"": $cn, ""interactions"": $w };"
@@ -2350,7 +2350,7 @@ ORDER BY max_weight DESC
 LIMIT 3","match
   $c isa character, has name $cn;
   $other isa character;
-  $rel (character1: $c, character2: $other) isa interacts1, has weight $w;
+  $rel isa interacts1 (character1: $c, character2: $other), has weight $w;
 sort $w desc;
 limit 3;
 fetch { ""character"": $cn };"
@@ -2428,7 +2428,7 @@ ORDER BY max_weight DESC
 LIMIT 5","match
   $c isa character, has name $cn;
   $other isa character;
-  $rel (character1: $c, character2: $other) isa interacts2, has weight $w;
+  $rel isa interacts2 (character1: $c, character2: $other), has weight $w;
 sort $w desc;
 limit 5;
 fetch { ""character"": $cn };"
@@ -2519,7 +2519,7 @@ ORDER BY total_weight DESC
 LIMIT 5","match
   $c isa character, has name $cn;
   $other isa character;
-  $rel (character1: $c, character2: $other) isa interacts45, has weight $w;
+  $rel isa interacts45 (character1: $c, character2: $other), has weight $w;
 sort $w desc;
 limit 5;
 fetch { ""character"": $cn };"
@@ -2599,7 +2599,7 @@ ORDER BY total_weight DESC
 LIMIT 5","match
   $c isa character, has name $cn;
   $other isa character;
-  $rel (character1: $c, character2: $other) isa interacts, has weight $w;
+  $rel isa interacts (character1: $c, character2: $other), has weight $w;
 sort $w desc;
 limit 5;
 fetch { ""character"": $cn };"
@@ -2707,7 +2707,7 @@ ORDER BY total_weight DESC
 LIMIT 5","match
   $c isa character, has name $cn;
   $other isa character;
-  $rel (character1: $c, character2: $other) isa interacts45, has weight $w;
+  $rel isa interacts45 (character1: $c, character2: $other), has weight $w;
 sort $w desc;
 limit 5;
 fetch { ""character"": $cn };"
@@ -2924,7 +2924,7 @@ ORDER BY max_weight DESC
 LIMIT 3","match
   $c isa character, has name $cn;
   $other isa character;
-  $rel (character1: $c, character2: $other) isa interacts3, has weight $w;
+  $rel isa interacts3 (character1: $c, character2: $other), has weight $w;
 sort $w desc;
 limit 3;
 fetch { ""character"": $cn };"

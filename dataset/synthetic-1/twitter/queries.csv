@@ -2281,7 +2281,7 @@ ORDER BY similarity DESC
 LIMIT 5","match
 $me isa me, has name ""Neo4j"";
 $u isa user;
-$sim (source_user: $me, similar_user: $u) isa similar_to, has score $score;
+$sim isa similar_to (source_user: $me, similar_user: $u), has score $score;
 sort $score desc;
 limit 5;
 fetch { ""user"": $u.name, ""similarity"": $score };"
@@ -2646,7 +2646,7 @@ RETURN u.screen_name AS user, count(i) AS interactions
 ORDER BY interactions DESC
 LIMIT 5","match
   $me isa me, has screen_name ""neo4j"";
-  $i (interactor: $me, target: $u) isa interacts_with;
+  $i isa interacts_with (interactor: $me, target: $u);
   $u has screen_name $sn;
 reduce $count = count($i) groupby $sn;
 sort $count desc;
@@ -2674,7 +2674,7 @@ RETURN u.screen_name AS user, s.score AS similarity
 ORDER BY similarity DESC
 LIMIT 3","match
   $me isa me, has screen_name ""neo4j"";
-  $s (source_user: $me, similar_user: $u) isa similar_to, has score $score;
+  $s isa similar_to (source_user: $me, similar_user: $u), has score $score;
   $u has screen_name $sn;
 sort $score desc;
 limit 3;
@@ -2812,7 +2812,7 @@ RETURN u.screen_name AS user, count(a) AS amplifications
 ORDER BY amplifications DESC
 LIMIT 3","match
   $me isa me, has screen_name ""neo4j"";
-  $a (amplifier: $me, amplified_user: $u) isa amplifies;
+  $a isa amplifies (amplifier: $me, amplified_user: $u);
   $u has screen_name $sn;
 reduce $count = count($a) groupby $sn;
 sort $count desc;
@@ -3110,7 +3110,7 @@ RETURN u.name AS user, s.score AS similarity
 ORDER BY similarity DESC
 LIMIT 5","match
   $me isa me, has name ""Neo4j"";
-  $s (source_user: $me, similar_user: $u) isa similar_to, has score $score;
+  $s isa similar_to (source_user: $me, similar_user: $u), has score $score;
   $u has name $name;
 sort $score desc;
 limit 5;
@@ -3237,7 +3237,7 @@ RETURN u.screen_name AS user, count(*) AS interactions
 ORDER BY interactions DESC
 LIMIT 3","match
   $me isa me, has screen_name ""neo4j"";
-  $i (interactor: $u, target: $me) isa interacts_with;
+  $i isa interacts_with (interactor: $u, target: $me);
   $u has screen_name $sn;
 reduce $count = count($i) groupby $sn;
 sort $count desc;
@@ -3307,7 +3307,7 @@ fetch { ""tweet_text"": $text, ""favorites"": $favorites };"
 WHERE s.score > 0.5
 RETURN u.screen_name, s.score","match
   $me isa me, has screen_name ""neo4j"";
-  $s (source_user: $me, similar_user: $u) isa similar_to, has score $score;
+  $s isa similar_to (source_user: $me, similar_user: $u), has score $score;
   $score > 0.5;
   $u has screen_name $sn;
 fetch { ""screen_name"": $sn, ""score"": $score };"
@@ -3387,7 +3387,7 @@ RETURN user.screen_name AS user, count(*) AS mentions
 ORDER BY mentions DESC
 LIMIT 3","match
   $me isa me, has screen_name ""neo4j"";
-  $rt (mentioner: $me, mentioned_user: $user) isa rt_mentions;
+  $rt isa rt_mentions (mentioner: $me, mentioned_user: $user);
   $user has screen_name $sn;
 reduce $count = count($rt) groupby $sn;
 sort $count desc;
@@ -3597,7 +3597,7 @@ RETURN u.screen_name AS user, count(i) AS interactions
 ORDER BY interactions DESC
 LIMIT 5","match
   $me isa me, has screen_name ""neo4j"";
-  $i (interactor: $u, target: $me) isa interacts_with;
+  $i isa interacts_with (interactor: $u, target: $me);
   $u has screen_name $sn;
 reduce $count = count($i) groupby $sn;
 sort $count desc;
@@ -3637,7 +3637,7 @@ RETURN u.screen_name AS similar_user, s.score AS similarity
 ORDER BY s.score DESC
 LIMIT 5","match
   $me isa me, has screen_name ""neo4j"";
-  $s (source_user: $me, similar_user: $u) isa similar_to, has score $score;
+  $s isa similar_to (source_user: $me, similar_user: $u), has score $score;
   $u has screen_name $sn;
 sort $score desc;
 limit 5;
@@ -3759,7 +3759,7 @@ RETURN u.screen_name AS user, count(i) AS interactions
 ORDER BY interactions DESC
 LIMIT 5","match
   $me isa me, has screen_name ""neo4j"";
-  $i (interactor: $me, target: $u) isa interacts_with;
+  $i isa interacts_with (interactor: $me, target: $u);
   $u has screen_name $sn;
 reduce $count = count($i) groupby $sn;
 sort $count desc;
@@ -3771,7 +3771,7 @@ RETURN u.screen_name, s.score
 ORDER BY s.score DESC
 LIMIT 3","match
   $me isa me, has screen_name ""neo4j"";
-  $s (source_user: $me, similar_user: $u) isa similar_to, has score $score;
+  $s isa similar_to (source_user: $me, similar_user: $u), has score $score;
   $score > 0.5;
   $u has screen_name $sn;
 sort $score desc;
@@ -4018,7 +4018,7 @@ RETURN u.screen_name, s.score
 ORDER BY s.score
 LIMIT 3","match
   $me isa me, has screen_name ""neo4j"";
-  $s (source_user: $me, similar_user: $u) isa similar_to, has score $score;
+  $s isa similar_to (source_user: $me, similar_user: $u), has score $score;
   $score < 0.5;
   $u has screen_name $sn;
 sort $score asc;
@@ -4071,7 +4071,7 @@ RETURN u.screen_name AS user, count(a) AS amplifications
 ORDER BY amplifications DESC
 LIMIT 5","match
   $me isa me, has screen_name ""neo4j"";
-  $a (amplifier: $me, amplified_user: $u) isa amplifies;
+  $a isa amplifies (amplifier: $me, amplified_user: $u);
   $u has screen_name $sn;
 reduce $count = count($a) groupby $sn;
 sort $count desc;
@@ -4289,7 +4289,7 @@ RETURN u.screen_name AS user, count(i) AS interactions
 ORDER BY interactions DESC
 LIMIT 3","match
   $me isa me, has screen_name ""neo4j"";
-  $i (interactor: $me, target: $u) isa interacts_with;
+  $i isa interacts_with (interactor: $me, target: $u);
   $u has screen_name $sn;
 reduce $count = count($i) groupby $sn;
 sort $count desc;
@@ -4403,7 +4403,7 @@ RETURN u.name, s.score
 ORDER BY s.score DESC
 LIMIT 3","match
   $me isa me, has name ""Neo4j"";
-  $s (source_user: $me, similar_user: $u) isa similar_to, has score $score;
+  $s isa similar_to (source_user: $me, similar_user: $u), has score $score;
   $score > 0.5;
   $u has name $name;
 sort $score desc;
@@ -4562,7 +4562,7 @@ RETURN u.name AS name, s.score AS similarity
 ORDER BY similarity DESC
 LIMIT 5","match
   $me isa me, has name ""Neo4j"";
-  $s (source_user: $u, similar_user: $me) isa similar_to, has score $score;
+  $s isa similar_to (source_user: $u, similar_user: $me), has score $score;
   $u has name $name;
 sort $score desc;
 limit 5;
@@ -4661,7 +4661,7 @@ RETURN u.screen_name AS user, count(i) AS interactions
 ORDER BY interactions DESC
 LIMIT 5","match
   $me isa me, has screen_name ""neo4j"";
-  $i (interactor: $u, target: $me) isa interacts_with;
+  $i isa interacts_with (interactor: $u, target: $me);
   $u has screen_name $sn;
 reduce $count = count($i) groupby $sn;
 sort $count desc;
@@ -4671,7 +4671,7 @@ fetch { ""user"": $sn, ""interactions"": $count };"
 WHERE s.score > 0.5
 RETURN u.screen_name, s.score","match
   $me isa me, has screen_name ""neo4j"";
-  $s (source_user: $me, similar_user: $u) isa similar_to, has score $score;
+  $s isa similar_to (source_user: $me, similar_user: $u), has score $score;
   $score > 0.5;
   $u has screen_name $sn;
 fetch { ""screen_name"": $sn, ""score"": $score };"
@@ -4768,7 +4768,7 @@ RETURN u.screen_name as user, count(u) as interactions
 ORDER BY interactions DESC
 LIMIT 5","match
   $me isa me, has screen_name ""neo4j"";
-  $i (interactor: $me, target: $u) isa interacts_with;
+  $i isa interacts_with (interactor: $me, target: $u);
   follows (follower: $me, followed: $u);
   $u has screen_name $sn;
 reduce $count = count($i) groupby $sn;

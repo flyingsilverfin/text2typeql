@@ -51,7 +51,7 @@ WHERE r.rating > 90
 RETURN p.name AS reviewer, m.title AS movie, r.rating AS rating","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $ratingr > 90;
   $p has name $namep;
   $m has title $titlem;
@@ -80,7 +80,7 @@ fetch {
 RETURN m.title AS movie, r.roles AS roles","match
   $p isa person, has name ""Keanu Reeves"";
   $m isa movie;
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $m has title $titlem;
 fetch {
   ""movie"": $titlem,
@@ -113,7 +113,7 @@ ORDER BY r.rating DESC
 LIMIT 5","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary, has rating $rating;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary, has rating $rating;
 $summary == ""Dark, but compelling"";
 sort $rating desc;
 limit 5;
@@ -213,7 +213,7 @@ WHERE r.rating < 50
 RETURN m.title, r.rating, r.summary","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr, has summary $summaryr;
   $ratingr < 50;
   $m has title $titlem;
 fetch {
@@ -236,7 +236,7 @@ fetch {
 RETURN r.roles","match
   $p isa person, has name ""Carrie-Anne Moss"";
   $m isa movie, has title ""The Matrix Revolutions"";
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
 fetch {
   ""roles"": $rolesr
 };"
@@ -247,7 +247,7 @@ LIMIT 1
 RETURN p.name AS person, num_reviews","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed;
+  $r isa reviewed (reviewer: $p, film: $m);
   $p has name $namep;
 reduce $num_reviews = count($r) groupby $namep;
 sort $num_reviews desc;
@@ -379,7 +379,7 @@ RETURN p.name
 LIMIT 3","match
 $p isa person, has name $name;
 $m isa movie;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""Silly, but fun"";
 limit 3;
 fetch {
@@ -402,7 +402,7 @@ ORDER BY r.rating DESC
 LIMIT 3","match
   $p isa person, has born 1967;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $m has title $titlem;
 sort $ratingr desc;
 limit 3;
@@ -481,7 +481,7 @@ fetch {
 WHERE r.rating = 75
 RETURN m.title, r.summary, r.rating","match
   $m isa movie, has title $t;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating 75, has summary $s;
+  $r isa reviewed (reviewer: $p, film: $m), has rating 75, has summary $s;
 fetch {
   ""title"": $t,
   ""summary"": $s,
@@ -513,7 +513,7 @@ LIMIT 1
 RETURN m.title AS movie, p.name AS actor, ai.roles AS roles","match
   $m isa movie;
   $p isa person;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $rolesai;
+  $ai isa acted_in (actor: $p, film: $m), has roles $rolesai;
   $m has votes $votesm;
   $m has title $titlem;
   $p has name $namep;
@@ -578,7 +578,7 @@ LIMIT 1
 RETURN p.name AS reviewer, m.title AS movie, r.rating AS rating","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $p has name $namep;
   $m has title $titlem;
 sort $ratingr asc;
@@ -668,7 +668,7 @@ RETURN m.title
 LIMIT 3","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""Fun, but a little far fetched"";
 limit 3;
 fetch {
@@ -772,7 +772,7 @@ LIMIT 5
 RETURN p.name AS person, num_reviews","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed;
+  $r isa reviewed (reviewer: $p, film: $m);
   $p has name $namep;
 reduce $num_reviews = count($r) groupby $namep;
 sort $num_reviews desc;
@@ -822,7 +822,7 @@ fetch {
 WHERE r.rating = 85
 RETURN m.title AS movie","match
   $m isa movie, has title $t;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating 85;
+  $r isa reviewed (reviewer: $p, film: $m), has rating 85;
 fetch {
   ""movie"": $t
 };"
@@ -843,7 +843,7 @@ ORDER BY r.rating DESC
 LIMIT 5","match
   $p isa person, has name ""Joel Silver"";
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $m has title $titlem;
 sort $ratingr desc;
 limit 5;
@@ -882,7 +882,7 @@ fetch {
 RETURN p.name AS actor, r.roles AS roles","match
   $p isa person;
   $m isa movie, has title ""Speed Racer"";
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $p has name $namep;
 fetch {
   ""actor"": $namep,
@@ -926,7 +926,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $ratingr > 90;
   $m has tagline ""Dark, but compelling"";
   $m has title $titlem;
@@ -971,7 +971,7 @@ ORDER BY r.rating
 LIMIT 3","match
   $p isa person;
   $m isa movie, has tagline ""Fun, but a little far fetched"";
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $p has name $namep;
 sort $ratingr asc;
 limit 3;
@@ -1041,7 +1041,7 @@ RETURN p.name
 LIMIT 3","match
   $p isa person;
   $m isa movie, has title ""The Matrix Revolutions"";
-  $r (reviewer: $p, film: $m) isa reviewed;
+  $r isa reviewed (reviewer: $p, film: $m);
   $p has name $namep;
 limit 3;
 fetch {
@@ -1131,7 +1131,7 @@ RETURN p.name
 LIMIT 3","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $p has born $bornp;
   $bornp < 1950;
   $ratingr < 50;
@@ -1188,7 +1188,7 @@ fetch {
 RETURN p.name AS reviewer, r.summary AS review_summary","match
   $p isa person;
   $m isa movie, has title ""Speed Racer"";
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $p has name $namep;
 fetch {
   ""reviewer"": $namep,
@@ -1233,7 +1233,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $m has tagline $taglinem;
   $taglinem contains ""journey"";
   $ratingr > 85;
@@ -1470,7 +1470,7 @@ WHERE m.released < 2010
 RETURN m.title, r.roles","match
   $p isa person, has name ""Laurence Fishburne"";
   $m isa movie;
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $m has released $releasedm;
   $releasedm < 2010;
   $m has title $titlem;
@@ -1512,7 +1512,7 @@ fetch {
 RETURN p.name AS reviewer, r.rating AS rating","match
   $p isa person;
   $m isa movie, has title ""The Matrix"";
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $p has name $namep;
 fetch {
   ""reviewer"": $namep,
@@ -1524,7 +1524,7 @@ ORDER BY avgRating DESC
 LIMIT 5
 RETURN m.title AS movie, avgRating","match
   $m isa movie, has title $t;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
 reduce $avgRating = mean($r) groupby $t;
 sort $avgRating desc;
 limit 5;
@@ -1552,7 +1552,7 @@ WHERE r.summary = 'Dark, but compelling'
 RETURN m.title","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""Dark, but compelling"";
 
 fetch {
@@ -1579,7 +1579,7 @@ RETURN m.title AS movie, r.rating AS rating
 LIMIT 3","match
   $p isa person, has name ""Laurence Fishburne"";
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $m has title $titlem;
 limit 3;
 fetch {
@@ -1607,7 +1607,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $ratingr < 50;
   $m has title $titlem;
 limit 3;
@@ -1633,7 +1633,7 @@ WHERE p.born > 1980
 RETURN avg(r.rating) AS average_rating","match
   $p isa person, has born $b;
   $b > 1980;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
 reduce $average_rating = mean($r);
 fetch {
   ""average_rating"": $average_rating
@@ -1645,7 +1645,7 @@ LIMIT 5
 RETURN m.title AS movie, p.name AS actor, ai.roles AS roles","match
   $m isa movie;
   $p isa person;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $rolesai;
+  $ai isa acted_in (actor: $p, film: $m), has roles $rolesai;
   $m has title $titlem;
   $p has name $namep;
   $m has votes $votesm;
@@ -1764,7 +1764,7 @@ LIMIT 3","match
   $d isa person, has name ""Nancy Meyers"";
   (director: $d, film: $m) isa directed;
   $m has title $t, has released $r;
-  $ai (actor: $a, film: $m) isa acted_in, has roles $roles;
+  $ai isa acted_in (actor: $a, film: $m), has roles $roles;
   $a has name $n;
 sort $r asc;
 limit 3;
@@ -1816,7 +1816,7 @@ ORDER BY m.title
 LIMIT 3","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $p has born $bornp;
   $bornp < 1950;
   $m has title $titlem;
@@ -1844,7 +1844,7 @@ ORDER BY r.rating DESC
 LIMIT 5","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $p has born $bornp;
   $bornp >= 1980;
   $bornp < 1990;
@@ -1876,7 +1876,7 @@ LIMIT 3
 RETURN m.title AS movie, maxRating AS rating","match
   $p isa person, has born $b;
   $b > 1980;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
   $m has title $t;
 sort $r desc;
 limit 3;
@@ -1902,7 +1902,7 @@ ORDER BY r.rating DESC
 LIMIT 3","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary, has rating $rating;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary, has rating $rating;
 $summary == ""Pretty funny at times"";
 sort $rating desc;
 limit 3;
@@ -1917,7 +1917,7 @@ ORDER BY m.released
 LIMIT 3
 MATCH (d:Person)-[:DIRECTED]->(m)
 RETURN d.name AS director, m.title AS movie","match
-  $rev (reviewer: $rev_p, film: $m) isa reviewed, has rating 100;
+  $rev isa reviewed (reviewer: $rev_p, film: $m), has rating 100;
   (director: $d, film: $m) isa directed;
   $d has name $n;
   $m has title $t, has released $r;
@@ -2047,7 +2047,7 @@ ORDER BY r.rating DESC
 LIMIT 3","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary, has rating $rating;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary, has rating $rating;
 $summary == ""An amazing journey"";
 sort $rating desc;
 limit 3;
@@ -2081,7 +2081,7 @@ ORDER BY m.title
 LIMIT 3","match
   $p isa person, has name ""Nancy Meyers"";
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $m has title $titlem;
 sort $titlem asc;
 limit 3;
@@ -2231,7 +2231,7 @@ ORDER BY p.born
 LIMIT 3","match
   $p isa person, has name $n, has born $b;
   $b < 1950;
-  $rev (reviewer: $p, film: $m) isa reviewed, has summary $s;
+  $rev isa reviewed (reviewer: $p, film: $m), has summary $s;
   $s like "".*funny.*"";
 sort $b asc;
 limit 3;
@@ -2335,7 +2335,7 @@ WHERE r.summary CONTAINS 'amazing journey' AND r.rating < 80
 RETURN m.title AS movie, r.rating AS rating","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr, has summary $summaryr;
   $summaryr contains ""amazing journey"";
   $ratingr < 80;
   $m has title $titlem;
@@ -2452,7 +2452,7 @@ WHERE r.rating > 90
 RETURN m.title, r.rating","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $ratingr > 90;
   $m has title $titlem;
 fetch {
@@ -2489,7 +2489,7 @@ WHERE p.born > 1960
 RETURN m.title AS movie, p.name AS reviewer, r.rating AS rating","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $p has born $bornp;
   $bornp > 1960;
   $m has title $titlem;
@@ -2517,7 +2517,7 @@ fetch {
 RETURN p.name AS actor, m.title AS movie, r.roles AS roles","match
   $p isa person, has name ""Keanu Reeves"";
   $m isa movie, has title ""The Matrix"";
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $p has name $namep;
   $m has title $titlem;
 fetch {
@@ -2550,7 +2550,7 @@ WHERE r.rating < 50
 RETURN p.name AS reviewer, m.title AS movie, r.rating AS rating","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $ratingr < 50;
   $p has name $namep;
   $m has title $titlem;
@@ -2563,7 +2563,7 @@ fetch {
 WHERE r.summary = 'Dark, but compelling'
 RETURN m","match
   $m isa movie, has title $t;
-  $rev (reviewer: $p, film: $m) isa reviewed, has summary ""Dark, but compelling"";
+  $rev isa reviewed (reviewer: $p, film: $m), has summary ""Dark, but compelling"";
 fetch {
   ""title"": $t
 };"
@@ -2581,7 +2581,7 @@ fetch {
 };"
 252,What are the distinct summaries available for movie reviews?,"MATCH (:Person)-[r:REVIEWED]->(:Movie)
 RETURN DISTINCT r.summary","match
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $p isa person;
   $m isa movie;
 fetch {
@@ -2619,7 +2619,7 @@ WHERE m.released < 2000
 RETURN m.title, r.roles","match
   $p isa person;
   $m isa movie;
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $m has released $releasedm;
   $releasedm < 2000;
   $m has title $titlem;
@@ -2654,7 +2654,7 @@ fetch {
 WHERE r.rating = 100
 RETURN m.title","match
   $m isa movie, has title $t;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating 100;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating 100;
 fetch {
   ""title"": $t
 };"
@@ -2691,7 +2691,7 @@ RETURN m.title AS movie, avg(r.rating) AS averageRating
 ORDER BY averageRating
 LIMIT 5","match
   $m isa movie, has title $t;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
 reduce $averageRating = mean($r) groupby $t;
 sort $averageRating asc;
 limit 5;
@@ -2717,7 +2717,7 @@ fetch {
 RETURN r.roles","match
   $p isa person, has name ""Laurence Fishburne"";
   $m isa movie, has title ""The Matrix Revolutions"";
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
 fetch {
   ""roles"": $rolesr
 };"
@@ -2760,7 +2760,7 @@ ORDER BY roles DESC
 LIMIT 3","match
   $p isa person;
   $m isa movie;
-  $r (actor: $p, film: $m) isa acted_in;
+  $r isa acted_in (actor: $p, film: $m);
   $m has released $releasedm;
   $releasedm < 1980;
   $p has name $namep;
@@ -2775,7 +2775,7 @@ fetch {
 WHERE r.summary = 'Fun, but a little far fetched'
 RETURN m","match
   $m isa movie, has title $t;
-  $rev (reviewer: $p, film: $m) isa reviewed, has summary ""Fun, but a little far fetched"";
+  $rev isa reviewed (reviewer: $p, film: $m), has summary ""Fun, but a little far fetched"";
 fetch {
   ""title"": $t
 };"
@@ -2840,7 +2840,7 @@ fetch {
 RETURN p.name AS actor, r.roles AS roles","match
   $p isa person;
   $m isa movie, has title ""Speed Racer"";
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $p has name $namep;
 fetch {
   ""actor"": $namep,
@@ -2986,7 +2986,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $ratingr > 90;
   $m has title $titlem;
 limit 3;
@@ -2997,7 +2997,7 @@ fetch {
 RETURN r.roles","match
   $p isa person, has name ""Keanu Reeves"";
   $m isa movie, has title ""The Matrix"";
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
 fetch {
   ""roles"": $rolesr
 };"
@@ -3026,7 +3026,7 @@ RETURN m.title AS movie, avg(r.rating) AS avgRating
 ORDER BY avgRating DESC
 LIMIT 3","match
   $m isa movie, has title $t;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
 reduce $avgRating = mean($r) groupby $t;
 sort $avgRating desc;
 limit 3;
@@ -3079,7 +3079,7 @@ LIMIT 1
 RETURN p.name AS reviewer, m.title AS movie, r.summary AS review_summary","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr, has summary $summaryr;
   $p has name $namep;
   $m has title $titlem;
 sort $ratingr desc;
@@ -3093,7 +3093,7 @@ fetch {
 RETURN p.name AS actor, r.roles AS roles","match
   $p isa person;
   $m isa movie, has title ""Speed Racer"";
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $p has name $namep;
 fetch {
   ""actor"": $namep,
@@ -3154,7 +3154,7 @@ RETURN m.title
 LIMIT 3","match
   $p isa person, has born 1960;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed;
+  $r isa reviewed (reviewer: $p, film: $m);
   $m has title $titlem;
 limit 3;
 fetch {
@@ -3237,7 +3237,7 @@ ORDER BY r.rating DESC
 LIMIT 3","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $m has released $releasedm;
   $releasedm < 1985;
   $ratingr > 90;
@@ -3282,7 +3282,7 @@ RETURN p.name
 LIMIT 3","match
   $p isa person;
   $m isa movie, has title ""Apollo 13"";
-  $r (reviewer: $p, film: $m) isa reviewed;
+  $r isa reviewed (reviewer: $p, film: $m);
   $p has name $namep;
 limit 3;
 fetch {
@@ -3372,7 +3372,7 @@ ORDER BY maxRating DESC
 LIMIT 5
 RETURN m.title AS movie, maxRating AS rating","match
   $p isa person, has born 1965;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
   $m has title $t;
 sort $r desc;
 limit 5;
@@ -3453,7 +3453,7 @@ RETURN p.name
 LIMIT 3","match
 $p isa person, has name $name;
 $m isa movie;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""Silly, but fun"";
 limit 3;
 fetch {
@@ -3568,7 +3568,7 @@ ORDER BY m.votes DESC
 LIMIT 5","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $m has released $releasedm;
   $releasedm >= 1980;
   $releasedm <= 1990;
@@ -3693,7 +3693,7 @@ fetch {
 RETURN p.name AS person, m.title AS movie, r.roles AS roles","match
   $p isa person, has name ""Keanu Reeves"";
   $m isa movie, has title ""The Matrix"";
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $p has name $namep;
   $m has title $titlem;
 fetch {
@@ -3737,7 +3737,7 @@ RETURN m.title AS movie, r.summary AS review, r.rating AS rating
 LIMIT 5","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr, has summary $summaryr;
   $m has title $titlem;
 sort $ratingr desc;
 limit 5;
@@ -3751,7 +3751,7 @@ WHERE r.rating > 80
 RETURN m.title, r.rating, r.summary","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr, has summary $summaryr;
   $ratingr > 80;
   $m has title $titlem;
 fetch {
@@ -3763,7 +3763,7 @@ fetch {
 RETURN p.name AS reviewer, r.rating AS rating","match
   $p isa person;
   $m isa movie, has title ""Speed Racer"";
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $p has name $namep;
 fetch {
   ""reviewer"": $namep,
@@ -3800,7 +3800,7 @@ WHERE r.summary = 'An amazing journey'
 RETURN m.title","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""An amazing journey"";
 
 fetch {
@@ -3880,7 +3880,7 @@ LIMIT 1
 RETURN p.name AS reviewer, num_reviews AS number_of_reviews","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed;
+  $r isa reviewed (reviewer: $p, film: $m);
   $p has name $namep;
 reduce $num_reviews = count($r) groupby $namep;
 sort $num_reviews desc;
@@ -3893,7 +3893,7 @@ fetch {
 RETURN p.name AS actor, m.title AS movie, r.roles AS roles","match
   $p isa person, has name ""Laurence Fishburne"";
   $m isa movie;
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $p has name $namep;
   $m has title $titlem;
 fetch {
@@ -3927,7 +3927,7 @@ WHERE r.summary = 'Dark, but compelling'
 RETURN m.title","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""Dark, but compelling"";
 
 fetch {
@@ -3957,7 +3957,7 @@ WHERE m.released < 1985
 RETURN m.title AS movie, r.summary AS review","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $m has released $releasedm;
   $releasedm < 1985;
   $m has title $titlem;
@@ -3979,7 +3979,7 @@ fetch {
 RETURN p.name AS actor, m.title AS movie, r.roles AS roles","match
   $p isa person, has name ""Laurence Fishburne"";
   $m isa movie, has title ""The Matrix Revolutions"";
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $p has name $namep;
   $m has title $titlem;
 fetch {
@@ -4006,7 +4006,7 @@ WHERE r.summary = 'Fun, but a little far fetched'
 RETURN m.title","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""Fun, but a little far fetched"";
 
 fetch {
@@ -4065,7 +4065,7 @@ LIMIT 1
 RETURN p.name AS producer, m.title AS movie, maxRating AS rating","match
   $p isa person, has name $n;
   (producer: $p, film: $m) isa produced;
-  $rev (reviewer: $rev_p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $rev_p, film: $m), has rating $r;
   $m has title $t;
 sort $r desc;
 limit 1;
@@ -4080,7 +4080,7 @@ ORDER BY frequency DESC
 LIMIT 5","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
 reduce $frequency = count($p) groupby $summaryr;
 sort $frequency desc;
 limit 5;
@@ -4117,7 +4117,7 @@ RETURN p.name AS actor, num_roles
 ORDER BY num_roles DESC
 LIMIT 1","match
   $p isa person, has name $n;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $r;
+  $ai isa acted_in (actor: $p, film: $m), has roles $r;
 reduce $num_roles = count($r) groupby $n;
 sort $num_roles desc;
 limit 1;
@@ -4130,7 +4130,7 @@ WHERE r.summary = 'Pretty funny at times'
 RETURN m.title","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""Pretty funny at times"";
 
 fetch {
@@ -4169,7 +4169,7 @@ ORDER BY p.born DESC
 LIMIT 1","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed;
+  $r isa reviewed (reviewer: $p, film: $m);
   $m has released $releasedm;
   $releasedm < 1990;
   $p has name $namep;
@@ -4210,7 +4210,7 @@ fetch {
 RETURN p.name AS reviewer, r.summary AS review_summary","match
   $p isa person;
   $m isa movie, has title ""The Matrix Revolutions"";
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $p has name $namep;
 fetch {
   ""reviewer"": $namep,
@@ -4229,7 +4229,7 @@ WHERE r.rating < 50
 RETURN m.title AS movie, r.rating AS rating","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $ratingr < 50;
   $m has title $titlem;
 fetch {
@@ -4261,7 +4261,7 @@ ORDER BY r.rating DESC
 LIMIT 5","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $p has born $bornp;
   $bornp < 1970;
   $m has title $titlem;
@@ -4351,7 +4351,7 @@ ORDER BY num_roles DESC
 LIMIT 3
 RETURN p.name AS actor, num_roles AS number_of_distinct_roles","match
   $p isa person, has name $n;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $r;
+  $ai isa acted_in (actor: $p, film: $m), has roles $r;
 reduce $num_roles = count($r) groupby $n;
 sort $num_roles desc;
 limit 3;
@@ -4398,7 +4398,7 @@ WHERE r.summary CONTAINS 'journey'
 RETURN m.title AS movie","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $summaryr contains ""journey"";
   $m has title $titlem;
 fetch {
@@ -4411,7 +4411,7 @@ ORDER BY num_reviews DESC
 LIMIT 1
 RETURN p.name AS reviewer, num_reviews AS number_of_reviews","match
   $p isa person, has name $n;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
   $r > 90;
 reduce $num_reviews = count($m) groupby $n;
 sort $num_reviews desc;
@@ -4458,7 +4458,7 @@ fetch {
 RETURN p.name AS reviewer, r.rating AS rating","match
   $p isa person;
   $m isa movie, has title ""The Matrix"";
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $p has name $namep;
 fetch {
   ""reviewer"": $namep,
@@ -4647,7 +4647,7 @@ RETURN p.name
 LIMIT 3","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $ratingr > 80;
   $p has name $namep;
 limit 3;
@@ -4687,7 +4687,7 @@ ORDER BY r.rating DESC
 LIMIT 3","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr, has summary $summaryr;
   $m has title $titlem;
 sort $ratingr desc;
 limit 3;
@@ -4773,7 +4773,7 @@ RETURN m.title
 LIMIT 3","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""An amazing journey"";
 limit 3;
 fetch {
@@ -4786,7 +4786,7 @@ ORDER BY avg_rating DESC
 LIMIT 3","match
   $d isa person, has name $n;
   (director: $d, film: $m) isa directed;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
 reduce $avg_rating = mean($r) groupby $n;
 sort $avg_rating desc;
 limit 3;
@@ -4801,7 +4801,7 @@ LIMIT 3
 RETURN p.name AS person, num_reviews","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed;
+  $r isa reviewed (reviewer: $p, film: $m);
   $p has name $namep;
 reduce $num_reviews = count($r) groupby $namep;
 sort $num_reviews desc;
@@ -4831,7 +4831,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $summaryr contains ""funny"";
   $m has title $titlem;
 limit 3;
@@ -4932,7 +4932,7 @@ RETURN p.name
 LIMIT 3","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $ratingr < 60;
   $p has name $namep;
 limit 3;
@@ -4971,7 +4971,7 @@ WHERE r.rating = 75
 RETURN m.title
 LIMIT 3","match
   $m isa movie, has title $t;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating 75;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating 75;
 limit 3;
 fetch {
   ""title"": $t
@@ -4983,7 +4983,7 @@ WHERE reviewCount >= 2
 RETURN m.title
 LIMIT 3","match
   $m isa movie, has title $t;
-  $rev (reviewer: $p, film: $m) isa reviewed, has summary $s;
+  $rev isa reviewed (reviewer: $p, film: $m), has summary $s;
   $s like "".*compelling.*"";
 reduce $reviewCount = count($rev) groupby $t;
 match $reviewCount >= 2;
@@ -5012,7 +5012,7 @@ ORDER BY roleCount DESC
 LIMIT 5
 RETURN p.name as actor, roleCount as numberOfRoles","match
   $p isa person, has name $n;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $r;
+  $ai isa acted_in (actor: $p, film: $m), has roles $r;
 reduce $roleCount = count($r) groupby $n;
 sort $roleCount desc;
 limit 5;
@@ -5100,7 +5100,7 @@ ORDER BY num_roles DESC
 LIMIT 3
 RETURN p.name AS person, num_roles","match
   $p isa person, has name $n;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $r;
+  $ai isa acted_in (actor: $p, film: $m), has roles $r;
 reduce $num_roles = count($r) groupby $n;
 sort $num_roles desc;
 limit 3;
@@ -5112,7 +5112,7 @@ fetch {
 RETURN r.summary, count(*) AS count
 ORDER BY count DESC
 LIMIT 3","match
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $p isa person;
   $m isa movie;
 reduce $count = count($r) groupby $summaryr;
@@ -5187,7 +5187,7 @@ ORDER BY avgRating DESC
 LIMIT 3
 RETURN m.title AS movie, avgRating","match
   $m isa movie, has title $t;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
 reduce $avgRating = mean($r) groupby $t;
 sort $avgRating desc;
 limit 3;
@@ -5201,7 +5201,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $summaryr contains ""romp"";
   $m has title $titlem;
 limit 3;
@@ -5214,7 +5214,7 @@ RETURN m.title AS movie, avgRating
 ORDER BY avgRating
 LIMIT 3","match
   $m isa movie, has title $t;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
 reduce $avgRating = mean($r) groupby $t;
 sort $avgRating asc;
 limit 3;
@@ -5315,7 +5315,7 @@ ORDER BY totalRating DESC
 LIMIT 3
 RETURN p.name AS reviewer, totalRating","match
   $p isa person, has name $n;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
 reduce $totalRating = sum($r) groupby $n;
 sort $totalRating desc;
 limit 3;
@@ -5375,7 +5375,7 @@ ORDER BY m.released
 LIMIT 3","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed;
+  $r isa reviewed (reviewer: $p, film: $m);
   $p has born $bornp;
   $bornp > 1970;
   $m has title $titlem;
@@ -5407,7 +5407,7 @@ ORDER BY reviews DESC
 LIMIT 3","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $summaryr contains ""fun"";
   $m has title $titlem;
 reduce $reviews = count($r) groupby $titlem;
@@ -5438,7 +5438,7 @@ ORDER BY num_roles DESC
 LIMIT 3
 RETURN p.name AS person, num_roles AS number_of_distinct_roles","match
   $p isa person, has name $n;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $r;
+  $ai isa acted_in (actor: $p, film: $m), has roles $r;
 reduce $num_roles = count($r) groupby $n;
 sort $num_roles desc;
 limit 3;
@@ -5466,7 +5466,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $summaryr contains ""slapstick"";
   $m has title $titlem;
 limit 3;
@@ -5575,7 +5575,7 @@ fetch {
 RETURN r.roles","match
   $p isa person, has name ""Laurence Fishburne"";
   $m isa movie, has title ""The Matrix Revolutions"";
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
 fetch {
   ""roles"": $rolesr
 };"
@@ -5601,7 +5601,7 @@ fetch {
 RETURN p.name AS reviewer, r.rating AS rating","match
   $p isa person;
   $m isa movie, has title ""Speed Racer"";
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $p has name $namep;
 fetch {
   ""reviewer"": $namep,
@@ -5609,7 +5609,7 @@ fetch {
 };"
 548,What is the highest rating given to any movie by any person?,"MATCH (p:Person)-[r:REVIEWED]->(m:Movie)
 RETURN max(r.rating) AS highest_rating","match
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
 reduce $highest_rating = max($r);
 fetch {
   ""highest_rating"": $highest_rating
@@ -5619,7 +5619,7 @@ WHERE r.summary = 'Dark, but compelling'
 RETURN m.title","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""Dark, but compelling"";
 
 fetch {
@@ -5657,7 +5657,7 @@ ORDER BY follower.born DESC
 LIMIT 3","match
   $keanu isa person, has name ""Keanu Reeves"";
   $follower isa person;
-  $f (follower: $follower, followed: $keanu) isa follows;
+  $f isa follows (follower: $follower, followed: $keanu);
   $follower has name $namefollower;
   $follower has born $bornfollower;
 sort $bornfollower desc;
@@ -5727,7 +5727,7 @@ fetch {
 RETURN p.name AS reviewer, r.summary AS review","match
   $p isa person;
   $m isa movie, has title ""The Matrix"";
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $p has name $namep;
 fetch {
   ""reviewer"": $namep,
@@ -5762,7 +5762,7 @@ LIMIT 1
 RETURN p.name AS reviewer, num_reviews","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed;
+  $r isa reviewed (reviewer: $p, film: $m);
   $p has name $namep;
 reduce $num_reviews = count($r) groupby $namep;
 sort $num_reviews desc;
@@ -5778,7 +5778,7 @@ ORDER BY r.rating DESC
 LIMIT 3","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $ratingr > 85;
   $m has title $titlem;
 sort $ratingr desc;
@@ -5826,7 +5826,7 @@ WHERE m.released >= 1990 AND m.released < 2000
 RETURN m.title AS movie, r.roles AS roles","match
   $p isa person, has name ""Keanu Reeves"";
   $m isa movie;
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $m has released $releasedm;
   $releasedm >= 1990;
   $releasedm < 2000;
@@ -5927,7 +5927,7 @@ fetch {
 WHERE r.rating = 100
 RETURN p.name AS reviewer, m.title AS movie","match
   $p isa person, has name $n;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating 100;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating 100;
   $m has title $t;
 fetch {
   ""reviewer"": $n,
@@ -5938,7 +5938,7 @@ WHERE m.released > 2000
 RETURN m.title, r.roles","match
   $p isa person, has name ""Laurence Fishburne"";
   $m isa movie;
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $m has released $releasedm;
   $releasedm > 2000;
   $m has title $titlem;
@@ -5964,7 +5964,7 @@ fetch {
 RETURN r.roles","match
   $p isa person, has name ""Keanu Reeves"";
   $m isa movie, has title ""The Matrix"";
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
 fetch {
   ""roles"": $rolesr
 };"
@@ -6006,7 +6006,7 @@ ORDER BY r.rating
 LIMIT 1","match
   $m isa movie, has title ""Speed Racer"";
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr, has summary $summaryr;
 sort $ratingr asc;
 limit 1;
 fetch {
@@ -6068,7 +6068,7 @@ WHERE r.summary CONTAINS 'Robin Williams'
 RETURN m.title","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $summaryr contains ""Robin Williams"";
   $m has title $titlem;
 fetch {
@@ -6129,7 +6129,7 @@ WHERE r.summary CONTAINS 'funny'
 RETURN p.name AS reviewer","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $summaryr contains ""funny"";
   $p has name $namep;
 fetch {
@@ -6157,7 +6157,7 @@ WITH p, count(r) AS numReviews
 ORDER BY numReviews DESC
 RETURN p.name AS reviewer, numReviews","match
   $p isa person, has name $n;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
   $r > 75;
 reduce $numReviews = count($m) groupby $n;
 sort $numReviews desc;
@@ -6170,7 +6170,7 @@ WHERE m.title CONTAINS 'Matrix'
 RETURN p.name AS person, m.title AS movie, r.roles AS roles","match
   $p isa person;
   $m isa movie;
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $m has title $titlem;
   $titlem contains ""Matrix"";
   $p has name $namep;
@@ -6184,7 +6184,7 @@ WHERE p.born > 1970
 RETURN avg(r.rating) AS average_rating","match
   $p isa person, has born $b;
   $b > 1970;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
 reduce $average_rating = mean($r);
 fetch {
   ""average_rating"": $average_rating
@@ -6208,7 +6208,7 @@ fetch {
 WHERE r.rating = 75
 RETURN m.title, r.rating, r.summary","match
   $m isa movie, has title $t;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating 75, has summary $s;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating 75, has summary $s;
 fetch {
   ""title"": $t,
   ""rating"": 75,
@@ -6236,7 +6236,7 @@ WHERE m.tagline CONTAINS 'end'
 RETURN p.name AS person, m.title AS movie, ai.roles AS roles","match
   $p isa person;
   $m isa movie;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $rolesai;
+  $ai isa acted_in (actor: $p, film: $m), has roles $rolesai;
   $m has tagline $taglinem;
   $taglinem contains ""end"";
   $p has name $namep;
@@ -6293,7 +6293,7 @@ WHERE m.released > 2010
 RETURN p.name AS person, m.title AS movie, r.roles AS roles","match
   $p isa person;
   $m isa movie;
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $m has released $releasedm;
   $releasedm > 2010;
   $p has name $namep;
@@ -6323,7 +6323,7 @@ WHERE r.rating < 50
 RETURN m.title AS movie, r.rating AS rating","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $ratingr < 50;
   $m has title $titlem;
 fetch {
@@ -6350,7 +6350,7 @@ WHERE r.summary CONTAINS 'amazing journey'
 RETURN m.title","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $summaryr contains ""amazing journey"";
   $m has title $titlem;
 fetch {
@@ -6362,7 +6362,7 @@ ORDER BY role_count DESC
 LIMIT 3
 RETURN p.name AS person, role_count","match
   $p isa person, has name $n;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $r;
+  $ai isa acted_in (actor: $p, film: $m), has roles $r;
 reduce $role_count = count($r) groupby $n;
 sort $role_count desc;
 limit 3;
@@ -6414,7 +6414,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $ratingr > 90;
   $m has title $titlem;
 limit 3;
@@ -6458,7 +6458,7 @@ fetch {
 RETURN p.name AS actor, m.title AS movie, r.roles AS roles","match
   $p isa person, has name ""Keanu Reeves"";
   $m isa movie, has title ""The Matrix"";
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $p has name $namep;
   $m has title $titlem;
 fetch {
@@ -6554,7 +6554,7 @@ fetch {
 RETURN r.summary AS summary","match
   $m isa movie, has title ""Speed Racer"";
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
 fetch {
   ""summary"": $summaryr
 };"
@@ -6591,7 +6591,7 @@ WHERE p.born < 1970
 RETURN avg(r.rating) AS averageRating","match
   $p isa person, has born $b;
   $b < 1970;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
 reduce $averageRating = mean($r);
 fetch {
   ""averageRating"": $averageRating
@@ -6624,7 +6624,7 @@ fetch {
 UNWIND r.roles AS role
 RETURN DISTINCT role","match
   $p isa person, has name ""Laurence Fishburne"";
-  $ai (actor: $p, film: $m) isa acted_in, has roles $r;
+  $ai isa acted_in (actor: $p, film: $m), has roles $r;
 fetch {
   ""role"": $r
 };"
@@ -6658,7 +6658,7 @@ LIMIT 1
 RETURN p.name AS person, num_reviews","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed;
+  $r isa reviewed (reviewer: $p, film: $m);
   $p has name $namep;
 reduce $num_reviews = count($r) groupby $namep;
 sort $num_reviews desc;
@@ -6673,7 +6673,7 @@ ORDER BY r.rating
 LIMIT 3","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $m has title $titlem;
 sort $ratingr asc;
 limit 3;
@@ -6709,7 +6709,7 @@ WHERE r.summary = 'Dark, but compelling'
 RETURN m.title","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""Dark, but compelling"";
 
 fetch {
@@ -6721,7 +6721,7 @@ ORDER BY num_roles DESC
 LIMIT 3
 RETURN p.name AS actor, num_roles AS number_of_distinct_roles","match
   $p isa person, has name $n;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $r;
+  $ai isa acted_in (actor: $p, film: $m), has roles $r;
 reduce $num_roles = count($r) groupby $n;
 sort $num_roles desc;
 limit 3;
@@ -6764,7 +6764,7 @@ fetch {
 664,What is the average release year of movies reviewed with a rating above 80?,"MATCH (m:Movie)<-[r:REVIEWED]-(p:Person)
 WHERE r.rating > 80
 RETURN avg(m.released) AS average_release_year","match
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
   $r > 80;
   $m has released $rel;
 reduce $average_release_year = mean($rel);
@@ -6832,7 +6832,7 @@ RETURN m.title AS movie, role_diversity
 ORDER BY role_diversity DESC
 LIMIT 5","match
   $m isa movie, has title $t;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $r;
+  $ai isa acted_in (actor: $p, film: $m), has roles $r;
 reduce $role_diversity = count($r) groupby $t;
 sort $role_diversity desc;
 limit 5;
@@ -6844,7 +6844,7 @@ fetch {
 RETURN p.name AS actor, r.roles AS roles","match
   $p isa person;
   $m isa movie, has title ""Speed Racer"";
-  $r (actor: $p, film: $m) isa acted_in, has roles $rolesr;
+  $r isa acted_in (actor: $p, film: $m), has roles $rolesr;
   $p has name $namep;
 fetch {
   ""actor"": $namep,
@@ -6865,7 +6865,7 @@ ORDER BY avg_rating DESC
 LIMIT 3
 RETURN p.name AS reviewer, avg_rating","match
   $p isa person, has name $n;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
 reduce $avg_rating = mean($r) groupby $n;
 sort $avg_rating desc;
 limit 3;
@@ -6893,7 +6893,7 @@ ORDER BY r.rating DESC
 LIMIT 5","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $ratingr >= 70;
   $ratingr <= 85;
   $m has title $titlem;
@@ -6967,7 +6967,7 @@ RETURN m.title
 LIMIT 3","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""Fun, but a little far fetched"";
 limit 3;
 fetch {
@@ -7021,7 +7021,7 @@ WHERE m.released > 2000
 RETURN DISTINCT r.summary","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has summary $summaryr;
   $m has released $releasedm;
   $releasedm > 2000;
 fetch {
@@ -7088,7 +7088,7 @@ WHERE m.released > 2000
 RETURN p.name AS actor, m.title AS movie, ai.roles AS roles","match
   $p isa person;
   $m isa movie;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $rolesai;
+  $ai isa acted_in (actor: $p, film: $m), has roles $rolesai;
   $m has released $releasedm;
   $releasedm > 2000;
   $p has name $namep;
@@ -7116,7 +7116,7 @@ WHERE r.summary = 'Silly, but fun'
 RETURN m.title","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""Silly, but fun"";
 
 fetch {
@@ -7146,7 +7146,7 @@ RETURN p.name, avg_rating
 ORDER BY avg_rating DESC
 LIMIT 1","match
   $p isa person, has name $n;
-  $rev (reviewer: $p, film: $m) isa reviewed, has rating $r;
+  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;
 reduce $avg_rating = mean($r) groupby $n;
 sort $avg_rating desc;
 limit 1;
@@ -7247,7 +7247,7 @@ RETURN m.title, r.rating, r.summary
 LIMIT 3","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr, has summary $summaryr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr, has summary $summaryr;
   $ratingr > 90;
   $m has title $titlem;
 limit 3;
@@ -7384,7 +7384,7 @@ RETURN m.title
 LIMIT 3","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""Dark, but compelling"";
 limit 3;
 fetch {
@@ -7429,7 +7429,7 @@ ORDER BY r.rating ASC
 LIMIT 5","match
   $p isa person;
   $m isa movie;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $ratingr < 50;
   $p has name $namep;
   $m has title $titlem;
@@ -7564,7 +7564,7 @@ ORDER BY r.rating DESC
 LIMIT 5","match
   $m isa movie;
   $p isa person;
-  $r (reviewer: $p, film: $m) isa reviewed, has rating $ratingr;
+  $r isa reviewed (reviewer: $p, film: $m), has rating $ratingr;
   $m has released $releasedm;
   $releasedm < 1985;
   $ratingr > 85;
@@ -7657,7 +7657,7 @@ fetch {
 WHERE size(r.roles) > 1
 RETURN m.title, r.roles","match
   $m isa movie, has title $t;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $r1, has roles $r2;
+  $ai isa acted_in (actor: $p, film: $m), has roles $r1, has roles $r2;
   $r1 != $r2;
 fetch {
   ""title"": $t,
@@ -7799,7 +7799,7 @@ RETURN p.name
 LIMIT 3","match
 $p isa person, has name $name, has born $b;
 $m isa movie;
-$r (reviewer: $p, film: $m) isa reviewed, has summary ""An amazing journey"";
+$r isa reviewed (reviewer: $p, film: $m), has summary ""An amazing journey"";
 $b > 1970;
 limit 3;
 fetch {
@@ -8271,7 +8271,7 @@ WHERE r.summary = 'The coolest football movie ever'
 RETURN m.title AS movie, p.name AS reviewer","match
 $m isa movie, has title $title;
 $p isa person, has name $name;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary;
 $summary == ""The coolest football movie ever"";
 
 fetch {
@@ -8813,7 +8813,7 @@ ORDER BY r.rating DESC
 LIMIT 5","match
 $m isa movie;
 $p isa person, has name $name;
-$r (reviewer: $p, film: $m) isa reviewed, has summary $summary, has rating $rating;
+$r isa reviewed (reviewer: $p, film: $m), has summary $summary, has rating $rating;
 $summary == ""An amazing journey"";
 $rating > 80;
 sort $rating desc;
@@ -8905,7 +8905,7 @@ fetch {
 WHERE size(r.roles) > 3
 RETURN m.title, r.roles","match
   $m isa movie, has title $t;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $r;
+  $ai isa acted_in (actor: $p, film: $m), has roles $r;
 reduce $count = count($r) groupby $ai, $t;
 match $count > 3;
 fetch {
@@ -9114,7 +9114,7 @@ RETURN m.title AS movie, role_diversity
 ORDER BY role_diversity DESC
 LIMIT 3","match
   $m isa movie, has title $t;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $r;
+  $ai isa acted_in (actor: $p, film: $m), has roles $r;
 select $t, $r;
 distinct;
 reduce $role_diversity = count groupby $t;
@@ -9453,7 +9453,7 @@ fetch {
 WHERE m.released % 5 = 0
 RETURN m.title, r.roles","match
   $p isa person, has name ""Keanu Reeves"";
-  $ai (actor: $p, film: $m) isa acted_in, has roles $r;
+  $ai isa acted_in (actor: $p, film: $m), has roles $r;
   $m has title $t, has released $rel;
   $rel % 5 == 0;
 fetch {
@@ -9596,7 +9596,7 @@ ORDER BY reviews DESC
 LIMIT 5","match
 $m isa movie, has title $title;
 $p isa person;
-$r (reviewer: $p, film: $m) isa reviewed, has summary ""An amazing journey"";
+$r isa reviewed (reviewer: $p, film: $m), has summary ""An amazing journey"";
 reduce $reviews = count($r) groupby $m, $title;
 sort $reviews desc;
 limit 5;
@@ -9732,7 +9732,7 @@ RETURN p.name AS actor, num_roles AS number_of_distinct_roles
 ORDER BY num_roles DESC
 LIMIT 5","match
   $p isa person, has name $n;
-  $ai (actor: $p, film: $m) isa acted_in, has roles $r;
+  $ai isa acted_in (actor: $p, film: $m), has roles $r;
 reduce $num_movies = count($m), $num_roles = count($r) groupby $p, $n;
 match $num_movies >= 5;
 sort $num_roles desc;

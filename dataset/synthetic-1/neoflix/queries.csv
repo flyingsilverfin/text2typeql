@@ -30,7 +30,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has title $title_m;
 limit 3;
 fetch {
@@ -52,7 +52,7 @@ ORDER BY m.release_date
 LIMIT 3","match
   $m isa movie;
   $c isa collection, has collection_name 'Toy Story Collection';
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
   $m has release_date $release_date_m;
 sort $release_date_m asc;
@@ -78,7 +78,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $k isa keyword, has keyword_name 'jealousy';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
 limit 3;
 fetch {
@@ -88,7 +88,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $g isa genre, has genre_name 'Animation';
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -121,7 +121,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $c isa country, has country_name 'United States of America';
-  $rel0 (media: $m, country: $c) isa produced_in_country;
+  $rel0 isa produced_in_country (media: $m, country: $c);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -144,7 +144,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $l isa language, has language_name 'Kiswahili';
-  $rel0 (media: $m, language: $l) isa spoken_in_language;
+  $rel0 isa spoken_in_language (media: $m, language: $l);
   $m has title $title_m;
 limit 3;
 fetch {
@@ -154,7 +154,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $l isa language, has language_id 'en';
-  $rel0 (media: $m, language: $l) isa original_language;
+  $rel0 isa original_language (media: $m, language: $l);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -164,7 +164,7 @@ RETURN m.title
 LIMIT 3","match
   $p isa person, has person_name 'Tom Hanks';
   $m isa movie;
-  $r (actor: $p, film: $m) isa cast_for;
+  $r isa cast_for (actor: $p, film: $m);
   $m has title $title_m;
 limit 3;
 fetch {
@@ -175,7 +175,7 @@ WHERE c.backdrop_path = '/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg'
 RETURN m.title","match
   $m isa movie;
   $c isa collection;
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
   $c has backdrop_path $backdrop_path_c;
   $backdrop_path_c == ""/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg"";
@@ -218,7 +218,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -243,7 +243,7 @@ RETURN m.title
 LIMIT 3","match
   $p isa person, has person_name 'Tom Hanks';
   $m isa movie;
-  $rel0 (crew_member: $p, film: $m) isa crew_for;
+  $rel0 isa crew_for (crew_member: $p, film: $m);
   $m has title $title_m;
 limit 3;
 fetch {
@@ -324,7 +324,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $k isa keyword, has keyword_name 'based on novel';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
 limit 3;
 fetch {
@@ -380,7 +380,7 @@ WHERE p.name IS NOT NULL
 RETURN m.title","match
   $p isa person, has person_name 'John Williams';
   $m isa movie;
-  $rel0 (crew_member: $p, film: $m) isa crew_for;
+  $rel0 isa crew_for (crew_member: $p, film: $m);
   $p has person_name $person_name_p;
   $m has title $title_m;
 fetch {
@@ -413,7 +413,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -457,7 +457,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $c isa collection, has collection_name 'Toy Story Collection';
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -466,7 +466,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $k isa keyword, has keyword_name 'jealousy';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -475,7 +475,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $g isa genre, has genre_name 'Animation';
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -485,7 +485,7 @@ WHERE m.runtime > 120
 RETURN m.title, m.runtime","match
   $m isa movie;
   $g isa genre, has genre_name 'Drama';
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $m has runtime $runtime_m;
   $m has title $title_m;
   $runtime_m > 120;
@@ -510,7 +510,7 @@ fetch {
 RETURN m.title","match
   $p isa person, has person_name 'Tom Hanks';
   $m isa movie;
-  $rel0 (actor: $p, film: $m) isa cast_for;
+  $rel0 isa cast_for (actor: $p, film: $m);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -520,7 +520,7 @@ WHERE r.rating = 5.0
 RETURN m.title","match
   $m isa movie;
   $u isa user;
-  $rel (rated_media: $m, reviewer: $u) isa rated, has rating $rating;
+  $rel isa rated (rated_media: $m, reviewer: $u), has rating $rating;
   $rating == 5.0;
   $m has title $title;
 fetch { ""title"": $title, ""rating"": $rating };"
@@ -559,7 +559,7 @@ fetch {
 RETURN g.name AS genre","match
   $m isa movie, has title 'Toy Story';
   $g isa genre;
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $g has genre_name $genre_name_g;
 fetch {
   ""genre"": $genre_name_g
@@ -604,7 +604,7 @@ RETURN m.title AS movie, r.rating AS rating, r.timestamp AS rated_at","match
   $m isa movie;
   $m has release_date $rd;
   $u isa user;
-  $rel (rated_media: $m, reviewer: $u) isa rated, has timestamp $ts, has rating $rating;
+  $rel isa rated (rated_media: $m, reviewer: $u), has timestamp $ts, has rating $rating;
   $m has title $title;
   $ts >= 2015-01-01;
 fetch { ""title"": $title, ""release_date"": $rd, ""rating"": $rating, ""timestamp"": $ts };"
@@ -625,7 +625,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $k isa keyword, has keyword_name 'space';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -652,12 +652,12 @@ RETURN m","match
 limit 50;
 fetch { ""title"": $title, ""runtime"": $rt };"
 75,Which movies have Tom Hanks credited as a producer?,"MATCH (p:Person {name: 'Tom Hanks'})-[r:CREW_FOR {job: 'Producer'}]->(m:Movie)
-RETURN m.title","match $p isa person, has person_name 'Tom Hanks'; $m isa movie; $r (crew_member: $p, film: $m) isa crew_for, has job ""Producer""; $m has title $title_m; fetch { ""title"": $title_m };"
+RETURN m.title","match $p isa person, has person_name 'Tom Hanks'; $m isa movie; $r isa crew_for (crew_member: $p, film: $m), has job ""Producer""; $m has title $title_m; fetch { ""title"": $title_m };"
 76,List all genres that have been accessed by the 'Ultimate' package.,"MATCH (p:Package {name: 'Ultimate'})-[:PROVIDES_ACCESS_TO]->(g:Genre)
 RETURN g.name AS genre","match
   $p isa package, has package_name 'Ultimate';
   $g isa genre;
-  $rel0 (package: $p, genre: $g) isa provides_access_to;
+  $rel0 isa provides_access_to (package: $p, genre: $g);
   $g has genre_name $genre_name_g;
 fetch {
   ""genre"": $genre_name_g
@@ -678,8 +678,8 @@ fetch {
 RETURN m.title AS movie, p.name AS person","match
   $m isa movie;
   $p isa person;
-  $rel0 (crew_member: $p, film: $m) isa crew_for;
-  $rel1 (film: $m, actor: $p) isa cast_for;
+  $rel0 isa crew_for (crew_member: $p, film: $m);
+  $rel1 isa cast_for (film: $m, actor: $p);
   $m has title $title_m;
   $p has person_name $person_name_p;
 fetch {
@@ -703,7 +703,7 @@ WHERE c.poster_path IS NOT NULL
 RETURN m.title, c.name, c.poster_path","match
   $m isa movie;
   $c isa collection;
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
   $c has poster_path $poster_path_c;
   $c has collection_name $collection_name_c;
@@ -779,7 +779,7 @@ fetch {
 RETURN l.name AS language","match
   $m isa movie, has title 'Jumanji';
   $l isa language;
-  $rel0 (media: $m, language: $l) isa spoken_in_language;
+  $rel0 isa spoken_in_language (media: $m, language: $l);
   $l has language_name $language_name_l;
 fetch {
   ""language"": $language_name_l
@@ -809,7 +809,7 @@ fetch { ""title"": $title, ""release_date"": $rd };"
 RETURN m.title","match
   $m isa movie;
   $g isa genre, has genre_name 'Animation';
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -818,7 +818,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $c isa collection, has collection_name 'Toy Story Collection';
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -839,7 +839,7 @@ fetch {
 RETURN m.title","match
   $p isa person, has person_name 'Tom Hanks';
   $m isa movie;
-  $rel0 (actor: $p, film: $m) isa cast_for;
+  $rel0 isa cast_for (actor: $p, film: $m);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -848,7 +848,7 @@ fetch {
 RETURN g.name AS genre","match
   $m isa movie, has title 'Toy Story';
   $g isa genre;
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $g has genre_name $genre_name_g;
 fetch {
   ""genre"": $genre_name_g
@@ -860,7 +860,7 @@ RETURN DISTINCT c.name AS company","match $c isa production_company; $m isa movi
 RETURN l.name AS language","match
   $m isa movie, has title 'Toy Story';
   $l isa language;
-  $rel0 (media: $m, language: $l) isa spoken_in_language;
+  $rel0 isa spoken_in_language (media: $m, language: $l);
   $l has language_name $language_name_l;
 fetch {
   ""language"": $language_name_l
@@ -902,7 +902,7 @@ WHERE m.revenue > 200000000
 RETURN DISTINCT c.name AS country","match
   $m isa movie;
   $c isa country;
-  $rel0 (media: $m, country: $c) isa produced_in_country;
+  $rel0 isa produced_in_country (media: $m, country: $c);
   $m has revenue $revenue_m;
   $c has country_name $country_name_c;
   $revenue_m > 200000000;
@@ -913,7 +913,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $k isa keyword, has keyword_name 'jealousy';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -922,7 +922,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $c isa country, has country_name 'United States of America';
-  $rel0 (media: $m, country: $c) isa produced_in_country;
+  $rel0 isa produced_in_country (media: $m, country: $c);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -969,7 +969,7 @@ ORDER BY p.id
 LIMIT 3","match
   $m isa movie, has title 'Toy Story';
   $p isa person;
-  $rel0 (film: $m, actor: $p) isa cast_for;
+  $rel0 isa cast_for (film: $m, actor: $p);
   $p has person_name $person_name_p;
   $p has person_id $person_id_p;
 sort $person_id_p asc;
@@ -982,7 +982,7 @@ RETURN p.name
 ORDER BY p.id
 LIMIT 3","match
   $m isa movie, has title ""Toy Story"";
-  $c (actor: $p, film: $m) isa cast_for, has cast_order $order;
+  $c isa cast_for (actor: $p, film: $m), has cast_order $order;
   $p has person_name $name;
 sort $order asc;
 limit 3;
@@ -1013,7 +1013,7 @@ fetch {
 RETURN v.title","match
   $v isa video;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $v, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $v, producer: $c);
   $v has title $title_v;
 fetch {
   ""title"": $title_v
@@ -1022,7 +1022,7 @@ fetch {
 RETURN k.name AS keyword","match
   $v isa video, has title 'Jonah: A VeggieTales Movie';
   $k isa keyword;
-  $rel0 (media: $v, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $v, keyword: $k);
   $k has keyword_name $keyword_name_k;
 fetch {
   ""keyword"": $keyword_name_k
@@ -1044,7 +1044,7 @@ LIMIT 5
 RETURN a.title AS movie, l.name AS language","match
   $a isa adult_video;
   $l isa language;
-  $rel0 (media: $a, language: $l) isa original_language;
+  $rel0 isa original_language (media: $a, language: $l);
   $a has title $title_a;
   $a has average_vote $average_vote_a;
   $l has language_name $language_name_l;
@@ -1065,7 +1065,7 @@ fetch { ""title"": $title, ""release_date"": $rd };"
 RETURN a.title","match
   $a isa adult_video;
   $g isa genre, has genre_name 'Horror';
-  $rel0 (media: $a, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $a, genre: $g);
   $a has title $title_a;
 fetch {
   ""title"": $title_a
@@ -1086,7 +1086,7 @@ fetch {
 RETURN p.name AS package","match
   $p isa package;
   $g isa genre, has genre_name 'Animation';
-  $rel0 (package: $p, genre: $g) isa provides_access_to;
+  $rel0 isa provides_access_to (package: $p, genre: $g);
   $p has package_name $package_name_p;
 fetch {
   ""package"": $package_name_p
@@ -1095,7 +1095,7 @@ fetch {
 RETURN g.name AS genre","match
   $p isa package, has package_name 'Ultimate';
   $g isa genre;
-  $rel0 (package: $p, genre: $g) isa provides_access_to;
+  $rel0 isa provides_access_to (package: $p, genre: $g);
   $g has genre_name $genre_name_g;
 fetch {
   ""genre"": $genre_name_g
@@ -1104,8 +1104,8 @@ fetch {
 RETURN m.title","match
   $p isa person, has person_name 'Tom Hanks';
   $m isa movie;
-  $rel0 (actor: $p, film: $m) isa cast_for;
-  $rel1 (film: $m, crew_member: $p) isa crew_for;
+  $rel0 isa cast_for (actor: $p, film: $m);
+  $rel1 isa crew_for (film: $m, crew_member: $p);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -1127,7 +1127,7 @@ LIMIT 5
 RETURN m.title AS movie, l.name AS original_language","match
   $m isa movie;
   $l isa language;
-  $rel0 (media: $m, language: $l) isa original_language;
+  $rel0 isa original_language (media: $m, language: $l);
   $m has title $title_m;
   $m has average_vote $average_vote_m;
   $l has language_name $language_name_l;
@@ -1141,7 +1141,7 @@ WHERE m.popularity > 15
 RETURN m.title, m.popularity","match
   $m isa movie;
   $k isa keyword, has keyword_name 'adventure';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has popularity $popularity_m;
   $m has title $title_m;
   $popularity_m > 15;
@@ -1172,14 +1172,14 @@ LIMIT 5","match
 limit 50;
 fetch { ""country"": $cn };"
 152,Which production companies have produced movies that are part of a collection?,"MATCH (c:Collection)<-[:IN_COLLECTION]-(m:Movie)<-[:PRODUCED_BY]-(p:ProductionCompany)
-RETURN DISTINCT p.name AS ProductionCompany","match $c isa collection; $m isa movie; $p isa production_company; $rel0 (collection: $c, media: $m) isa in_collection; $p has production_company_name $production_company_name_p; fetch { ""ProductionCompany"": $production_company_name_p, ""name"": $production_company_name_p };"
+RETURN DISTINCT p.name AS ProductionCompany","match $c isa collection; $m isa movie; $p isa production_company; $rel0 isa in_collection (collection: $c, media: $m); $p has production_company_name $production_company_name_p; fetch { ""ProductionCompany"": $production_company_name_p, ""name"": $production_company_name_p };"
 153,What are the first 3 movies in the 'Toy Story Collection' based on release date?,"MATCH (m:Movie)-[:IN_COLLECTION]->(c:Collection {name: 'Toy Story Collection'})
 RETURN m.title, m.release_date
 ORDER BY m.release_date
 LIMIT 3","match
   $m isa movie;
   $c isa collection, has collection_name 'Toy Story Collection';
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
   $m has release_date $release_date_m;
 sort $release_date_m asc;
@@ -1189,7 +1189,7 @@ fetch {
 };"
 154,Which movies have a cast member with the profile path ending in 'jpg'?,"MATCH (m:Movie)<-[:CAST_FOR]-(p:Person)
 WHERE p.profile_path ENDS WITH '.jpg'
-RETURN m.title","match $m isa movie; $p isa person; $rel0 (film: $m, actor: $p) isa cast_for; $m has title $title_m; $p has profile_path $profile_path_p; fetch { ""title"": $title_m };"
+RETURN m.title","match $m isa movie; $p isa person; $rel0 isa cast_for (film: $m, actor: $p); $m has title $title_m; $p has profile_path $profile_path_p; fetch { ""title"": $title_m };"
 155,List the first 3 movies with a revenue of zero.,"MATCH (m:Movie)
 WHERE m.revenue = 0
 RETURN m.title
@@ -1288,7 +1288,7 @@ WHERE NOT EXISTS { (c)-[:PRODUCED_IN_COUNTRY]->(:Country {name: 'United States o
 RETURN a.title AS `Adult Film`, c.name AS `Production Company`","match
   $a isa adult_video;
   $c isa production_company;
-  $rel0 (media: $a, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $a, producer: $c);
   $a has title $title_a;
   $c has production_company_name $production_company_name_c;
 fetch {
@@ -1324,7 +1324,7 @@ fetch {
 RETURN a.title","match
   $a isa adult_video;
   $k isa keyword, has keyword_name 'murder';
-  $rel0 (media: $a, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $a, keyword: $k);
   $a has title $title_a;
 fetch {
   ""title"": $title_a
@@ -1397,7 +1397,7 @@ RETURN m.title
 LIMIT 5","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has title $title_m;
 limit 5;
 fetch {
@@ -1409,7 +1409,7 @@ ORDER BY m.release_date
 LIMIT 3","match
   $m isa movie;
   $c isa collection, has collection_name 'Toy Story Collection';
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
   $m has release_date $release_date_m;
 sort $release_date_m asc;
@@ -1422,7 +1422,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $k isa keyword, has keyword_name 'jealousy';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
 limit 3;
 fetch {
@@ -1431,7 +1431,7 @@ fetch {
 178,What are the first 5 movies rated by user with ID 1?,"MATCH (u:User {id: 1})-[r:RATED]->(m:Movie)
 RETURN m.title, r.rating
 ORDER BY r.timestamp
-LIMIT 5","match $u isa user, has user_id 1; $m isa movie; $r (reviewer: $u, rated_media: $m) isa rated, has rating $rating; $m has title $title_m; limit 5; fetch { ""title"": $title_m, ""rating"": $rating };"
+LIMIT 5","match $u isa user, has user_id 1; $m isa movie; $r isa rated (reviewer: $u, rated_media: $m), has rating $rating; $m has title $title_m; limit 5; fetch { ""title"": $title_m, ""rating"": $rating };"
 179,List the top 5 highest voted movies on IMDb.,"MATCH (m:Movie)
 WHERE m.vote_count IS NOT NULL
 RETURN m.title, m.vote_count
@@ -1464,7 +1464,7 @@ ORDER BY m.popularity DESC
 LIMIT 3","match
   $m isa movie;
   $l isa language, has language_name 'Kiswahili';
-  $rel0 (media: $m, language: $l) isa spoken_in_language;
+  $rel0 isa spoken_in_language (media: $m, language: $l);
   $m has title $title_m;
   $m has popularity $popularity_m;
 sort $popularity_m desc;
@@ -1477,7 +1477,7 @@ RETURN m.title
 LIMIT 5","match
   $p isa person, has person_name 'Tom Hanks';
   $m isa movie;
-  $rel0 (actor: $p, film: $m) isa cast_for;
+  $rel0 isa cast_for (actor: $p, film: $m);
   $m has title $title_m;
 limit 5;
 fetch {
@@ -1485,7 +1485,7 @@ fetch {
 };"
 183,List the first 3 movies directed by a person with gender 2.,"MATCH (p:Person {gender: 2})-[:CREW_FOR {job: 'Director'}]->(m:Movie)
 RETURN m.title
-LIMIT 3","match $p isa person, has gender 2; $m isa movie; $rel0 (crew_member: $p, film: $m) isa crew_for, has job ""Director""; $m has title $title_m; limit 3; fetch { ""title"": $title_m };"
+LIMIT 3","match $p isa person, has gender 2; $m isa movie; $rel0 isa crew_for (crew_member: $p, film: $m), has job ""Director""; $m has title $title_m; limit 3; fetch { ""title"": $title_m };"
 184,What are the top 5 movies with a runtime longer than 120 minutes?,"MATCH (m:Movie)
 WHERE m.runtime > 120
 RETURN m.title, m.runtime
@@ -1520,7 +1520,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $g isa genre;
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $m has title $title_m;
   $g has genre_id $genre_id_g;
   $genre_id_g >= 15;
@@ -1560,7 +1560,7 @@ ORDER BY numCountries DESC
 LIMIT 3","match
   $m isa movie;
   $c isa country;
-  $rel0 (media: $m, country: $c) isa produced_in_country;
+  $rel0 isa produced_in_country (media: $m, country: $c);
   $m has title $title_m;
 reduce $count = count($c);
 sort $count desc;
@@ -1573,7 +1573,7 @@ RETURN m.title
 LIMIT 5","match
   $m isa movie;
   $k isa keyword, has keyword_name 'based on novel';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
 limit 5;
 fetch {
@@ -1589,14 +1589,14 @@ WHERE EXISTS {
   (m)-[:SPOKEN_IN_LANGUAGE]->(:Language {name: 'Spanish'})
 }
 RETURN m.title
-LIMIT 3","match $m isa movie; $l1 isa language, has language_name 'English'; $rel0 (media: $m, language: $l1) isa spoken_in_language; $m has title $title_m; limit 3; fetch { ""title"": $title_m };"
+LIMIT 3","match $m isa movie; $l1 isa language, has language_name 'English'; $rel0 isa spoken_in_language (media: $m, language: $l1); $m has title $title_m; limit 3; fetch { ""title"": $title_m };"
 193,Which 5 movies were produced by companies with an ID over 1000?,"MATCH (m:Movie)-[:PRODUCED_BY]->(c:ProductionCompany)
 WHERE c.id > 1000
 RETURN m.title
 LIMIT 5","match
   $m isa movie;
   $c isa production_company;
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has title $title_m;
   $c has production_company_id $production_company_id_c;
   $production_company_id_c > 1000;
@@ -1702,7 +1702,7 @@ ORDER BY a.release_date
 LIMIT 3","match
   $a isa adult_video;
   $l isa language, has language_name 'it';
-  $rel0 (media: $a, language: $l) isa spoken_in_language;
+  $rel0 isa spoken_in_language (media: $a, language: $l);
   $a has title $title_a;
   $a has release_date $release_date_a;
 sort $release_date_a asc;
@@ -1730,7 +1730,7 @@ RETURN p.name
 LIMIT 3","match
   $p isa package;
   $g isa genre, has genre_name 'Animation';
-  $rel0 (package: $p, genre: $g) isa provides_access_to;
+  $rel0 isa provides_access_to (package: $p, genre: $g);
   $p has package_name $package_name_p;
 limit 3;
 fetch {
@@ -1766,7 +1766,7 @@ RETURN v.title, v.release_date, v.popularity
 LIMIT 5","match
   $v isa video;
   $c isa production_company, has production_company_id 10;
-  $rel0 (media: $v, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $v, producer: $c);
   $v has title $title_v;
   $v has release_date $release_date_v;
   $v has popularity $popularity_v;
@@ -1794,8 +1794,8 @@ RETURN DISTINCT p.name
 LIMIT 3","match
   $p isa person;
   $m isa movie;
-  $rel0 (actor: $p, film: $m) isa cast_for;
-  $rel1 (film: $m, crew_member: $p) isa crew_for;
+  $rel0 isa cast_for (actor: $p, film: $m);
+  $rel1 isa crew_for (film: $m, crew_member: $p);
   $p has person_name $person_name_p;
 limit 3;
 fetch {
@@ -1819,7 +1819,7 @@ RETURN m.title
 LIMIT 5","match
   $m isa movie;
   $p isa person;
-  $cast (actor: $p, film: $m) isa cast_for;
+  $cast isa cast_for (actor: $p, film: $m);
   $p has gender 1;
   $m has title $title;
 limit 5;
@@ -1856,7 +1856,7 @@ RETURN m.title, c.name
 LIMIT 5","match
   $m isa movie;
   $c isa production_company;
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has title $title_m;
   $c has production_company_name $production_company_name_c;
   $production_company_name_c like "".*Studios.*"";
@@ -2106,7 +2106,7 @@ ORDER BY m.popularity DESC
 LIMIT 5","match
   $m isa movie;
   $c isa collection;
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
   $m has popularity $popularity_m;
   $c has collection_name $collection_name_c;
@@ -2159,14 +2159,14 @@ fetch {
 WHERE m.budget > 50000000
 RETURN l.name AS language
 ORDER BY language
-LIMIT 3","match $m isa movie; $l isa language; $rel0 (media: $m, language: $l) isa spoken_in_language; $m has budget $budget_m; $l has language_name $language_name_l; $budget_m > 50000000; limit 3; fetch { ""language"": $language_name_l };"
+LIMIT 3","match $m isa movie; $l isa language; $rel0 isa spoken_in_language (media: $m, language: $l); $m has budget $budget_m; $l has language_name $language_name_l; $budget_m > 50000000; limit 3; fetch { ""language"": $language_name_l };"
 278,Name the top 5 movies with 'Animated' as a keyword.,"MATCH (m:Movie)-[:HAS_KEYWORD]->(k:Keyword {name: 'Animated'})
 RETURN m.title
 ORDER BY m.popularity DESC
 LIMIT 5","match
   $m isa movie;
   $k isa keyword, has keyword_name 'Animated';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
   $m has popularity $popularity_m;
 sort $popularity_m desc;
@@ -2312,7 +2312,7 @@ ORDER BY p.duration DESC
 LIMIT 5","match
   $s isa subscription;
   $p isa package;
-  $rel0 (subscription: $s, package: $p) isa for_package;
+  $rel0 isa for_package (subscription: $s, package: $p);
   $s has subscription_id $subscription_id_s;
   $p has package_name $package_name_p;
   $p has package_duration $package_duration_p;
@@ -2338,7 +2338,7 @@ RETURN g.name
 LIMIT 3","match
   $p isa package, has package_name 'Gold';
   $g isa genre;
-  $rel0 (package: $p, genre: $g) isa provides_access_to;
+  $rel0 isa provides_access_to (package: $p, genre: $g);
   $g has genre_name $genre_name_g;
 limit 3;
 fetch {
@@ -2350,7 +2350,7 @@ ORDER BY p.price DESC
 LIMIT 5","match
   $p isa package;
   $g isa genre, has genre_name 'Animation';
-  $rel0 (package: $p, genre: $g) isa provides_access_to;
+  $rel0 isa provides_access_to (package: $p, genre: $g);
   $p has package_name $package_name_p;
   $p has package_price $package_price_p;
 sort $package_price_p desc;
@@ -2425,7 +2425,7 @@ fetch {
 };"
 320,What are the first 3 movies directed by a person named 'John Doe'?,"MATCH (p:Person {name: 'John Doe'})-[:CREW_FOR {job: 'Director'}]->(m:Movie)
 RETURN m.title
-LIMIT 3","match $p isa person, has person_name 'John Doe'; $m isa movie; $rel0 (crew_member: $p, film: $m) isa crew_for, has job ""Director""; $m has title $title_m; limit 3; fetch { ""title"": $title_m };"
+LIMIT 3","match $p isa person, has person_name 'John Doe'; $m isa movie; $rel0 isa crew_for (crew_member: $p, film: $m), has job ""Director""; $m has title $title_m; limit 3; fetch { ""title"": $title_m };"
 321,Name the top 5 movies that were released after 2010 and have a budget over 100 million USD.,"MATCH (m:Movie)
 WHERE m.release_date > date('2010-01-01') AND m.budget > 100000000
 RETURN m.title, m.budget, m.release_date
@@ -2457,7 +2457,7 @@ RETURN g.name
 LIMIT 3","match
   $m isa movie, has title 'Toy Story';
   $g isa genre;
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $g has genre_name $genre_name_g;
 limit 3;
 fetch {
@@ -2468,7 +2468,7 @@ RETURN l.name
 LIMIT 3","match
   $m isa movie, has title 'Jumanji';
   $l isa language;
-  $rel0 (media: $m, language: $l) isa spoken_in_language;
+  $rel0 isa spoken_in_language (media: $m, language: $l);
   $l has language_name $language_name_l;
 limit 3;
 fetch {
@@ -2480,7 +2480,7 @@ ORDER BY v.popularity DESC
 LIMIT 5","match
   $v isa video, has title 'Jonah: A VeggieTales Movie';
   $k isa keyword;
-  $rel0 (media: $v, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $v, keyword: $k);
   $v has popularity $popularity_v;
   $k has keyword_name $keyword_name_k;
 sort $popularity_v desc;
@@ -2494,7 +2494,7 @@ RETURN c.name
 LIMIT 3","match
   $m isa movie;
   $c isa collection;
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has poster_path $poster_path_m;
   $c has collection_name $collection_name_c;
   $poster_path_m == ""/rhIRbceoE9lR4veEXuwCC2wARtG.jpg"";
@@ -2509,7 +2509,7 @@ ORDER BY m.popularity DESC
 LIMIT 5","match
   $p isa person, has person_name $pn;
   $m isa movie, has popularity $pop;
-  $cast (actor: $p, film: $m) isa cast_for, has character ""Woody"";
+  $cast isa cast_for (actor: $p, film: $m), has character ""Woody"";
 sort $pop desc;
 limit 5;
 fetch { ""name"": $pn };"
@@ -2519,7 +2519,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $g isa genre, has genre_name 'Action';
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $m has revenue $revenue_m;
   $m has title $title_m;
   $revenue_m > 100000000;
@@ -2547,7 +2547,7 @@ LIMIT 3","match
   $m has release_date $rd;
   $rd > 1995-01-01;
   $p isa person;
-  $cast (actor: $p, film: $m) isa cast_for;
+  $cast isa cast_for (actor: $p, film: $m);
   $p has person_name ""Tom Hanks"";
   $m has title $title;
 limit 3;
@@ -2557,7 +2557,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $c isa collection, has collection_name 'Toy Story Collection';
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
 limit 3;
 fetch {
@@ -2583,7 +2583,7 @@ LIMIT 5","match
   $m isa movie;
   $m has release_date $rd;
   $u isa user;
-  $rel (rated_media: $m, reviewer: $u) isa rated, has rating $rating;
+  $rel isa rated (rated_media: $m, reviewer: $u), has rating $rating;
   $rating == 10;
   $m has title $title;
   $m has popularity $popularity;
@@ -2595,7 +2595,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $k isa keyword, has keyword_name 'space';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
 limit 3;
 fetch {
@@ -2620,7 +2620,7 @@ ORDER BY m.revenue DESC
 LIMIT 3","match
   $m isa movie;
   $c isa collection, has collection_name 'Toy Story Collection';
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
   $m has revenue $revenue_m;
 sort $revenue_m desc;
@@ -2684,7 +2684,7 @@ ORDER BY m.budget DESC
 LIMIT 3","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has budget $budget_m;
   $m has title $title_m;
   $budget_m > 50000000;
@@ -2723,13 +2723,13 @@ fetch { ""title"": $title, ""release_date"": $rd, ""revenue"": $revenue };"
 356,List the first 3 persons who have directed a movie with a budget over 150 million USD.,"MATCH (p:Person)-[:CREW_FOR {job: 'Director'}]->(m:Movie)
 WHERE m.budget > 150000000
 RETURN p.name
-LIMIT 3","match $p isa person; $m isa movie; $rel0 (crew_member: $p, film: $m) isa crew_for, has job ""Director""; $p has person_name $person_name_p; $m has budget $budget_m; $budget_m > 150000000; limit 3; fetch { ""name"": $person_name_p };"
+LIMIT 3","match $p isa person; $m isa movie; $rel0 isa crew_for (crew_member: $p, film: $m), has job ""Director""; $p has person_name $person_name_p; $m has budget $budget_m; $budget_m > 150000000; limit 3; fetch { ""name"": $person_name_p };"
 358,What are the first 3 genres associated with the video titled 'Electrical Girl'?,"MATCH (v:Video {title: 'Electrical Girl'})-[:IN_GENRE]->(g:Genre)
 RETURN g.name
 LIMIT 3","match
   $v isa video, has title 'Electrical Girl';
   $g isa genre;
-  $rel0 (media: $v, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $v, genre: $g);
   $g has genre_name $genre_name_g;
 limit 3;
 fetch {
@@ -2741,7 +2741,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $c isa production_company;
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has revenue $revenue_m;
   $m has title $title_m;
   $c has production_company_name $production_company_name_c;
@@ -2756,7 +2756,7 @@ RETURN l.name AS language
 LIMIT 3","match
   $m isa movie, has original_title 'Toy Story';
   $l isa language;
-  $rel0 (media: $m, language: $l) isa spoken_in_language;
+  $rel0 isa spoken_in_language (media: $m, language: $l);
   $l has language_name $language_name_l;
 limit 3;
 fetch {
@@ -2793,7 +2793,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Lucasfilm';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has title $title_m;
 limit 3;
 fetch {
@@ -2829,7 +2829,7 @@ ORDER BY m.popularity DESC
 LIMIT 5","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Universal Pictures';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has title $title_m;
   $m has popularity $popularity_m;
 sort $popularity_m desc;
@@ -2923,7 +2923,7 @@ ORDER BY m.runtime DESC
 LIMIT 5","match
   $m isa movie;
   $c isa collection, has collection_name 'Toy Story Collection';
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has runtime $runtime_m;
   $m has title $title_m;
   $runtime_m > 80;
@@ -2938,7 +2938,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has runtime $runtime_m;
   $m has title $title_m;
   $runtime_m < 100;
@@ -2952,7 +2952,7 @@ ORDER BY m.budget DESC
 LIMIT 5","match
   $m isa movie;
   $g isa genre, has genre_name 'Animation';
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $m has title $title_m;
   $m has budget $budget_m;
 sort $budget_m desc;
@@ -2966,7 +2966,7 @@ ORDER BY m.popularity DESC
 LIMIT 5","match
   $m isa movie;
   $k isa keyword, has keyword_name 'jealousy';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
   $m has popularity $popularity_m;
 sort $popularity_m desc;
@@ -3034,7 +3034,7 @@ ORDER BY m.popularity DESC
 LIMIT 5","match
   $m isa movie;
   $g isa genre, has genre_name 'Science Fiction';
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $m has title $title_m;
   $m has popularity $popularity_m;
 sort $popularity_m desc;
@@ -3089,7 +3089,7 @@ ORDER BY p.id
 LIMIT 3","match
   $m isa movie, has title 'Toy Story';
   $p isa person;
-  $rel0 (film: $m, actor: $p) isa cast_for;
+  $rel0 isa cast_for (film: $m, actor: $p);
   $p has person_name $person_name_p;
   $p has person_id $person_id_p;
 sort $person_id_p asc;
@@ -3103,7 +3103,7 @@ RETURN DISTINCT c.name
 LIMIT 3","match
   $m isa movie;
   $c isa country;
-  $rel0 (media: $m, country: $c) isa produced_in_country;
+  $rel0 isa produced_in_country (media: $m, country: $c);
   $m has revenue $revenue_m;
   $c has country_name $country_name_c;
   $revenue_m > 100000000;
@@ -3117,7 +3117,7 @@ ORDER BY m.popularity DESC
 LIMIT 5","match
   $m isa movie, has title 'Waiting to Exhale';
   $k isa keyword;
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has popularity $popularity_m;
   $k has keyword_name $keyword_name_k;
 sort $popularity_m desc;
@@ -3131,7 +3131,7 @@ ORDER BY m.release_date DESC
 LIMIT 5","match
   $m isa movie;
   $c isa collection, has collection_name 'Toy Story Collection';
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
   $m has release_date $release_date_m;
 sort $release_date_m desc;
@@ -3145,7 +3145,7 @@ ORDER BY m.popularity DESC
 LIMIT 5","match
   $m isa movie;
   $k isa keyword, has keyword_name 'jealousy';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
   $m has popularity $popularity_m;
 sort $popularity_m desc;
@@ -3158,7 +3158,7 @@ RETURN g.name
 LIMIT 3","match
   $m isa movie, has title 'Jonah: A VeggieTales Movie';
   $g isa genre;
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $g has genre_name $genre_name_g;
 limit 3;
 fetch {
@@ -3245,7 +3245,7 @@ RETURN g.name
 LIMIT 5","match
   $m isa movie, has title 'Toy Story';
   $g isa genre;
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $g has genre_name $genre_name_g;
 limit 5;
 fetch {
@@ -3257,7 +3257,7 @@ ORDER BY m.popularity DESC
 LIMIT 3","match
   $m isa movie;
   $g isa genre, has genre_name 'Animation';
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $m has title $title_m;
   $m has popularity $popularity_m;
 sort $popularity_m desc;
@@ -3275,7 +3275,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has budget $budget_m;
   $m has title $title_m;
   $budget_m > 50000000;
@@ -3302,7 +3302,7 @@ RETURN g.name
 LIMIT 3","match
   $m isa movie, has title 'Father of the Bride Part II';
   $g isa genre;
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $g has genre_name $genre_name_g;
 limit 3;
 fetch {
@@ -3363,7 +3363,7 @@ RETURN g.name
 LIMIT 3","match
   $v isa video, has title 'Jonah: A VeggieTales Movie';
   $g isa genre;
-  $rel0 (media: $v, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $v, genre: $g);
   $g has genre_name $genre_name_g;
 limit 3;
 fetch {
@@ -3429,7 +3429,7 @@ RETURN g.name
 LIMIT 3","match
   $m isa movie, has title 'Alex & Emma';
   $g isa genre;
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $g has genre_name $genre_name_g;
 limit 3;
 fetch {
@@ -3475,7 +3475,7 @@ ORDER BY m.popularity DESC
 LIMIT 3","match
   $m isa movie;
   $g isa genre, has genre_name 'Thriller';
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $m has title $title_m;
   $m has popularity $popularity_m;
 sort $popularity_m desc;
@@ -3488,7 +3488,7 @@ RETURN v.title
 LIMIT 5","match
   $v isa video;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $v, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $v, producer: $c);
   $v has title $title_v;
 limit 5;
 fetch {
@@ -3536,7 +3536,7 @@ RETURN g.name
 LIMIT 3","match
   $m isa movie, has title 'Nil Battey Sannata';
   $g isa genre;
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $g has genre_name $genre_name_g;
 limit 3;
 fetch {
@@ -3560,7 +3560,7 @@ fetch {
 RETURN m.title","match
   $p isa person, has person_name 'Tom Hanks';
   $m isa movie;
-  $rel0 (actor: $p, film: $m) isa cast_for;
+  $rel0 isa cast_for (actor: $p, film: $m);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -3581,7 +3581,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $c isa collection, has collection_name 'Toy Story Collection';
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -3590,7 +3590,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -3600,7 +3600,7 @@ WHERE m.budget > 100000000
 RETURN DISTINCT g.name","match
   $m isa movie;
   $g isa genre;
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $m has budget $budget_m;
   $g has genre_name $genre_name_g;
   $budget_m > 100000000;
@@ -3611,7 +3611,7 @@ fetch {
 RETURN m.title AS movie, r.rating AS rating","match
   $u isa user, has user_id 1;
   $m isa movie;
-  $r (reviewer: $u, rated_media: $m) isa rated, has rating $rating;
+  $r isa rated (reviewer: $u, rated_media: $m), has rating $rating;
   $m has title $title_m;
 fetch {
   ""movie"": $title_m, ""rating"": $rating
@@ -3642,7 +3642,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $k isa keyword, has keyword_name 'jealousy';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -3661,7 +3661,7 @@ fetch { ""title"": $title, ""release_date"": $rd, ""average_vote"": $av };"
 RETURN l.name AS language","match
   $m isa movie, has title 'Toy Story';
   $l isa language;
-  $rel0 (media: $m, language: $l) isa spoken_in_language;
+  $rel0 isa spoken_in_language (media: $m, language: $l);
   $l has language_name $language_name_l;
 fetch {
   ""language"": $language_name_l
@@ -3682,7 +3682,7 @@ WHERE m.budget > 10000000
 RETURN DISTINCT c.name AS country","match
   $m isa movie;
   $c isa country;
-  $rel0 (media: $m, country: $c) isa produced_in_country;
+  $rel0 isa produced_in_country (media: $m, country: $c);
   $m has budget $budget_m;
   $c has country_name $country_name_c;
   $budget_m > 10000000;
@@ -3694,7 +3694,7 @@ WHERE m.revenue > 200000000
 RETURN DISTINCT c.name","match
   $m isa movie;
   $c isa production_company;
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has revenue $revenue_m;
   $c has production_company_name $production_company_name_c;
   $revenue_m > 200000000;
@@ -3726,7 +3726,7 @@ fetch {
 };"
 497,What are the names of people who have directed movies with a budget over 50 million USD?,"MATCH (p:Person)-[:CREW_FOR {job: 'Director'}]->(m:Movie)
 WHERE m.budget > 50000000
-RETURN DISTINCT p.name","match $p isa person; $m isa movie; $rel0 (crew_member: $p, film: $m) isa crew_for, has job ""Director""; $p has person_name $person_name_p; $m has budget $budget_m; $budget_m > 50000000; fetch { ""name"": $person_name_p };"
+RETURN DISTINCT p.name","match $p isa person; $m isa movie; $rel0 isa crew_for (crew_member: $p, film: $m), has job ""Director""; $p has person_name $person_name_p; $m has budget $budget_m; $budget_m > 50000000; fetch { ""name"": $person_name_p };"
 499,List all movies that are part of any collection and have a revenue less than 1 million USD.,"MATCH (m:Movie)-[:IN_COLLECTION]->(:Collection)
 WHERE m.revenue < 1000000
 RETURN m.title, m.revenue","match $m isa movie; $collection isa collection; (media: $m, collection: $collection) isa in_collection; $m has revenue $revenue; $m has title $title; $revenue < 1000000; fetch { ""title"": $title, ""revenue"": $revenue };"
@@ -3735,8 +3735,8 @@ RETURN DISTINCT g.name","match
   $c isa collection, has collection_name 'Toy Story Collection';
   $m isa movie;
   $g isa genre;
-  $rel0 (media: $m, genre: $g) isa in_genre;
-  $rel1 (collection: $c, media: $m) isa in_collection;
+  $rel0 isa in_genre (media: $m, genre: $g);
+  $rel1 isa in_collection (collection: $c, media: $m);
   $g has genre_name $genre_name_g;
 fetch {
   ""name"": $genre_name_g
@@ -3822,7 +3822,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $l isa language, has language_name 'Gaeilge';
-  $rel0 (media: $m, language: $l) isa spoken_in_language;
+  $rel0 isa spoken_in_language (media: $m, language: $l);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -3831,7 +3831,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $c isa collection, has backdrop_path '/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg';
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -3853,7 +3853,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $g isa genre, has genre_id 10770;
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -3875,12 +3875,12 @@ WHERE r.rating = 5.0
 RETURN m.title","match
   $m isa movie;
   $u isa user;
-  $rel (rated_media: $m, reviewer: $u) isa rated, has rating $rating;
+  $rel isa rated (rated_media: $m, reviewer: $u), has rating $rating;
   $rating == 5.0;
   $m has title $title;
 fetch { ""title"": $title, ""rating"": $rating };"
 526,What are the movies directed by 'Christopher Nolan'?,"MATCH (p:Person {name: 'Christopher Nolan'})-[:CREW_FOR {job: 'Director'}]->(m:Movie)
-RETURN m.title","match $p isa person, has person_name 'Christopher Nolan'; $m isa movie; $rel0 (crew_member: $p, film: $m) isa crew_for, has job ""Director""; $m has title $title_m; fetch { ""title"": $title_m };"
+RETURN m.title","match $p isa person, has person_name 'Christopher Nolan'; $m isa movie; $rel0 isa crew_for (crew_member: $p, film: $m), has job ""Director""; $m has title $title_m; fetch { ""title"": $title_m };"
 530,List all movies that have a revenue of zero but have been highly rated.,"MATCH (m:Movie)
 WHERE m.revenue = 0 AND m.average_vote >= 7.0
 RETURN m.title, m.average_vote, m.revenue","match
@@ -3896,7 +3896,7 @@ WHERE m.average_vote > 6
 RETURN m.title, m.average_vote","match
   $m isa movie;
   $k isa keyword, has keyword_name 'high school';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has average_vote $average_vote_m;
   $m has title $title_m;
   $average_vote_m > 6;
@@ -3921,7 +3921,7 @@ WHERE m.revenue > 500000000
 RETURN m.title, m.revenue","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Warner Bros.';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has revenue $revenue_m;
   $m has title $title_m;
   $revenue_m > 500000000;
@@ -3955,7 +3955,7 @@ WHERE c.backdrop_path = '/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg'
 RETURN m.title","match
   $m isa movie;
   $c isa collection;
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
   $c has backdrop_path $backdrop_path_c;
   $backdrop_path_c == ""/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg"";
@@ -3966,7 +3966,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $l isa language, has language_name 'Kiswahili';
-  $rel0 (media: $m, language: $l) isa spoken_in_language;
+  $rel0 isa spoken_in_language (media: $m, language: $l);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -3975,7 +3975,7 @@ fetch {
 RETURN m.title","match
   $p isa person, has person_name 'Brad Pitt';
   $m isa movie;
-  $rel0 (actor: $p, film: $m) isa cast_for;
+  $rel0 isa cast_for (actor: $p, film: $m);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -4048,7 +4048,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $k isa keyword, has keyword_name 'romance';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -4126,7 +4126,7 @@ fetch {
 RETURN m.title","match
   $m isa movie;
   $k isa keyword, has keyword_name 'explosive';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
 fetch {
   ""title"": $title_m
@@ -4138,7 +4138,7 @@ ORDER BY m.budget DESC
 LIMIT 3","match
   $m isa movie;
   $c isa production_company;
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has title $title_m;
   $m has budget $budget_m;
   $c has production_company_name $production_company_name_c;
@@ -4203,7 +4203,7 @@ ORDER BY m.release_date DESC
 LIMIT 3","match
   $m isa movie;
   $c isa collection, has collection_name 'Toy Story Collection';
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
   $m has release_date $release_date_m;
 sort $release_date_m desc;
@@ -4216,7 +4216,7 @@ RETURN k.name
 LIMIT 3","match
   $m isa movie, has title 'Toy Story';
   $k isa keyword;
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $k has keyword_name $keyword_name_k;
 limit 3;
 fetch {
@@ -4266,7 +4266,7 @@ RETURN m.title
 LIMIT 5","match
   $m isa movie;
   $k isa keyword, has keyword_name 'jealousy';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
 limit 5;
 fetch {
@@ -4303,7 +4303,7 @@ RETURN v.title
 LIMIT 3","match
   $v isa video;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $v, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $v, producer: $c);
   $v has title $title_v;
 limit 3;
 fetch {
@@ -4350,7 +4350,7 @@ RETURN p.name AS package
 LIMIT 3","match
   $p isa package;
   $g isa genre, has genre_name 'Animation';
-  $rel0 (package: $p, genre: $g) isa provides_access_to;
+  $rel0 isa provides_access_to (package: $p, genre: $g);
   $p has package_name $package_name_p;
 limit 3;
 fetch {
@@ -4381,7 +4381,7 @@ RETURN g.name
 LIMIT 3","match
   $p isa package, has package_name 'Ultimate';
   $g isa genre;
-  $rel0 (package: $p, genre: $g) isa provides_access_to;
+  $rel0 isa provides_access_to (package: $p, genre: $g);
   $g has genre_name $genre_name_g;
 limit 3;
 fetch {
@@ -4445,7 +4445,7 @@ RETURN m.title
 LIMIT 3","match
   $p isa person, has person_name 'Tom Hanks';
   $m isa movie;
-  $rel0 (actor: $p, film: $m) isa cast_for;
+  $rel0 isa cast_for (actor: $p, film: $m);
   $m has title $title_m;
 limit 3;
 fetch {
@@ -4468,7 +4468,7 @@ RETURN k.name
 LIMIT 3","match
   $v isa video, has title 'Jonah: A VeggieTales Movie';
   $k isa keyword;
-  $rel0 (media: $v, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $v, keyword: $k);
   $k has keyword_name $keyword_name_k;
 limit 3;
 fetch {
@@ -4567,7 +4567,7 @@ ORDER BY m.budget DESC
 LIMIT 3","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has budget $budget_m;
   $m has title $title_m;
   $budget_m > 100000000;
@@ -4608,7 +4608,7 @@ RETURN p.name AS package
 LIMIT 3","match
   $p isa package;
   $g isa genre, has genre_name 'Drama';
-  $rel0 (package: $p, genre: $g) isa provides_access_to;
+  $rel0 isa provides_access_to (package: $p, genre: $g);
   $p has package_name $package_name_p;
 limit 3;
 fetch {
@@ -4810,7 +4810,7 @@ ORDER BY m.popularity DESC
 LIMIT 3","match
   $p isa person, has person_name 'Tom Hanks';
   $m isa movie;
-  $r (actor: $p, film: $m) isa cast_for;
+  $r isa cast_for (actor: $p, film: $m);
   $m has title $title_m;
   $m has release_date $release_date_m;
   $m has popularity $popularity_m;
@@ -4825,7 +4825,7 @@ ORDER BY m.popularity DESC
 LIMIT 5","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has title $title_m;
   $m has popularity $popularity_m;
 sort $popularity_m desc;
@@ -4838,7 +4838,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $l isa language, has language_name 'Kiswahili';
-  $rel0 (media: $m, language: $l) isa spoken_in_language;
+  $rel0 isa spoken_in_language (media: $m, language: $l);
   $m has title $title_m;
 limit 3;
 fetch {
@@ -4850,7 +4850,7 @@ ORDER BY m.popularity DESC
 LIMIT 3","match
   $m isa movie;
   $l isa language, has language_name 'Gaeilge';
-  $rel0 (media: $m, language: $l) isa spoken_in_language;
+  $rel0 isa spoken_in_language (media: $m, language: $l);
   $m has title $title_m;
   $m has popularity $popularity_m;
 sort $popularity_m desc;
@@ -4864,7 +4864,7 @@ ORDER BY m.release_date
 LIMIT 5","match
   $m isa movie;
   $c isa collection, has collection_name 'Toy Story Collection';
-  $rel0 (media: $m, collection: $c) isa in_collection;
+  $rel0 isa in_collection (media: $m, collection: $c);
   $m has title $title_m;
   $m has release_date $release_date_m;
 sort $release_date_m asc;
@@ -4950,7 +4950,7 @@ ORDER BY m.popularity DESC
 LIMIT 3","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has runtime $runtime_m;
   $m has title $title_m;
   $m has popularity $popularity_m;
@@ -5034,7 +5034,7 @@ RETURN v.title
 LIMIT 5","match
   $v isa video;
   $l isa language, has language_name 'Azərbaycan';
-  $rel0 (media: $v, language: $l) isa spoken_in_language;
+  $rel0 isa spoken_in_language (media: $v, language: $l);
   $v has title $title_v;
 limit 5;
 fetch {
@@ -5083,7 +5083,7 @@ ORDER BY a.popularity DESC
 LIMIT 3","match
   $a isa adult_video;
   $k isa keyword, has keyword_name 'jealousy';
-  $rel0 (media: $a, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $a, keyword: $k);
   $a has title $title_a;
   $a has popularity $popularity_a;
 sort $popularity_a desc;
@@ -5143,7 +5143,7 @@ RETURN m.title
 LIMIT 3","match
   $m isa movie;
   $k isa keyword, has keyword_name 'adventure';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has status $status_m;
   $m has title $title_m;
   $status_m == ""Released"";
@@ -5166,7 +5166,7 @@ ORDER BY v.popularity DESC
 LIMIT 3","match
   $v isa video;
   $k isa keyword, has keyword_name 'action';
-  $rel0 (media: $v, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $v, keyword: $k);
   $v has status $status_v;
   $v has title $title_v;
   $v has release_date $release_date_v;
@@ -5209,7 +5209,7 @@ RETURN p.name AS package
 LIMIT 5","match
   $p isa package;
   $g isa genre, has genre_name 'Drama';
-  $rel0 (package: $p, genre: $g) isa provides_access_to;
+  $rel0 isa provides_access_to (package: $p, genre: $g);
   $p has package_name $package_name_p;
 limit 5;
 fetch {
@@ -5222,7 +5222,7 @@ ORDER BY v.popularity DESC
 LIMIT 3","match
   $v isa video;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $v, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $v, producer: $c);
   $v has runtime $runtime_v;
   $v has title $title_v;
   $v has popularity $popularity_v;
@@ -5251,7 +5251,7 @@ ORDER BY m.popularity DESC
 LIMIT 5","match
   $m isa movie;
   $k isa keyword, has keyword_name 'space';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has status $status_m;
   $m has title $title_m;
   $m has release_date $release_date_m;
@@ -5281,7 +5281,7 @@ RETURN DISTINCT c.name
 LIMIT 3","match
   $m isa movie;
   $c isa country;
-  $rel0 (media: $m, country: $c) isa produced_in_country;
+  $rel0 isa produced_in_country (media: $m, country: $c);
   $m has average_vote $average_vote_m;
   $c has country_name $country_name_c;
   $average_vote_m > 8;
@@ -5379,7 +5379,7 @@ LIMIT 3
 RETURN c.name AS country, movie_count","match
   $m isa movie;
   $c isa country;
-  $rel0 (media: $m, country: $c) isa produced_in_country;
+  $rel0 isa produced_in_country (media: $m, country: $c);
   $m has average_vote $average_vote_m;
   $c has country_name $country_name_c;
   $average_vote_m < 5;
@@ -5411,7 +5411,7 @@ ORDER BY m.popularity DESC
 LIMIT 3","match
   $m isa movie;
   $g isa genre;
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $m has popularity $popularity_m;
   $g has genre_name $genre_name_g;
   $popularity_m > 20;
@@ -5426,7 +5426,7 @@ RETURN c.name AS country
 LIMIT 5","match
   $m isa movie;
   $c isa country;
-  $rel0 (media: $m, country: $c) isa produced_in_country;
+  $rel0 isa produced_in_country (media: $m, country: $c);
   $m has revenue $revenue_m;
   $c has country_name $country_name_c;
   $revenue_m > 500000000;
@@ -5440,7 +5440,7 @@ RETURN c.name
 LIMIT 3","match
   $c isa collection;
   $m isa movie;
-  $rel0 (collection: $c, media: $m) isa in_collection;
+  $rel0 isa in_collection (collection: $c, media: $m);
   $c has collection_name $collection_name_c;
   $m has budget $budget_m;
   $budget_m > 50000000;
@@ -5453,7 +5453,7 @@ RETURN m.title
 LIMIT 5","match
   $m isa movie;
   $k isa keyword, has keyword_name 'adventure';
-  $rel0 (media: $m, keyword: $k) isa has_keyword;
+  $rel0 isa has_keyword (media: $m, keyword: $k);
   $m has title $title_m;
 limit 5;
 fetch {
@@ -5465,7 +5465,7 @@ ORDER BY m.popularity DESC
 LIMIT 5","match
   $m isa movie;
   $c isa production_company, has production_company_name 'Pixar Animation Studios';
-  $rel0 (media: $m, producer: $c) isa produced_by;
+  $rel0 isa produced_by (media: $m, producer: $c);
   $m has title $title_m;
   $m has release_date $release_date_m;
   $m has popularity $popularity_m;
@@ -5489,7 +5489,7 @@ RETURN g.name AS genre
 LIMIT 5","match
   $v isa video;
   $g isa genre;
-  $rel0 (media: $v, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $v, genre: $g);
   $v has popularity $popularity_v;
   $g has genre_name $genre_name_g;
   $popularity_v > 5;
@@ -5526,7 +5526,7 @@ RETURN DISTINCT l.name AS language
 LIMIT 5","match
   $a isa adult_video;
   $l isa language;
-  $rel0 (media: $a, language: $l) isa original_language;
+  $rel0 isa original_language (media: $a, language: $l);
   $l has language_name $language_name_l;
 limit 5;
 fetch {
@@ -5538,7 +5538,7 @@ ORDER BY c.name
 LIMIT 3","match
   $c isa collection;
   $v isa video;
-  $rel0 (collection: $c, media: $v) isa in_collection;
+  $rel0 isa in_collection (collection: $c, media: $v);
   $c has collection_name $collection_name_c;
 sort $collection_name_c asc;
 limit 3;
@@ -5578,7 +5578,7 @@ RETURN m.title
 LIMIT 5","match
   $m isa movie;
   $c isa country, has country_name 'France';
-  $rel0 (media: $m, country: $c) isa produced_in_country;
+  $rel0 isa produced_in_country (media: $m, country: $c);
   $m has title $title_m;
 limit 5;
 fetch {
@@ -5590,7 +5590,7 @@ ORDER BY m.popularity DESC
 LIMIT 5","match
   $m isa movie;
   $g isa genre, has genre_name 'Animation';
-  $rel0 (media: $m, genre: $g) isa in_genre;
+  $rel0 isa in_genre (media: $m, genre: $g);
   $m has title $title_m;
   $m has popularity $popularity_m;
 sort $popularity_m desc;
@@ -5605,7 +5605,7 @@ RETURN m.title, m.release_date","match $m isa movie, has release_date $release_d
 RETURN m.title AS movie, r.rating AS rating","match
   $u isa user, has user_id ""1"";
   $m isa movie;
-  $r (reviewer: $u, rated_media: $m) isa rated, has rating $rating;
+  $r isa rated (reviewer: $u, rated_media: $m), has rating $rating;
   $m has title $title_m;
 fetch {
   ""movie"": $title_m, ""rating"": $rating
@@ -5877,7 +5877,7 @@ fetch { ""title"": $title, ""num_ratings"": $count };"
 RETURN m.title AS movie, r.rating AS rating","match
   $u isa user, has user_id ""1"";
   $m isa movie;
-  $r (reviewer: $u, rated_media: $m) isa rated, has rating $rating;
+  $r isa rated (reviewer: $u, rated_media: $m), has rating $rating;
   $m has title $title_m;
 fetch {
   ""movie"": $title_m, ""rating"": $rating
@@ -6717,7 +6717,7 @@ ORDER BY crewCount DESC
 LIMIT 5","match
   $v isa video, has title $title;
   $p isa person;
-  $rel (crew_member: $p, film: $v) isa crew_for, has department ""Production"";
+  $rel isa crew_for (crew_member: $p, film: $v), has department ""Production"";
 reduce $count = count($p) groupby $v, $title;
 sort $count desc;
 limit 5;
@@ -6907,7 +6907,7 @@ LIMIT 5
 RETURN m.title AS movie, avg_rating","match
   $m isa movie, has title $title;
   $u isa user;
-  $r (rated_media: $m, reviewer: $u) isa rated, has rating $rating;
+  $r isa rated (rated_media: $m, reviewer: $u), has rating $rating;
 reduce $avg = mean($rating) groupby $m, $title;
 sort $avg desc;
 limit 5;
@@ -7912,7 +7912,7 @@ LIMIT 3
 RETURN u, num_ratings","match
   $u isa user;
   $m isa movie;
-  $r (reviewer: $u, rated_media: $m) isa rated;
+  $r isa rated (reviewer: $u, rated_media: $m);
 reduce $count = count($r) groupby $u;
 sort $count desc;
 limit 3;
@@ -8142,7 +8142,7 @@ RETURN m.title
 LIMIT 3","match
   $p isa person, has person_name ""John Doe"";
   $m isa movie;
-  $rel0 (crew_member: $p, film: $m) isa crew_for, has job ""Director"";
+  $rel0 isa crew_for (crew_member: $p, film: $m), has job ""Director"";
 limit 3;
 fetch {
   ""title"": $m.title
@@ -8549,7 +8549,7 @@ ORDER BY m.release_date
 LIMIT 5","match
   $p isa person, has person_name ""John Doe"";
   $m isa movie;
-  $rel (crew_member: $p, film: $m) isa crew_for, has job ""Director"";
+  $rel isa crew_for (crew_member: $p, film: $m), has job ""Director"";
   $m has release_date $release_date;
 sort $release_date asc;
 limit 5;
@@ -8832,7 +8832,7 @@ LIMIT 3
 RETURN p.name AS person, num_roles","match
   $p isa person, has person_name $name;
   $m isa movie, has status ""Released"";
-  $r (actor: $p, film: $m) isa cast_for;
+  $r isa cast_for (actor: $p, film: $m);
 reduce $count = count($r) groupby $p, $name;
 sort $count desc;
 limit 3;
@@ -8847,7 +8847,7 @@ LIMIT 5
 RETURN u, num_ratings","match
   $u isa user;
   $m isa movie;
-  $r (reviewer: $u, rated_media: $m) isa rated;
+  $r isa rated (reviewer: $u, rated_media: $m);
 reduce $count = count($r) groupby $u;
 sort $count desc;
 limit 5;
@@ -9005,7 +9005,7 @@ ORDER BY num_credits DESC
 LIMIT 3
 RETURN p.name AS person, num_credits","match
   $p isa person, has person_name $person_name;
-  $r (crew_member: $p, film: $m) isa crew_for, has job ""Producer"";
+  $r isa crew_for (crew_member: $p, film: $m), has job ""Producer"";
 reduce $count = count($r) groupby $p, $person_name;
 sort $count desc;
 limit 3;
@@ -9090,7 +9090,7 @@ RETURN p.name AS director, num_films","match
   $p isa person, has person_name $name;
   $m isa movie;
   $c isa country, has country_name ""United States of America"";
-  $rel (crew_member: $p, film: $m) isa crew_for, has job ""Director"";
+  $rel isa crew_for (crew_member: $p, film: $m), has job ""Director"";
   produced_in_country (media: $m, country: $c);
 reduce $num_films = count($m) groupby $p, $name;
 sort $num_films desc;
@@ -9163,7 +9163,7 @@ LIMIT 3
 RETURN u, num_ratings","match
   $u isa user;
   $m isa movie;
-  $r (reviewer: $u, rated_media: $m) isa rated;
+  $r isa rated (reviewer: $u, rated_media: $m);
 reduce $count = count($r) groupby $u;
 sort $count desc;
 limit 3;
@@ -9474,7 +9474,7 @@ LIMIT 3","match
   $p isa person, has person_name $name;
   $m isa movie;
   $c isa collection;
-  $rel (crew_member: $p, film: $m) isa crew_for, has job ""Director"";
+  $rel isa crew_for (crew_member: $p, film: $m), has job ""Director"";
   in_collection (media: $m, collection: $c);
 select $p, $name, $c;
 distinct;
@@ -10385,7 +10385,7 @@ LIMIT 5
 RETURN u, num_ratings","match
   $u isa user;
   $m isa movie;
-  $r (reviewer: $u, rated_media: $m) isa rated;
+  $r isa rated (reviewer: $u, rated_media: $m);
 reduce $count = count($r) groupby $u;
 sort $count desc;
 limit 5;
@@ -10461,7 +10461,7 @@ RETURN m.title
 LIMIT 5","match
   $m isa movie;
   $u isa user;
-  $r (rated_media: $m, reviewer: $u) isa rated, has timestamp $timestamp;
+  $r isa rated (rated_media: $m, reviewer: $u), has timestamp $timestamp;
   $timestamp >= 2020-01-01T00:00:00;
   $timestamp < 2020-01-02T00:00:00;
 limit 5;
@@ -10546,7 +10546,7 @@ RETURN u.id AS user, avg(r.rating) AS avg_rating
 ORDER BY avg_rating DESC
 LIMIT 3","match
   $u isa user, has user_id $uid;
-  $rel (rated_media: $m, reviewer: $u) isa rated, has rating $rating;
+  $rel isa rated (rated_media: $m, reviewer: $u), has rating $rating;
   $m isa movie;
 reduce $avg_rating = mean($rating) groupby $u, $uid;
 sort $avg_rating desc;
@@ -10560,7 +10560,7 @@ LIMIT 5
 RETURN p.name AS actor, leadingRoles","match
   $p isa person, has person_name $name;
   $m isa movie;
-  $r (actor: $p, film: $m) isa cast_for, has cast_order $order;
+  $r isa cast_for (actor: $p, film: $m), has cast_order $order;
   $order == 0;
 reduce $count = count($r) groupby $p, $name;
 sort $count desc;
