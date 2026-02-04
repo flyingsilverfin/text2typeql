@@ -91,26 +91,26 @@ pipeline/
 | gameofthrones | 381 | 11 | 392 |
 | **Total** | **4,728** | **48** | **4,776** |
 
-### synthetic-2 (gpt4o) -- Schemas converted, queries pending
+### synthetic-2 (gpt4o) -- 12/15 databases fully converted
 
-| Database | Valid Queries | Status |
-|----------|-------------|--------|
-| twitter | 502 | schema ready |
-| twitch | 576 | schema ready |
-| movies | 738 | schema ready |
-| neoflix | 923 | schema ready |
-| recommendations | 775 | schema ready |
-| companies | 966 | schema ready |
-| gameofthrones | 393 | schema ready |
-| bluesky | 135 | schema ready |
-| buzzoverflow | 592 | schema ready |
-| fincen | 614 | schema ready |
-| grandstack | 807 | schema ready |
-| network | 625 | schema ready |
-| northwind | 807 | schema ready |
-| offshoreleaks | 507 | schema ready |
-| stackoverflow2 | 307 | schema ready |
-| **Total** | **9,267** | |
+| Database | Total | Converted | Failed | Status |
+|----------|-------|-----------|--------|--------|
+| bluesky | 135 | 135 | 0 | ✓ complete |
+| buzzoverflow | 592 | 578 | 14 | ✓ complete |
+| companies | 966 | 941 | 25 | ✓ complete |
+| fincen | 614 | 584 | 30 | ✓ complete |
+| gameofthrones | 393 | 384 | 9 | ✓ complete |
+| grandstack | 807 | 793 | 14 | ✓ complete |
+| movies | 738 | 728 | 10 | ✓ complete |
+| neoflix | 923 | 913 | 10 | ✓ complete |
+| network | 625 | 613 | 12 | ✓ complete |
+| northwind | 807 | 780 | 27 | ✓ complete |
+| offshoreleaks | 507 | 493 | 14 | ✓ complete |
+| stackoverflow2 | 307 | 298 | 9 | ✓ complete |
+| recommendations | 775 | -- | -- | pending |
+| twitch | 576 | -- | -- | pending |
+| twitter | 502 | -- | -- | pending |
+| **Total** | **9,267** | **7,240** | **174** | **80%** |
 
 ### Failed Query Categories
 

@@ -4,7 +4,7 @@
 
 **Total valid queries: 502**
 
-Users, tweets, hashtags, retweets, follows. Schema shared with synthetic-1.
+Tweets, users, follows, retweets, mentions.
 
 ## Current Status
 - `queries.csv`: 0 converted queries

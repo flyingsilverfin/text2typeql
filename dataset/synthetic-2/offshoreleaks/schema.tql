@@ -10,23 +10,23 @@ define
   attribute status value string;
   attribute last_edit_timestamp value string;
   attribute internal_id value string;
-  attribute incorporation_date value string;
-  attribute struck_off_date value string;
+  attribute incorporation_date value date;
+  attribute struck_off_date value date;
   attribute jurisdiction value string;
   attribute jurisdiction_description value string;
   attribute note value string;
-  attribute closed_date value string;
+  attribute closed_date value date;
   attribute entity_type value string;
 
   # Entity-specific attributes
   attribute ibc_ruc value string;
   attribute service_provider value string;
-  attribute inactivation_date value string;
+  attribute inactivation_date value date;
   attribute original_name value string;
   attribute former_name value string;
   attribute company_type value string;
   attribute tax_stat_description value string;
-  attribute dorm_date value string;
+  attribute dorm_date value date;
   attribute company_number value string;
   attribute comments value string;
   attribute entity_number value string;
@@ -47,8 +47,8 @@ define
 
   # Relation attributes
   attribute link value string;
-  attribute start_date value string;
-  attribute end_date value string;
+  attribute start_date value date;
+  attribute end_date value date;
 
   # Entities
   entity offshore_entity,

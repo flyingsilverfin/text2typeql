@@ -25,7 +25,7 @@ Pipeline to convert Neo4j text2cypher datasets to TypeQL format for training tex
 
 Two source datasets:
 - **synthetic-1**: `datasets/synthetic_opus_demodbs/` -- 7 databases, 4,776 valid queries (4,728 converted)
-- **synthetic-2**: `datasets/synthetic_gpt4o_demodbs/` -- 15 databases, 9,267 valid queries (pending)
+- **synthetic-2**: `datasets/synthetic_gpt4o_demodbs/` -- 15 databases, 9,267 valid queries (7,240 converted, 174 failed, 1,853 pending)
 
 ## Important: Sequential Processing
 
@@ -337,23 +337,23 @@ pipeline/docs/
 | gameofthrones | 392 | 381 | 11 |
 | **Total** | **4776** | **4728** | **48** |
 
-### synthetic-2 (gpt4o) -- schemas ready, queries pending
+### synthetic-2 (gpt4o) -- 12/15 databases complete
 
 | Database | Valid Queries | Converted | Failed |
 |----------|-------------|-----------|--------|
-| twitter | 502 | 0 | 0 |
-| twitch | 576 | 0 | 0 |
-| movies | 738 | 0 | 0 |
-| neoflix | 923 | 0 | 0 |
+| bluesky | 135 | 135 | 0 |
+| buzzoverflow | 592 | 578 | 14 |
+| companies | 966 | 941 | 25 |
+| fincen | 614 | 584 | 30 |
+| gameofthrones | 393 | 384 | 9 |
+| grandstack | 807 | 793 | 14 |
+| movies | 738 | 728 | 10 |
+| neoflix | 923 | 913 | 10 |
+| network | 625 | 613 | 12 |
+| northwind | 807 | 780 | 27 |
+| offshoreleaks | 507 | 493 | 14 |
+| stackoverflow2 | 307 | 298 | 9 |
 | recommendations | 775 | 0 | 0 |
-| companies | 966 | 0 | 0 |
-| gameofthrones | 393 | 0 | 0 |
-| bluesky | 135 | 0 | 0 |
-| buzzoverflow | 592 | 0 | 0 |
-| fincen | 614 | 0 | 0 |
-| grandstack | 807 | 0 | 0 |
-| network | 625 | 0 | 0 |
-| northwind | 807 | 0 | 0 |
-| offshoreleaks | 507 | 0 | 0 |
-| stackoverflow2 | 307 | 0 | 0 |
-| **Total** | **9267** | **0** | **0** |
+| twitch | 576 | 0 | 0 |
+| twitter | 502 | 0 | 0 |
+| **Total** | **9267** | **7240** | **174** |

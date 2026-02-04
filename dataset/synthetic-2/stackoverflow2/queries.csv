@@ -1,0 +1,4389 @@
+original_index,question,cypher,typeql
+0,What are the titles of the top 5 questions with the highest view count?,"MATCH (q:Question)
+RETURN q.title
+ORDER BY q.view_count DESC
+LIMIT 5","match
+$q isa question, has view_count $vc;
+sort $vc desc;
+limit 5;
+fetch {
+  ""title"": $q.title
+};"
+1,What are the first 3 questions that have a view count between 50 and 100?,"MATCH (q:Question)
+WHERE q.view_count >= 50 AND q.view_count <= 100
+RETURN q
+ORDER BY q.creation_date
+LIMIT 3","match
+$q isa question, has view_count $vc, has creation_date $cd;
+$vc >= 50; $vc <= 100;
+sort $cd asc;
+limit 3;
+fetch {
+  ""question"": $q
+};"
+2,List the top 3 tags that have been used the most in questions.,"MATCH (:Question)-[:TAGGED]->(t:Tag)
+RETURN t.name AS tag, COUNT(*) AS usage_count
+ORDER BY usage_count DESC
+LIMIT 3","match
+$q isa question;
+$t isa tag;
+tagged (question: $q, tag: $t);
+$t has name $name;
+reduce $usage_count = count($q) groupby $t, $name;
+sort $usage_count desc;
+limit 3;
+fetch { ""tag"": $name, ""usage_count"": $usage_count };"
+3,Who provided the answer with the link 'https://stackoverflow.com/a/69272967'?,"MATCH (u:User)-[:PROVIDED]->(a:Answer {link: 'https://stackoverflow.com/a/69272967'})
+RETURN u.display_name","match
+$u isa user;
+$a isa answer, has answer_link ""https://stackoverflow.com/a/69272967"";
+provided (provider: $u, answer: $a);
+fetch {
+  ""display_name"": $u.display_name
+};"
+4,Find the first 3 users who have commented on questions with more than 100 views.,"MATCH (q:Question)-[:COMMENTED_ON]-(c:Comment)<-[:COMMENTED]-(u:User)
+WHERE q.view_count > 100
+RETURN DISTINCT u.display_name
+LIMIT 3","match
+$q isa question, has view_count $vc;
+$vc > 100;
+commented_on (comment: $c, question: $q);
+commented (commenter: $u, comment: $c);
+select $u;
+distinct;
+limit 3;
+fetch { ""display_name"": $u.display_name };"
+5,Which questions have been answered by the user with the uuid 16922964? Limit to the top 3 questions.,"MATCH (u:User {uuid: 16922964})-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q:Question)
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date DESC
+LIMIT 3","match
+$u isa user, has user_uuid 16922964;
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+$q has creation_date $cd;
+sort $cd desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+6,Which users have provided answers to the question with the title 'even after null check why I am getting null value in neo4j?' Limit to the top 3.,"MATCH (q:Question {title: 'even after null check why I am getting null value in neo4j?'})<-[:ANSWERED]-(a:Answer)<-[:PROVIDED]-(u:User)
+RETURN u.display_name AS user
+LIMIT 3","match
+$q isa question, has title ""even after null check why I am getting null value in neo4j?"";
+answered (answer: $a, question: $q);
+provided (provider: $u, answer: $a);
+limit 3;
+fetch { ""user"": $u.display_name };"
+7,What are the top 5 questions with the lowest view count?,"MATCH (q:Question)
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count ASC
+LIMIT 5","match
+$q isa question, has view_count $vc;
+sort $vc asc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+8,What are the top 5 most recent questions asked in the system?,"MATCH (q:Question)
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date DESC
+LIMIT 5","match
+$q isa question, has creation_date $cd;
+sort $cd desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+9,List the top 3 comments with a score of 3.,"MATCH (c:Comment)
+WHERE c.score = 3
+RETURN c
+ORDER BY c.score DESC
+LIMIT 3","match
+$c isa comment, has score 3;
+limit 3;
+fetch {
+  ""comment_uuid"": $c.comment_uuid,
+  ""comment_link"": $c.comment_link,
+  ""score"": $c.score
+};"
+10,List the first 3 questions that were asked before the year 2021.,"MATCH (q:Question)
+WHERE q.creation_date < 1609459200 // Timestamp for January 1, 2021
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date ASC
+LIMIT 3","match
+$q isa question, has creation_date $cd;
+$cd < 1609459200;
+sort $cd asc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+11,Which questions have been commented on by the user with the display name 'DoubleMiP'? Limit to the top 3.,"MATCH (u:User {display_name: 'DoubleMiP'})-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q:Question)
+RETURN q.title, q.link
+LIMIT 3","match
+  $u isa user, has display_name ""DoubleMiP"";
+  commented (commenter: $u, comment: $c);
+  commented_on (comment: $c, question: $q);
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link
+};"
+12,Who are the top 3 users by the number of questions they have asked?,"MATCH (u:User)-[:ASKED]->(q:Question)
+WITH u, COUNT(q) AS question_count
+ORDER BY question_count DESC
+LIMIT 3
+RETURN u.display_name AS user, question_count","match
+$u isa user;
+asked (asker: $u, question: $q);
+reduce $count = count($q) groupby $u;
+sort $count desc;
+limit 3;
+fetch { ""user"": $u.display_name, ""question_count"": $count };"
+13,Find the first 3 questions that have more than 2 answers.,"MATCH (q:Question)
+WHERE q.answer_count > 2
+RETURN q
+ORDER BY q.creation_date ASC
+LIMIT 3","match
+$q isa question, has answer_count $ac, has creation_date $cd;
+$ac > 2;
+sort $cd asc;
+limit 3;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""title"": $q.title,
+  ""answer_count"": $ac,
+  ""creation_date"": $cd
+};"
+14,Which questions have been tagged with 'neo4j'?,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+RETURN q.title, q.link","match
+$q isa question;
+$t isa tag, has name ""neo4j"";
+tagged (question: $q, tag: $t);
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link
+};"
+15,What are the body markdowns of the top 3 highest scoring answers?,"MATCH (a:Answer)
+WITH a
+ORDER BY a.score DESC
+LIMIT 3
+RETURN a.body_markdown","match
+$a isa answer, has score $s;
+sort $s desc;
+limit 3;
+fetch {
+  ""body_markdown"": $a.body_markdown
+};"
+16,Who commented on the question titled 'Neo4j- APOC trigger fires without any reason'?,"MATCH (q:Question {title: 'Neo4j- APOC trigger fires without any reason'})<-[:COMMENTED_ON]-(c:Comment)<-[:COMMENTED]-(u:User)
+RETURN u.display_name","match
+$q isa question, has title ""Neo4j- APOC trigger fires without any reason"";
+commented_on (comment: $c, question: $q);
+commented (commenter: $u, comment: $c);
+fetch {
+  ""display_name"": $u.display_name
+};"
+17,List the top 3 most viewed questions tagged with 'neo4j'.,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$q isa question;
+$t isa tag, has name ""neo4j"";
+tagged (question: $q, tag: $t);
+$q has view_count $vc;
+sort $vc desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+18,List the UUIDs of all comments made on the question titled 'Specify a certain column as id values in Neo4j Spark connector'.,"MATCH (q:Question {title: 'Specify a certain column as id values in Neo4j Spark connector'})<-[:COMMENTED_ON]-(c:Comment)
+RETURN c.uuid","match
+$q isa question, has title ""Specify a certain column as id values in Neo4j Spark connector"";
+$c isa comment;
+commented_on (comment: $c, question: $q);
+fetch {
+  ""uuid"": $c.comment_uuid
+};"
+19,Who has provided the most comments across all questions?,"MATCH (u:User)-[:COMMENTED]->(c:Comment)
+RETURN u.display_name, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 1","match
+$u isa user;
+commented (commenter: $u, comment: $c);
+reduce $count = count($c) groupby $u;
+sort $count desc;
+limit 1;
+fetch { ""display_name"": $u.display_name, ""comment_count"": $count };"
+20,Find the top 3 answers with the highest score.,"MATCH (a:Answer)
+RETURN a.link, a.title, a.score
+ORDER BY a.score DESC
+LIMIT 3","match $a isa answer, has score $s;
+sort $s desc;
+limit 3;
+fetch {
+  ""link"": $a.answer_link,
+  ""title"": $a.title,
+  ""score"": $s
+};"
+21,Display the creation dates of the top 3 questions with the most comments.,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+RETURN q.creation_date","match
+$q isa question;
+commented_on (comment: $c, question: $q);
+reduce $count = count($c) groupby $q;
+sort $count desc;
+limit 3;
+fetch { ""creation_date"": $q.creation_date };"
+22,List all unique tags used in the dataset.,"MATCH (t:Tag)
+RETURN DISTINCT t.name AS tag_name","match
+$t isa tag;
+fetch {
+  ""tag_name"": $t.name
+};"
+23,Which tags are linked to the most viewed questions?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH t, q
+ORDER BY q.view_count DESC
+LIMIT 1
+RETURN t.name AS tag, q.view_count AS view_count","match
+$q isa question, has view_count $vc;
+$t isa tag, has name $name;
+tagged (question: $q, tag: $t);
+sort $vc desc;
+limit 1;
+fetch { ""tag"": $name, ""view_count"": $vc };"
+24,What are the links to the accepted answers for questions asked by 'Mohammed Faraz ali'?,"MATCH (u:User {display_name: 'Mohammed Faraz ali'})-[:ASKED]->(q:Question)-[:ANSWERED]-(a:Answer {is_accepted: true})
+RETURN a.link","match
+$u isa user, has display_name ""Mohammed Faraz ali"";
+asked (asker: $u, question: $q);
+answered (answer: $a, question: $q);
+$a has is_accepted true;
+fetch { ""link"": $a.answer_link };"
+25,List the top 3 most viewed questions that have no answers.,"MATCH (q:Question)
+WHERE q.answer_count = 0
+RETURN q.title, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$q isa question, has answer_count 0, has view_count $vc;
+sort $vc desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""view_count"": $vc
+};"
+26,Which user has the highest average score on their provided answers?,"MATCH (u:User)-[:PROVIDED]->(a:Answer)
+WITH u, avg(a.score) AS avg_score
+ORDER BY avg_score DESC
+LIMIT 1
+RETURN u.display_name AS user, avg_score","match
+$u isa user;
+provided (provider: $u, answer: $a);
+$a has score $s;
+reduce $avg_score = mean($s) groupby $u;
+sort $avg_score desc;
+limit 1;
+fetch { ""user"": $u.display_name, ""avg_score"": $avg_score };"
+27,How many users have commented on the question with the title 'Neo4j- APOC trigger fires without any reason'?,"MATCH (q:Question {title: 'Neo4j- APOC trigger fires without any reason'})<-[:COMMENTED_ON]-(c:Comment)<-[:COMMENTED]-(u:User)
+RETURN COUNT(DISTINCT u) AS numberOfUsers","match
+$q isa question, has title ""Neo4j- APOC trigger fires without any reason"";
+commented_on (comment: $c, question: $q);
+commented (commenter: $u, comment: $c);
+select $u;
+distinct;
+reduce $count = count;"
+28,List the questions asked in 2021 along with their view counts.,"MATCH (q:Question)
+WHERE q.creation_date >= 1609459200 AND q.creation_date < 1640995200
+RETURN q.title AS question_title, q.view_count AS view_count","match
+$q isa question, has creation_date $cd;
+$cd >= 1609459200; $cd < 1640995200;
+fetch {
+  ""question_title"": $q.title,
+  ""view_count"": $q.view_count
+};"
+29,Which questions have more than one answer?,"MATCH (q:Question)
+WHERE q.answer_count > 1
+RETURN q.title, q.link, q.answer_count","match
+$q isa question, has answer_count $ac;
+$ac > 1;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""answer_count"": $ac
+};"
+30,What are the top 3 most commented on questions?,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+RETURN q.title AS question_title, q.link AS question_link, comment_count","match
+$q isa question;
+$c isa comment;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""comment_count"": $comment_count
+};"
+31,Can you list all tags associated with questions asked by the user 'Anu'?,"MATCH (u:User {display_name: 'Anu'})-[:ASKED]->(q:Question)-[:TAGGED]->(t:Tag)
+RETURN t.name AS tag_name","match
+$u isa user, has display_name ""Anu"";
+asked (asker: $u, question: $q);
+tagged (question: $q, tag: $t);
+fetch { ""tag_name"": $t.name };"
+32,Which user provided the answer to the question titled 'Create graph from recursive JSON data using apoc.load.json and use UNWIND and FOREACH for setting property'?,"MATCH (q:Question {title: 'Create graph from recursive JSON data using apoc.load.json and use UNWIND and FOREACH for setting property'})
+MATCH (a:Answer)-[:ANSWERED]->(q)
+MATCH (u:User)-[:PROVIDED]->(a)
+RETURN u.display_name","match
+$q isa question, has title ""Create graph from recursive JSON data using apoc.load.json and use UNWIND and FOREACH for setting property"";
+answered (answer: $a, question: $q);
+provided (provider: $u, answer: $a);
+fetch { ""display_name"": $u.display_name };"
+33,What are the UUIDs of the answers that are marked as accepted?,"MATCH (a:Answer)
+WHERE a.is_accepted = true
+RETURN a.uuid","match
+$a isa answer, has is_accepted true, has answer_uuid $uuid;
+fetch {
+  ""uuid"": $uuid
+};"
+34,List the top 3 users by the number of questions they have asked.,"MATCH (u:User)-[:ASKED]->(q:Question)
+WITH u, COUNT(q) AS question_count
+ORDER BY question_count DESC
+LIMIT 3
+RETURN u.display_name AS user, question_count","match
+$u isa user;
+asked (asker: $u, question: $q);
+reduce $count = count($q) groupby $u;
+sort $count desc;
+limit 3;
+fetch {
+  ""user"": $u.display_name,
+  ""question_count"": $count
+};"
+35,What are the top 5 answers that are marked as accepted?,"MATCH (a:Answer)
+WHERE a.is_accepted = true
+RETURN a
+ORDER BY a.score DESC
+LIMIT 5","match
+$a isa answer, has is_accepted true, has score $s;
+sort $s desc;
+limit 5;
+fetch {
+  ""answer_uuid"": $a.answer_uuid,
+  ""answer_link"": $a.answer_link,
+  ""title"": $a.title,
+  ""is_accepted"": $a.is_accepted,
+  ""body_markdown"": $a.body_markdown,
+  ""score"": $a.score
+};"
+36,What are the top 5 most commented-on questions and their titles?,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS commentCount
+ORDER BY commentCount DESC
+LIMIT 5
+RETURN q.title AS title, commentCount","match
+$q isa question;
+commented_on (comment: $c, question: $q);
+reduce $count = count($c) groupby $q;
+sort $count desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""commentCount"": $count
+};"
+37,List the top 3 most viewed questions tagged with 'neo4j'.,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$q isa question, has question_link $link;
+$t isa tag, has name ""neo4j"";
+tagged (question: $q, tag: $t);
+$q has view_count $vc;
+sort $vc desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $link,
+  ""view_count"": $vc
+};"
+38,What are the top 5 most tagged questions and their view counts?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(t) AS tagCount
+ORDER BY tagCount DESC, q.view_count DESC
+LIMIT 5
+RETURN q.title AS question_title, q.view_count AS view_count, tagCount","match
+$q isa question, has view_count $view_count, has title $title;
+tagged (question: $q, tag: $t);
+reduce $tagCount = count($t) groupby $q, $view_count, $title;
+sort $tagCount desc, $view_count desc;
+limit 5;
+fetch {
+  ""question_title"": $title,
+  ""view_count"": $view_count,
+  ""tag_count"": $tagCount
+};"
+39,List the 3 users who have asked the questions with the highest view counts.,"MATCH (u:User)-[:ASKED]->(q:Question)
+RETURN u.display_name, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$u isa user;
+$q isa question, has view_count $vc;
+asked (asker: $u, question: $q);
+sort $vc desc;
+limit 3;
+fetch {
+  ""display_name"": $u.display_name,
+  ""view_count"": $vc
+};"
+40,What are the top 3 questions with the highest scores of their unaccepted answers?,"MATCH (q:Question)<-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = false
+WITH q, a
+ORDER BY a.score DESC
+LIMIT 3
+RETURN q.title AS question_title, q.link AS question_link, a.score AS answer_score","match
+$q isa question;
+$a isa answer, has is_accepted false, has score $s;
+answered (answer: $a, question: $q);
+sort $s desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""answer_score"": $s
+};"
+41,List the top 5 most recent questions with more than one answer.,"MATCH (q:Question)
+WHERE q.answer_count > 1
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date DESC
+LIMIT 5","match
+$q isa question, has answer_count $ac, has creation_date $cd;
+$ac > 1;
+sort $cd desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+42,Who provided answers to the top 3 questions with the most tags?,"// Step 1: Find the top 3 questions with the most tags
+MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(t) AS tagCount
+ORDER BY tagCount DESC
+LIMIT 3
+
+// Step 2: Find the users who provided answers to these questions
+MATCH (u:User)-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q)
+RETURN DISTINCT u.display_name AS User, q.title AS QuestionTitle","match
+$q isa question, has title $qt;
+tagged (question: $q, tag: $t);
+reduce $tag_count = count($t) groupby $q, $qt;
+sort $tag_count desc;
+limit 3;
+match
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+$u has display_name $udn;
+select $udn, $qt;
+distinct;
+fetch { ""User"": $udn, ""QuestionTitle"": $qt };"
+43,List the top 3 most tagged questions without an accepted answer.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WHERE q.accepted_answer_id IS NULL
+WITH q, COUNT(t) AS tagCount
+ORDER BY tagCount DESC, q.view_count DESC
+LIMIT 3
+RETURN q.title AS question_title, q.link AS question_link, tagCount","match
+$q isa question;
+tagged (question: $q, tag: $t);
+not { $q has accepted_answer_id $aaid; };
+reduce $tagCount = count($t) groupby $q;
+sort $tagCount desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""tagCount"": $tagCount
+};"
+44,Which 3 questions have the most comments and what are their accepted answer ids?,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+RETURN q.title AS question_title, q.accepted_answer_id AS accepted_answer_id, comment_count","match
+$q isa question;
+$c isa comment;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""accepted_answer_id"": $q.accepted_answer_id,
+  ""comment_count"": $comment_count
+};"
+45,List the top 3 users who provided the least answers.,"MATCH (u:User)-[:PROVIDED]->(a:Answer)
+WITH u, COUNT(a) AS answer_count
+ORDER BY answer_count ASC
+LIMIT 3
+RETURN u.display_name AS user, answer_count","match
+$u isa user;
+provided (provider: $u, answer: $a);
+reduce $answer_count = count($a) groupby $u;
+sort $answer_count asc;
+limit 3;
+fetch {
+  ""user"": $u.display_name,
+  ""answer_count"": $answer_count
+};"
+46,What are the top 3 questions with the most views and their titles?,"MATCH (q:Question)
+RETURN q.title, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$q isa question, has view_count $v;
+sort $v desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""view_count"": $v
+};"
+47,List the top 5 questions with the most comments and their associated tags.,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 5
+MATCH (q)-[:TAGGED]->(t:Tag)
+RETURN q.title AS question_title, q.link AS question_link, comment_count, COLLECT(t.name) AS tags","match
+$q isa question;
+$c isa comment;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 5;
+match
+tagged (question: $q, tag: $t);
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""comment_count"": $comment_count,
+  ""tags"": [ $t.name ]
+};"
+48,Who are the top 3 users with the most provided answers that were not accepted?,"MATCH (u:User)-[:PROVIDED]->(a:Answer)
+WHERE a.is_accepted = false
+WITH u, COUNT(a) AS answer_count
+ORDER BY answer_count DESC
+LIMIT 3
+RETURN u.display_name AS user, answer_count","match
+$u isa user;
+$a isa answer, has is_accepted false;
+provided (provider: $u, answer: $a);
+reduce $answer_count = count($a) groupby $u;
+sort $answer_count desc;
+limit 3;
+fetch {
+  ""user"": $u.display_name,
+  ""answer_count"": $answer_count
+};"
+49,What are the top 3 most tagged questions and their answer counts?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(t) AS tagCount
+ORDER BY tagCount DESC
+LIMIT 3
+RETURN q.title AS questionTitle, q.answer_count AS answerCount, tagCount","match
+$q isa question;
+tagged (question: $q, tag: $t);
+reduce $tagCount = count($t) groupby $q;
+sort $tagCount desc;
+limit 3;
+fetch {
+  ""questionTitle"": $q.title,
+  ""answerCount"": $q.answer_count,
+  ""tagCount"": $tagCount
+};"
+50,Which users have asked more than 2 questions? Display the first 5.,"MATCH (u:User)-[:ASKED]->(q:Question)
+WITH u, COUNT(q) AS question_count
+WHERE question_count > 2
+RETURN u.display_name, question_count
+LIMIT 5","match
+$u isa user;
+asked (asker: $u, question: $q);
+reduce $question_count = count($q) groupby $u;
+match $question_count > 2;
+limit 5;
+fetch {
+  ""display_name"": $u.display_name,
+  ""question_count"": $question_count
+};"
+51,"For the top 3 questions with the least views, who are the users that asked them?","MATCH (q:Question)
+WITH q
+ORDER BY q.view_count ASC
+LIMIT 3
+MATCH (u:User)-[:ASKED]->(q)
+RETURN q.title AS question_title, q.view_count AS view_count, u.display_name AS user_name","match
+$q isa question, has view_count $vc, has title $t;
+asked (asker: $u, question: $q);
+$u has display_name $dn;
+sort $vc asc;
+limit 3;
+fetch {
+  ""question_title"": $t,
+  ""view_count"": $vc,
+  ""user_name"": $dn
+};"
+52,Identify the 3 answers with the lowest scores provided to the most viewed questions.,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)
+WITH q, a
+ORDER BY q.view_count DESC
+LIMIT 1
+WITH a
+ORDER BY a.score ASC
+LIMIT 3
+RETURN a.link AS answer_link, a.title AS answer_title, a.score AS answer_score","match
+$q isa question, has view_count $vc;
+answered (question: $q);
+reduce $max_vc = max($vc);
+match
+$q2 isa question, has view_count $vc2;
+$vc2 == $max_vc;
+answered (question: $q2, answer: $a);
+$a has answer_link $link, has title $title, has score $s;
+sort $s asc;
+limit 3;
+fetch { ""answer_link"": $link, ""answer_title"": $title, ""answer_score"": $s };"
+53,List the top 3 questions with the least number of answers but with at least one accepted answer.,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true
+WITH q, COUNT(a) AS answer_count
+WHERE q.answer_count > 0
+RETURN q.title, q.link, q.answer_count
+ORDER BY q.answer_count ASC
+LIMIT 3","match
+$q isa question, has answer_count $ac;
+answered (question: $q, answer: $a);
+$a has is_accepted true;
+reduce $min_ac = min($ac) groupby $q;
+sort $min_ac asc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""answer_count"": $min_ac
+};"
+54,Who provided the most answers to the questions with the most comments?,"// Step 1: Find the question(s) with the most comments
+MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 1
+
+// Step 2: Find the user(s) who provided the most answers to these questions
+MATCH (q)<-[:ANSWERED]-(a:Answer)<-[:PROVIDED]-(u:User)
+WITH u, COUNT(a) AS answer_count
+ORDER BY answer_count DESC
+LIMIT 1
+
+// Step 3: Return the user(s) who provided the most answers
+RETURN u.display_name AS user, answer_count","match
+$q isa question;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 1;
+match
+answered (answer: $a, question: $q);
+provided (provider: $u, answer: $a);
+reduce $answer_count = count($a) groupby $u;
+sort $answer_count desc;
+limit 1;
+fetch { ""user"": $u.display_name, ""answer_count"": $answer_count };"
+55,List the 3 most recent answers provided to questions tagged with 'neo4j'.,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+MATCH (a:Answer)-[:ANSWERED]->(q)
+RETURN a.link, a.title, a.body_markdown, a.uuid
+ORDER BY a.uuid DESC
+LIMIT 3","match
+$t isa tag, has name ""neo4j"";
+$q isa question;
+tagged (question: $q, tag: $t);
+$a isa answer, has answer_uuid $uuid;
+answered (answer: $a, question: $q);
+sort $uuid desc;
+limit 3;
+fetch {
+  ""link"": $a.answer_link,
+  ""title"": $a.title,
+  ""body_markdown"": $a.body_markdown,
+  ""uuid"": $uuid
+};"
+56,Which tags are associated with the question titled 'Create graph from recursive JSON data using apoc.load.json'?,"MATCH (q:Question {title: 'Create graph from recursive JSON data using apoc.load.json'})-[:TAGGED]->(t:Tag)
+RETURN t.name AS tag_name","match
+$q isa question, has title ""Create graph from recursive JSON data using apoc.load.json"";
+tagged (question: $q, tag: $t);
+fetch {
+  ""tag_name"": $t.name
+};"
+57,What are the top 5 questions with the highest number of answers?,"MATCH (q:Question)
+RETURN q.title, q.link, q.answer_count
+ORDER BY q.answer_count DESC
+LIMIT 5","match
+$q isa question, has answer_count $ac;
+sort $ac desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""answer_count"": $ac
+};"
+58,Find the top 3 users who have provided the most answers.,"MATCH (u:User)-[:PROVIDED]->(a:Answer)
+WITH u, COUNT(a) AS answer_count
+ORDER BY answer_count DESC
+LIMIT 3
+RETURN u.display_name AS user, answer_count","match
+$u isa user;
+provided (provider: $u, answer: $a);
+reduce $answer_count = count($a) groupby $u;
+sort $answer_count desc;
+limit 3;
+fetch {
+  ""user"": $u.display_name,
+  ""answer_count"": $answer_count
+};"
+59,Which user has commented the most number of times? Show the top 3 users.,"MATCH (u:User)-[:COMMENTED]->(c:Comment)
+WITH u, COUNT(c) AS commentCount
+ORDER BY commentCount DESC
+LIMIT 3
+RETURN u.display_name AS user, commentCount","match
+$u isa user;
+$c isa comment;
+commented (commenter: $u, comment: $c);
+reduce $commentCount = count($c) groupby $u;
+sort $commentCount desc;
+limit 3;
+fetch {
+  ""user"": $u.display_name,
+  ""commentCount"": $commentCount
+};"
+60,List the top 5 questions that have an accepted answer.,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true
+RETURN q.title, q.link, q.creation_date, q.view_count, q.answer_count
+ORDER BY q.view_count DESC
+LIMIT 5","match
+$q isa question;
+$a isa answer, has is_accepted true;
+answered (question: $q, answer: $a);
+$q has view_count $vc;
+sort $vc desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $q.creation_date,
+  ""view_count"": $q.view_count,
+  ""answer_count"": $q.answer_count
+};"
+61,What are the top 3 highest scoring comments made on questions related to the tag 'cypher'?,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'cypher'})
+MATCH (c:Comment)-[:COMMENTED_ON]->(q)
+RETURN c.link, c.score
+ORDER BY c.score DESC
+LIMIT 3","match
+$t isa tag, has name ""cypher"";
+tagged (question: $q, tag: $t);
+$c isa comment;
+commented_on (comment: $c, question: $q);
+$c has score $score;
+sort $score desc;
+limit 3;
+fetch {
+  ""link"": $c.comment_link,
+  ""score"": $score
+};"
+62,Find the first 3 questions with no answers.,"MATCH (q:Question)
+WHERE q.answer_count = 0
+RETURN q
+ORDER BY q.creation_date ASC
+LIMIT 3","match
+$q isa question, has answer_count 0, has creation_date $cd;
+sort $cd asc;
+limit 3;
+fetch {
+  ""question"": {
+    ""question_uuid"": $q.question_uuid,
+    ""title"": $q.title,
+    ""creation_date"": $cd
+  }
+};"
+63,Who asked the question with the title 'Neo.ClientError.Statement.ExternalResourceFailed error on loading CSV file from local'?,"MATCH (q:Question {title: 'Neo.ClientError.Statement.ExternalResourceFailed error on loading CSV file from local'})&lt;-[:ASKED]-(u:User)
+RETURN u.display_name","match
+$q isa question, has title ""Neo.ClientError.Statement.ExternalResourceFailed error on loading CSV file from local"";
+asked (asker: $u, question: $q);
+fetch {
+  ""display_name"": $u.display_name
+};"
+64,What are the top 3 questions with the highest view count that were asked by the user with the display name 'schernichkin'?,"MATCH (u:User {display_name: 'schernichkin'})-[:ASKED]->(q:Question)
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$u isa user, has display_name ""schernichkin"";
+asked (asker: $u, question: $q);
+$q has view_count $vc;
+sort $vc desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+65,List the top 5 users who have provided answers to the most commented-on questions.,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS commentCount
+ORDER BY commentCount DESC
+LIMIT 5
+
+MATCH (q)<-[:ANSWERED]-(a:Answer)<-[:PROVIDED]-(u:User)
+RETURN u.display_name AS user, COUNT(a) AS answerCount
+ORDER BY answerCount DESC
+LIMIT 5","match
+$q isa question;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 5;
+match
+answered (answer: $a, question: $q);
+provided (provider: $u, answer: $a);
+reduce $answer_count = count($a) groupby $u;
+sort $answer_count desc;
+limit 5;
+fetch { ""user"": $u.display_name, ""answer_count"": $answer_count };"
+66,Which questions have the most tags and what are their titles?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(t) AS tag_count
+ORDER BY tag_count DESC
+LIMIT 1
+RETURN q.title AS question_title, tag_count","match
+$q isa question;
+tagged (question: $q, tag: $t);
+reduce $tag_count = count($t) groupby $q;
+sort $tag_count desc;
+limit 1;
+fetch { ""question_title"": $q.title, ""tag_count"": $tag_count };"
+67,List the 3 most recent tags applied to questions with at least one answer.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WHERE q.answer_count > 0
+WITH t, q
+ORDER BY q.creation_date DESC
+RETURN t.name AS tag, q.creation_date AS question_creation_date
+LIMIT 3","match
+$q isa question, has answer_count $ac, has creation_date $cd;
+$ac > 0;
+$t isa tag;
+tagged (question: $q, tag: $t);
+sort $cd desc;
+limit 3;
+fetch {
+  ""tag"": $t.name,
+  ""question_creation_date"": $cd
+};"
+68,What are the top 3 most viewed questions and their associated users?,"MATCH (q:Question)<-[:ASKED]-(u:User)
+RETURN q.title AS question_title, q.view_count AS views, u.display_name AS user
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$q isa question;
+$u isa user;
+asked (asker: $u, question: $q);
+$q has view_count $vc;
+sort $vc desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""views"": $vc,
+  ""user"": $u.display_name
+};"
+69,List the top 5 questions with the highest scores and their accepted answer links.,"MATCH (q:Question)<-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true
+WITH q, a
+ORDER BY a.score DESC
+LIMIT 5
+RETURN q.title AS question_title, q.link AS question_link, a.link AS accepted_answer_link","match
+  $q isa question;
+  $a isa answer, has is_accepted true, has score $s;
+  answered (answer: $a, question: $q);
+sort $s desc;
+limit 5;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""accepted_answer_link"": $a.answer_link
+};"
+70,Who are the top 3 users by the number of questions they have provided answers to?,"MATCH (u:User)-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q:Question)
+WITH u, COUNT(q) AS question_count
+ORDER BY question_count DESC
+LIMIT 3
+RETURN u.display_name AS user, question_count","match
+$u isa user;
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+reduce $question_count = count($q) groupby $u;
+sort $question_count desc;
+limit 3;
+fetch {
+  ""user"": $u.display_name,
+  ""question_count"": $question_count
+};"
+71,What are the top 3 questions with the most answers and their accepted answer ids?,"MATCH (q:Question)
+WITH q, q.answer_count AS answerCount
+ORDER BY answerCount DESC
+LIMIT 3
+RETURN q.title AS questionTitle, q.answer_count AS answerCount, q.accepted_answer_id AS acceptedAnswerId","match
+$q isa question, has answer_count $ac;
+sort $ac desc;
+limit 3;
+fetch {
+  ""questionTitle"": $q.title,
+  ""answerCount"": $ac,
+  ""acceptedAnswerId"": $q.accepted_answer_id
+};"
+72,Which questions have been tagged with the tag named 'neo4j'? Limit to the top 5 questions.,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+RETURN q
+ORDER BY q.view_count DESC
+LIMIT 5","match
+$q isa question, has view_count $vc;
+$t isa tag, has name ""neo4j"";
+tagged (question: $q, tag: $t);
+sort $vc desc;
+limit 5;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""title"": $q.title,
+  ""view_count"": $q.view_count
+};"
+73,Find all the questions asked by 'schernichkin' with more than 100 views.,"MATCH (u:User {display_name: 'schernichkin'})-[:ASKED]->(q:Question)
+WHERE q.view_count > 100
+RETURN q.title, q.link, q.view_count","match
+$u isa user, has display_name ""schernichkin"";
+$q isa question, has view_count $vc;
+$vc > 100;
+asked (asker: $u, question: $q);
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+74,What are the top 3 questions asked by users with more than 1000 total answers provided?,"MATCH (u:User)-[:PROVIDED]->(a:Answer)
+WITH u, COUNT(a) AS total_answers
+WHERE total_answers > 1000
+MATCH (u)-[:ASKED]->(q:Question)
+RETURN q.title, q.link, q.creation_date, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$u isa user;
+provided (provider: $u, answer: $a);
+reduce $total_answers = count($a) groupby $u;
+match
+$total_answers > 1000;
+asked (asker: $u, question: $q);
+$q has view_count $vc;
+sort $vc desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $q.creation_date,
+  ""view_count"": $vc
+};"
+75,Identify the top 3 users by the number of answers provided.,"MATCH (u:User)-[:PROVIDED]->(a:Answer)
+WITH u, COUNT(a) AS answer_count
+ORDER BY answer_count DESC
+LIMIT 3
+RETURN u.display_name AS user, answer_count","match
+$u isa user;
+provided (provider: $u, answer: $a);
+reduce $answer_count = count($a) groupby $u;
+sort $answer_count desc;
+limit 3;
+fetch {
+  ""user"": $u.display_name,
+  ""answer_count"": $answer_count
+};"
+76,Retrieve the top 3 questions with the most answers during the year 2020.,"MATCH (q:Question)
+WHERE q.creation_date >= 1577836800 AND q.creation_date < 1609459200 // Timestamps for the year 2020
+RETURN q.title, q.link, q.answer_count
+ORDER BY q.answer_count DESC
+LIMIT 3","match
+$q isa question,
+    has creation_date $cd,
+    has answer_count $ac;
+$cd >= 1577836800;
+$cd < 1609459200;
+sort $ac desc;
+limit 3;
+fetch {
+    ""title"": $q.title,
+    ""link"": $q.question_link,
+    ""answer_count"": $ac
+};"
+77,Show the first 5 questions where the accepted answer was provided by a user who has answered more than 50 questions.,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)-[:PROVIDED]-(u:User)
+WHERE a.is_accepted = true
+WITH u, q, COUNT(a) AS answer_count
+WHERE answer_count > 50
+RETURN q.link, q.title, q.creation_date
+ORDER BY q.creation_date
+LIMIT 5","with fun answer_count($u: user) -> integer:
+  match provided (provider: $u, answer: $a);
+  return count;
+match
+$q isa question;
+answered (answer: $a, question: $q);
+$a has is_accepted true;
+provided (provider: $u, answer: $a);
+let $cnt = answer_count($u);
+$cnt > 50;
+$q has creation_date $cd;
+sort $cd;
+limit 5;
+fetch {
+  ""link"": $q.question_link,
+  ""title"": $q.title,
+  ""creation_date"": $cd
+};"
+78,List the top 3 answers with the lowest scores.,"MATCH (a:Answer)
+WITH a
+ORDER BY a.score ASC
+LIMIT 3
+RETURN a.link, a.title, a.score","match
+$a isa answer, has score $s;
+sort $s asc;
+limit 3;
+fetch {
+  ""link"": $a.answer_link,
+  ""title"": $a.title,
+  ""score"": $s
+};"
+79,Which 5 questions have the most comments and are tagged with 'neo4j'?,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+MATCH (c:Comment)-[:COMMENTED_ON]->(q)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 5
+RETURN q.title AS question_title, q.link AS question_link, comment_count","match
+$q isa question;
+$t isa tag, has name ""neo4j"";
+tagged (question: $q, tag: $t);
+$c isa comment;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 5;
+fetch { ""question_title"": $q.title, ""question_link"": $q.question_link, ""comment_count"": $comment_count };"
+80,Display the top 3 most active users in terms of asking questions.,"MATCH (u:User)-[:ASKED]->(q:Question)
+WITH u, COUNT(q) AS question_count
+ORDER BY question_count DESC
+LIMIT 3
+RETURN u.display_name AS user, question_count","match
+$u isa user;
+asked (asker: $u, question: $q);
+reduce $question_count = count($q) groupby $u;
+sort $question_count desc;
+limit 3;
+fetch {
+  ""user"": $u.display_name,
+  ""question_count"": $question_count
+};"
+81,What are the first 5 questions with the most unique tags?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(DISTINCT t) AS tag_count
+ORDER BY tag_count DESC
+LIMIT 5
+RETURN q.title AS question_title, tag_count","match
+$q isa question;
+tagged (question: $q, tag: $t);
+reduce $tag_count = count($t) groupby $q;
+sort $tag_count desc;
+limit 5;
+fetch {
+  ""question_title"": $q.title,
+  ""tag_count"": $tag_count
+};"
+82,Retrieve the top 3 oldest answers in the database.,"MATCH (a:Answer)
+RETURN a
+ORDER BY a.uuid ASC
+LIMIT 3","match
+$a isa answer, has answer_uuid $uuid;
+sort $uuid asc;
+limit 3;
+fetch {
+  ""a"": { ""answer_uuid"": $a.answer_uuid, ""answer_link"": $a.answer_link, ""title"": $a.title, ""is_accepted"": $a.is_accepted, ""body_markdown"": $a.body_markdown, ""score"": $a.score }
+};"
+83,What are the first 5 questions with the least views and no comments?,"MATCH (q:Question)
+WHERE NOT (q)<-[:COMMENTED_ON]-(:Comment)
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count ASC
+LIMIT 5","match
+$q isa question;
+not { commented_on (comment: $c, question: $q); };
+$q has view_count $vc;
+sort $vc asc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+84,Show the first 5 questions that have been tagged more than once.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(t) AS tagCount
+WHERE tagCount > 1
+RETURN q.link, q.title, q.creation_date, q.view_count, q.answer_count
+ORDER BY q.creation_date
+LIMIT 5","match
+$q isa question;
+tagged (question: $q, tag: $t);
+reduce $tag_count = count($t) groupby $q;
+match $tag_count > 1;
+$q has creation_date $cd;
+sort $cd;
+limit 5;
+fetch {
+  ""link"": $q.question_link,
+  ""title"": $q.title,
+  ""creation_date"": $cd,
+  ""view_count"": $q.view_count,
+  ""answer_count"": $q.answer_count
+};"
+85,Which 5 answers were provided by users who have never asked a question?,"MATCH (u:User)-[:PROVIDED]->(a:Answer)
+WHERE NOT (u)-[:ASKED]->(:Question)
+RETURN a
+ORDER BY a.uuid
+LIMIT 5","match
+$u isa user;
+$a isa answer, has answer_uuid $uuid;
+provided (provider: $u, answer: $a);
+not { asked (asker: $u); };
+sort $uuid;
+limit 5;
+fetch {
+  ""answer_uuid"": $a.answer_uuid,
+  ""answer_link"": $a.answer_link,
+  ""title"": $a.title,
+  ""is_accepted"": $a.is_accepted,
+  ""body_markdown"": $a.body_markdown,
+  ""score"": $a.score
+};"
+86,Display the first 5 questions where the body markdown mentions 'index'.,"MATCH (q:Question)
+WHERE q.body_markdown CONTAINS 'index'
+RETURN q
+ORDER BY q.creation_date
+LIMIT 5","match
+$q isa question, has body_markdown $bm, has creation_date $cd;
+$bm like "".*index.*"";
+sort $cd;
+limit 5;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""question_link"": $q.question_link,
+  ""title"": $q.title,
+  ""body_markdown"": $bm,
+  ""creation_date"": $cd,
+  ""view_count"": $q.view_count,
+  ""answer_count"": $q.answer_count
+};"
+87,Retrieve the first 5 questions with accepted answers that have a view count over 500.,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true AND q.view_count > 500
+RETURN q
+ORDER BY q.creation_date
+LIMIT 5","match
+$q isa question, has view_count $vc;
+$vc > 500;
+$a isa answer, has is_accepted true;
+answered (question: $q, answer: $a);
+$q has creation_date $cd;
+sort $cd;
+limit 5;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""question_link"": $q.question_link,
+  ""title"": $q.title,
+  ""view_count"": $q.view_count,
+  ""creation_date"": $q.creation_date
+};"
+88,Show the top 5 questions with the highest score to comment ratio.,"MATCH (q:Question)<-[:ANSWERED]-(a:Answer)
+WITH q, SUM(a.score) AS total_score, COUNT(a) AS answer_count
+WHERE answer_count > 0
+MATCH (q)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, total_score, answer_count, COUNT(c) AS comment_count
+WHERE comment_count > 0
+WITH q, total_score, comment_count, (total_score * 1.0 / comment_count) AS score_to_comment_ratio
+RETURN q.title AS question_title, q.link AS question_link, score_to_comment_ratio
+ORDER BY score_to_comment_ratio DESC
+LIMIT 5","match
+$q isa question, has title $title, has question_link $link;
+answered (answer: $a, question: $q);
+$a has score $s;
+reduce $total_score = sum($s), $answer_count = count($a) groupby $q, $title, $link;
+match
+$answer_count > 0;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q, $title, $link, $total_score;
+match
+$comment_count > 0;
+let $ratio = $total_score / $comment_count;
+sort $ratio desc;
+limit 5;
+fetch {
+  ""question_title"": $title,
+  ""question_link"": $link,
+  ""score_to_comment_ratio"": $ratio
+};"
+89,List the first 3 questions where the same user has asked and provided an accepted answer.,"MATCH (u:User)-[:ASKED]->(q:Question)<-[:ANSWERED]-(a:Answer)<-[:PROVIDED]-(u)
+WHERE a.is_accepted = true
+RETURN q.title AS question_title, q.link AS question_link, u.display_name AS user_name
+ORDER BY q.creation_date
+LIMIT 3","match
+$u isa user;
+$q isa question, has creation_date $cd;
+$a isa answer, has is_accepted true;
+asked (asker: $u, question: $q);
+answered (answer: $a, question: $q);
+provided (provider: $u, answer: $a);
+sort $cd;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""user_name"": $u.display_name
+};"
+90,Which 5 questions have the most tags?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(t) AS tagCount
+ORDER BY tagCount DESC
+LIMIT 5
+RETURN q.title AS questionTitle, tagCount","match
+$q isa question;
+tagged (question: $q, tag: $t);
+reduce $tag_count = count($t) groupby $q;
+sort $tag_count desc;
+limit 5;
+fetch {
+  ""questionTitle"": $q.title,
+  ""tagCount"": $tag_count
+};"
+92,List the top 3 questions where the accepted answer has a negative score.,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true AND a.score < 0
+RETURN q.title, q.link, a.score
+ORDER BY a.score ASC
+LIMIT 3","match
+$q isa question, has title $title, has question_link $link;
+$a isa answer, has is_accepted true, has score $score;
+$score < 0;
+answered (answer: $a, question: $q);
+sort $score asc;
+limit 3;
+fetch {
+  ""title"": $title,
+  ""link"": $link,
+  ""score"": $score
+};"
+95,List the top 3 questions that have an accepted answer and are tagged with 'cypher'.,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'cypher'})
+WHERE q.accepted_answer_id IS NOT NULL
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$q isa question, has accepted_answer_id $a;
+$t isa tag, has name ""cypher"";
+tagged (question: $q, tag: $t);
+$q has view_count $vc;
+sort $vc desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+96,What are the top 3 questions with the most different users commenting?,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)<-[:COMMENTED]-(u:User)
+WITH q, COUNT(DISTINCT u) AS unique_commenters
+ORDER BY unique_commenters DESC
+LIMIT 3
+RETURN q.title AS question_title, q.link AS question_link, unique_commenters","match
+$q isa question;
+$c isa comment;
+commented_on (comment: $c, question: $q);
+commented (commenter: $u, comment: $c);
+select $u, $q;
+distinct;
+reduce $unique_commenters = count groupby $q;
+sort $unique_commenters desc;
+limit 3;
+fetch { ""question_title"": $q.title, ""question_link"": $q.question_link, ""unique_commenters"": $unique_commenters };"
+97,What are the first 5 questions where the user who commented also provided an answer?,"MATCH (u:User)-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q:Question)
+MATCH (u)-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q)
+RETURN q.title AS question_title, q.link AS question_link
+ORDER BY q.creation_date
+LIMIT 5","match
+$u isa user;
+$c isa comment;
+$a isa answer;
+$q isa question, has creation_date $cd;
+commented (commenter: $u, comment: $c);
+commented_on (comment: $c, question: $q);
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+sort $cd;
+limit 5;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link
+};"
+99,Show the first 5 questions that have answers from users who have also asked questions.,"MATCH (q:Question)<-[:ANSWERED]-(a:Answer)<-[:PROVIDED]-(u:User)-[:ASKED]->(q2:Question)
+RETURN q
+LIMIT 5","match
+$q isa question;
+$a isa answer;
+$u isa user;
+$q2 isa question;
+answered (answer: $a, question: $q);
+provided (provider: $u, answer: $a);
+asked (asker: $u, question: $q2);
+limit 5;
+fetch { ""question_uuid"": $q.question_uuid, ""title"": $q.title };"
+100,List the top 3 questions where the answer count is greater than the view count.,"MATCH (q:Question)
+WHERE q.answer_count > q.view_count
+RETURN q.title, q.link, q.answer_count, q.view_count
+ORDER BY q.answer_count DESC
+LIMIT 3","match
+$q isa question, has answer_count $ac, has view_count $vc, has title $t, has question_link $l;
+$ac > $vc;
+sort $ac desc;
+limit 3;
+fetch {
+  ""title"": $t,
+  ""link"": $l,
+  ""answer_count"": $ac,
+  ""view_count"": $vc
+};"
+93,What are the first 5 questions where the accepted answer was provided by the user who asked the question?,"MATCH (u:User)-[:ASKED]->(q:Question)<-[:ANSWERED]-(a:Answer)<-[:PROVIDED]-(u)
+WHERE q.accepted_answer_id = a.uuid
+RETURN q
+ORDER BY q.creation_date
+LIMIT 5","match
+$u isa user;
+$q isa question, has creation_date $cd, has accepted_answer_id $aid;
+$a isa answer, has answer_uuid $auid;
+asked (asker: $u, question: $q);
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+$aid == $auid;
+sort $cd;
+limit 5;
+fetch { ""question"": $q };"
+101,Which 5 questions have the most comments from users who have provided more than 10 answers?,"MATCH (u:User)-[:PROVIDED]->(a:Answer)
+WITH u, COUNT(a) AS answer_count
+WHERE answer_count > 10
+MATCH (u)-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q:Question)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 5
+RETURN q.title AS question_title, q.link AS question_link, comment_count","match
+$u isa user;
+provided (provider: $u, answer: $a);
+reduce $answer_count = count($a) groupby $u;
+match $answer_count > 10;
+commented (commenter: $u, comment: $c);
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 5;
+fetch { ""question_title"": $q.title, ""question_link"": $q.question_link, ""comment_count"": $comment_count };"
+102,Display the top 3 most commented questions by a single user.,"MATCH (u:User)-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q:Question)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+RETURN q.title AS question_title, q.link AS question_link, comment_count","match
+$u isa user;
+$c isa comment;
+$q isa question;
+commented (commenter: $u, comment: $c);
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""comment_count"": $comment_count
+};"
+103,Which 5 users have provided the most answers to questions they have never commented on?,"MATCH (u:User)-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q:Question)
+WHERE NOT (u)-[:COMMENTED]->(:Comment)-[:COMMENTED_ON]->(q)
+WITH u, COUNT(a) AS answer_count
+RETURN u.display_name, answer_count
+ORDER BY answer_count DESC
+LIMIT 5","match
+$u isa user;
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+not {
+  commented (commenter: $u, comment: $c);
+  commented_on (comment: $c, question: $q);
+};
+reduce $count = count($a) groupby $u;
+sort $count desc;
+limit 5;
+fetch { ""display_name"": $u.display_name, ""answer_count"": $count };"
+104,What are the first 5 questions tagged with 'neo4j' that have received answers from different users?,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+MATCH (a:Answer)-[:ANSWERED]->(q)
+WITH q, COUNT(DISTINCT a.uuid) AS answer_count
+WHERE answer_count > 0
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date
+LIMIT 5","match
+$q isa question, has title $title, has question_link $link, has creation_date $cd;
+$t isa tag, has name ""neo4j"";
+tagged (question: $q, tag: $t);
+answered (answer: $a, question: $q);
+sort $cd;
+limit 5;
+fetch {
+  ""title"": $title,
+  ""link"": $link,
+  ""creation_date"": $cd
+};"
+105,Show the first 5 questions asked by users who have commented on more than 100 different questions.,"MATCH (u:User)-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q:Question)
+WITH u, COUNT(DISTINCT q) AS commentedQuestions
+WHERE commentedQuestions > 100
+MATCH (u)-[:ASKED]->(askedQuestion:Question)
+RETURN askedQuestion
+ORDER BY askedQuestion.creation_date
+LIMIT 5","match
+$u isa user;
+commented (commenter: $u, comment: $c);
+commented_on (comment: $c, question: $q);
+select $u, $q;
+distinct;
+reduce $count = count($q) groupby $u;
+match $count > 100;
+match
+asked (asker: $u, question: $askedQ);
+$askedQ has creation_date $cd;
+sort $cd;
+limit 5;
+fetch { ""question"": $askedQ };"
+106,List the top 3 answers with the highest view to score ratio.,"MATCH (a:Answer)-[:ANSWERED]->(q:Question)
+WITH a, q, q.view_count / a.score AS view_to_score_ratio
+ORDER BY view_to_score_ratio DESC
+LIMIT 3
+RETURN a.link AS answer_link, a.title AS answer_title, view_to_score_ratio","match
+$a isa answer, has answer_link $link, has title $title, has score $s;
+$q isa question, has view_count $v;
+answered (answer: $a, question: $q);
+let $ratio = $v / $s;
+sort $ratio desc;
+limit 3;
+fetch {
+  ""answer_link"": $link,
+  ""answer_title"": $title,
+  ""view_to_score_ratio"": $ratio
+};"
+107,Which 5 questions have been asked by the most users?,"MATCH (u:User)-[:ASKED]->(q:Question)
+WITH q, COUNT(u) AS user_count
+ORDER BY user_count DESC
+LIMIT 5
+RETURN q.title AS question_title, user_count","match
+$q isa question;
+asked (asker: $u, question: $q);
+reduce $user_count = count($u) groupby $q;
+sort $user_count desc;
+limit 5;
+fetch {
+  ""question_title"": $q.title,
+  ""user_count"": $user_count
+};"
+108,Display the top 3 questions with the most comments made by the user who asked the question.,"MATCH (u:User)-[:ASKED]->(q:Question)<-[:COMMENTED_ON]-(c:Comment)<-[:COMMENTED]-(u)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+RETURN q.title AS question_title, q.link AS question_link, comment_count","match
+$u isa user;
+$q isa question;
+$c isa comment;
+asked (asker: $u, question: $q);
+commented_on (comment: $c, question: $q);
+commented (commenter: $u, comment: $c);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""comment_count"": $comment_count
+};"
+109,What are the first 5 questions asked by the most recent user to join the platform?,"// First, find the most recent user to join the platform
+MATCH (u:User)
+WITH u
+ORDER BY u.uuid DESC
+LIMIT 1
+
+// Then, find the first 5 questions asked by this user
+MATCH (u)-[:ASKED]->(q:Question)
+RETURN q
+ORDER BY q.creation_date ASC
+LIMIT 5","match
+$u isa user, has user_uuid $uuid;
+sort $uuid desc;
+limit 1;
+match
+asked (asker: $u, question: $q);
+$q has creation_date $cd;
+sort $cd asc;
+limit 5;
+fetch { ""question"": $q };"
+110,Retrieve the top 3 highest viewed questions that have been answered by users with less than 3 answers in total.,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)<-[:PROVIDED]-(u:User)
+WITH q, u, COUNT(a) AS userAnswerCount
+WHERE userAnswerCount < 3
+RETURN q.title AS questionTitle, q.view_count AS viewCount
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$u isa user;
+provided (provider: $u, answer: $a);
+reduce $total_answers = count($a) groupby $u;
+match $total_answers < 3;
+provided (provider: $u, answer: $a2);
+answered (question: $q, answer: $a2);
+$q has view_count $vc;
+$q has title $t;
+sort $vc desc;
+limit 3;
+fetch { ""questionTitle"": $t, ""viewCount"": $vc };"
+111,Show the first 5 questions where the title contains the word 'update'.,"MATCH (q:Question)
+WHERE q.title CONTAINS 'update'
+RETURN q
+ORDER BY q.creation_date ASC
+LIMIT 5","match $q isa question, has title $t;
+$t like "".*update.*"";
+$q has creation_date $cd;
+sort $cd;
+limit 5;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""creation_date"": $q.creation_date,
+  ""view_count"": $q.view_count,
+  ""answer_count"": $q.answer_count
+};"
+112,Retrieve the top 3 questions with the most votes.,"MATCH (q:Question)
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 3","match $q isa question;
+$q has view_count $vc;
+sort $vc desc;
+limit 3;
+fetch { ""title"": $q.title, ""link"": $q.question_link, ""view_count"": $vc };"
+113,What are the top 5 highest scoring answers in the database?,"MATCH (a:Answer)
+RETURN a.link, a.title, a.score
+ORDER BY a.score DESC
+LIMIT 5","match
+$a isa answer, has score $s;
+sort $s desc;
+limit 5;
+fetch {
+  ""link"": $a.answer_link,
+  ""title"": $a.title,
+  ""score"": $s
+};"
+114,Retrieve the top 3 questions where the body markdown contains 'neo4j'.,"MATCH (q:Question)
+WHERE q.body_markdown CONTAINS 'neo4j'
+RETURN q
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$q isa question, has body_markdown $bm, has view_count $vc;
+$bm like "".*neo4j.*"";
+sort $vc desc;
+limit 3;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""title"": $q.title,
+  ""body_markdown"": $bm,
+  ""view_count"": $vc
+};"
+115,List the top 3 questions with accepted answers that have the lowest scores.,"MATCH (q:Question)<-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true
+WITH q, a
+ORDER BY a.score ASC
+LIMIT 3
+RETURN q.title AS question_title, q.link AS question_link, a.score AS answer_score","match
+$q isa question;
+$a isa answer, has is_accepted true, has score $score;
+answered (answer: $a, question: $q);
+sort $score asc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""answer_score"": $score
+};"
+116,Retrieve the first 3 users who commented on the most viewed question.,"MATCH (q:Question)
+WITH q
+ORDER BY q.view_count DESC
+LIMIT 1
+MATCH (c:Comment)-[:COMMENTED_ON]->(q)
+MATCH (u:User)-[:COMMENTED]->(c)
+RETURN u.display_name
+LIMIT 3","match
+$q isa question, has view_count $vc;
+sort $vc desc;
+limit 1;
+match
+commented_on (comment: $c, question: $q);
+commented (commenter: $u, comment: $c);
+limit 3;
+fetch { ""display_name"": $u.display_name };"
+117,Show the first 5 questions that have been tagged with 'cypher' and have more than one answer.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WHERE t.name = 'cypher' AND q.answer_count > 1
+RETURN q
+ORDER BY q.creation_date
+LIMIT 5","match
+$q isa question, has answer_count $ac;
+$ac > 1;
+$t isa tag, has name ""cypher"";
+tagged (question: $q, tag: $t);
+$q has creation_date $cd;
+sort $cd;
+limit 5;
+fetch {
+  ""question"": $q
+};"
+118,Find the top 3 questions with the most comments.,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+RETURN q.title AS question_title, q.link AS question_link, comment_count","match
+$q isa question;
+$c isa comment;
+commented_on (comment: $c, question: $q);
+reduce $count = count($c) groupby $q;
+sort $count desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""comment_count"": $count
+};"
+119,Which 5 users have provided an accepted answer?,"MATCH (u:User)-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q:Question)
+WHERE a.is_accepted = true
+RETURN u.display_name AS user, a.link AS answer_link, q.link AS question_link
+LIMIT 5","match
+$u isa user;
+$a isa answer, has is_accepted true;
+$q isa question;
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+limit 5;
+fetch {
+  ""user"": $u.display_name,
+  ""answer_link"": $a.answer_link,
+  ""question_link"": $q.question_link
+};"
+120,Display the top 3 tags associated with questions that have accepted answers.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WHERE EXISTS {
+  MATCH (q)<-[:ANSWERED]-(a:Answer)
+  WHERE a.is_accepted = true
+}
+RETURN t.name AS tag, COUNT(q) AS question_count
+ORDER BY question_count DESC
+LIMIT 3","match
+$q isa question;
+$t isa tag;
+$a isa answer, has is_accepted true;
+tagged (question: $q, tag: $t);
+answered (answer: $a, question: $q);
+reduce $count = count($q) groupby $t;
+sort $count desc;
+limit 3;
+fetch { ""tag"": $t.name, ""question_count"": $count };"
+121,What are the first 5 questions with the highest answer to view ratio?,"MATCH (q:Question)
+WHERE q.answer_count > 0 AND q.view_count > 0
+WITH q, (q.answer_count * 1.0 / q.view_count) AS answer_view_ratio
+RETURN q.title, q.link, answer_view_ratio
+ORDER BY answer_view_ratio DESC
+LIMIT 5","match
+$q isa question, has answer_count $ac, has view_count $vc, has title $title, has question_link $link;
+$ac > 0;
+$vc > 0;
+let $ratio = $ac / $vc;
+sort $ratio desc;
+limit 5;
+fetch {
+  ""title"": $title,
+  ""link"": $link,
+  ""answer_view_ratio"": $ratio
+};"
+122,List the top 5 tags most frequently associated with questions having more than 3 answers.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WHERE q.answer_count > 3
+WITH t, COUNT(q) AS question_count
+RETURN t.name AS tag, question_count
+ORDER BY question_count DESC
+LIMIT 5","match
+$q isa question, has answer_count $ac;
+$ac > 3;
+$t isa tag;
+tagged (question: $q, tag: $t);
+reduce $question_count = count($q) groupby $t;
+sort $question_count desc;
+limit 5;
+fetch {
+  ""tag"": $t.name,
+  ""question_count"": $question_count
+};"
+123,List the top 5 users with the highest average answer score.,"MATCH (u:User)-[:PROVIDED]->(a:Answer)
+WITH u, AVG(a.score) AS avg_score
+ORDER BY avg_score DESC
+LIMIT 5
+RETURN u.display_name AS user, avg_score","match
+$u isa user;
+provided (provider: $u, answer: $a);
+$a has score $s;
+reduce $avg_score = mean($s) groupby $u;
+sort $avg_score desc;
+limit 5;
+fetch {
+  ""user"": $u.display_name,
+  ""avg_score"": $avg_score
+};"
+124,Show the first 3 questions that have been both asked and commented on by the same user.,"MATCH (u:User)-[:ASKED]->(q:Question)
+MATCH (u)-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q)
+RETURN q
+LIMIT 3","match
+$u isa user;
+$q isa question;
+$c isa comment;
+asked (asker: $u, question: $q);
+commented (commenter: $u, comment: $c);
+commented_on (comment: $c, question: $q);
+limit 3;
+fetch { ""question"": $q };"
+125,List the top 3 questions with the lowest view counts.,"MATCH (q:Question)
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count ASC
+LIMIT 3","match $q isa question, has view_count $vc;
+sort $vc asc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+126,What are the first 3 most recent questions asked on the platform?,"MATCH (q:Question)
+RETURN q.title, q.creation_date, q.link
+ORDER BY q.creation_date DESC
+LIMIT 3","match $q isa question, has creation_date $cd;
+sort $cd desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""creation_date"": $cd,
+  ""link"": $q.question_link
+};"
+127,Find the first 5 questions that have no answers.,"MATCH (q:Question)
+WHERE q.answer_count = 0
+RETURN q
+ORDER BY q.creation_date ASC
+LIMIT 5","match
+$q isa question, has answer_count 0, has creation_date $cd;
+sort $cd asc;
+limit 5;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""question_link"": $q.question_link,
+  ""title"": $q.title,
+  ""creation_date"": $cd
+};"
+128,Show 3 questions with the highest number of answers.,"MATCH (q:Question)
+RETURN q.title, q.link, q.answer_count
+ORDER BY q.answer_count DESC
+LIMIT 3","match
+$q isa question, has answer_count $ac;
+sort $ac desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""answer_count"": $ac
+};"
+129,Which questions have more than one answer but less than 50 views? List the first 5.,"MATCH (q:Question)
+WHERE q.answer_count > 1 AND q.view_count < 50
+RETURN q
+LIMIT 5","match
+$q isa question, has answer_count $ac, has view_count $vc;
+$ac > 1;
+$vc < 50;
+limit 5;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""title"": $q.title,
+  ""answer_count"": $ac,
+  ""view_count"": $vc
+};"
+130,Display the top 3 most commented on questions.,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+RETURN q.title AS question_title, q.link AS question_link, comment_count","match
+$q isa question;
+$c isa comment;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""comment_count"": $comment_count
+};"
+131,Retrieve the first 5 tags used by questions with accepted answers.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WHERE EXISTS {
+  MATCH (a:Answer)-[:ANSWERED]->(q)
+  WHERE a.is_accepted = true
+}
+RETURN DISTINCT t.name
+LIMIT 5","match
+$q isa question;
+$t isa tag;
+tagged (question: $q, tag: $t);
+$a isa answer, has is_accepted true;
+answered (answer: $a, question: $q);
+limit 5;
+fetch {
+  ""name"": $t.name
+};"
+132,Which 5 users have commented the most times?,"MATCH (u:User)-[:COMMENTED]->(c:Comment)
+WITH u, COUNT(c) AS commentCount
+ORDER BY commentCount DESC
+LIMIT 5
+RETURN u.display_name AS user, commentCount","match
+$u isa user;
+commented (commenter: $u, comment: $c);
+reduce $commentCount = count($c) groupby $u;
+sort $commentCount desc;
+limit 5;
+fetch {
+  ""user"": $u.display_name,
+  ""commentCount"": $commentCount
+};"
+133,Show the first 5 users who have provided answers but have never asked a question.,"MATCH (u:User)-[:PROVIDED]->(:Answer)
+WHERE NOT (u)-[:ASKED]->(:Question)
+RETURN u.display_name
+LIMIT 5","match
+$u isa user;
+provided (provider: $u, answer: $a);
+not { asked (asker: $u); };
+limit 5;
+fetch { ""display_name"": $u.display_name };"
+134,What are the top 3 tags used in the most commented questions?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+MATCH (c:Comment)-[:COMMENTED_ON]->(q)
+WITH q, t, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+RETURN t.name AS tag, COUNT(q) AS question_count
+ORDER BY question_count DESC","match
+$q isa question;
+$t isa tag;
+tagged (question: $q, tag: $t);
+$c isa comment;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q, $t;
+sort $comment_count desc;
+limit 3;
+reduce $question_count = count($q) groupby $t;
+sort $question_count desc;
+fetch { ""tag"": $t.name, ""question_count"": $question_count };"
+135,Identify the top 3 users who have provided answers to questions they have also commented on.,"MATCH (u:User)-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q:Question)<-[:COMMENTED_ON]-(c:Comment)<-[:COMMENTED]-(u)
+WITH u, COUNT(DISTINCT q) AS answered_and_commented_count
+ORDER BY answered_and_commented_count DESC
+LIMIT 3
+RETURN u.display_name AS user, answered_and_commented_count","match
+$u isa user;
+$a isa answer;
+$q isa question;
+$c isa comment;
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+commented_on (comment: $c, question: $q);
+commented (commenter: $u, comment: $c);
+select $u, $q;
+distinct;
+reduce $count = count($q) groupby $u;
+sort $count desc;
+limit 3;
+fetch { ""user"": $u.display_name, ""answered_and_commented_count"": $count };"
+136,Which 5 questions have the oldest creation dates?,"MATCH (q:Question)
+RETURN q.title, q.creation_date
+ORDER BY q.creation_date ASC
+LIMIT 5","match
+$q isa question, has creation_date $cd;
+sort $cd asc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""creation_date"": $cd
+};"
+137,Display the first 5 questions tagged with 'neo4j' that have more than two answers.,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+WHERE q.answer_count > 2
+RETURN q.title, q.link, q.answer_count
+ORDER BY q.creation_date
+LIMIT 5","match
+$q isa question, has answer_count $ac, has creation_date $cd;
+$ac > 2;
+$t isa tag, has name ""neo4j"";
+tagged (question: $q, tag: $t);
+sort $cd asc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""answer_count"": $ac
+};"
+138,What are the top 3 most frequently commented tags?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+MATCH (c:Comment)-[:COMMENTED_ON]->(q)
+WITH t.name AS tagName, COUNT(c) AS commentCount
+RETURN tagName, commentCount
+ORDER BY commentCount DESC
+LIMIT 3","match
+$t isa tag, has name $tagName;
+$q isa question;
+$c isa comment;
+tagged (question: $q, tag: $t);
+commented_on (comment: $c, question: $q);
+reduce $commentCount = count($c) groupby $tagName;
+sort $commentCount desc;
+limit 3;
+fetch { ""tagName"": $tagName, ""commentCount"": $commentCount };"
+139,Show the first 5 questions where the title contains the word 'error'.,"MATCH (q:Question)
+WHERE q.title CONTAINS 'error'
+RETURN q
+ORDER BY q.creation_date
+LIMIT 5","match
+$q isa question, has title $t, has creation_date $cd;
+$t like "".*error.*"";
+sort $cd;
+limit 5;
+fetch {
+  ""question"": $q
+};"
+140,Find the top 5 highest viewed questions that have been answered by the same user who asked them.,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)-[:PROVIDED]-(u:User)-[:ASKED]-(q)
+WITH q, u
+ORDER BY q.view_count DESC
+LIMIT 5
+RETURN q.title AS question_title, q.view_count AS view_count, u.display_name AS user_name, q.link AS question_link","match
+$q isa question, has view_count $vc, has title $title, has question_link $link;
+$u isa user, has display_name $name;
+$a isa answer;
+answered (answer: $a, question: $q);
+provided (provider: $u, answer: $a);
+asked (asker: $u, question: $q);
+sort $vc desc;
+limit 5;
+fetch {
+  ""question_title"": $title,
+  ""view_count"": $vc,
+  ""user_name"": $name,
+  ""question_link"": $link
+};"
+141,Identify the first 3 users who commented on their own questions more than once.,"MATCH (u:User)-[:ASKED]->(q:Question)<-[:COMMENTED_ON]-(c:Comment)<-[:COMMENTED]-(u)
+WITH u, COUNT(c) AS comment_count
+WHERE comment_count > 1
+RETURN u.display_name, comment_count
+ORDER BY comment_count DESC
+LIMIT 3","match
+$u isa user;
+$q isa question;
+$c isa comment;
+asked (asker: $u, question: $q);
+commented_on (comment: $c, question: $q);
+commented (commenter: $u, comment: $c);
+reduce $comment_count = count($c) groupby $u;
+match $comment_count > 1;
+sort $comment_count desc;
+limit 3;
+fetch { ""display_name"": $u.display_name, ""comment_count"": $comment_count };"
+142,List the top 5 most frequently tagged tags in questions with zero answers.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WHERE q.answer_count = 0
+RETURN t.name AS tag, COUNT(q) AS frequency
+ORDER BY frequency DESC
+LIMIT 5","match
+$q isa question, has answer_count 0;
+$t isa tag;
+tagged (question: $q, tag: $t);
+reduce $frequency = count($q) groupby $t;
+sort $frequency desc;
+limit 5;
+fetch { ""tag"": $t.name, ""frequency"": $frequency };"
+143,Show the first 5 questions where the same user has asked and provided an answer.,"MATCH (u:User)-[:ASKED]->(q:Question)
+MATCH (u)-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q)
+RETURN q.link AS question_link, q.title AS question_title, u.display_name AS user_name
+LIMIT 5","match
+$u isa user;
+$q isa question;
+$a isa answer;
+asked (asker: $u, question: $q);
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+limit 5;
+fetch {
+  ""question_link"": $q.question_link,
+  ""question_title"": $q.title,
+  ""user_name"": $u.display_name
+};"
+144,Which 5 users have both asked and answered the same question?,"MATCH (u:User)-[:ASKED]->(q:Question)<-[:ANSWERED]-(a:Answer)<-[:PROVIDED]-(u)
+RETURN u.display_name AS user, q.title AS question_title
+LIMIT 5","match
+$u isa user;
+$q isa question;
+$a isa answer;
+asked (asker: $u, question: $q);
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+limit 5;
+fetch {
+  ""user"": $u.display_name,
+  ""question_title"": $q.title
+};"
+145,What are the first 5 questions asked in 2021?,"MATCH (q:Question)
+WHERE q.creation_date >= 1609459200 AND q.creation_date < 1640995200
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date ASC
+LIMIT 5","match
+$q isa question, has creation_date $cd;
+$cd >= 1609459200;
+$cd < 1640995200;
+sort $cd asc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+146,Retrieve the top 3 questions with the most recent creation dates.,"MATCH (q:Question)
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date DESC
+LIMIT 3","match
+$q isa question, has creation_date $cd;
+sort $cd desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+147,Show the first 5 questions where the accepted answer has a score of zero or less.,"MATCH (q:Question)<-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true AND a.score <= 0
+RETURN q
+ORDER BY q.creation_date
+LIMIT 5","match
+$q isa question, has creation_date $cd;
+$a isa answer, has is_accepted true, has score $s;
+$s <= 0;
+answered (answer: $a, question: $q);
+sort $cd;
+limit 5;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""title"": $q.title,
+  ""creation_date"": $q.creation_date
+};"
+148,List the top 3 answers with the highest scores that have not been accepted.,"MATCH (a:Answer)
+WHERE a.is_accepted = false
+RETURN a.link, a.title, a.score
+ORDER BY a.score DESC
+LIMIT 3","match
+$a isa answer, has is_accepted false, has score $s;
+sort $s desc;
+limit 3;
+fetch {
+  ""link"": $a.answer_link,
+  ""title"": $a.title,
+  ""score"": $s
+};"
+149,Which 5 users have the most comments without any answers?,"MATCH (u:User)-[:COMMENTED]->(c:Comment)
+WHERE NOT (u)-[:PROVIDED]->(:Answer)
+WITH u, COUNT(c) AS commentCount
+ORDER BY commentCount DESC
+LIMIT 5
+RETURN u.display_name AS user, commentCount","match
+$u isa user, has display_name $name;
+commented (commenter: $u, comment: $c);
+not { provided (provider: $u); };
+reduce $count = count($c) groupby $u, $name;
+sort $count desc;
+limit 5;
+fetch { ""user"": $name, ""commentCount"": $count };"
+150,Display the top 3 questions tagged 'neo4j' with no accepted answers.,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+WHERE q.accepted_answer_id IS NULL
+RETURN q.title, q.link, q.creation_date, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$q isa question;
+tagged (question: $q, tag: $t);
+$t has name ""neo4j"";
+not { $q has accepted_answer_id $_; };
+$q has view_count $vc;
+sort $vc desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $q.creation_date,
+  ""view_count"": $vc
+};"
+151,Find the first 5 users who have asked the most questions without ever providing an answer.,"MATCH (u:User)-[:ASKED]->(q:Question)
+WHERE NOT (u)-[:PROVIDED]->(:Answer)
+WITH u, COUNT(q) AS question_count
+ORDER BY question_count DESC
+LIMIT 5
+RETURN u.display_name, question_count","match
+$u isa user;
+asked (asker: $u, question: $q);
+not { provided (provider: $u); };
+reduce $question_count = count($q) groupby $u;
+sort $question_count desc;
+limit 5;
+fetch { ""display_name"": $u.display_name, ""question_count"": $question_count };"
+152,Display the top 3 most viewed questions that have been commented on.,"MATCH (q:Question)-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS commentCount
+WHERE commentCount > 0
+RETURN q.title AS questionTitle, q.view_count AS viewCount
+ORDER BY viewCount DESC
+LIMIT 3","match
+$q isa question, has view_count $vc, has title $t;
+commented_on (question: $q);
+select $q, $vc, $t;
+distinct;
+sort $vc desc;
+limit 3;
+fetch { ""questionTitle"": $t, ""viewCount"": $vc };"
+153,List the top 3 answers that are accepted and have the highest scores.,"MATCH (a:Answer)
+WHERE a.is_accepted = true
+RETURN a
+ORDER BY a.score DESC
+LIMIT 3","match
+$a isa answer, has is_accepted true, has score $s;
+sort $s desc;
+limit 3;
+fetch {
+  ""answer_uuid"": $a.answer_uuid,
+  ""answer_link"": $a.answer_link,
+  ""title"": $a.title,
+  ""is_accepted"": $a.is_accepted,
+  ""score"": $s,
+  ""body_markdown"": $a.body_markdown
+};"
+154,List the top 3 tags on questions that have no accepted answer but have comments.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WHERE q.accepted_answer_id IS NULL
+MATCH (q)<-[:COMMENTED_ON]-(c:Comment)
+WITH t.name AS tagName, COUNT(q) AS questionCount
+ORDER BY questionCount DESC
+LIMIT 3
+RETURN tagName, questionCount","match
+$q isa question;
+$t isa tag, has name $n;
+tagged (question: $q, tag: $t);
+not { $q has accepted_answer_id $aid; };
+commented_on (comment: $c, question: $q);
+reduce $count = count($q) groupby $t, $n;
+sort $count desc;
+limit 3;
+fetch { ""tagName"": $n, ""questionCount"": $count };"
+155,What are the top 5 questions asked by users with the highest number of comments?,"// Step 1: Find the users with the highest number of comments
+MATCH (u:User)-[:COMMENTED]->(c:Comment)
+WITH u, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 5
+
+// Step 2: Find the questions asked by these users
+MATCH (u)-[:ASKED]->(q:Question)
+RETURN q.title AS question_title, q.link AS question_link, u.display_name AS user_name, comment_count
+ORDER BY comment_count DESC, q.creation_date DESC
+LIMIT 5","match
+$u isa user;
+commented (commenter: $u, comment: $c);
+reduce $comment_count = count($c) groupby $u;
+sort $comment_count desc;
+limit 5;
+match
+asked (asker: $u, question: $q);
+$q has creation_date $cd;
+sort $comment_count desc, $cd desc;
+limit 5;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""user_name"": $u.display_name,
+  ""comment_count"": $comment_count
+};"
+156,"Show all the tags associated with questions that have over 100 views, limit to 5 tags.","MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WHERE q.view_count > 100
+RETURN DISTINCT t.name AS tag_name
+LIMIT 5","match
+$q isa question, has view_count $vc;
+$vc > 100;
+tagged (question: $q, tag: $t);
+$t has name $name;
+select $name;
+distinct;
+limit 5;
+fetch { ""tag_name"": $name };"
+157,Which questions have more than two comments by a single user? Show only the first 3.,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)<-[:COMMENTED]-(u:User)
+WITH q, u, COUNT(c) AS comment_count
+WHERE comment_count > 2
+RETURN q.title AS question_title, q.link AS question_link, u.display_name AS user_name, comment_count
+LIMIT 3","match
+$q isa question;
+$c isa comment;
+$u isa user;
+commented_on (comment: $c, question: $q);
+commented (commenter: $u, comment: $c);
+reduce $comment_count = count($c) groupby $q, $u;
+match $comment_count > 2;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""user_name"": $u.display_name,
+  ""comment_count"": $comment_count
+};"
+158,Identify the top 5 highest scoring answers provided by the user 'Anu'.,"MATCH (u:User {display_name: 'Anu'})-[:PROVIDED]->(a:Answer)
+RETURN a.link, a.title, a.score
+ORDER BY a.score DESC
+LIMIT 5","match
+$u isa user, has display_name ""Anu"";
+provided (provider: $u, answer: $a);
+$a has score $s;
+sort $s desc;
+limit 5;
+fetch {
+  ""link"": $a.answer_link,
+  ""title"": $a.title,
+  ""score"": $s
+};"
+159,List the first 3 users who have asked more than one question.,"MATCH (u:User)-[:ASKED]->(q:Question)
+WITH u, COUNT(q) AS question_count
+WHERE question_count > 1
+RETURN u.display_name, question_count
+ORDER BY question_count DESC
+LIMIT 3","match
+$u isa user;
+asked (asker: $u, question: $q);
+reduce $question_count = count($q) groupby $u;
+match $question_count > 1;
+sort $question_count desc;
+limit 3;
+fetch { ""display_name"": $u.display_name, ""question_count"": $question_count };"
+160,What are the top 5 most viewed questions tagged with 'neo4j'?,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 5","match
+$q isa question;
+$t isa tag, has name ""neo4j"";
+tagged (question: $q, tag: $t);
+$q has view_count $vc;
+sort $vc desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+161,List the first 3 questions with a view count between 50 and 100.,"MATCH (q:Question)
+WHERE q.view_count >= 50 AND q.view_count <= 100
+RETURN q
+ORDER BY q.creation_date
+LIMIT 3","match
+$q isa question, has view_count $vc, has creation_date $cd;
+$vc >= 50;
+$vc <= 100;
+sort $cd;
+limit 3;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""question_link"": $q.question_link,
+  ""title"": $q.title,
+  ""view_count"": $q.view_count,
+  ""creation_date"": $q.creation_date
+};"
+162,Which 3 answers are linked to questions asked by the most unique users?,"// First, find the questions asked by the most unique users
+MATCH (u:User)-[:ASKED]->(q:Question)
+WITH q, COUNT(DISTINCT u) AS uniqueUsers
+ORDER BY uniqueUsers DESC
+LIMIT 3
+
+// Then, find the answers linked to these questions
+MATCH (a:Answer)-[:ANSWERED]->(q)
+RETURN a.link, a.title, a.uuid
+LIMIT 3","match
+  $u isa user;
+  $q isa question;
+  asked (asker: $u, question: $q);
+reduce $unique_users = count($u) groupby $q;
+sort $unique_users desc;
+limit 3;
+match
+  $a isa answer;
+  answered (answer: $a, question: $q);
+limit 3;
+fetch { ""link"": $a.answer_link, ""title"": $a.title, ""uuid"": $a.answer_uuid };"
+163,What are the top 5 most recent comments?,"MATCH (c:Comment)
+RETURN c.link, c.uuid, c.score
+ORDER BY c.uuid DESC
+LIMIT 5","match
+$c isa comment, has comment_uuid $uuid;
+sort $uuid desc;
+limit 5;
+fetch {
+  ""link"": $c.comment_link,
+  ""uuid"": $uuid,
+  ""score"": $c.score
+};"
+164,List the first 3 questions with the most comments.,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+RETURN q.title AS question_title, q.link AS question_link, comment_count","match
+$q isa question;
+$c isa comment;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""comment_count"": $comment_count
+};"
+165,Which 3 users have the most questions with accepted answers?,"MATCH (u:User)-[:ASKED]->(q:Question)<-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true
+WITH u, COUNT(q) AS accepted_questions_count
+ORDER BY accepted_questions_count DESC
+LIMIT 3
+RETURN u.display_name, accepted_questions_count","match
+$u isa user;
+$q isa question;
+$a isa answer, has is_accepted true;
+asked (asker: $u, question: $q);
+answered (answer: $a, question: $q);
+reduce $count = count($q) groupby $u;
+sort $count desc;
+limit 3;
+fetch { ""display_name"": $u.display_name, ""accepted_questions_count"": $count };"
+166,List all the questions that have been tagged with both 'neo4j' and 'cypher'.,"MATCH (q:Question)-[:TAGGED]->(t1:Tag {name: 'neo4j'}),
+      (q)-[:TAGGED]->(t2:Tag {name: 'cypher'})
+RETURN q.title AS question_title, q.link AS question_link","match
+$q isa question;
+$t1 isa tag, has name ""neo4j"";
+$t2 isa tag, has name ""cypher"";
+tagged (question: $q, tag: $t1);
+tagged (question: $q, tag: $t2);
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link
+};"
+167,What are the first 3 questions that have comments with a score of 3?,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WHERE c.score = 3
+RETURN q
+ORDER BY q.creation_date
+LIMIT 3","match
+$q isa question, has creation_date $cd;
+$c isa comment, has score 3;
+commented_on (comment: $c, question: $q);
+sort $cd;
+limit 3;
+fetch {
+  ""question"": $q
+};"
+168,List the first 3 answers to questions that have at least 3 tags.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(t) AS tagCount
+WHERE tagCount >= 3
+MATCH (a:Answer)-[:ANSWERED]->(q)
+RETURN a.link AS answer_link, a.title AS answer_title, a.uuid AS answer_uuid
+ORDER BY a.uuid
+LIMIT 3","match
+$q isa question;
+tagged (question: $q, tag: $t);
+reduce $tag_count = count($t) groupby $q;
+match $tag_count >= 3;
+$a isa answer;
+answered (answer: $a, question: $q);
+$a has answer_uuid $uuid;
+sort $uuid;
+limit 3;
+fetch {
+  ""answer_link"": $a.answer_link,
+  ""answer_title"": $a.title,
+  ""answer_uuid"": $uuid
+};"
+170,List the first 3 tags that appear in questions with zero answers.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WHERE q.answer_count = 0
+RETURN t.name AS tag_name
+LIMIT 3","match
+$q isa question, has answer_count 0;
+$t isa tag, has name $tag_name;
+tagged (question: $q, tag: $t);
+limit 3;
+fetch { ""tag_name"": $tag_name };"
+171,What are the titles of the top 3 questions that have accepted answers with a negative score?,"MATCH (q:Question)<-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true AND a.score < 0
+RETURN q.title
+ORDER BY a.score ASC
+LIMIT 3","match
+$q isa question;
+$a isa answer, has is_accepted true, has score $s;
+$s < 0;
+answered (answer: $a, question: $q);
+sort $s asc;
+limit 3;
+fetch { ""title"": $q.title };"
+172,Can you list the first 3 users who have commented on questions related to 'neo4j' more than once?,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+MATCH (c:Comment)-[:COMMENTED_ON]->(q)
+MATCH (u:User)-[:COMMENTED]->(c)
+WITH u, COUNT(c) AS comment_count
+WHERE comment_count > 1
+RETURN u.display_name
+ORDER BY comment_count DESC
+LIMIT 3","match
+$t isa tag, has name ""neo4j"";
+$q isa question;
+tagged (question: $q, tag: $t);
+$c isa comment;
+commented_on (comment: $c, question: $q);
+$u isa user;
+commented (commenter: $u, comment: $c);
+reduce $count = count($c) groupby $u;
+match $count > 1;
+sort $count desc;
+limit 3;
+fetch { ""display_name"": $u.display_name };"
+173,Which are the top 5 most recent questions asked by user 'Mohammed Faraz ali'?,"MATCH (u:User {display_name: 'Mohammed Faraz ali'})-[:ASKED]->(q:Question)
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date DESC
+LIMIT 5","match
+$u isa user, has display_name ""Mohammed Faraz ali"";
+asked (asker: $u, question: $q);
+$q has creation_date $cd;
+sort $cd desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+174,Display the first 3 questions that have no answers.,"MATCH (q:Question)
+WHERE q.answer_count = 0
+RETURN q.title, q.link
+ORDER BY q.creation_date ASC
+LIMIT 3","match
+$q isa question, has answer_count 0, has creation_date $cd;
+sort $cd asc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link
+};"
+175,Identify the questions with the most comments. Limit the results to the first 5.,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 5
+RETURN q.title AS question_title, q.link AS question_link, comment_count","match
+$q isa question;
+$c isa comment;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 5;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""comment_count"": $comment_count
+};"
+176,What are the most recent 3 questions that have been asked by users with a display name starting with 'A'?,"MATCH (u:User)-[:ASKED]->(q:Question)
+WHERE u.display_name STARTS WITH 'A'
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date DESC
+LIMIT 3","match
+$u isa user, has display_name $dn;
+$dn like ""^A.*"";
+asked (asker: $u, question: $q);
+$q has creation_date $cd;
+sort $cd desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+177,List the first 3 questions that have been commented on by user 'Mohammed Faraz ali'.,"MATCH (u:User {display_name: 'Mohammed Faraz ali'})-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q:Question)
+RETURN q
+ORDER BY q.creation_date
+LIMIT 3","match
+$u isa user, has display_name ""Mohammed Faraz ali"";
+$c isa comment;
+$q isa question, has creation_date $cd;
+commented (commenter: $u, comment: $c);
+commented_on (comment: $c, question: $q);
+sort $cd;
+limit 3;
+fetch {
+  ""question"": {
+    ""uuid"": $q.question_uuid,
+    ""title"": $q.title,
+    ""creation_date"": $q.creation_date
+  }
+};"
+178,Show the top 5 users who have provided the most answers.,"MATCH (u:User)-[:PROVIDED]->(a:Answer)
+WITH u, COUNT(a) AS answer_count
+ORDER BY answer_count DESC
+LIMIT 5
+RETURN u.display_name AS user, answer_count","match
+$u isa user;
+provided (provider: $u, answer: $a);
+reduce $answer_count = count($a) groupby $u;
+sort $answer_count desc;
+limit 5;
+fetch {
+  ""user"": $u.display_name,
+  ""answer_count"": $answer_count
+};"
+179,What are the first 3 most recent questions asked about 'neo4j' that have an accepted answer?,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+WHERE q.accepted_answer_id IS NOT NULL
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date DESC
+LIMIT 3","match
+$q isa question;
+$t isa tag, has name ""neo4j"";
+tagged (question: $q, tag: $t);
+$q has accepted_answer_id $aid;
+$q has creation_date $cd;
+sort $cd desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+180,Which tags are associated with questions that have more than two answers? Show only the top 3 tags.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WHERE q.answer_count > 2
+WITH t, COUNT(q) AS question_count
+RETURN t.name AS tag, question_count
+ORDER BY question_count DESC
+LIMIT 3","match
+$q isa question, has answer_count $ac;
+$ac > 2;
+tagged (question: $q, tag: $t);
+reduce $question_count = count($q) groupby $t;
+sort $question_count desc;
+limit 3;
+fetch {
+  ""tag"": $t.name,
+  ""question_count"": $question_count
+};"
+181,List all the questions that have been provided answers by more than 3 different users. Limit to the first 5 questions.,"MATCH (q:Question)<-[:ANSWERED]-(a:Answer)<-[:PROVIDED]-(u:User)
+WITH q, COUNT(DISTINCT u) AS userCount
+WHERE userCount > 3
+RETURN q.title, q.link, q.creation_date, q.view_count, q.answer_count
+LIMIT 5","match
+$q isa question;
+$a isa answer;
+$u isa user;
+answered (question: $q, answer: $a);
+provided (provider: $u, answer: $a);
+select $q, $u;
+distinct;
+reduce $user_count = count($u) groupby $q;
+match $user_count > 3;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $q.creation_date,
+  ""view_count"": $q.view_count,
+  ""answer_count"": $q.answer_count
+};"
+182,What are the first 3 questions asked by users with a UUID less than 500000?,"MATCH (u:User)-[:ASKED]->(q:Question)
+WHERE u.uuid < 500000
+RETURN q.title, q.creation_date, q.link
+ORDER BY q.creation_date
+LIMIT 3","match
+$u isa user, has user_uuid $uuid;
+$uuid < 500000;
+$q isa question, has creation_date $cd;
+asked (asker: $u, question: $q);
+sort $cd;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""creation_date"": $cd,
+  ""link"": $q.question_link
+};"
+183,What are the 3 most recent comments on the question with the highest view count?,"MATCH (q:Question)
+WITH q
+ORDER BY q.view_count DESC
+LIMIT 1
+MATCH (c:Comment)-[:COMMENTED_ON]->(q)
+RETURN c
+ORDER BY c.uuid DESC
+LIMIT 3","match
+$q isa question, has view_count $vc;
+reduce $max_vc = max($vc);
+match
+$q2 isa question, has view_count $vc2;
+$vc2 == $max_vc;
+commented_on (comment: $c, question: $q2);
+$c has comment_uuid $uuid;
+sort $uuid desc;
+limit 3;
+fetch { ""comment"": $c };"
+184,Can you find the first 3 questions that were tagged 'neo4j' and have an answer count of zero?,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+WHERE q.answer_count = 0
+RETURN q
+ORDER BY q.creation_date ASC
+LIMIT 3","match
+$q isa question, has answer_count 0, has creation_date $cd;
+$t isa tag, has name ""neo4j"";
+tagged (question: $q, tag: $t);
+sort $cd asc;
+limit 3;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""title"": $q.title,
+  ""creation_date"": $q.creation_date,
+  ""answer_count"": $q.answer_count,
+  ""view_count"": $q.view_count,
+  ""question_link"": $q.question_link
+};"
+185,Which users have commented on the question titled 'Create graph from recursive JSON data using apoc.load.json and use UNWIND and FOREACH for setting property'? Show only the top 3.,"MATCH (q:Question {title: 'Create graph from recursive JSON data using apoc.load.json and use UNWIND and FOREACH for setting property'})
+MATCH (c:Comment)-[:COMMENTED_ON]->(q)
+MATCH (u:User)-[:COMMENTED]->(c)
+RETURN u.display_name AS user, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3","match
+$q isa question, has title ""Create graph from recursive JSON data using apoc.load.json and use UNWIND and FOREACH for setting property"";
+$c isa comment;
+commented_on (comment: $c, question: $q);
+$u isa user;
+commented (commenter: $u, comment: $c);
+reduce $comment_count = count($c) groupby $u;
+sort $comment_count desc;
+limit 3;
+fetch {
+  ""user"": $u.display_name,
+  ""comment_count"": $comment_count
+};"
+186,"Display all the questions asked in 2021, limiting the results to the first 5.","MATCH (q:Question)
+WHERE q.creation_date >= 1609459200 AND q.creation_date < 1640995200
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date
+LIMIT 5","match
+$q isa question, has creation_date $cd;
+$cd >= 1609459200; $cd < 1640995200;
+sort $cd;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+187,What are the top 3 questions with the lowest view count that have been answered by 'Anu'?,"MATCH (u:User {display_name: 'Anu'})-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q:Question)
+WHERE q.answer_count > 0
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count ASC
+LIMIT 3","match
+$u isa user, has display_name ""Anu"";
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+$q has answer_count $ac;
+$ac > 0;
+$q has view_count $vc;
+sort $vc asc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+188,List the names of the top 5 tags most frequently used in questions that have been commented on.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+MATCH (c:Comment)-[:COMMENTED_ON]->(q)
+WITH t.name AS tagName, COUNT(q) AS questionCount
+ORDER BY questionCount DESC
+LIMIT 5
+RETURN tagName","match
+$t isa tag, has name $n;
+$q isa question;
+tagged (question: $q, tag: $t);
+commented_on (comment: $c, question: $q);
+reduce $count = count($q) groupby $t, $n;
+sort $count desc;
+limit 5;
+fetch { ""tagName"": $n };"
+189,What are the links to the answers that were accepted for questions with more than 80 views? Show only the first 3.,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)
+WHERE q.view_count > 80 AND a.is_accepted = true
+RETURN a.link
+LIMIT 3","match
+$q isa question, has view_count $vc;
+$vc > 80;
+$a isa answer, has is_accepted true, has answer_link $link;
+answered (answer: $a, question: $q);
+limit 3;
+fetch { ""link"": $link };"
+190,Show the top 5 questions with the highest number of answers that have an accepted answer.,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true
+WITH q, COUNT(a) AS answer_count
+ORDER BY answer_count DESC
+LIMIT 5
+RETURN q.title AS question_title, q.link AS question_link, answer_count","match
+$q isa question;
+$a isa answer, has is_accepted true;
+answered (answer: $a, question: $q);
+reduce $answer_count = count($a) groupby $q;
+sort $answer_count desc;
+limit 5;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""answer_count"": $answer_count
+};"
+191,Identify the top 5 questions with the highest view count that do not have any answers.,"MATCH (q:Question)
+WHERE q.answer_count = 0
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 5","match
+$q isa question, has answer_count $ac, has view_count $vc;
+$ac == 0;
+sort $vc desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+192,List the top 5 comments with a link containing 'neomodel'.,"MATCH (c:Comment)-[:COMMENTED_ON]->(q:Question)
+WHERE c.link CONTAINS 'neomodel'
+RETURN c.link, c.score
+ORDER BY c.score DESC
+LIMIT 5","match
+$c isa comment, has comment_link $link, has score $score;
+commented_on (comment: $c, question: $q);
+$link like "".*neomodel.*"";
+sort $score desc;
+limit 5;
+fetch {
+  ""link"": $link,
+  ""score"": $score
+};"
+193,List all the answers with a negative score.,"MATCH (a:Answer)
+WHERE a.score < 0
+RETURN a.link, a.title, a.body_markdown, a.score, a.uuid","match
+$a isa answer, has score $s;
+$s < 0;
+fetch {
+  ""link"": $a.answer_link,
+  ""title"": $a.title,
+  ""body_markdown"": $a.body_markdown,
+  ""score"": $s,
+  ""uuid"": $a.answer_uuid
+};"
+194,What are the first 3 questions tagged with 'cypher' and have more than 1 answer?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WHERE t.name = 'cypher' AND q.answer_count > 1
+RETURN q.title, q.link, q.answer_count
+ORDER BY q.creation_date ASC
+LIMIT 3","match
+$q isa question, has answer_count $ac, has creation_date $cd;
+$t isa tag, has name ""cypher"";
+tagged (question: $q, tag: $t);
+$ac > 1;
+sort $cd asc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""answer_count"": $ac
+};"
+195,Which users have asked questions with more than 100 views?,"MATCH (u:User)-[:ASKED]->(q:Question)
+WHERE q.view_count > 100
+RETURN u.display_name, q.title, q.view_count","match
+$u isa user;
+$q isa question, has view_count $vc;
+$vc > 100;
+asked (asker: $u, question: $q);
+fetch {
+  ""display_name"": $u.display_name,
+  ""title"": $q.title,
+  ""view_count"": $vc
+};"
+196,List the first 3 questions with no answers.,"MATCH (q:Question)
+WHERE q.answer_count = 0
+RETURN q.title, q.link
+ORDER BY q.creation_date ASC
+LIMIT 3","match
+$q isa question, has answer_count 0, has creation_date $cd;
+sort $cd asc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link
+};"
+197,Which 3 answers have the lowest score?,"MATCH (a:Answer)
+RETURN a.link, a.title, a.score
+ORDER BY a.score ASC
+LIMIT 3","match
+$a isa answer, has score $s;
+sort $s asc;
+limit 3;
+fetch {
+  ""link"": $a.answer_link,
+  ""title"": $a.title,
+  ""score"": $s
+};"
+198,What are the top 5 questions with the lowest view count?,"MATCH (q:Question)
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count ASC
+LIMIT 5","match
+$q isa question, has view_count $vc;
+sort $vc asc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+199,List the first 3 accepted answers.,"MATCH (a:Answer)
+WHERE a.is_accepted = true
+RETURN a
+ORDER BY a.uuid
+LIMIT 3","match
+$a isa answer, has is_accepted true, has answer_uuid $uuid;
+sort $uuid;
+limit 3;
+fetch {
+  ""answer_uuid"": $a.answer_uuid,
+  ""answer_link"": $a.answer_link,
+  ""title"": $a.title,
+  ""is_accepted"": $a.is_accepted,
+  ""body_markdown"": $a.body_markdown,
+  ""score"": $a.score
+};"
+200,Which 3 users provided the most answers?,"MATCH (u:User)-[:PROVIDED]->(:Answer)
+RETURN u.display_name, COUNT(*) AS answer_count
+ORDER BY answer_count DESC
+LIMIT 3","match
+$u isa user;
+provided (provider: $u, answer: $a);
+reduce $answer_count = count($a) groupby $u;
+sort $answer_count desc;
+limit 3;
+fetch {
+  ""display_name"": $u.display_name,
+  ""answer_count"": $answer_count
+};"
+201,Find the first 3 questions tagged with 'neo4j'.,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+RETURN q
+ORDER BY q.creation_date ASC
+LIMIT 3","match
+$q isa question;
+$t isa tag, has name ""neo4j"";
+tagged (question: $q, tag: $t);
+$q has creation_date $cd;
+sort $cd asc;
+limit 3;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""question_link"": $q.question_link,
+  ""title"": $q.title,
+  ""creation_date"": $q.creation_date
+};"
+202,What are the first 3 tags associated with the most questions?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH t, COUNT(q) AS question_count
+ORDER BY question_count DESC
+LIMIT 3
+RETURN t.name AS tag_name, question_count","match
+$t isa tag;
+$q isa question;
+tagged (question: $q, tag: $t);
+reduce $count = count($q) groupby $t;
+sort $count desc;
+limit 3;
+fetch {
+  ""tag_name"": $t.name,
+  ""question_count"": $count
+};"
+203,List the top 5 questions with the most answers.,"MATCH (q:Question)
+RETURN q.title, q.link, q.answer_count
+ORDER BY q.answer_count DESC
+LIMIT 5","match
+$q isa question, has answer_count $ac;
+sort $ac desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""answer_count"": $ac
+};"
+204,List all questions asked by the user with display name 'Adrien Lemaire'.,"MATCH (u:User {display_name: 'Adrien Lemaire'})-[:ASKED]->(q:Question)
+RETURN q","match
+$u isa user, has display_name ""Adrien Lemaire"";
+asked (asker: $u, question: $q);
+$q isa question;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""creation_date"": $q.creation_date,
+  ""view_count"": $q.view_count,
+  ""answer_count"": $q.answer_count,
+  ""body_markdown"": $q.body_markdown,
+  ""accepted_answer_id"": $q.accepted_answer_id
+};"
+205,What are the first 3 comments with a score of 2 or higher?,"MATCH (c:Comment)
+WHERE c.score >= 2
+RETURN c
+ORDER BY c.uuid
+LIMIT 3","match
+$c isa comment, has score $s, has comment_uuid $uuid;
+$s >= 2;
+sort $uuid;
+limit 3;
+fetch {
+  ""comment_uuid"": $c.comment_uuid,
+  ""comment_link"": $c.comment_link,
+  ""score"": $c.score
+};"
+206,Find the top 5 answers with the highest score.,"MATCH (a:Answer)
+RETURN a.link, a.title, a.score
+ORDER BY a.score DESC
+LIMIT 5","match
+$a isa answer, has score $s;
+sort $s desc;
+limit 5;
+fetch {
+  ""link"": $a.answer_link,
+  ""title"": $a.title,
+  ""score"": $s
+};"
+207,Which tags are used by more than 5 questions?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH t, count(q) AS questionCount
+WHERE questionCount > 5
+RETURN t.name AS tagName, questionCount","match
+$q isa question;
+$t isa tag;
+tagged (question: $q, tag: $t);
+reduce $questionCount = count($q) groupby $t;
+match $questionCount > 5;
+fetch { ""tagName"": $t.name, ""questionCount"": $questionCount };"
+208,List the first 3 users by UUID.,"MATCH (u:User)
+RETURN u.uuid
+ORDER BY u.uuid
+LIMIT 3","match $u isa user;
+$u has user_uuid $uuid;
+sort $uuid;
+limit 3;
+fetch { ""uuid"": $uuid };"
+209,What are the top 5 most viewed questions?,"MATCH (q:Question)
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 5","match
+$q isa question, has view_count $vc;
+sort $vc desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+210,Who commented on the top 3 most commented questions?,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+MATCH (q)<-[:COMMENTED_ON]-(c)<-[:COMMENTED]-(u:User)
+RETURN q.title AS question_title, u.display_name AS commenter_name, COUNT(c) AS comment_count
+ORDER BY comment_count DESC","match
+$q isa question;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 3;
+match
+commented_on (comment: $c2, question: $q);
+commented (commenter: $u, comment: $c2);
+reduce $user_comment_count = count($c2) groupby $q, $u;
+sort $user_comment_count desc;
+fetch {
+  ""question_title"": $q.title,
+  ""commenter_name"": $u.display_name,
+  ""comment_count"": $user_comment_count
+};"
+211,Which 3 users have commented the most?,"MATCH (u:User)-[:COMMENTED]->(c:Comment)
+WITH u, COUNT(c) AS commentCount
+ORDER BY commentCount DESC
+LIMIT 3
+RETURN u.display_name AS user, commentCount","match
+$u isa user;
+commented (commenter: $u, comment: $c);
+reduce $commentCount = count($c) groupby $u;
+sort $commentCount desc;
+limit 3;
+fetch {
+  ""user"": $u.display_name,
+  ""commentCount"": $commentCount
+};"
+212,What are the titles of the first 3 questions that have received an answer with the highest scores?,"MATCH (q:Question)<-[:ANSWERED]-(a:Answer)
+WITH q, a
+ORDER BY a.score DESC
+LIMIT 3
+RETURN q.title","match
+$q isa question;
+$a isa answer, has score $s;
+answered (answer: $a, question: $q);
+sort $s desc;
+limit 3;
+fetch { ""title"": $q.title };"
+213,List all the answers provided by the user with UUID 16922964.,"MATCH (u:User {uuid: 16922964})-[:PROVIDED]->(a:Answer)
+RETURN a.link AS answer_link, a.title AS answer_title, a.is_accepted AS is_accepted, a.body_markdown AS body, a.score AS score, a.uuid AS answer_uuid","match
+$u isa user, has user_uuid 16922964;
+provided (provider: $u, answer: $a);
+fetch {
+  ""answer_link"": $a.answer_link,
+  ""answer_title"": $a.title,
+  ""is_accepted"": $a.is_accepted,
+  ""body"": $a.body_markdown,
+  ""score"": $a.score,
+  ""answer_uuid"": $a.answer_uuid
+};"
+214,List the first 3 questions that have been both asked and commented on by the same user.,"MATCH (u:User)-[:ASKED]->(q:Question)
+MATCH (u)-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q)
+RETURN q.title AS question_title, q.link AS question_link, u.display_name AS user_name
+LIMIT 3","match
+  $u isa user;
+  $q isa question;
+  $c isa comment;
+  asked (asker: $u, question: $q);
+  commented (commenter: $u, comment: $c);
+  commented_on (comment: $c, question: $q);
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""user_name"": $u.display_name
+};"
+215,List the top 5 questions with an accepted answer ID.,"MATCH (q:Question)
+WHERE q.accepted_answer_id IS NOT NULL
+RETURN q.title, q.link, q.accepted_answer_id
+ORDER BY q.view_count DESC
+LIMIT 5","match
+$q isa question, has accepted_answer_id $aid, has view_count $vc;
+sort $vc desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""accepted_answer_id"": $aid
+};"
+216,Which users have provided answers to more than 3 different questions?,"MATCH (u:User)-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q:Question)
+WITH u, COUNT(DISTINCT q) AS answeredQuestions
+WHERE answeredQuestions > 3
+RETURN u.display_name, answeredQuestions","match
+$u isa user;
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+select $u, $q;
+distinct;
+reduce $count = count groupby $u;
+match $count > 3;
+fetch { ""display_name"": $u.display_name, ""answeredQuestions"": $count };"
+217,List the first 3 questions with a title containing 'neo4j'.,"MATCH (q:Question)
+WHERE q.title CONTAINS 'neo4j'
+RETURN q.title, q.link
+ORDER BY q.creation_date
+LIMIT 3","match
+$q isa question, has title $t, has creation_date $cd;
+$t like "".*neo4j.*"";
+sort $cd;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link
+};"
+218,Which 3 answers are linked to the question with the most tags?,"// Step 1: Find the question with the most tags
+MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(t) AS tagCount
+ORDER BY tagCount DESC
+LIMIT 1
+
+// Step 2: Find the top 3 answers linked to this question
+MATCH (a:Answer)-[:ANSWERED]->(q)
+RETURN a.link, a.title, a.score
+ORDER BY a.score DESC
+LIMIT 3","match
+$q isa question;
+tagged (question: $q, tag: $t);
+reduce $tag_count = count($t) groupby $q;
+sort $tag_count desc;
+limit 1;
+match
+answered (answer: $a, question: $q);
+$a has score $s;
+sort $s desc;
+limit 3;
+fetch { ""link"": $a.answer_link, ""title"": $a.title, ""score"": $s };"
+219,List all the comments made by the user with the highest comment score.,"// Step 1: Find the user with the highest comment score
+MATCH (u:User)-[:COMMENTED]->(c:Comment)
+WITH u, MAX(c.score) AS maxScore
+MATCH (u)-[:COMMENTED]->(c:Comment)
+WHERE c.score = maxScore
+
+// Step 2: Retrieve all comments made by this user
+MATCH (u)-[:COMMENTED]->(allComments:Comment)
+RETURN u.display_name AS user, allComments.uuid AS comment_id, allComments.link AS comment_link, allComments.score AS comment_score","match
+$u isa user;
+commented (commenter: $u, comment: $c);
+$c has score $s;
+reduce $max_score = max($s) groupby $u;
+sort $max_score desc;
+limit 1;
+match
+commented (commenter: $u, comment: $all_comments);
+$all_comments has comment_uuid $comment_id;
+$all_comments has comment_link $comment_link;
+$all_comments has score $comment_score;
+fetch {
+  ""user"": $u.display_name,
+  ""comment_id"": $comment_id,
+  ""comment_link"": $comment_link,
+  ""comment_score"": $comment_score
+};"
+220,What are the first 3 tags used in questions asked by 'Adrien Lemaire'?,"MATCH (u:User {display_name: 'Adrien Lemaire'})-[:ASKED]->(q:Question)-[:TAGGED]->(t:Tag)
+RETURN t.name
+ORDER BY q.creation_date
+LIMIT 3","match
+$u isa user, has display_name ""Adrien Lemaire"";
+$q isa question, has creation_date $cd;
+$t isa tag, has name $n;
+asked (asker: $u, question: $q);
+tagged (question: $q, tag: $t);
+sort $cd;
+limit 3;
+fetch { ""name"": $n };"
+221,List the top 5 questions with creation dates before 1600000000.,"MATCH (q:Question)
+WHERE q.creation_date < 1600000000
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date DESC
+LIMIT 5","match
+$q isa question, has creation_date $cd;
+$cd < 1600000000;
+sort $cd desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+222,Which 3 users have their name starting with 'A'?,"MATCH (u:User)
+WHERE u.display_name STARTS WITH 'A'
+RETURN u.display_name
+LIMIT 3","match
+$u isa user, has display_name $name;
+$name like ""A.*"";
+limit 3;
+fetch {
+  ""display_name"": $name
+};"
+223,What are the first 3 questions with exactly 2 answers?,"MATCH (q:Question)
+WHERE q.answer_count = 2
+RETURN q
+ORDER BY q.creation_date
+LIMIT 3","match $q isa question, has answer_count 2, has creation_date $cd;
+sort $cd;
+limit 3;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""title"": $q.title,
+  ""creation_date"": $cd,
+  ""answer_count"": $q.answer_count
+};"
+224,Which users have commented on more than 5 questions?,"MATCH (u:User)-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q:Question)
+WITH u, COUNT(DISTINCT q) AS commentedQuestions
+WHERE commentedQuestions > 5
+RETURN u.display_name, commentedQuestions","match
+$u isa user;
+$c isa comment;
+$q isa question;
+commented (commenter: $u, comment: $c);
+commented_on (comment: $c, question: $q);
+select $u, $q;
+distinct;
+reduce $commentedQuestions = count($q) groupby $u;
+match $commentedQuestions > 5;
+fetch { ""display_name"": $u.display_name, ""commentedQuestions"": $commentedQuestions };"
+225,List the first 3 answers that were not accepted.,"MATCH (a:Answer)
+WHERE a.is_accepted = false
+RETURN a.link, a.title, a.body_markdown, a.score, a.uuid
+ORDER BY a.uuid
+LIMIT 3","match
+$a isa answer, has is_accepted false, has answer_uuid $uuid;
+sort $uuid;
+limit 3;
+fetch {
+  ""link"": $a.answer_link,
+  ""title"": $a.title,
+  ""body_markdown"": $a.body_markdown,
+  ""score"": $a.score,
+  ""uuid"": $uuid
+};"
+226,Which 3 tags appear in the least number of questions?,"MATCH (t:Tag)<-[:TAGGED]-(q:Question)
+WITH t, COUNT(q) AS questionCount
+ORDER BY questionCount ASC
+LIMIT 3
+RETURN t.name AS tagName, questionCount","match
+$t isa tag;
+tagged (tag: $t, question: $q);
+reduce $questionCount = count($q) groupby $t;
+sort $questionCount asc;
+limit 3;
+fetch {
+  ""tagName"": $t.name,
+  ""questionCount"": $questionCount
+};"
+227,List the first 3 comments made on the question with the highest view count.,"MATCH (q:Question)-[:COMMENTED_ON]-(c:Comment)
+WITH q, c
+ORDER BY q.view_count DESC, c.uuid ASC
+LIMIT 3
+RETURN c.link AS comment_link, c.uuid AS comment_id, c.score AS comment_score","match
+$q isa question, has view_count $vc;
+$c isa comment, has comment_link $link, has comment_uuid $uuid, has score $sc;
+commented_on (question: $q, comment: $c);
+sort $vc desc, $uuid asc;
+limit 3;
+fetch {
+  ""comment_link"": $link,
+  ""comment_id"": $uuid,
+  ""comment_score"": $sc
+};"
+228,Which 3 questions have the highest answer count?,"MATCH (q:Question)
+RETURN q.title, q.link, q.answer_count
+ORDER BY q.answer_count DESC
+LIMIT 3","match
+$q isa question, has answer_count $ac;
+sort $ac desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""answer_count"": $ac
+};"
+229,What are the top 5 most recent questions?,"MATCH (q:Question)
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date DESC
+LIMIT 5","match
+$q isa question, has creation_date $cd;
+sort $cd desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+230,List the first 3 questions asked in 2021.,"MATCH (q:Question)
+WHERE q.creation_date >= 1609459200 AND q.creation_date < 1640995200
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date ASC
+LIMIT 3","match
+$q isa question, has creation_date $cd, has title $t, has question_link $l;
+$cd >= 1609459200;
+$cd < 1640995200;
+sort $cd asc;
+limit 3;
+fetch {
+  ""title"": $t,
+  ""link"": $l,
+  ""creation_date"": $cd
+};"
+231,Can you list the first 3 questions that have a view count between 50 and 100?,"MATCH (q:Question)
+WHERE q.view_count >= 50 AND q.view_count <= 100
+RETURN q.title, q.link, q.view_count
+ORDER BY q.creation_date
+LIMIT 3","match
+$q isa question, has view_count $vc, has creation_date $cd;
+$vc >= 50;
+$vc <= 100;
+sort $cd;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+232,Which 3 users have commented on questions asked by 'schernichkin'?,"MATCH (u:User {display_name: 'schernichkin'})-[:ASKED]->(q:Question)<-[:COMMENTED_ON]-(c:Comment)<-[:COMMENTED]-(commenter:User)
+RETURN commenter.display_name, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3","match
+$u isa user, has display_name ""schernichkin"";
+asked (asker: $u, question: $q);
+commented_on (comment: $c, question: $q);
+commented (commenter: $commenter, comment: $c);
+reduce $comment_count = count($c) groupby $commenter;
+sort $comment_count desc;
+limit 3;
+fetch { ""display_name"": $commenter.display_name, ""comment_count"": $comment_count };"
+233,What are the titles of the top 5 questions with the lowest view counts?,"MATCH (q:Question)
+WITH q
+ORDER BY q.view_count ASC
+LIMIT 5
+RETURN q.title","match
+$q isa question, has view_count $vc;
+sort $vc;
+limit 5;
+fetch {
+  ""title"": $q.title
+};"
+234,Who are the users who have provided answers to the 3 most recently asked questions?,"// Step 1: Find the 3 most recently asked questions
+MATCH (q:Question)
+WITH q
+ORDER BY q.creation_date DESC
+LIMIT 3
+
+// Step 2: Find the users who provided answers to these questions
+MATCH (u:User)-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q)
+RETURN DISTINCT u.display_name","match
+$q isa question, has creation_date $cd;
+sort $cd desc;
+limit 3;
+match
+$u isa user, has display_name $dn;
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+select $dn;
+distinct;
+fetch { ""display_name"": $dn };"
+235,What are the top 5 most commented-on questions?,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 5
+RETURN q.title AS question_title, q.link AS question_link, comment_count","match
+$q isa question;
+$c isa comment;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 5;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""comment_count"": $comment_count
+};"
+236,List the 3 users who have asked the most questions with accepted answers.,"MATCH (u:User)-[:ASKED]->(q:Question)<-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true
+WITH u, COUNT(q) AS accepted_questions_count
+ORDER BY accepted_questions_count DESC
+LIMIT 3
+RETURN u.display_name, accepted_questions_count","match
+$u isa user;
+asked (asker: $u, question: $q);
+answered (answer: $a, question: $q);
+$a has is_accepted true;
+reduce $count = count($q) groupby $u;
+sort $count desc;
+limit 3;
+fetch { ""display_name"": $u.display_name, ""accepted_questions_count"": $count };"
+237,Which tags are associated with the top 3 questions by answer count?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, t
+ORDER BY q.answer_count DESC
+LIMIT 3
+RETURN DISTINCT t.name AS tag_name","match
+$q isa question, has answer_count $ac;
+$t isa tag, has name $n;
+tagged (question: $q, tag: $t);
+sort $ac desc;
+limit 3;
+select $n;
+distinct;
+fetch { ""tag_name"": $n };"
+238,What are the top 3 lowest scored answers on the most viewed questions?,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)
+WITH q, a
+ORDER BY q.view_count DESC
+LIMIT 3
+WITH a
+ORDER BY a.score ASC
+LIMIT 3
+RETURN a.link AS answer_link, a.score AS answer_score, a.body_markdown AS answer_body","match
+$q isa question, has view_count $vc;
+$a isa answer, has score $s, has answer_link $link, has body_markdown $body;
+answered (question: $q, answer: $a);
+sort $vc desc, $s asc;
+limit 3;
+fetch {
+  ""answer_link"": $link,
+  ""answer_score"": $s,
+  ""answer_body"": $body
+};"
+239,List the 3 most recent questions tagged with 'neo4j'.,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date DESC
+LIMIT 3","match
+$q isa question;
+$t isa tag, has name ""neo4j"";
+tagged (question: $q, tag: $t);
+$q has creation_date $cd;
+sort $cd desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+240,Who are the top 3 users by the number of comments on answers with a score of 3?,"MATCH (u:User)-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q:Question)<-[:ANSWERED]-(a:Answer)
+WHERE a.score = 3
+WITH u, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+RETURN u.display_name AS user, comment_count","match
+$u isa user;
+$c isa comment;
+$a isa answer, has score 3;
+commented (commenter: $u, comment: $c);
+commented_on (comment: $c, question: $q);
+answered (answer: $a, question: $q);
+reduce $comment_count = count($c) groupby $u;
+sort $comment_count desc;
+limit 3;
+fetch { ""user"": $u.display_name, ""comment_count"": $comment_count };"
+241,What are the top 3 tags associated with questions having the highest number of comments?,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+MATCH (q)-[:TAGGED]->(t:Tag)
+RETURN t.name AS tag, COUNT(q) AS question_count
+ORDER BY question_count DESC
+LIMIT 3","match
+$q isa question;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 3;
+match
+tagged (question: $q, tag: $t);
+$t has name $tag_name;
+reduce $question_count = count($q) groupby $t, $tag_name;
+sort $question_count desc;
+limit 3;
+fetch { ""tag"": $tag_name, ""question_count"": $question_count };"
+242,What are the top 3 questions with the highest number of tags and answers?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(t) AS tag_count
+MATCH (q)-[:ANSWERED]->(a:Answer)
+WITH q, tag_count, COUNT(a) AS answer_count
+RETURN q.title AS question_title, q.link AS question_link, tag_count, answer_count
+ORDER BY tag_count DESC, answer_count DESC
+LIMIT 3","match
+$q isa question;
+tagged (question: $q, tag: $t);
+answered (question: $q, answer: $a);
+reduce $tag_count = count($t), $answer_count = count($a) groupby $q;
+sort $tag_count desc, $answer_count desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""tag_count"": $tag_count,
+  ""answer_count"": $answer_count
+};"
+243,Which 3 users have commented the most times on questions with more than 2 tags?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(t) AS tagCount
+WHERE tagCount > 2
+MATCH (u:User)-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q)
+WITH u, COUNT(c) AS commentCount
+RETURN u.display_name, commentCount
+ORDER BY commentCount DESC
+LIMIT 3","match
+$q isa question;
+tagged (question: $q, tag: $t);
+reduce $tag_count = count($t) groupby $q;
+match $tag_count > 2;
+$u isa user;
+$c isa comment;
+commented (commenter: $u, comment: $c);
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $u;
+sort $comment_count desc;
+limit 3;
+fetch {
+  ""display_name"": $u.display_name,
+  ""commentCount"": $comment_count
+};"
+244,Identify the 3 questions with the highest view counts that also have an accepted answer.,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$q isa question;
+$a isa answer, has is_accepted true;
+answered (question: $q, answer: $a);
+$q has view_count $vc;
+sort $vc desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+245,Which users have the most comments on answers with scores higher than 1?,"MATCH (u:User)-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q:Question)<-[:ANSWERED]-(a:Answer)
+WHERE a.score > 1
+WITH u, COUNT(c) AS comment_count
+RETURN u.display_name, comment_count
+ORDER BY comment_count DESC
+LIMIT 1","match
+$u isa user;
+$c isa comment;
+$q isa question;
+$a isa answer, has score $s;
+$s > 1;
+commented (commenter: $u, comment: $c);
+commented_on (comment: $c, question: $q);
+answered (answer: $a, question: $q);
+reduce $comment_count = count($c) groupby $u;
+sort $comment_count desc;
+limit 1;
+fetch { ""display_name"": $u.display_name, ""comment_count"": $comment_count };"
+246,What are the top 3 most viewed questions without any answers?,"MATCH (q:Question)
+WHERE q.answer_count = 0
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$q isa question, has answer_count 0, has view_count $vc;
+sort $vc desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+247,List the top 5 comments on the questions asked by 'Anu'.,"MATCH (u:User {display_name: 'Anu'})-[:ASKED]->(q:Question)<-[:COMMENTED_ON]-(c:Comment)
+RETURN c
+ORDER BY c.score DESC
+LIMIT 5","match
+$u isa user, has display_name ""Anu"";
+asked (asker: $u, question: $q);
+commented_on (comment: $c, question: $q);
+$c has score $s;
+sort $s desc;
+limit 5;
+fetch {
+  ""comment_uuid"": $c.comment_uuid,
+  ""comment_link"": $c.comment_link,
+  ""score"": $c.score
+};"
+248,Who are the top 3 users based on the number of provided answers that have been accepted?,"MATCH (u:User)-[:PROVIDED]->(a:Answer)
+WHERE a.is_accepted = true
+WITH u, COUNT(a) AS accepted_answers_count
+ORDER BY accepted_answers_count DESC
+LIMIT 3
+RETURN u.display_name AS user, accepted_answers_count","match
+$u isa user;
+$a isa answer, has is_accepted true;
+provided (provider: $u, answer: $a);
+reduce $accepted_answers_count = count($a) groupby $u;
+sort $accepted_answers_count desc;
+limit 3;
+fetch {
+  ""user"": $u.display_name,
+  ""accepted_answers_count"": $accepted_answers_count
+};"
+249,What are the top 3 questions with the most tags?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(t) AS tagCount
+ORDER BY tagCount DESC
+LIMIT 3
+RETURN q.title AS questionTitle, tagCount","match
+$q isa question;
+tagged (question: $q, tag: $t);
+reduce $tagCount = count($t) groupby $q;
+sort $tagCount desc;
+limit 3;
+fetch {
+  ""questionTitle"": $q.title,
+  ""tagCount"": $tagCount
+};"
+250,List the top 3 answers that were not accepted but have the highest scores.,"MATCH (a:Answer)-[:ANSWERED]->(q:Question)
+WHERE a.is_accepted = false
+RETURN a.link, a.title, a.score
+ORDER BY a.score DESC
+LIMIT 3","match
+$a isa answer, has is_accepted false, has score $s;
+answered (answer: $a, question: $q);
+sort $s desc;
+limit 3;
+fetch {
+  ""link"": $a.answer_link,
+  ""title"": $a.title,
+  ""score"": $s
+};"
+251,List the 3 most recent tags used in questions.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH t, q
+ORDER BY q.creation_date DESC
+RETURN DISTINCT t.name AS tag_name
+LIMIT 3","match
+$q isa question, has creation_date $cd;
+$t isa tag, has name $n;
+tagged (question: $q, tag: $t);
+reduce $max_date = max($cd) groupby $t;
+sort $max_date desc;
+limit 3;
+fetch { ""tag_name"": $t.name };"
+252,What are the top 3 questions with the most answers and what are their view counts?,"MATCH (q:Question)
+RETURN q.title AS question_title, q.view_count AS view_count, q.answer_count AS answer_count
+ORDER BY q.answer_count DESC
+LIMIT 3","match
+$q isa question, has answer_count $ac;
+sort $ac desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""view_count"": $q.view_count,
+  ""answer_count"": $ac
+};"
+254,Show the first 3 questions that have been tagged with 'neo4j' and have an answer with a score of 3 or higher.,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+MATCH (a:Answer)-[:ANSWERED]->(q)
+WHERE a.score >= 3
+RETURN q
+ORDER BY q.creation_date
+LIMIT 3","match
+$q isa question, has creation_date $cd;
+$t isa tag, has name ""neo4j"";
+tagged (question: $q, tag: $t);
+$a isa answer, has score $s;
+$s >= 3;
+answered (answer: $a, question: $q);
+sort $cd;
+limit 3;
+fetch {
+  ""question_uuid"": $q.question_uuid,
+  ""title"": $q.title,
+  ""creation_date"": $cd
+};"
+255,Which 3 users provided answers to the most questions?,"MATCH (u:User)-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q:Question)
+WITH u, COUNT(q) AS answeredQuestions
+ORDER BY answeredQuestions DESC
+LIMIT 3
+RETURN u.display_name AS user, answeredQuestions","match
+$u isa user;
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+reduce $answered_questions = count($q) groupby $u;
+sort $answered_questions desc;
+limit 3;
+fetch { ""user"": $u.display_name, ""answeredQuestions"": $answered_questions };"
+256,List the tags associated with the 3 questions having the lowest view counts.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, t
+ORDER BY q.view_count ASC
+LIMIT 3
+RETURN q.title AS question_title, q.view_count AS view_count, collect(t.name) AS tags","match
+$q isa question, has view_count $vc, has title $t;
+tagged (question: $q, tag: $tag);
+$tag has name $n;
+sort $vc asc;
+limit 3;
+fetch {
+  ""question_title"": $t,
+  ""view_count"": $vc,
+  ""tag"": $n
+};"
+257,What are the top 3 questions with the highest scores of comments?,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, SUM(c.score) AS totalCommentScore
+ORDER BY totalCommentScore DESC
+LIMIT 3
+RETURN q.title AS questionTitle, q.link AS questionLink, totalCommentScore","match
+$q isa question;
+$c isa comment, has score $s;
+commented_on (comment: $c, question: $q);
+reduce $totalScore = sum($s) groupby $q;
+sort $totalScore desc;
+limit 3;
+fetch {
+  ""questionTitle"": $q.title,
+  ""questionLink"": $q.question_link,
+  ""totalCommentScore"": $totalScore
+};"
+258,"For the top 3 questions with the most views, list the users who asked them.","MATCH (q:Question)<-[:ASKED]-(u:User)
+RETURN q.title AS question_title, u.display_name AS user_name, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$q isa question, has title $title, has view_count $vc;
+$u isa user, has display_name $dn;
+asked (asker: $u, question: $q);
+sort $vc desc;
+limit 3;
+fetch {
+  ""question_title"": $title,
+  ""user_name"": $dn,
+  ""view_count"": $vc
+};"
+262,Which users have provided the most answers to questions tagged with 'neo4j'?,"MATCH (u:User)-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+RETURN u.display_name, COUNT(a) AS answer_count
+ORDER BY answer_count DESC
+LIMIT 1","match
+$u isa user;
+$a isa answer;
+$q isa question;
+$t isa tag, has name ""neo4j"";
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+tagged (question: $q, tag: $t);
+reduce $answer_count = count($a) groupby $u;
+sort $answer_count desc;
+limit 1;
+fetch {
+  ""display_name"": $u.display_name,
+  ""answer_count"": $answer_count
+};"
+263,What are the top 5 questions with the lowest answer counts but with comments?,"MATCH (q:Question)-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS commentCount
+WHERE commentCount > 0
+RETURN q.title AS questionTitle, q.link AS questionLink, q.answer_count AS answerCount, commentCount
+ORDER BY q.answer_count ASC, commentCount DESC
+LIMIT 5","match
+$q isa question;
+commented_on (comment: $c, question: $q);
+$q has answer_count $ac;
+reduce $commentCount = count($c) groupby $q, $ac;
+sort $ac asc, $commentCount desc;
+limit 5;
+fetch {
+  ""questionTitle"": $q.title,
+  ""questionLink"": $q.question_link,
+  ""answerCount"": $ac,
+  ""commentCount"": $commentCount
+};"
+264,List the top 3 most answered questions and their accepted answers.,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)
+WHERE q.answer_count > 0
+WITH q, COUNT(a) AS answerCount
+ORDER BY answerCount DESC, q.view_count DESC
+LIMIT 3
+MATCH (q)-[:ANSWERED]->(acceptedAnswer:Answer)
+WHERE acceptedAnswer.is_accepted = true
+RETURN q.title AS questionTitle, q.link AS questionLink, acceptedAnswer.link AS acceptedAnswerLink, acceptedAnswer.body_markdown AS acceptedAnswerBody","match
+$q isa question, has answer_count $ac, has view_count $vc;
+$ac > 0;
+answered (question: $q, answer: $a);
+reduce $count = count($a) groupby $q, $vc;
+sort $count desc, $vc desc;
+limit 3;
+match
+answered (question: $q, answer: $acceptedAnswer);
+$acceptedAnswer has is_accepted true;
+fetch {
+  ""questionTitle"": $q.title,
+  ""questionLink"": $q.question_link,
+  ""acceptedAnswerLink"": $acceptedAnswer.answer_link,
+  ""acceptedAnswerBody"": $acceptedAnswer.body_markdown
+};"
+265,Identify the top 5 questions with the most different tags associated.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(DISTINCT t) AS tag_count
+ORDER BY tag_count DESC
+LIMIT 5
+RETURN q.title AS question_title, tag_count","match
+$q isa question;
+tagged (question: $q, tag: $t);
+reduce $tag_count = count($t) groupby $q;
+sort $tag_count desc;
+limit 5;
+fetch {
+  ""question_title"": $q.title,
+  ""tag_count"": $tag_count
+};"
+266,What are the three most recent questions asked by users with a uuid greater than 15000000?,"MATCH (u:User)-[:ASKED]->(q:Question)
+WHERE u.uuid > 15000000
+RETURN q.title, q.creation_date, q.link
+ORDER BY q.creation_date DESC
+LIMIT 3","match
+$u isa user, has user_uuid $uuid;
+$uuid > 15000000;
+$q isa question, has creation_date $cd;
+asked (asker: $u, question: $q);
+sort $cd desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""creation_date"": $cd,
+  ""link"": $q.question_link
+};"
+267,Who commented on the 3 questions with the highest scores?,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)<-[:COMMENTED]-(u:User)
+WITH q, u, c
+ORDER BY q.view_count DESC
+LIMIT 3
+RETURN q.title AS QuestionTitle, u.display_name AS UserName, c.uuid AS CommentUUID","match
+$q isa question;
+$c isa comment;
+$u isa user;
+commented_on (comment: $c, question: $q);
+commented (commenter: $u, comment: $c);
+$q has view_count $vc;
+sort $vc desc;
+limit 3;
+fetch {
+  ""QuestionTitle"": $q.title,
+  ""UserName"": $u.display_name,
+  ""CommentUUID"": $c.comment_uuid
+};"
+268,List the top 3 questions with the highest scores of their accepted answers.,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true
+RETURN q.title AS question_title, a.score AS accepted_answer_score
+ORDER BY a.score DESC
+LIMIT 3","match
+$q isa question;
+$a isa answer, has is_accepted true, has score $s;
+answered (question: $q, answer: $a);
+sort $s desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""accepted_answer_score"": $s
+};"
+269,Which users have provided answers that were accepted for the top 3 most viewed questions?,"// Step 1: Find the top 3 most viewed questions
+MATCH (q:Question)
+WITH q
+ORDER BY q.view_count DESC
+LIMIT 3
+
+// Step 2: Find the accepted answers for these questions
+MATCH (q)<-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true
+
+// Step 3: Find the users who provided these accepted answers
+MATCH (u:User)-[:PROVIDED]->(a)
+
+// Step 4: Return the users' display names and the corresponding question titles
+RETURN u.display_name AS user, q.title AS question_title","match
+$q isa question, has view_count $vc, has title $title;
+$a isa answer, has is_accepted true;
+answered (answer: $a, question: $q);
+$u isa user, has display_name $name;
+provided (provider: $u, answer: $a);
+sort $vc desc;
+limit 3;
+fetch {
+  ""user"": $name,
+  ""question_title"": $title
+};"
+270,List the top 5 questions with the most number of different commenters.,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(DISTINCT c.uuid) AS commenter_count
+ORDER BY commenter_count DESC
+LIMIT 5
+RETURN q.title AS question_title, commenter_count","match
+$q isa question;
+$c isa comment;
+commented_on (comment: $c, question: $q);
+reduce $commenter_count = count($c) groupby $q;
+sort $commenter_count desc;
+limit 5;
+fetch {
+  ""question_title"": $q.title,
+  ""commenter_count"": $commenter_count
+};"
+271,"For the questions with accepted answers, list the top 3 by view count.","MATCH (q:Question)-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true
+RETURN q.title AS question_title, q.view_count AS view_count, q.link AS question_link
+ORDER BY q.view_count DESC
+LIMIT 3","match
+$q isa question;
+$a isa answer, has is_accepted true;
+answered (question: $q, answer: $a);
+$q has view_count $vc;
+sort $vc desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""view_count"": $vc,
+  ""question_link"": $q.question_link
+};"
+272,What are the three most recent answers provided on the platform?,"MATCH (a:Answer)
+RETURN a.link, a.title, a.body_markdown, a.uuid, a.score, a.is_accepted
+ORDER BY a.uuid DESC
+LIMIT 3","match $a isa answer, has answer_uuid $uuid;
+sort $uuid desc;
+limit 3;
+fetch {
+  ""link"": $a.answer_link,
+  ""title"": $a.title,
+  ""body_markdown"": $a.body_markdown,
+  ""uuid"": $uuid,
+  ""score"": $a.score,
+  ""is_accepted"": $a.is_accepted
+};"
+273,Who are the top 3 users who provided the most answers?,"MATCH (u:User)-[:PROVIDED]->(a:Answer)
+WITH u, COUNT(a) AS answer_count
+ORDER BY answer_count DESC
+LIMIT 3
+RETURN u.display_name AS user, answer_count","match
+$u isa user;
+provided (provider: $u, answer: $a);
+reduce $answer_count = count($a) groupby $u;
+sort $answer_count desc;
+limit 3;
+fetch {
+  ""user"": $u.display_name,
+  ""answer_count"": $answer_count
+};"
+274,List the top 5 most active users based on the total number of comments provided.,"MATCH (u:User)-[:COMMENTED]->(c:Comment)
+WITH u, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 5
+RETURN u.display_name AS user, comment_count","match
+$u isa user;
+commented (commenter: $u, comment: $c);
+reduce $comment_count = count($c) groupby $u;
+sort $comment_count desc;
+limit 5;
+fetch {
+  ""user"": $u.display_name,
+  ""comment_count"": $comment_count
+};"
+275,"For the top 3 highest scoring answers, list the questions they answered.","MATCH (a:Answer)-[:ANSWERED]->(q:Question)
+WITH a, q
+ORDER BY a.score DESC
+LIMIT 3
+RETURN a.score AS AnswerScore, q.title AS QuestionTitle, q.link AS QuestionLink","match
+$a isa answer, has score $s;
+$q isa question;
+answered (answer: $a, question: $q);
+sort $s desc;
+limit 3;
+fetch {
+  ""AnswerScore"": $s,
+  ""QuestionTitle"": $q.title,
+  ""QuestionLink"": $q.question_link
+};"
+276,Which users commented on the top 5 most viewed questions?,"MATCH (q:Question)
+WITH q
+ORDER BY q.view_count DESC
+LIMIT 5
+MATCH (u:User)-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q)
+RETURN DISTINCT u.display_name AS user, q.title AS question_title, q.view_count AS views
+ORDER BY views DESC","match
+$q isa question, has view_count $views;
+sort $views desc;
+limit 5;
+match
+$u isa user, has display_name $name;
+commented (commenter: $u, comment: $c);
+commented_on (comment: $c, question: $q);
+$q has title $title;
+select $name, $title, $views;
+distinct;
+sort $views desc;
+fetch { ""user"": $name, ""question_title"": $title, ""views"": $views };"
+277,What are the top 3 questions with the lowest view counts but with accepted answers?,"MATCH (q:Question)-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count ASC
+LIMIT 3","match
+$q isa question;
+$a isa answer, has is_accepted true;
+answered (answer: $a, question: $q);
+$q has view_count $vc;
+sort $vc asc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+278,Which tags are most frequently associated with questions having more than one answer?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WHERE q.answer_count > 1
+RETURN t.name AS tag, COUNT(q) AS question_count
+ORDER BY question_count DESC","match
+$q isa question, has answer_count $ac;
+$ac > 1;
+$t isa tag;
+tagged (question: $q, tag: $t);
+reduce $question_count = count($q) groupby $t;
+sort $question_count desc;
+fetch {
+  ""tag"": $t.name,
+  ""question_count"": $question_count
+};"
+279,List the top 3 questions with the most comments.,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+RETURN q.title AS question_title, q.link AS question_link, comment_count","match
+$q isa question;
+$c isa comment;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""comment_count"": $comment_count
+};"
+280,Identify the top 5 users by the number of questions they have asked.,"MATCH (u:User)-[:ASKED]->(q:Question)
+WITH u, COUNT(q) AS question_count
+ORDER BY question_count DESC
+LIMIT 5
+RETURN u.display_name AS user, question_count","match
+$u isa user;
+asked (asker: $u, question: $q);
+reduce $question_count = count($q) groupby $u;
+sort $question_count desc;
+limit 5;
+fetch {
+  ""user"": $u.display_name,
+  ""question_count"": $question_count
+};"
+281,List the top 5 answers with the highest score.,"MATCH (a:Answer)
+RETURN a.link, a.title, a.score
+ORDER BY a.score DESC
+LIMIT 5","match
+$a isa answer, has score $s;
+sort $s desc;
+limit 5;
+fetch {
+  ""link"": $a.answer_link,
+  ""title"": $a.title,
+  ""score"": $s
+};"
+282,What are the top 3 comments with the highest score?,"MATCH (c:Comment)
+RETURN c
+ORDER BY c.score DESC
+LIMIT 3","match
+$c isa comment, has score $s;
+sort $s desc;
+limit 3;
+fetch {
+  ""comment_uuid"": $c.comment_uuid,
+  ""comment_link"": $c.comment_link,
+  ""score"": $s
+};"
+283,Which users provided answers to the top 5 questions by view count?,"MATCH (q:Question)
+WITH q
+ORDER BY q.view_count DESC
+LIMIT 5
+MATCH (u:User)-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q)
+RETURN DISTINCT u.display_name AS user, q.title AS question_title, q.view_count AS view_count","match
+$q isa question, has view_count $vc, has title $title;
+$a isa answer;
+$u isa user, has display_name $name;
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+sort $vc desc;
+limit 5;
+fetch { ""user"": $name, ""question_title"": $title, ""view_count"": $vc };"
+284,Who are the users who asked the top 3 questions with the most answers?,"MATCH (q:Question)<-[:ASKED]-(u:User)
+WITH q, u
+ORDER BY q.answer_count DESC
+LIMIT 3
+RETURN u.display_name AS user, q.title AS question_title, q.answer_count AS number_of_answers","match
+$q isa question, has answer_count $ac, has title $t;
+$u isa user, has display_name $dn;
+asked (asker: $u, question: $q);
+sort $ac desc;
+limit 3;
+fetch {
+  ""user"": $dn,
+  ""question_title"": $t,
+  ""number_of_answers"": $ac
+};"
+285,List all tags associated with the top 3 most viewed questions.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, t
+ORDER BY q.view_count DESC
+LIMIT 3
+RETURN DISTINCT t.name AS tag_name","match
+$q isa question, has view_count $vc;
+tagged (question: $q, tag: $t);
+$t has name $name;
+sort $vc desc;
+limit 3;
+select $name;
+distinct;
+fetch { ""tag_name"": $name };"
+286,What are the top 5 questions with the highest view count?,"MATCH (q:Question)
+RETURN q.title, q.link, q.view_count
+ORDER BY q.view_count DESC
+LIMIT 5","match
+$q isa question, has view_count $vc;
+sort $vc desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""view_count"": $vc
+};"
+287,List the first 3 questions that have been provided answers by the user 'Anu' and have an accepted answer.,"MATCH (u:User {display_name: 'Anu'})-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q:Question)
+WHERE a.is_accepted = true
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date
+LIMIT 3","match
+$u isa user, has display_name ""Anu"";
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+$a has is_accepted true;
+$q has creation_date $cd;
+sort $cd;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+289,Which users have provided answers to questions tagged with 'neo4j'?,"MATCH (u:User)-[:PROVIDED]->(a:Answer)-[:ANSWERED]->(q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+RETURN DISTINCT u.display_name","match
+$u isa user, has display_name $display_name;
+$a isa answer;
+$q isa question;
+$t isa tag, has name ""neo4j"";
+provided (provider: $u, answer: $a);
+answered (answer: $a, question: $q);
+tagged (question: $q, tag: $t);
+select $display_name;
+distinct;
+fetch { ""display_name"": $display_name };"
+290,List the top 3 most recent questions asked on the platform.,"MATCH (q:Question)
+RETURN q.title, q.link, q.creation_date
+ORDER BY q.creation_date DESC
+LIMIT 3","match
+$q isa question, has creation_date $cd;
+sort $cd desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $cd
+};"
+291,Who are the users who commented on the top 3 highest scoring comments?,"MATCH (c:Comment)-[:COMMENTED_ON]->(q:Question)
+WITH c
+ORDER BY c.score DESC
+LIMIT 3
+MATCH (u:User)-[:COMMENTED]->(c)
+RETURN u.display_name AS User, c.score AS CommentScore","match
+  $c isa comment, has score $s;
+  commented_on (comment: $c, question: $q);
+sort $s desc;
+limit 3;
+match
+  commented (commenter: $u, comment: $c);
+  $u has display_name $name;
+fetch {
+  ""User"": $name,
+  ""CommentScore"": $s
+};"
+292,What are the top 5 questions with the most unique tags?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(DISTINCT t) AS uniqueTags
+ORDER BY uniqueTags DESC
+LIMIT 5
+RETURN q.title AS questionTitle, uniqueTags","match
+$q isa question;
+tagged (question: $q, tag: $t);
+reduce $uniqueTags = count($t) groupby $q;
+sort $uniqueTags desc;
+limit 5;
+fetch {
+  ""questionTitle"": $q.title,
+  ""uniqueTags"": $uniqueTags
+};"
+293,Identify the 3 users who have asked questions with the least views.,"MATCH (u:User)-[:ASKED]->(q:Question)
+RETURN u.display_name, q.view_count
+ORDER BY q.view_count ASC
+LIMIT 3","match
+$u isa user;
+$q isa question, has view_count $vc;
+asked (asker: $u, question: $q);
+sort $vc asc;
+limit 3;
+fetch {
+  ""display_name"": $u.display_name,
+  ""view_count"": $vc
+};"
+294,List the tags associated with the 3 questions having the most comments.,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+MATCH (q)-[:TAGGED]->(t:Tag)
+RETURN q.title AS question_title, t.name AS tag_name","match
+$q isa question;
+$c isa comment;
+commented_on (comment: $c, question: $q);
+reduce $count = count($c) groupby $q;
+sort $count desc;
+limit 3;
+match
+tagged (question: $q, tag: $t);
+fetch {
+  ""question_title"": $q.title,
+  ""tag_name"": $t.name
+};"
+295,What are the top 3 tags used in the most viewed questions?,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH t, SUM(q.view_count) AS total_views
+ORDER BY total_views DESC
+LIMIT 3
+RETURN t.name AS tag, total_views","match
+$q isa question, has view_count $v;
+$t isa tag;
+tagged (question: $q, tag: $t);
+reduce $total_views = sum($v) groupby $t;
+sort $total_views desc;
+limit 3;
+fetch { ""tag"": $t.name, ""total_views"": $total_views };"
+296,List the 3 questions with the highest answer scores.,"MATCH (q:Question)<-[:ANSWERED]-(a:Answer)
+RETURN q.title AS question_title, q.link AS question_link, MAX(a.score) AS max_answer_score
+ORDER BY max_answer_score DESC
+LIMIT 3","match
+$q isa question;
+$a isa answer, has score $s;
+answered (question: $q, answer: $a);
+reduce $max_score = max($s) groupby $q;
+sort $max_score desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""max_answer_score"": $max_score
+};"
+297,Who has commented the most on questions tagged with 'neo4j'?,"MATCH (q:Question)-[:TAGGED]->(t:Tag {name: 'neo4j'})
+MATCH (c:Comment)-[:COMMENTED_ON]->(q)
+MATCH (u:User)-[:COMMENTED]->(c)
+RETURN u.display_name, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 1","match
+$t isa tag, has name ""neo4j"";
+tagged (question: $q, tag: $t);
+commented_on (comment: $c, question: $q);
+commented (commenter: $u, comment: $c);
+reduce $comment_count = count($c) groupby $u;
+sort $comment_count desc;
+limit 1;
+fetch { ""display_name"": $u.display_name, ""comment_count"": $comment_count };"
+298,Which 3 questions have the highest combined scores of answers?,"MATCH (q:Question)<-[:ANSWERED]-(a:Answer)
+WITH q, SUM(a.score) AS totalAnswerScore
+ORDER BY totalAnswerScore DESC
+LIMIT 3
+RETURN q.title AS questionTitle, totalAnswerScore","match
+$q isa question;
+$a isa answer, has score $s;
+answered (answer: $a, question: $q);
+reduce $total = sum($s) groupby $q;
+sort $total desc;
+limit 3;
+fetch {
+  ""questionTitle"": $q.title,
+  ""totalAnswerScore"": $total
+};"
+299,List the top 5 questions asked by 'Mohammed Faraz ali'.,"MATCH (u:User {display_name: 'Mohammed Faraz ali'})-[:ASKED]->(q:Question)
+RETURN q.title, q.link, q.creation_date, q.view_count, q.answer_count
+ORDER BY q.view_count DESC
+LIMIT 5","match
+$u isa user, has display_name ""Mohammed Faraz ali"";
+asked (asker: $u, question: $q);
+$q has view_count $vc;
+sort $vc desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""creation_date"": $q.creation_date,
+  ""view_count"": $vc,
+  ""answer_count"": $q.answer_count
+};"
+300,List the top 3 users who asked questions with accepted answers.,"MATCH (u:User)-[:ASKED]->(q:Question)<-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true
+WITH u, COUNT(q) AS accepted_questions
+ORDER BY accepted_questions DESC
+LIMIT 3
+RETURN u.display_name AS user, accepted_questions","match
+$u isa user;
+$q isa question;
+$a isa answer, has is_accepted true;
+asked (asker: $u, question: $q);
+answered (answer: $a, question: $q);
+reduce $accepted_questions = count($q) groupby $u;
+sort $accepted_questions desc;
+limit 3;
+fetch {
+  ""user"": $u.display_name,
+  ""accepted_questions"": $accepted_questions
+};"
+301,"For the top 5 questions by view count, list their creation dates.","MATCH (q:Question)
+WITH q
+ORDER BY q.view_count DESC
+LIMIT 5
+RETURN q.creation_date","match
+$q isa question, has view_count $vc;
+sort $vc desc;
+limit 5;
+fetch {
+  ""creation_date"": $q.creation_date
+};"
+302,Which users have commented on the most number of different questions?,"MATCH (u:User)-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q:Question)
+WITH u, COUNT(DISTINCT q) AS questionCount
+RETURN u.display_name, questionCount
+ORDER BY questionCount DESC
+LIMIT 1","match
+$u isa user;
+commented (commenter: $u, comment: $c);
+commented_on (comment: $c, question: $q);
+select $u, $q;
+distinct;
+reduce $questionCount = count groupby $u;
+sort $questionCount desc;
+limit 1;
+fetch { ""display_name"": $u.display_name, ""questionCount"": $questionCount };"
+303,What are the top 3 questions with the most accepted answers?,"MATCH (q:Question)<-[:ANSWERED]-(a:Answer)
+WHERE a.is_accepted = true
+WITH q, COUNT(a) AS accepted_answers_count
+ORDER BY accepted_answers_count DESC
+LIMIT 3
+RETURN q.title AS question_title, q.link AS question_link, accepted_answers_count","match
+$q isa question;
+$a isa answer, has is_accepted true;
+answered (answer: $a, question: $q);
+reduce $count = count($a) groupby $q;
+sort $count desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""question_link"": $q.question_link,
+  ""accepted_answers_count"": $count
+};"
+304,List the 3 most recent comments made on questions.,"MATCH (c:Comment)-[:COMMENTED_ON]->(q:Question)
+RETURN c.link AS comment_link, c.uuid AS comment_id, q.link AS question_link
+ORDER BY c.uuid DESC
+LIMIT 3","match
+$c isa comment, has comment_uuid $uuid, has comment_link $clink;
+$q isa question, has question_link $qlink;
+commented_on (comment: $c, question: $q);
+sort $uuid desc;
+limit 3;
+fetch {
+  ""comment_link"": $clink,
+  ""comment_id"": $uuid,
+  ""question_link"": $qlink
+};"
+305,Which questions have the highest number of comments and what are their tags?,"MATCH (q:Question)<-[:COMMENTED_ON]-(c:Comment)
+WITH q, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 1
+MATCH (q)-[:TAGGED]->(t:Tag)
+RETURN q.title AS question_title, q.link AS question_link, comment_count, COLLECT(t.name) AS tags","match 
+$q isa question;
+commented_on (comment: $c, question: $q);
+reduce $comment_count = count($c) groupby $q;
+sort $comment_count desc;
+limit 1;
+match 
+$q has title $title, has question_link $link;
+tagged (question: $q, tag: $t);
+fetch {
+  ""question_title"": $title,
+  ""question_link"": $link,
+  ""comment_count"": $comment_count,
+  ""tags"": [ $t.name ]
+};"
+306,List the top 5 comments based on their score that are on questions with more than 100 views.,"MATCH (q:Question)-[:COMMENTED_ON]-(c:Comment)
+WHERE q.view_count > 100
+RETURN c
+ORDER BY c.score DESC
+LIMIT 5","match
+$q isa question, has view_count $vc;
+$vc > 100;
+$c isa comment, has score $s;
+commented_on (question: $q, comment: $c);
+sort $s desc;
+limit 5;
+fetch {
+  ""comment"": $c
+};"

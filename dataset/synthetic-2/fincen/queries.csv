@@ -8003,3 +8003,58 @@ reduce $entity_count = count($e) groupby $c, $country_name;
 sort $entity_count asc;
 limit 1;
 fetch { ""country"": $country_name, ""entityCount"": $entity_count };"
+177,What are the names of the Entities that have filed the Filings with a begin date in '2014'?,"MATCH (e:Entity)-[:FILED]->(f:Filing)
+WHERE f.begin_date_format STARTS WITH '2014'
+RETURN DISTINCT e.name AS EntityName","match
+$e isa fincen_entity;
+$f isa filing, has begin_date_format $bdf;
+$bdf like ""2014.*"";
+filed (filer: $e, filing: $f);
+select $e;
+distinct;
+fetch {
+  ""EntityName"": $e.name
+};"
+18,What are the first 3 filings where the originator and beneficiary banks have the same country of origin?,"MATCH (f:Filing)
+WHERE f.originator_iso = f.beneficiary_iso
+RETURN f
+ORDER BY f.begin
+LIMIT 3","match
+$f isa filing, has originator_iso $oi, has beneficiary_iso $bi;
+$oi == $bi;
+$f has begin_date $bd;
+sort $bd;
+limit 3;
+fetch {
+  ""filing"": {
+    ""filing_id"": $f.filing_id,
+    ""originator_iso"": $f.originator_iso,
+    ""beneficiary_iso"": $f.beneficiary_iso,
+    ""begin_date"": $f.begin_date
+  }
+};"
+495,List the first 3 filings where the beneficiary bank and the filer organization name are the same.,"MATCH (f:Filing)
+WHERE f.beneficiary_bank = f.filer_org_name
+RETURN f
+ORDER BY f.begin
+LIMIT 3","match
+$f isa filing, has beneficiary_bank $bb, has filer_org_name $fn, has begin_date $bd;
+$bb == $fn;
+sort $bd;
+limit 3;
+fetch { ""filing_id"": $f.filing_id, ""beneficiary_bank"": $f.beneficiary_bank, ""filer_org_name"": $f.filer_org_name, ""begin_date"": $f.begin_date };"
+496,Identify the top 3 filings where the originator and beneficiary banks are in the same country.,"MATCH (f:Filing)
+WHERE f.originator_bank_country = f.beneficiary_bank_country
+RETURN f
+ORDER BY f.amount DESC
+LIMIT 3","match
+$f isa filing, has originator_bank_country $obc, has beneficiary_bank_country $bbc, has amount $a;
+$obc == $bbc;
+sort $a desc;
+limit 3;
+fetch {
+  ""filing_id"": $f.filing_id,
+  ""amount"": $a,
+  ""originator_bank_country"": $obc,
+  ""beneficiary_bank_country"": $bbc
+};"

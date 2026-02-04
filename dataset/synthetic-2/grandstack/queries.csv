@@ -9686,3 +9686,89 @@ reviews (reviewed_business: $b, review: $r);
 select $b;
 distinct;
 reduce $count = count;"
+384,What are the names of businesses with addresses in 'Burlingame' and have been reviewed?,"MATCH (b:Business)-[:IN_CATEGORY]->(:Category), (r:Review)-[:REVIEWS]->(b)
+WHERE b.city = 'Burlingame'
+RETURN DISTINCT b.name","match
+$b isa business, has city ""Burlingame"", has name $n;
+in_category (business: $b, category: $c);
+reviews (review: $r, reviewed_business: $b);
+select $n;
+distinct;
+fetch { ""name"": $n };"
+430,What are the names of 3 businesses with reviews written in August 2015?,"MATCH (u:User)-[:WROTE]->(r:Review)-[:REVIEWS]->(b:Business)
+WHERE r.date >= date('2015-08-01') AND r.date < date('2015-09-01')
+RETURN DISTINCT b.name
+LIMIT 3","match
+$u isa user;
+$r isa review, has date $d;
+$b isa business, has name $n;
+wrote (author: $u, review: $r);
+reviews (review: $r, reviewed_business: $b);
+$d >= 2015-08-01T00:00:00;
+$d < 2015-09-01T00:00:00;
+select $n;
+distinct;
+limit 3;
+fetch { ""name"": $n };"
+532,Which businesses in 'San Mateo' have been reviewed in 2017?,"MATCH (b:Business)-[:IN_CATEGORY]->(:Category), 
+      (r:Review)-[:REVIEWS]->(b),
+      (u:User)-[:WROTE]->(r)
+WHERE b.city = 'San Mateo' AND r.date >= date('2017-01-01') AND r.date <= date('2017-12-31')
+RETURN b.name AS BusinessName","match
+  $b isa business, has city ""San Mateo"", has name $n;
+  $c isa category;
+  in_category (business: $b, category: $c);
+  $r isa review, has date $d;
+  reviews (review: $r, reviewed_business: $b);
+  $u isa user;
+  wrote (author: $u, review: $r);
+  $d >= 2017-01-01T00:00:00;
+  $d <= 2017-12-31T23:59:59;
+fetch {
+  ""BusinessName"": $n
+};"
+591,Show all businesses that have been reviewed in January of any year.,"MATCH (b:Business)<-[:REVIEWS]-(r:Review)
+WHERE r.date >= date('2015-01-01') AND r.date < date('2015-02-01')
+   OR r.date >= date('2016-01-01') AND r.date < date('2016-02-01')
+   OR r.date >= date('2017-01-01') AND r.date < date('2017-02-01')
+   OR r.date >= date('2018-01-01') AND r.date < date('2018-02-01')
+RETURN DISTINCT b.name","match
+  $b isa business;
+  $r isa review, has date $d;
+  reviews (review: $r, reviewed_business: $b);
+  {
+    $d >= 2015-01-01T00:00:00; $d < 2015-02-01T00:00:00;
+  } or {
+    $d >= 2016-01-01T00:00:00; $d < 2016-02-01T00:00:00;
+  } or {
+    $d >= 2017-01-01T00:00:00; $d < 2017-02-01T00:00:00;
+  } or {
+    $d >= 2018-01-01T00:00:00; $d < 2018-02-01T00:00:00;
+  };
+select $b;
+distinct;
+fetch {
+  ""name"": $b.name
+};"
+684,Which businesses have reviews written in 2016?,"MATCH (b:Business)<-[:REVIEWS]-(r:Review)
+WHERE r.date >= date(2016-01-01) AND r.date < date(2017-01-01)
+RETURN DISTINCT b.name","match
+$b isa business;
+$r isa review, has date $d;
+reviews (reviewed_business: $b, review: $r);
+$d >= 2016-01-01T00:00:00;
+$d < 2017-01-01T00:00:00;
+select $b;
+distinct;
+fetch {
+  ""name"": $b.name
+};"
+752,What are the cities of the businesses reviewed by 'Angie'?,"MATCH (u:User {name: 'Angie'})-[:WROTE]->(r:Review)-[:REVIEWS]->(b:Business)
+RETURN DISTINCT b.city AS city","match
+$u isa user, has name ""Angie"";
+wrote (author: $u, review: $r);
+reviews (review: $r, reviewed_business: $b);
+$b has city $c;
+select $c;
+distinct;
+fetch { ""city"": $c };"

@@ -21,8 +21,8 @@ define
   attribute user_id value string;
   attribute born_in value string;
   attribute bio value string;
-  attribute died value datetime;
-  attribute born value datetime;
+  attribute died value date;
+  attribute born value date;
   attribute rating value double;
   attribute timestamp value integer;
   attribute character_role value string;

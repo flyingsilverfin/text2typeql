@@ -4,16 +4,14 @@
 
 **Total valid queries: 135**
 
-Social network posts and interactions.
+Bluesky social posts, users, follows.
 
 ## Current Status
-- `queries.csv`: 0 converted queries
+- `queries.csv`: 135 converted queries
 - 0 failed queries
 
-Total: 0 + 0 = 0 / 135 pending
+Total: 135 + 0 = 135 / 135 ✓
 
-## Schema Notes
-- `label` attribute renamed to `handle` (reserved keyword in TypeQL)
 ## Failed Queries
 
-_None yet._
+_None._

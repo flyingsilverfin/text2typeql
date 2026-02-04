@@ -4,7 +4,7 @@
 
 **Total valid queries: 775**
 
-Users, movies, genres, ratings, actors. Schema shared with synthetic-1.
+Movies, users, ratings, genres.
 
 ## Current Status
 - `queries.csv`: 0 converted queries

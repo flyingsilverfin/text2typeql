@@ -4,7 +4,7 @@
 
 **Total valid queries: 576**
 
-Streamers, games, teams, subscriptions. Schema shared with synthetic-1.
+Streams, users, games, teams, follows.
 
 ## Current Status
 - `queries.csv`: 0 converted queries
