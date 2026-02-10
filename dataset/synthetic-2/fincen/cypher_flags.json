@@ -1,0 +1,1061 @@
+{
+  "database": "fincen",
+  "source": "synthetic-2",
+  "total_queries": 584,
+  "flagged": 73,
+  "flags": [
+    {
+      "index": 9,
+      "question": "Identify the top 5 entities based on the number of filings where they have acted as both originator and beneficiary.",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)-[:BENEFITS]->(e)\nWITH e, COUNT(f) AS num_filings\nORDER BY num_filings DESC\nLIMIT 5\nRETURN e.name AS entity_name, num_filings",
+      "typeql": "match\n$e isa fincen_entity, has name $name;\n$f isa filing;\noriginator (filing: $f, originating_entity: $e);\nbenefits (filing: $f, beneficiary: $e);\nreduce $num_filings = count($f) groupby $e, $name;\nsort $num_filings desc;\nlimit 5;\nfetch {\n  \"entity_name\": $name,\n  \"num_filings\": $num_filings\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 36,
+      "question": "What are the top 5 countries with entities that have originated filings with the highest average amounts?",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)-[:ORIGINATOR]->(e)\nMATCH (e)-[:COUNTRY]->(c:Country)\nWITH c.name AS country, AVG(f.amount) AS avg_amount\nORDER BY avg_amount DESC\nLIMIT 5\nRETURN country, avg_amount",
+      "typeql": "match\n$e isa fincen_entity;\n$f isa filing, has amount $a;\noriginator (originating_entity: $e, filing: $f);\nentity_country (fincen_entity: $e, country: $c);\nreduce $avg_amount = mean($a) groupby $c;\nsort $avg_amount desc;\nlimit 5;\nfetch {\n  \"country\": $c.name,\n  \"avg_amount\": $avg_amount\n};",
+      "checks_failed": [
+        "cypher_wrong_direction",
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity",
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 46,
+      "question": "What are the first 3 entities that have filed a transaction where the originator and beneficiary banks are from different countries?",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)\nWHERE f.originator_bank_country <> f.beneficiary_bank_country\nWITH e, f\nORDER BY f.begin\nLIMIT 3\nRETURN e.name AS entity_name, f.sar_id AS transaction_id, f.begin AS transaction_begin_date",
+      "typeql": "match\n$e isa fincen_entity;\n$f isa filing, has originator_bank_country $obc, has beneficiary_bank_country $bbc, has begin_date $bd;\noriginator (filing: $f, originating_entity: $e);\nnot { $obc == $bbc; };\nsort $bd;\nlimit 3;\nfetch {\n  \"entity_name\": $e.name,\n  \"transaction_id\": $f.sar_id,\n  \"transaction_begin_date\": $bd\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 53,
+      "question": "Which 3 entities have the most filings as originators and are located in 'China'?",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)\nWHERE e.country = 'CHN'\nWITH e, COUNT(f) AS num_filings\nORDER BY num_filings DESC\nLIMIT 3\nRETURN e.name AS entity_name, num_filings",
+      "typeql": "match\n$e isa fincen_entity, has country_code \"CHN\";\noriginator (originating_entity: $e, filing: $f);\nreduce $count = count($f) groupby $e;\nsort $count desc;\nlimit 3;\nfetch {\n  \"entity_name\": $e.name,\n  \"num_filings\": $count\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 55,
+      "question": "Identify the top 5 beneficiary banks that have received the highest amounts from filings where the originator bank country is 'Germany'.",
+      "cypher": "MATCH (f:Filing)-[:BENEFITS]->(e:Entity)\nWHERE f.originator_bank_country = 'Germany'\nRETURN f.beneficiary_bank AS BeneficiaryBank, SUM(f.amount) AS TotalAmount\nORDER BY TotalAmount DESC\nLIMIT 5",
+      "typeql": "match\n$f isa filing, has originator_bank_country \"Germany\", has beneficiary_bank $bb, has amount $a;\nbenefits (filing: $f, beneficiary: $e);\nreduce $total = sum($a) groupby $bb;\nsort $total desc;\nlimit 5;",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 65,
+      "question": "List the first 3 filings with the highest number of transactions that involve a beneficiary bank from 'Japan'.",
+      "cypher": "MATCH (f:Filing)-[:BENEFITS]->(e:Entity)-[:COUNTRY]->(c:Country {name: 'Japan'})\nRETURN f\nORDER BY f.number DESC\nLIMIT 3",
+      "typeql": "match\n$f isa filing, has number $n;\n$e isa fincen_entity;\n$c isa country, has name \"Japan\";\nbenefits (filing: $f, beneficiary: $e);\nentity_country (fincen_entity: $e, country: $c);\nsort $n desc;\nlimit 3;\nfetch {\n  \"filing_id\": $f.filing_id,\n  \"number\": $n\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 83,
+      "question": "Identify the top 5 entities based on the total amount of their filings where the beneficiary bank's country is 'Singapore'.",
+      "cypher": "MATCH (e:Entity)-[:FILED]->(f:Filing)\nWHERE f.beneficiary_bank_country = 'Singapore'\nWITH e, SUM(f.amount) AS totalAmount\nORDER BY totalAmount DESC\nLIMIT 5\nRETURN e.name AS entityName, totalAmount",
+      "typeql": "match\n$e isa fincen_entity;\nfiled (filer: $e, filing: $f);\n$f has beneficiary_bank_country \"Singapore\", has amount $a;\nreduce $total = sum($a) groupby $e;\nsort $total desc;\nlimit 5;\nfetch { \"entityName\": $e.name, \"totalAmount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 93,
+      "question": "Which 3 countries have beneficiary banks that received the highest total amounts in filings?",
+      "cypher": "MATCH (f:Filing)-[:BENEFITS]->(e:Entity)-[:COUNTRY]->(c:Country)\nWITH c.name AS country, SUM(f.amount) AS totalAmount\nORDER BY totalAmount DESC\nLIMIT 3\nRETURN country, totalAmount",
+      "typeql": "match\n$f isa filing, has amount $a;\n$e isa fincen_entity;\n$c isa country;\nbenefits (filing: $f, beneficiary: $e);\nentity_country (fincen_entity: $e, country: $c);\nreduce $total = sum($a) groupby $c;\nsort $total desc;\nlimit 3;\nfetch { \"country\": $c.name, \"totalAmount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 94,
+      "question": "What are the top 3 entities that have originated filings concerning banks in 'China'?",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)-[:CONCERNS]->(b:Entity)-[:COUNTRY]->(c:Country {name: 'China'})\nWITH e, COUNT(f) AS num_filings\nORDER BY num_filings DESC\nLIMIT 3\nRETURN e.name AS entity_name, num_filings",
+      "typeql": "match\n$e isa fincen_entity;\n$f isa filing;\n$b isa fincen_entity;\n$c isa country, has name \"China\";\noriginator (originating_entity: $e, filing: $f);\nconcerns (filing: $f, concerned_entity: $b);\nentity_country (fincen_entity: $b, country: $c);\nreduce $count = count($f) groupby $e;\nsort $count desc;\nlimit 3;\nfetch { \"entity_name\": $e.name, \"num_filings\": $count };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 106,
+      "question": "What are the names of the top 3 beneficiary banks based on the number of different originator banks they have interacted with in filings?",
+      "cypher": "MATCH (f:Filing)-[:BENEFITS]->(b:Entity), (f)-[:ORIGINATOR]->(o:Entity)\nWITH b.name AS beneficiary_bank, o.name AS originator_bank\nORDER BY beneficiary_bank\nWITH beneficiary_bank, collect(DISTINCT originator_bank) AS originator_banks\nRETURN beneficiary_bank, size(originator_banks) AS num_originator_banks\nORDER BY num_originator_banks DESC\nLIMIT 3",
+      "typeql": "match\n  $b isa fincen_entity, has name $bname;\n  $o isa fincen_entity, has name $oname;\n  $f isa filing;\n  benefits (filing: $f, beneficiary: $b);\n  originator (filing: $f, originating_entity: $o);\nselect $b, $bname, $o;\ndistinct;\nreduce $count = count($o) groupby $b, $bname;\nsort $count desc;\nlimit 3;\nfetch { \"beneficiary_bank\": $bname, \"num_originator_banks\": $count };",
+      "checks_failed": [
+        "cypher_missing_count",
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()",
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 111,
+      "question": "List the top 3 countries where the originator banks have originated the smallest total amounts in filings.",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)-[:COUNTRY]->(c:Country)\nWITH c.name AS country, SUM(f.amount) AS total_amount\nORDER BY total_amount ASC\nLIMIT 3\nRETURN country, total_amount",
+      "typeql": "match\n$f isa filing, has amount $a;\n$e isa fincen_entity;\n$c isa country, has name $cn;\noriginator (filing: $f, originating_entity: $e);\nentity_country (fincen_entity: $e, country: $c);\nreduce $total = sum($a) groupby $c, $cn;\nsort $total asc;\nlimit 3;\nfetch { \"country\": $cn, \"total_amount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 114,
+      "question": "List the top 5 filings where the originator bank's country and beneficiary bank's country are the same but not 'United Kingdom'.",
+      "cypher": "MATCH (f:Filing)\nWHERE f.originator_bank_country = f.beneficiary_bank_country AND f.originator_bank_country <> 'United Kingdom'\nRETURN f\nORDER BY f.amount DESC\nLIMIT 5",
+      "typeql": "match\n$f isa filing,\n    has originator_bank_country $obc,\n    has beneficiary_bank_country $bbc,\n    has amount $amt;\n$obc == $bbc;\nnot { $obc == \"United Kingdom\"; };\nsort $amt desc;\nlimit 5;\nfetch {\n    \"filing\": {\n        \"filing_id\": $f.filing_id,\n        \"originator_bank_country\": $obc,\n        \"beneficiary_bank_country\": $bbc,\n        \"amount\": $amt\n    }\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 127,
+      "question": "List the top 5 filings where the beneficiary bank's country and originator bank's country are different and the amount is above 1 million.",
+      "cypher": "MATCH (f:Filing)\nWHERE f.amount > 1000000 AND f.originator_bank_country <> f.beneficiary_bank_country\nRETURN f\nORDER BY f.amount DESC\nLIMIT 5",
+      "typeql": "match\n$f isa filing,\n    has originator_bank_country $obc,\n    has beneficiary_bank_country $bbc,\n    has amount $a;\nnot { $obc == $bbc; };\n$a > 1000000;\nsort $a desc;\nlimit 5;\nfetch {\n    \"filing_id\": $f.filing_id,\n    \"amount\": $a,\n    \"originator_bank_country\": $obc,\n    \"beneficiary_bank_country\": $bbc\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 132,
+      "question": "List the top 3 filings with the largest number of transactions where the originator bank's country and beneficiary bank's country are different.",
+      "cypher": "MATCH (f:Filing)\nWHERE f.originator_bank_country <> f.beneficiary_bank_country\nRETURN f\nORDER BY f.number DESC\nLIMIT 3",
+      "typeql": "match\n$f isa filing,\n    has originator_bank_country $obc,\n    has beneficiary_bank_country $bbc,\n    has number $n;\nnot { $obc == $bbc; };\nsort $n desc;\nlimit 3;\nfetch {\n    \"filing_id\": $f.filing_id,\n    \"originator_bank_country\": $obc,\n    \"beneficiary_bank_country\": $bbc,\n    \"number\": $n\n};",
+      "checks_failed": [
+        "cypher_missing_count",
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()",
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 138,
+      "question": "List the top 3 filings with the highest number of transactions in a single filing.",
+      "cypher": "MATCH (f:Filing)\nRETURN f.sar_id, f.number\nORDER BY f.number DESC\nLIMIT 3",
+      "typeql": "match\n$f isa filing, has sar_id $sid, has number $n;\nsort $n desc;\nlimit 3;\nfetch {\n  \"sar_id\": $sid,\n  \"number\": $n\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 139,
+      "question": "What are the top 5 countries in terms of total amount received by beneficiary banks?",
+      "cypher": "MATCH (f:Filing)-[:BENEFITS]->(e:Entity)-[:COUNTRY]->(c:Country)\nWITH c.name AS country, SUM(f.amount) AS total_amount\nORDER BY total_amount DESC\nLIMIT 5\nRETURN country, total_amount",
+      "typeql": "match\n$f isa filing, has amount $a;\nbenefits (filing: $f, beneficiary: $e);\nentity_country (fincen_entity: $e, country: $c);\n$c has name $n;\nreduce $total = sum($a) groupby $c, $n;\nsort $total desc;\nlimit 5;\nfetch { \"country\": $n, \"total_amount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 143,
+      "question": "Which 3 countries have the highest average amounts in filings where they are listed as originator?",
+      "cypher": "MATCH (c:Country)<-[:COUNTRY]-(e:Entity)<-[:ORIGINATOR]-(f:Filing)\nWITH c.name AS country, AVG(f.amount) AS avg_amount\nORDER BY avg_amount DESC\nLIMIT 3\nRETURN country, avg_amount",
+      "typeql": "match\n$c isa country, has name $country_name;\n$e isa fincen_entity;\nentity_country (fincen_entity: $e, country: $c);\n$f isa filing, has amount $amt;\noriginator (originating_entity: $e, filing: $f);\nreduce $avg_amount = mean($amt) groupby $c;\nsort $avg_amount desc;\nlimit 3;\nfetch { \"country\": $c.name, \"avg_amount\": $avg_amount };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 144,
+      "question": "Identify the top 5 entities that have originated the most filings.",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)\nRETURN e.name AS entity_name, COUNT(f) AS filings_count\nORDER BY filings_count DESC\nLIMIT 5",
+      "typeql": "match\n$e isa fincen_entity;\n$f isa filing;\noriginator (originating_entity: $e, filing: $f);\nreduce $count = count($f) groupby $e;\nsort $count desc;\nlimit 5;\nfetch {\n  \"entity_name\": $e.name,\n  \"filings_count\": $count\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 154,
+      "question": "What are the top 5 countries in terms of total amount sent by originator banks?",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)-[:COUNTRY]->(c:Country)\nWITH c.name AS country, SUM(f.amount) AS total_amount\nORDER BY total_amount DESC\nLIMIT 5\nRETURN country, total_amount",
+      "typeql": "match\n$f isa filing, has amount $a;\n$e isa fincen_entity;\n$c isa country, has name $cn;\noriginator (filing: $f, originating_entity: $e);\nentity_country (fincen_entity: $e, country: $c);\nreduce $total = sum($a) groupby $c, $cn;\nsort $total desc;\nlimit 5;\nfetch { \"country\": $cn, \"total_amount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 174,
+      "question": "Find the top 5 Filings with the lowest number of transactions.",
+      "cypher": "MATCH (f:Filing)\nWITH f\nORDER BY f.number ASC\nLIMIT 5\nRETURN f",
+      "typeql": "match\n$f isa filing, has number $n;\nsort $n asc;\nlimit 5;\nfetch {\n  \"filing\": { $f.* }\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 191,
+      "question": "List Entities that originated Filings to more than two different countries.",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)\nWITH e, collect(DISTINCT f.beneficiary_bank_country) AS countries\nWHERE size(countries) > 2\nRETURN e.name AS EntityName, countries",
+      "typeql": "match\n$e isa fincen_entity;\noriginator (originating_entity: $e, filing: $f);\n$f has beneficiary_bank_country $c;\nselect $e, $c;\ndistinct;\nreduce $count = count($c) groupby $e;\nmatch $count > 2;\nfetch { \"entity_name\": $e.name };",
+      "checks_failed": [
+        "cypher_wrong_direction",
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity",
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 202,
+      "question": "Find the top 5 Filings by number of transactions.",
+      "cypher": "MATCH (f:Filing)\nRETURN f\nORDER BY f.number DESC\nLIMIT 5",
+      "typeql": "match\n$f isa filing, has number $n;\nsort $n desc;\nlimit 5;\nfetch {\n  \"filing_id\": $f.filing_id,\n  \"number\": $n\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 208,
+      "question": "What are the top 5 Filings with the highest number of transactions?",
+      "cypher": "MATCH (f:Filing)\nRETURN f\nORDER BY f.number DESC\nLIMIT 5",
+      "typeql": "match\n$f isa filing, has number $n;\nsort $n desc;\nlimit 5;\nfetch {\n  \"filing\": { \"filing_id\": $f.filing_id, \"number\": $n }\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 213,
+      "question": "Which 3 entities have been the originator in filings with the highest total amounts transferred?",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)\nWITH e, SUM(f.amount) AS totalAmount\nORDER BY totalAmount DESC\nLIMIT 3\nRETURN e.name AS entityName, totalAmount",
+      "typeql": "match\n$e isa fincen_entity, has name $name;\noriginator (originating_entity: $e, filing: $f);\n$f has amount $a;\nreduce $total = sum($a) groupby $e, $name;\nsort $total desc;\nlimit 3;\nfetch { \"entityName\": $name, \"totalAmount\": $total };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 215,
+      "question": "Find the top 5 entities that have originated the most filings with a beneficiary bank in Germany.",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)-[:BENEFITS]->(b:Entity)-[:COUNTRY]->(c:Country {name: \"Germany\"})\nWITH e, COUNT(f) AS num_filings\nORDER BY num_filings DESC\nLIMIT 5\nRETURN e.name AS EntityName, num_filings AS NumberOfFilings",
+      "typeql": "match\n$e isa fincen_entity;\n$f isa filing;\n$b isa fincen_entity;\n$c isa country, has name \"Germany\";\noriginator (originating_entity: $e, filing: $f);\nbenefits (filing: $f, beneficiary: $b);\nentity_country (fincen_entity: $b, country: $c);\nreduce $count = count($f) groupby $e;\nsort $count desc;\nlimit 5;\nfetch { \"EntityName\": $e.name, \"NumberOfFilings\": $count };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 225,
+      "question": "Find the top 5 countries where entities are located that filed filings with an amount over 1 million USD in 2008.",
+      "cypher": "MATCH (f:Filing)-[:FILED]->(e:Entity)-[:COUNTRY]->(c:Country)\nWHERE f.amount > 1000000 AND f.begin >= datetime('2008-01-01T00:00:00Z') AND f.end <= datetime('2008-12-31T23:59:59Z')\nRETURN c.name AS country, COUNT(e) AS entity_count\nORDER BY entity_count DESC\nLIMIT 5",
+      "typeql": "match\n$f isa filing, has amount $a, has period_begin $pb, has period_end $pe;\n$a > 1000000;\n$pb >= 2008-01-01T00:00:00;\n$pe <= 2008-12-31T23:59:59;\n$e isa fincen_entity;\nfiled (filer: $e, filing: $f);\n$c isa country, has name $cn;\nentity_country (fincen_entity: $e, country: $c);\nreduce $count = count($e) groupby $c;\nsort $count desc;\nlimit 5;\nfetch { \"country\": $c.name, \"entity_count\": $count };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Filing)-[:FILED]->(Entity) but schema says Entity->Filing"
+      ]
+    },
+    {
+      "index": 233,
+      "question": "Which three countries have entities that benefited from the highest amount in filings in 2014?",
+      "cypher": "MATCH (f:Filing)-[:BENEFITS]->(e:Entity)-[:COUNTRY]->(c:Country)\nWHERE f.begin >= datetime('2014-01-01T00:00:00Z') AND f.end <= datetime('2014-12-31T23:59:59Z')\nWITH c.name AS country, SUM(f.amount) AS totalAmount\nORDER BY totalAmount DESC\nLIMIT 3\nRETURN country, totalAmount",
+      "typeql": "match\n$f isa filing, has period_begin $pb, has period_end $pe, has amount $a;\n$pb >= 2014-01-01T00:00:00;\n$pe <= 2014-12-31T23:59:59;\nbenefits (filing: $f, beneficiary: $e);\nentity_country (fincen_entity: $e, country: $c);\n$c has name $cn;\nreduce $total = sum($a) groupby $c, $cn;\nsort $total desc;\nlimit 3;\nfetch { \"country\": $cn, \"totalAmount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 239,
+      "question": "Which 5 entities are most frequently listed as originators in filings from 2010 to 2015?",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)\nWHERE f.begin >= datetime('2010-01-01T00:00:00Z') AND f.end <= datetime('2015-12-31T23:59:59Z')\nRETURN e.name AS entity_name, COUNT(f) AS filing_count\nORDER BY filing_count DESC\nLIMIT 5",
+      "typeql": "match\n$e isa fincen_entity, has name $name;\n$f isa filing, has period_begin $begin, has period_end $end;\noriginator (originating_entity: $e, filing: $f);\n$begin >= 2010-01-01T00:00:00;\n$end <= 2015-12-31T23:59:59;\nreduce $count = count($f) groupby $e, $name;\nsort $count desc;\nlimit 5;",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 240,
+      "question": "Show the first 3 originator countries by the total amount sent in transactions.",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)-[:COUNTRY]->(c:Country)\nWITH c.name AS originator_country, SUM(f.amount) AS total_amount\nORDER BY total_amount DESC\nLIMIT 3\nRETURN originator_country, total_amount",
+      "typeql": "match\n$f isa filing, has amount $amt;\noriginator (filing: $f, originating_entity: $e);\nentity_country (fincen_entity: $e, country: $c);\n$c has name $cn;\nreduce $total = sum($amt) groupby $cn;\nsort $total desc;\nlimit 3;\nfetch { \"originator_country\": $cn, \"total_amount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 282,
+      "question": "List all entities that are the originator for filings involving banks in 'Singapore'.",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)\nWHERE f.originator_bank_country = 'Singapore'\nRETURN DISTINCT e.name AS OriginatorEntity",
+      "typeql": "match\n$e isa fincen_entity;\n$f isa filing, has originator_bank_country \"Singapore\";\noriginator (originating_entity: $e, filing: $f);\nselect $e;\ndistinct;\nfetch { \"OriginatorEntity\": $e.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 323,
+      "question": "List the top 3 entities by the number of filings they are involved in as originators in the technology sector.",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)\nWHERE e.name CONTAINS \"technology\"\nWITH e, COUNT(f) AS num_filings\nORDER BY num_filings DESC\nLIMIT 3\nRETURN e.name AS entity_name, num_filings",
+      "typeql": "match\n$e isa fincen_entity, has name $n;\n$n like \".*technology.*\";\noriginator (originating_entity: $e, filing: $f);\nreduce $count = count($f) groupby $e;\nsort $count desc;\nlimit 3;\nfetch {\n  \"entity_name\": $e.name,\n  \"num_filings\": $count\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 328,
+      "question": "Which 5 countries have the highest number of filings where they are both originator and beneficiary in transactions involving multiple currencies?",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e1:Entity)-[:COUNTRY]->(c1:Country),\n      (f)-[:BENEFITS]->(e2:Entity)-[:COUNTRY]->(c2:Country)\nWHERE c1.code = c2.code\nWITH c1.name AS country, COUNT(f) AS num_filings\nORDER BY num_filings DESC\nLIMIT 5\nRETURN country, num_filings",
+      "typeql": "match\n$f isa filing;\noriginator (filing: $f, originating_entity: $e1);\nentity_country (fincen_entity: $e1, country: $c);\nbenefits (filing: $f, beneficiary: $e2);\nentity_country (fincen_entity: $e2, country: $c);\nreduce $count = count($f) groupby $c;\nsort $count desc;\nlimit 5;\nfetch { \"country\": $c.name, \"num_filings\": $count };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 334,
+      "question": "List the top 3 entities by the number of filings they are involved in as concerns in the financial sector.",
+      "cypher": "MATCH (e:Entity)-[:CONCERNS]->(f:Filing)\nWITH e, COUNT(f) AS num_filings\nORDER BY num_filings DESC\nLIMIT 3\nRETURN e.name AS entity_name, num_filings",
+      "typeql": "match\n$e isa fincen_entity, has name $n;\nconcerns (concerned_entity: $e, filing: $f);\nreduce $count = count($f) groupby $e, $n;\nsort $count desc;\nlimit 3;\nfetch { \"entity_name\": $n, \"num_filings\": $count };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:CONCERNS]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 335,
+      "question": "Which 5 countries have the highest total amount of transactions where they are the originator?",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)-[:COUNTRY]->(c:Country)\nWITH c.name AS country, SUM(f.amount) AS total_amount\nORDER BY total_amount DESC\nLIMIT 5\nRETURN country, total_amount",
+      "typeql": "match\n$f isa filing, has amount $a;\noriginator (filing: $f, originating_entity: $e);\nentity_country (fincen_entity: $e, country: $c);\n$c has name $country;\nreduce $total = sum($a) groupby $c, $country;\nsort $total desc;\nlimit 5;\nfetch { \"country\": $country, \"total_amount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 343,
+      "question": "List the top 3 entities by the number of filings they are involved in as beneficiary in the healthcare sector.",
+      "cypher": "MATCH (e:Entity)-[:BENEFITS]->(f:Filing)\nWHERE f.filer_org_name CONTAINS \"healthcare\"\nWITH e, COUNT(f) AS num_filings\nORDER BY num_filings DESC\nLIMIT 3\nRETURN e.name AS entity_name, num_filings",
+      "typeql": "match\n$e isa fincen_entity;\n$f isa filing, has filer_org_name $fon;\n$fon like \".*healthcare.*\";\nbenefits (filing: $f, beneficiary: $e);\nreduce $count = count($f) groupby $e;\nsort $count desc;\nlimit 3;\nfetch {\n  \"entity_name\": $e.name,\n  \"num_filings\": $count\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:BENEFITS]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 348,
+      "question": "Which 3 countries have beneficiary banks that received the highest total amounts in filings?",
+      "cypher": "MATCH (f:Filing)-[:BENEFITS]->(e:Entity)-[:COUNTRY]->(c:Country)\nWITH c.name AS country, SUM(f.amount) AS totalAmount\nORDER BY totalAmount DESC\nLIMIT 3\nRETURN country, totalAmount",
+      "typeql": "match\n$f isa filing, has amount $a;\n$e isa fincen_entity;\n$c isa country;\nbenefits (filing: $f, beneficiary: $e);\nentity_country (fincen_entity: $e, country: $c);\nreduce $total = sum($a) groupby $c;\nsort $total desc;\nlimit 3;\nfetch {\n  \"country\": $c.name,\n  \"totalAmount\": $total\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 349,
+      "question": "What are the top 3 entities that have originated filings concerning banks in 'Russia'?",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)-[:CONCERNS]->(b:Entity)-[:COUNTRY]->(c:Country {name: 'Russia'})\nWITH e, COUNT(f) AS filing_count\nORDER BY filing_count DESC\nLIMIT 3\nRETURN e.name AS entity_name, filing_count",
+      "typeql": "match\n$e isa fincen_entity;\n$f isa filing;\n$b isa fincen_entity;\n$c isa country, has name \"Russia\";\noriginator (originating_entity: $e, filing: $f);\nconcerns (filing: $f, concerned_entity: $b);\nentity_country (fincen_entity: $b, country: $c);\nreduce $count = count($f) groupby $e;\nsort $count desc;\nlimit 3;\nfetch { \"entity_name\": $e.name, \"filing_count\": $count };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 352,
+      "question": "Which 3 filings have the smallest number of transactions but involve a beneficiary bank from 'India'?",
+      "cypher": "MATCH (f:Filing)\nWHERE f.beneficiary_bank_country = 'India'\nRETURN f\nORDER BY f.number ASC\nLIMIT 3",
+      "typeql": "match\n$f isa filing, has beneficiary_bank_country \"India\", has number $n;\nsort $n asc;\nlimit 3;\nfetch {\n  \"filing\": { $f.* }\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 366,
+      "question": "Which 3 beneficiary banks received the highest total amount in transactions from filings originated in 'United Kingdom'?",
+      "cypher": "MATCH (f:Filing)-[:BENEFITS]->(e:Entity)\nWHERE f.originator_bank_country = 'United Kingdom'\nWITH e.name AS beneficiary_bank, SUM(f.amount) AS total_amount\nRETURN beneficiary_bank, total_amount\nORDER BY total_amount DESC\nLIMIT 3",
+      "typeql": "match\n$f isa filing, has originator_bank_country \"United Kingdom\", has amount $a;\nbenefits (filing: $f, beneficiary: $e);\n$e isa fincen_entity, has name $n;\nreduce $total = sum($a) groupby $n;\nsort $total desc;\nlimit 3;\nfetch { \"beneficiary_bank\": $n, \"total_amount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 368,
+      "question": "What are the names of the top 3 entities that have been concerned in filings more than 20 times?",
+      "cypher": "MATCH (e:Entity)-[:CONCERNS]->(f:Filing)\nWITH e, COUNT(f) AS concernCount\nWHERE concernCount > 20\nRETURN e.name AS entityName\nORDER BY concernCount DESC\nLIMIT 3",
+      "typeql": "match\n$e isa fincen_entity;\nconcerns (concerned_entity: $e, filing: $f);\nreduce $count = count($f) groupby $e;\nmatch\n$count > 20;\nsort $count desc;\nlimit 3;\nfetch {\n  \"entityName\": $e.name\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:CONCERNS]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 369,
+      "question": "Identify the top 3 countries where the beneficiary banks are located, based on the total amount transferred.",
+      "cypher": "MATCH (f:Filing)-[:BENEFITS]->(e:Entity)-[:COUNTRY]->(c:Country)\nWITH c.name AS country, SUM(f.amount) AS total_amount\nRETURN country, total_amount\nORDER BY total_amount DESC\nLIMIT 3",
+      "typeql": "match\n$f isa filing, has amount $a;\n$e isa fincen_entity;\n$c isa country;\nbenefits (filing: $f, beneficiary: $e);\nentity_country (fincen_entity: $e, country: $c);\nreduce $total = sum($a) groupby $c;\nsort $total desc;\nlimit 3;\nfetch { \"country\": $c.name, \"total_amount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 372,
+      "question": "Show the top 5 countries with the most filings where they are both originator and beneficiary in transactions involving multiple currencies.",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e1:Entity)-[:COUNTRY]->(c1:Country),\n      (f)-[:BENEFITS]->(e2:Entity)-[:COUNTRY]->(c2:Country)\nWHERE c1.code = c2.code\nWITH c1.name AS country, COUNT(f) AS filings_count\nORDER BY filings_count DESC\nLIMIT 5\nRETURN country, filings_count",
+      "typeql": "match\n$f isa filing;\noriginator (filing: $f, originating_entity: $e1);\nentity_country (fincen_entity: $e1, country: $c);\nbenefits (filing: $f, beneficiary: $e2);\nentity_country (fincen_entity: $e2, country: $c);\nreduce $count = count($f) groupby $c;\nsort $count desc;\nlimit 5;\nfetch { \"country\": $c.name, \"filings_count\": $count };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 373,
+      "question": "Show the top 5 entities with the most filings as a beneficiary in the financial sector.",
+      "cypher": "MATCH (e:Entity)-[:BENEFITS]->(f:Filing)\nWITH e, COUNT(f) AS num_filings\nORDER BY num_filings DESC\nLIMIT 5\nRETURN e.name AS entity_name, num_filings",
+      "typeql": "match\n$e isa fincen_entity;\n$f isa filing;\nbenefits (beneficiary: $e, filing: $f);\nreduce $count = count($f) groupby $e;\nsort $count desc;\nlimit 5;\nfetch {\n  \"entity_name\": $e.name,\n  \"num_filings\": $count\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:BENEFITS]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 377,
+      "question": "Show the first 5 filings that involved a change in beneficiary bank during the transaction.",
+      "cypher": "MATCH (f:Filing)\nWHERE f.originator_bank_id <> f.beneficiary_bank_id\nRETURN f\nORDER BY f.begin\nLIMIT 5",
+      "typeql": "match\n$f isa filing, has originator_bank_id $ob, has beneficiary_bank_id $bb, has begin_date $bd;\nnot { $ob == $bb; };\nsort $bd asc;\nlimit 5;\nfetch {\n  \"filing\": { $f.* }\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 379,
+      "question": "Which 5 countries have the highest total amount of transactions where they are the beneficiary?",
+      "cypher": "MATCH (c:Country)<-[:COUNTRY]-(e:Entity)<-[:BENEFITS]-(f:Filing)\nWITH c.name AS country, SUM(f.amount) AS totalAmount\nORDER BY totalAmount DESC\nLIMIT 5\nRETURN country, totalAmount",
+      "typeql": "match\n$c isa country, has name $cn;\nentity_country (country: $c, fincen_entity: $e);\nbenefits (beneficiary: $e, filing: $f);\n$f has amount $amt;\nreduce $total = sum($amt) groupby $c;\nsort $total desc;\nlimit 5;\nfetch { \"country\": $c.name, \"totalAmount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 380,
+      "question": "What are the first 3 filings with entities from three different continents as originators?",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)-[:COUNTRY]->(c:Country)\nWITH f, e, c\nORDER BY f.begin\nWITH f, COLLECT(DISTINCT c.code) AS continents\nWHERE SIZE(continents) >= 3\nRETURN f\nLIMIT 3",
+      "typeql": "match\n$f isa filing, has period_begin $begin;\noriginator (filing: $f, originating_entity: $e);\nentity_country (fincen_entity: $e, country: $c);\nselect $f, $c, $begin;\ndistinct;\nreduce $count = count($c) groupby $f, $begin;\nmatch $count >= 3;\nsort $begin;\nlimit 3;\nfetch { \"filing\": $f.filing_id };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 381,
+      "question": "Show the top 5 countries by the number of filings they are involved in as both originator and beneficiary.",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e1:Entity)-[:COUNTRY]->(c1:Country),\n      (f)-[:BENEFITS]->(e2:Entity)-[:COUNTRY]->(c2:Country)\nWHERE c1 = c2\nWITH c1 AS country, COUNT(f) AS filings_count\nRETURN country.name AS country_name, filings_count\nORDER BY filings_count DESC\nLIMIT 5",
+      "typeql": "match\n$f isa filing;\noriginator (filing: $f, originating_entity: $e1);\nentity_country (fincen_entity: $e1, country: $c);\nbenefits (filing: $f, beneficiary: $e2);\nentity_country (fincen_entity: $e2, country: $c);\n$c has name $country_name;\nreduce $filings_count = count($f) groupby $c, $country_name;\nsort $filings_count desc;\nlimit 5;\nfetch { \"country_name\": $country_name, \"filings_count\": $filings_count };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 382,
+      "question": "List the first 3 filings that involved entities from both Europe and Asia as originators.",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)-[:COUNTRY]->(c:Country)\nWHERE c.name IN [\"Europe\", \"Asia\"]\nWITH f, e, c\nMATCH (f)-[:ORIGINATOR]->(e2:Entity)-[:COUNTRY]->(c2:Country)\nWHERE c2.name IN [\"Europe\", \"Asia\"] AND c.name <> c2.name\nRETURN f\nORDER BY f.begin\nLIMIT 3",
+      "typeql": "match\n$f isa filing, has period_begin $pb;\noriginator (filing: $f, originating_entity: $e1);\noriginator (filing: $f, originating_entity: $e2);\nentity_country (fincen_entity: $e1, country: $c1);\nentity_country (fincen_entity: $e2, country: $c2);\n$c1 has name \"Europe\";\n$c2 has name \"Asia\";\nsort $pb;\nlimit 3;\nfetch {\n  \"filing\": $f.filing_id\n};",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 387,
+      "question": "Which 5 filings have entities from more than one country as originators?",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)-[:COUNTRY]->(c:Country)\nWITH f, collect(DISTINCT c.code) AS countries\nWHERE size(countries) > 1\nRETURN f.id AS filing_id, countries\nORDER BY f.begin\nLIMIT 5",
+      "typeql": "match\n  $f isa filing;\n  originator (filing: $f, originating_entity: $e);\n  entity_country (fincen_entity: $e, country: $c);\nselect $f, $c;\ndistinct;\nreduce $count = count($c) groupby $f;\nmatch\n  $count > 1;\n  $f has period_begin $pb;\nsort $pb;\nlimit 5;\nfetch {\n  \"filing_id\": $f.filing_id\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 389,
+      "question": "Show the top 5 beneficiary countries by the total amount received in transactions.",
+      "cypher": "MATCH (f:Filing)-[:BENEFITS]->(e:Entity)-[:COUNTRY]->(c:Country)\nWITH c.name AS country, SUM(f.amount) AS total_amount\nORDER BY total_amount DESC\nLIMIT 5\nRETURN country, total_amount",
+      "typeql": "match\n$f isa filing, has amount $amt;\n$e isa fincen_entity;\n$c isa country;\nbenefits (filing: $f, beneficiary: $e);\nentity_country (fincen_entity: $e, country: $c);\nreduce $total = sum($amt) groupby $c;\nsort $total desc;\nlimit 5;\nfetch {\n  \"country\": $c.name,\n  \"total_amount\": $total\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 401,
+      "question": "Which 5 filings have the most distinct beneficiary iso codes involved?",
+      "cypher": "MATCH (f:Filing)\nWITH f, f.beneficiary_iso AS iso\nORDER BY iso\nWITH f, collect(DISTINCT iso) AS distinct_isos\nORDER BY size(distinct_isos) DESC\nLIMIT 5\nRETURN f.sar_id AS filing_id, size(distinct_isos) AS distinct_beneficiary_iso_count",
+      "typeql": "match\n$f isa filing, has beneficiary_iso $iso;\nreduce $count = count($iso) groupby $f;\nsort $count desc;\nlimit 5;\nfetch {\n  \"filing_id\": $f.sar_id,\n  \"distinct_beneficiary_iso_count\": $count\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 408,
+      "question": "Which 5 countries have the highest number of filings with entities as both originator and beneficiary?",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e1:Entity)-[:COUNTRY]->(c1:Country),\n      (f)-[:BENEFITS]->(e2:Entity)-[:COUNTRY]->(c2:Country)\nWHERE c1.code = c2.code\nWITH c1.name AS country, COUNT(f) AS filings_count\nORDER BY filings_count DESC\nLIMIT 5\nRETURN country, filings_count",
+      "typeql": "match\n$f isa filing;\n$e1 isa fincen_entity;\n$e2 isa fincen_entity;\noriginator (filing: $f, originating_entity: $e1);\nbenefits (filing: $f, beneficiary: $e2);\nentity_country (fincen_entity: $e1, country: $c);\nentity_country (fincen_entity: $e2, country: $c);\n$c has name $country_name;\nreduce $count = count($f) groupby $c, $country_name;\nsort $count desc;\nlimit 5;\nfetch { \"country\": $country_name, \"filings_count\": $count };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 428,
+      "question": "What are the names of the top 5 entities that originated the most filings?",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)\nRETURN e.name AS entity_name, COUNT(f) AS filings_count\nORDER BY filings_count DESC\nLIMIT 5",
+      "typeql": "match\n$e isa fincen_entity;\noriginator (originating_entity: $e, filing: $f);\nreduce $count = count($f) groupby $e;\nsort $count desc;\nlimit 5;\nmatch $e has name $n;\nfetch { \"entity_name\": $n, \"filings_count\": $count };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 460,
+      "question": "What are the three entities with the highest total filing amounts where the originator bank country is 'Singapore'?",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)\nWHERE f.originator_bank_country = 'Singapore'\nWITH e, SUM(f.amount) AS totalAmount\nRETURN e.name AS entityName, totalAmount\nORDER BY totalAmount DESC\nLIMIT 3",
+      "typeql": "match\n$f isa filing, has originator_bank_country \"Singapore\", has amount $a;\noriginator (filing: $f, originating_entity: $e);\n$e has name $n;\nreduce $total = sum($a) groupby $e, $n;\nsort $total desc;\nlimit 3;\nfetch { \"entityName\": $n, \"totalAmount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 461,
+      "question": "Identify the top 3 entities based on the total amount of filings where the beneficiary bank's country is 'United Kingdom'.",
+      "cypher": "MATCH (f:Filing)-[:BENEFITS]->(e:Entity)\nWHERE f.beneficiary_bank_country = 'United Kingdom'\nWITH e, SUM(f.amount) AS totalAmount\nRETURN e.name AS entityName, totalAmount\nORDER BY totalAmount DESC\nLIMIT 3",
+      "typeql": "match\n$f isa filing, has beneficiary_bank_country \"United Kingdom\", has amount $a;\n$e isa fincen_entity, has name $n;\nbenefits (filing: $f, beneficiary: $e);\nreduce $total = sum($a) groupby $e, $n;\nsort $total desc;\nlimit 3;\nfetch { \"entityName\": $n, \"totalAmount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 473,
+      "question": "Which 3 filings have beneficiary banks located at a longitude less than 0?",
+      "cypher": "MATCH (f:Filing)\nWHERE toFloat(f.beneficiary_lng) < 0\nRETURN f\nORDER BY f.amount DESC\nLIMIT 3",
+      "typeql": "match\n$f isa filing, has beneficiary_lng $lng, has amount $a;\n$lng like \"^-.*\";\nsort $a desc;\nlimit 3;\nfetch {\n  \"filing\": $f\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 474,
+      "question": "Identify the top 3 entities that have filed the least amount of filings but have the highest amounts in those filings.",
+      "cypher": "MATCH (e:Entity)-[:FILED]->(f:Filing)\nWITH e, COUNT(f) AS num_filings, SUM(f.amount) AS total_amount\nORDER BY num_filings ASC, total_amount DESC\nLIMIT 3\nRETURN e.name AS entity_name, num_filings, total_amount",
+      "typeql": "with fun filing_count($e: fincen_entity) -> integer:\n  match\n    filed (filer: $e, filing: $f);\n  return count;\nwith fun total_filing_amount($e: fincen_entity) -> integer:\n  match\n    filed (filer: $e, filing: $f);\n    $f has amount $a;\n  return sum($a);\nmatch\n  $e isa fincen_entity;\n  filed (filer: $e);\nlet $num_filings = filing_count($e);\nlet $total_amount = total_filing_amount($e);\nsort $num_filings asc, $total_amount desc;\nlimit 3;\nfetch { \"entity_name\": $e.name, \"num_filings\": $num_filings,",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 487,
+      "question": "Which 3 entities have filed the most filings that originated from a country other than their own?",
+      "cypher": "MATCH (e:Entity)-[:FILED]->(f:Filing)-[:ORIGINATOR]->(o:Entity)\nWHERE e.country <> f.originator_iso\nWITH e, COUNT(f) AS filing_count\nORDER BY filing_count DESC\nLIMIT 3\nRETURN e.name AS entity_name, filing_count",
+      "typeql": "match\n$e isa fincen_entity, has country_code $cc;\n$f isa filing, has originator_iso $oi;\nfiled (filer: $e, filing: $f);\noriginator (originating_entity: $o, filing: $f);\n$o isa fincen_entity;\nnot { $cc == $oi; };\nreduce $count = count($f) groupby $e;\nsort $count desc;\nlimit 3;\nfetch { \"entity_name\": $e.name, \"filing_count\": $count };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 492,
+      "question": "What are the top 5 countries by the total number of filings that have entities as both originators and beneficiaries?",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e1:Entity)-[:COUNTRY]->(c1:Country),\n      (f)-[:BENEFITS]->(e2:Entity)-[:COUNTRY]->(c2:Country)\nWHERE e1.id = e2.id\nWITH c1.name AS country, COUNT(f) AS total_filings\nRETURN country, total_filings\nORDER BY total_filings DESC\nLIMIT 5",
+      "typeql": "match\n$f isa filing;\n$e isa fincen_entity;\noriginator (filing: $f, originating_entity: $e);\nbenefits (filing: $f, beneficiary: $e);\nentity_country (fincen_entity: $e, country: $c);\n$c has name $country;\nreduce $total_filings = count($f) groupby $c, $country;\nsort $total_filings desc;\nlimit 5;\nfetch { \"country\": $country, \"total_filings\": $total_filings };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 494,
+      "question": "Find the first 3 countries where the total amount of filings exceeds 1000000.",
+      "cypher": "MATCH (c:Country)<-[:COUNTRY]-(e:Entity)-[:FILED]->(f:Filing)\nWITH c, SUM(f.amount) AS totalAmount\nWHERE totalAmount > 1000000\nRETURN c.name AS country, totalAmount\nORDER BY totalAmount DESC\nLIMIT 3",
+      "typeql": "match\n$c isa country, has name $cn;\n$e isa fincen_entity;\nentity_country (fincen_entity: $e, country: $c);\n$f isa filing, has amount $a;\nfiled (filer: $e, filing: $f);\nreduce $total = sum($a) groupby $c, $cn;\nmatch $total > 1000000;\nsort $total desc;\nlimit 3;\nfetch { \"country\": $cn, \"totalAmount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 497,
+      "question": "Identify the top 3 entities that have been the originator in the most filings.",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)\nWITH e, COUNT(f) AS num_filings\nORDER BY num_filings DESC\nLIMIT 3\nRETURN e.name AS entity_name, num_filings",
+      "typeql": "match\n$e isa fincen_entity;\n$f isa filing;\noriginator (originating_entity: $e, filing: $f);\nreduce $num_filings = count($f) groupby $e;\nsort $num_filings desc;\nlimit 3;\nfetch {\n  \"entity_name\": $e.name,\n  \"num_filings\": $num_filings\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 500,
+      "question": "What are the top 5 filings that ended in the year 2015?",
+      "cypher": "MATCH (f:Filing)\nWHERE f.end_date_format >= \"2015-01-01T00:00:00Z\" AND f.end_date_format < \"2016-01-01T00:00:00Z\"\nRETURN f\nORDER BY f.amount DESC\nLIMIT 5",
+      "typeql": "match\n$f isa filing, has end_date_format $edf, has amount $a;\n$edf like \"^2015.*\";\nsort $a desc;\nlimit 5;\nfetch {\n  \"filing\": {\n    \"end_date_format\": $f.end_date_format,\n    \"amount\": $f.amount,\n    \"filing_id\": $f.filing_id\n  }\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 510,
+      "question": "Find the top 5 filings based on the number of different countries involved as either originator or beneficiary.",
+      "cypher": "MATCH (f:Filing)\nOPTIONAL MATCH (f)-[:ORIGINATOR]->(o:Entity)-[:COUNTRY]->(oc:Country)\nOPTIONAL MATCH (f)-[:BENEFITS]->(b:Entity)-[:COUNTRY]->(bc:Country)\nWITH f, collect(DISTINCT oc.code) + collect(DISTINCT bc.code) AS countries\nWITH f, size(apoc.coll.toSet(countries)) AS country_count\nRETURN f.sar_id AS filing_id, country_count\nORDER BY country_count DESC\nLIMIT 5",
+      "typeql": "match\n$f isa filing, has sar_id $sid;\n$rel isa $t (filing: $f, $e);\n{ $t label originator; } or { $t label benefits; };\n$e isa fincen_entity;\nentity_country (fincen_entity: $e, country: $c);\n$c has code $cc;\nselect $f, $sid, $c;\ndistinct;\nreduce $country_count = count($c) groupby $f, $sid;\nsort $country_count desc;\nlimit 5;\nfetch { \"filing_id\": $sid, \"country_count\": $country_count };",
+      "checks_failed": [
+        "cypher_missing_count",
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()",
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 514,
+      "question": "What are the top 5 filings concerning entities that are located at a latitude higher than 40 degrees?",
+      "cypher": "MATCH (f:Filing)-[:CONCERNS]->(e:Entity)\nWHERE e.location.latitude > 40\nRETURN f\nORDER BY f.amount DESC\nLIMIT 5",
+      "typeql": "match\n$f isa filing, has origin_lat $lat, has amount $amt;\n$e isa fincen_entity;\nconcerns (filing: $f, concerned_entity: $e);\n$lat like \"^(4[1-9]|[5-9][0-9]|[1-9][0-9]{2,}).*\";\nsort $amt desc;\nlimit 5;\nfetch {\n  \"filing\": $f\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 517,
+      "question": "Identify the top 5 countries by the total amount of filings originating from them.",
+      "cypher": "MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)-[:COUNTRY]->(c:Country)\nWITH c.name AS country, SUM(f.amount) AS totalAmount\nORDER BY totalAmount DESC\nLIMIT 5\nRETURN country, totalAmount",
+      "typeql": "match\n$f isa filing, has amount $a;\n$e isa fincen_entity;\n$c isa country, has name $cn;\noriginator (filing: $f, originating_entity: $e);\nentity_country (fincen_entity: $e, country: $c);\nreduce $total = sum($a) groupby $c, $cn;\nsort $total desc;\nlimit 5;\nfetch { \"country\": $cn, \"totalAmount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 523,
+      "question": "What are the entities that have both originated and been a beneficiary in filings?",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)-[:BENEFITS]->(e)\nRETURN DISTINCT e.name AS entityName, e.id AS entityId",
+      "typeql": "match\n$e isa fincen_entity;\noriginator (originating_entity: $e, filing: $f);\nbenefits (beneficiary: $e, filing: $f);\nselect $e;\ndistinct;\nfetch {\n  \"entityName\": $e.name,\n  \"entityId\": $e.entity_id\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 528,
+      "question": "What is the total amount filed by entities in 'China'?",
+      "cypher": "MATCH (c:Country {name: 'China'})<-[:COUNTRY]-(e:Entity)-[:FILED]->(f:Filing)\nRETURN SUM(f.amount) AS total_amount",
+      "typeql": "match\n$c isa country, has name \"China\";\nentity_country (fincen_entity: $e, country: $c);\nfiled (filer: $e, filing: $f);\n$f has amount $a;\nreduce $total = sum($a);",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 554,
+      "question": "What are the top 3 countries by the average amount of filings?",
+      "cypher": "MATCH (f:Filing)-[:BENEFITS|:CONCERNS|:ORIGINATOR]->(e:Entity)-[:COUNTRY]->(c:Country)\nWITH c.name AS country, f.amount AS amount\nRETURN country, AVG(amount) AS average_amount\nORDER BY average_amount DESC\nLIMIT 3",
+      "typeql": "match\n$f isa filing, has amount $amt;\n$rel isa $t (filing: $f, $e);\n{ $t label benefits; } or { $t label concerns; } or { $t label originator; };\n$e isa fincen_entity;\nentity_country (fincen_entity: $e, country: $c);\n$c has name $country;\nreduce $avg = mean($amt) groupby $c, $country;\nsort $avg desc;\nlimit 3;\nfetch { \"country\": $country, \"average_amount\": $avg };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 560,
+      "question": "Which entities act as originators in the most number of filings?",
+      "cypher": "MATCH (e:Entity)-[:ORIGINATOR]->(f:Filing)\nWITH e, COUNT(f) AS num_filings\nORDER BY num_filings DESC\nLIMIT 1\nRETURN e.name AS originator_entity, num_filings",
+      "typeql": "match\n$e isa fincen_entity;\noriginator (originating_entity: $e, filing: $f);\nreduce $count = count($f) groupby $e;\nsort $count desc;\nlimit 1;\nfetch {\n  \"originator_entity\": $e.name,\n  \"num_filings\": $count\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Entity)-[:ORIGINATOR]->(Filing) but schema says Filing->Entity"
+      ]
+    },
+    {
+      "index": 578,
+      "question": "Which countries have entities that are both originators and beneficiaries in filings with an amount over 1000000?",
+      "cypher": "MATCH (originator:Entity)-[:FILED]->(f:Filing)-[:ORIGINATOR]->(originator)\nMATCH (beneficiary:Entity)-[:FILED]->(f)-[:BENEFITS]->(beneficiary)\nWHERE f.amount > 1000000\nMATCH (originator)-[:COUNTRY]->(country:Country)\nMATCH (beneficiary)-[:COUNTRY]->(country)\nRETURN DISTINCT country.name AS Country",
+      "typeql": "match\n$f isa filing, has amount $a;\n$a > 1000000;\noriginator (filing: $f, originating_entity: $e);\nbenefits (filing: $f, beneficiary: $e);\nentity_country (fincen_entity: $e, country: $c);\n$c has name $cn;\nselect $cn;\ndistinct;\nfetch { \"Country\": $cn };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 581,
+      "question": "What are the top 5 countries by the total amount of filings concerning their entities?",
+      "cypher": "MATCH (f:Filing)-[:CONCERNS]->(e:Entity)-[:COUNTRY]->(c:Country)\nWITH c.name AS country, SUM(f.amount) AS totalAmount\nRETURN country, totalAmount\nORDER BY totalAmount DESC\nLIMIT 5",
+      "typeql": "match\n$f isa filing, has amount $a;\nconcerns (filing: $f, concerned_entity: $e);\nentity_country (fincen_entity: $e, country: $c);\nreduce $total = sum($a) groupby $c;\nsort $total desc;\nlimit 5;\nfetch { \"country\": $c.name, \"total_amount\": $total };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 582,
+      "question": "Identify the top 3 filings with the largest number of transactions.",
+      "cypher": "MATCH (f:Filing)\nRETURN f.sar_id, f.number\nORDER BY f.number DESC\nLIMIT 3",
+      "typeql": "match\n$f isa filing, has number $n;\nsort $n desc;\nlimit 3;\nfetch {\n  \"sar_id\": $f.sar_id,\n  \"number\": $n\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 595,
+      "question": "Which countries have entities that are both originators and beneficiaries in filings?",
+      "cypher": "MATCH (originator:Entity)-[:FILED]->(f:Filing)-[:ORIGINATOR]->(originator)\nMATCH (beneficiary:Entity)<-[:BENEFITS]-(f)\nWHERE originator.id = beneficiary.id\nMATCH (originator)-[:COUNTRY]->(country:Country)\nRETURN DISTINCT country.name AS country_name",
+      "typeql": "match\n$e isa fincen_entity;\noriginator (filing: $f1, originating_entity: $e);\nbenefits (filing: $f2, beneficiary: $e);\nentity_country (fincen_entity: $e, country: $c);\n$c has name $n;\nselect $n;\ndistinct;\nfetch { \"country_name\": $n };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    }
+  ],
+  "categories": {
+    "cypher_wrong_direction": [
+      9,
+      36,
+      53,
+      94,
+      144,
+      191,
+      213,
+      215,
+      225,
+      239,
+      282,
+      323,
+      334,
+      343,
+      349,
+      368,
+      373,
+      428,
+      497,
+      523,
+      560
+    ],
+    "cypher_lacks_count_vs_typeql": [
+      36,
+      55,
+      83,
+      93,
+      106,
+      111,
+      139,
+      143,
+      154,
+      191,
+      233,
+      240,
+      335,
+      348,
+      366,
+      369,
+      379,
+      380,
+      387,
+      389,
+      401,
+      460,
+      461,
+      494,
+      510,
+      517,
+      528,
+      554,
+      581
+    ],
+    "cypher_lacks_negation_vs_typeql": [
+      46,
+      114,
+      127,
+      132,
+      377,
+      487
+    ],
+    "cypher_missing_count": [
+      65,
+      106,
+      132,
+      138,
+      174,
+      202,
+      208,
+      352,
+      510,
+      582
+    ],
+    "cypher_missing_condition": [
+      328,
+      372,
+      381,
+      382,
+      408,
+      492,
+      578,
+      595
+    ],
+    "cypher_lacks_string_op_vs_typeql": [
+      473,
+      500,
+      514
+    ],
+    "cypher_lacks_optional_vs_typeql": [
+      474
+    ]
+  }
+}

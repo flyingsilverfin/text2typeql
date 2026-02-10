@@ -1,0 +1,561 @@
+{
+  "database": "neoflix",
+  "source": "synthetic-1",
+  "total_queries": 910,
+  "flagged": 37,
+  "flags": [
+    {
+      "index": 3,
+      "question": "Name 3 movies directed by Pixar Animation Studios.",
+      "cypher": "MATCH (m:Movie)<-[:PRODUCED_BY]-(c:ProductionCompany {name: 'Pixar Animation Studios'})\nRETURN m.title\nLIMIT 3",
+      "typeql": "match\n  $m isa movie;\n  $c isa production_company, has production_company_name 'Pixar Animation Studios';\n  $rel0 isa produced_by (media: $m, producer: $c);\n  $m has title $title_m;\nlimit 3;\nfetch {\n  \"title\": $title_m\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Movie)-[:PRODUCED_BY]->(ProductionCompany) but schema says ProductionCompany->Movie"
+      ]
+    },
+    {
+      "index": 105,
+      "question": "What are the original titles of movies that have been translated to Spanish?",
+      "cypher": "MATCH (m:Movie)-[:SPOKEN_IN_LANGUAGE]->(:Language {name: 'Spanish'})\nWHERE m.original_language <> 'es'\nRETURN m.original_title",
+      "typeql": "match\n$m isa movie, has original_title $original_title;\nspoken_in_language (media: $m, language: $spanish);\n$spanish has language_name \"Spanish\";\noriginal_language (media: $m, language: $orig_lang);\nnot { $orig_lang has language_id \"es\"; };\nfetch {\n  \"original_title\": $original_title\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 151,
+      "question": "List the first 5 countries that have produced movies with an average vote above 7.0.",
+      "cypher": "MATCH (c:Country)<-[:PRODUCED_IN_COUNTRY]-(m:Movie)\nWHERE m.average_vote > 7.0\nRETURN c.name AS country, avg(m.average_vote) AS avg_vote\nORDER BY avg_vote DESC\nLIMIT 5",
+      "typeql": "match\n  $c isa country, has country_name $cn;\n  $m isa movie;\n  (media: $m, country: $c) isa produced_in_country;\n  $m has average_vote $av;\n  $av > 7.0;\nreduce $avg = mean($av) groupby $c, $cn;\nsort $avg desc;\nlimit 5;\nfetch { \"country\": $cn, \"avg_vote\": $avg };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 192,
+      "question": "Find the first 3 movies that feature both English and Spanish languages.",
+      "cypher": "MATCH (m:Movie)-[:SPOKEN_IN_LANGUAGE]->(l1:Language {name: 'English'})\nWHERE EXISTS {\n  (m)-[:SPOKEN_IN_LANGUAGE]->(:Language {name: 'Spanish'})\n}\nRETURN m.title\nLIMIT 3",
+      "typeql": "match $m isa movie; $l1 isa language, has language_name 'English'; $rel0 isa spoken_in_language (media: $m, language: $l1); $m has title $title_m; limit 3; fetch { \"title\": $title_m };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 220,
+      "question": "List the first 3 people who have both acted in and produced a movie.",
+      "cypher": "MATCH (p:Person)-[:CAST_FOR]->(m:Movie)<-[:CREW_FOR]-(p)\nWHERE p.name IS NOT NULL\nRETURN DISTINCT p.name\nLIMIT 3",
+      "typeql": "match\n  $p isa person;\n  $m isa movie;\n  $rel0 isa cast_for (actor: $p, film: $m);\n  $rel1 isa crew_for (film: $m, crew_member: $p);\n  $p has person_name $person_name_p;\nlimit 3;\nfetch {\n  \"name\": $person_name_p\n};",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 244,
+      "question": "Which 3 adult films have the lowest average votes but were produced in 'United States of America'?",
+      "cypher": "MATCH (a:Adult)-[:PRODUCED_IN_COUNTRY]->(:Country {name: 'United States of America'})\nRETURN a.title, a.average_vote\nORDER BY a.average_vote\nLIMIT 3",
+      "typeql": "match $a isa adult_video; $country isa country, has country_name 'United States of America'; (media: $a, country: $country) isa produced_in_country; $a has title $title; $a has average_vote $average_vote; sort $average_vote asc; limit 3; fetch { \"title\": $title, \"average_vote\": $average_vote };",
+      "checks_failed": [
+        "cypher_missing_avg"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for average but Cypher has no avg()"
+      ]
+    },
+    {
+      "index": 369,
+      "question": "Which 3 movies have a production company named 'Lucasfilm' associated with them?",
+      "cypher": "MATCH (m:Movie)<-[:PRODUCED_BY]-(c:ProductionCompany {name: 'Lucasfilm'})\nRETURN m.title\nLIMIT 3",
+      "typeql": "match\n  $m isa movie;\n  $c isa production_company, has production_company_name 'Lucasfilm';\n  $rel0 isa produced_by (media: $m, producer: $c);\n  $m has title $title_m;\nlimit 3;\nfetch {\n  \"title\": $title_m\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Movie)-[:PRODUCED_BY]->(ProductionCompany) but schema says ProductionCompany->Movie"
+      ]
+    },
+    {
+      "index": 490,
+      "question": "What are the original titles of movies that have been translated into Spanish?",
+      "cypher": "MATCH (m:Movie)-[:SPOKEN_IN_LANGUAGE]->(:Language {name: 'Spanish'})\nWHERE m.original_language <> 'es'\nRETURN m.original_title",
+      "typeql": "match\n$m isa movie, has original_title $original_title;\nspoken_in_language (media: $m, language: $spanish);\n$spanish has language_name \"Spanish\";\noriginal_language (media: $m, language: $orig_lang);\nnot { $orig_lang has language_id \"es\"; };\nfetch {\n  \"original_title\": $original_title\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 545,
+      "question": "List the movies where the original language is not English.",
+      "cypher": "MATCH (m:Movie)\nWHERE m.original_language <> 'en'\nRETURN m.title, m.original_language",
+      "typeql": "match\n$m isa movie, has title $title;\noriginal_language (media: $m, language: $lang);\n$lang has language_id $lang_id;\nnot { $lang_id == \"en\"; };\nfetch {\n  \"title\": $title,\n  \"language\": $lang_id\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 807,
+      "question": "List the top 5 adult films with the highest average votes.",
+      "cypher": "MATCH (a:Adult)\nWHERE a.average_vote IS NOT NULL\nRETURN a.title, a.average_vote\nORDER BY a.average_vote DESC\nLIMIT 5",
+      "typeql": "match\n  $a isa adult_video;\n  $a has average_vote $average_vote;\n  $a has title $title;\nsort $average_vote desc;\nlimit 5;\nfetch {\n  \"title\": $title, \"average_vote\": $average_vote\n};",
+      "checks_failed": [
+        "cypher_missing_avg"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for average but Cypher has no avg()"
+      ]
+    },
+    {
+      "index": 813,
+      "question": "List the first 3 countries where the most non-English language movies are produced.",
+      "cypher": "MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(c:Country)\nWHERE m.original_language <> 'en'\nRETURN c.name AS country, count(*) AS num_movies\nORDER BY num_movies DESC\nLIMIT 3",
+      "typeql": "match\n$m isa movie;\n$c isa country;\nproduced_in_country (media: $m, country: $c);\noriginal_language (media: $m, language: $lang);\nnot { $lang has language_id \"en\"; };\nreduce $count = count groupby $c;\nsort $count desc;\nlimit 3;\nfetch {\n  \"country\": $c.country_name,\n  \"count\": $count\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 59,
+      "question": "Which movies have been translated into more than three languages?",
+      "cypher": "MATCH (m:Movie)-[:SPOKEN_IN_LANGUAGE]->(l:Language)\nWITH m, count(l) AS languageCount\nWHERE languageCount > 3\nRETURN m.title AS movie, languageCount AS translatedLanguages",
+      "typeql": "match\n$m isa movie, has title $title;\nspoken_in_language (media: $m, language: $l);\nreduce $count = count($l) groupby $m, $title;\nmatch $count > 3;\nsort $title;\nfetch {\n  \"movie\": $title,\n  \"translatedLanguages\": $count\n};",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 66,
+      "question": "Identify all movies that were produced in a country other than the United States.",
+      "cypher": "MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(c:Country)\nWHERE c.name <> 'United States of America'\nRETURN m.title, c.name",
+      "typeql": "match\n$m isa movie, has title $title;\n$c isa country, has country_name $cname;\nproduced_in_country (media: $m, country: $c);\nnot { $cname == \"United States of America\"; };\nfetch {\n  \"title\": $title,\n  \"country\": $cname\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 133,
+      "question": "List the first 5 subscriptions that expire in 2020.",
+      "cypher": "MATCH (s:Subscription)\nWHERE s.expiresAt >= date('2020-01-01') AND s.expiresAt < date('2021-01-01')\nRETURN s\nLIMIT 5",
+      "typeql": "match\n  $s isa subscription, has subscription_id $sid, has expires_at $exp;\n  $exp >= 2020-01-01T00:00:00;\n  $exp < 2021-01-01T00:00:00;\nsort $exp asc;\nlimit 5;\nfetch { \"subscription_id\": $sid, \"expires_at\": $exp };",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 147,
+      "question": "What are the jobs of the first 3 crew members for the movie with the highest budget?",
+      "cypher": "MATCH (m:Movie)<-[r:CREW_FOR]-(p:Person)\nWITH m, r, p\nORDER BY m.budget DESC\nLIMIT 1\nWITH m, collect({job: r.job, person: p}) AS crew\nRETURN m.title AS movie, crew[0..2] AS crew_jobs",
+      "typeql": "with fun max_budget() -> integer:\n  match $m isa movie, has budget $b;\n  return max($b);\nmatch\n  $m isa movie, has budget $b, has title $title;\n  $b == max_budget();\n  $r isa crew_for (film: $m, crew_member: $p), has job $job;\nlimit 3;\nfetch { \"movie\": $title, \"job\": $job };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 229,
+      "question": "What are the top 5 movies that have undergone a title change after release?",
+      "cypher": "MATCH (m:Movie)\nWHERE m.title <> m.original_title\nRETURN m.title AS title, m.original_title AS original_title\nORDER BY m.popularity DESC\nLIMIT 5",
+      "typeql": "match\n$m isa movie;\n$m has title $title;\n$m has original_title $original_title;\n$m has popularity $popularity;\nnot { $title == $original_title; };\nsort $popularity desc;\nlimit 5;\nfetch {\n  \"title\": $title,\n  \"original_title\": $original_title\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 380,
+      "question": "Name the top 5 production companies that have produced the highest grossing movies.",
+      "cypher": "MATCH (m:Movie)<-[:PRODUCED_BY]-(c:ProductionCompany)\nWHERE m.revenue IS NOT NULL\nRETURN c.name AS company, sum(m.revenue) AS total_revenue\nORDER BY total_revenue DESC\nLIMIT 5",
+      "typeql": "match\n  $c isa production_company, has production_company_name $cn;\n  $m isa movie, has revenue $rev;\n  produced_by (media: $m, producer: $c);\nreduce $total_revenue = sum($rev) groupby $c, $cn;\nsort $total_revenue desc;\nlimit 5;\nfetch { \"company\": $cn, \"total_revenue\": $total_revenue };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Movie)-[:PRODUCED_BY]->(ProductionCompany) but schema says ProductionCompany->Movie"
+      ]
+    },
+    {
+      "index": 386,
+      "question": "What are the first 3 movies that have a poster path containing '/vzmL6fP7aPKNKPRTFnZmiUfciyV.jpg'?",
+      "cypher": "MATCH (m:Movie)\nWHERE m.poster_path = '/vzmL6fP7aPKNKPRTFnZmiUfciyV.jpg'\nRETURN m.title\nLIMIT 3",
+      "typeql": "match\n  $m isa movie;\n  $m has poster_path $poster_path;\n  $poster_path like \".*/vzmL6fP7aPKNKPRTFnZmiUfciyV\\\\.jpg.*\";\nlimit 3;\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 406,
+      "question": "What are the first 5 production companies producing films in the 'Animation' genre?",
+      "cypher": "MATCH (g:Genre {name: 'Animation'})<-[:IN_GENRE]-(m:Movie)<-[:PRODUCED_BY]-(c:ProductionCompany)\nRETURN c.name AS company\nORDER BY company\nLIMIT 5",
+      "typeql": "match\n$g isa genre, has genre_name \"Animation\";\n$m isa movie;\nin_genre (genre: $g, media: $m);\n$c isa production_company, has production_company_name $company;\nproduced_by (producer: $c, media: $m);\nsort $company;\nlimit 5;\nfetch {\n  \"company\": $company\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Movie)-[:PRODUCED_BY]->(ProductionCompany) but schema says ProductionCompany->Movie"
+      ]
+    },
+    {
+      "index": 529,
+      "question": "Which movies have a budget less than 1 million USD and have won an award?",
+      "cypher": "MATCH (m:Movie)\nWHERE m.budget < 1000000 AND exists{ (m)<-[:AWARDED_TO]-() }\nRETURN m",
+      "typeql": "match\n  $m isa movie;\n  $m has budget $budget;\n  $budget < 1000000;\n  $k isa keyword, has keyword_name \"award won\";\n  has_keyword (media: $m, keyword: $k);\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "cypher_invalid_rel_type"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references relationship type \"AWARDED_TO\" not in Neo4j schema (valid: ['CAST_FOR', 'CREW_FOR', 'FOR_PACKAGE', 'HAS_KEYWORD', 'IN_COLLECTION', 'IN_GENRE', 'ORIGINAL_LANGUAGE', 'PRODUCED_BY', 'PRODUCED_IN_COUNTRY', 'PROVIDES_ACCESS_TO', 'RATED', 'SPOKEN_IN_LANGUAGE'])"
+      ]
+    },
+    {
+      "index": 533,
+      "question": "List all movies where the spoken language includes both English and Spanish.",
+      "cypher": "MATCH (m:Movie)-[:SPOKEN_IN_LANGUAGE]->(l1:Language {name: 'English'})\nWHERE exists{ (m)-[:SPOKEN_IN_LANGUAGE]->(:Language {name: 'Spanish'}) }\nRETURN m.title",
+      "typeql": "match $m isa movie; $l1 isa language, has language_name \"English\"; $l2 isa language, has language_name \"Spanish\"; spoken_in_language (media: $m, language: $l1); spoken_in_language (media: $m, language: $l2); fetch { \"title\": $m.title };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 564,
+      "question": "What are the movies with a runtime exactly equal to the runtime of 'Toy Story'?",
+      "cypher": "MATCH (m:Movie {title: 'Toy Story'}), (other:Movie)\nWHERE other.runtime = m.runtime AND other <> m\nRETURN other.title, other.runtime",
+      "typeql": "match\n  $m isa movie, has title \"Toy Story\", has runtime $runtime;\n  $other isa movie, has runtime $runtime, has title $title;\n  not { $other is $m; };\nfetch {\n  \"title\": $title,\n  \"runtime\": $runtime\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 801,
+      "question": "Who are the first 3 actors to star in movies from both the horror and comedy genres?",
+      "cypher": "MATCH (p:Person)-[:CAST_FOR]->(m:Movie)\nWHERE (m)-[:IN_GENRE]->(:Genre {name: 'Horror'})\nAND (m)-[:IN_GENRE]->(:Genre {name: 'Comedy'})\nRETURN p.name\nLIMIT 3",
+      "typeql": "match\n  $p isa person, has person_name $name;\n  $m isa movie;\n  cast_for (actor: $p, film: $m);\n  $g1 isa genre, has genre_name \"Horror\";\n  $g2 isa genre, has genre_name \"Comedy\";\n  in_genre (media: $m, genre: $g1);\n  in_genre (media: $m, genre: $g2);\nlimit 3;\nfetch {\n  \"name\": $name\n};",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 803,
+      "question": "List the first 3 genres of movies with the highest average vote count.",
+      "cypher": "MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)\nWITH g, avg(m.vote_count) AS avg_votes\nORDER BY avg_votes DESC\nLIMIT 3\nRETURN g.name AS genre, avg_votes",
+      "typeql": "match\n  $m isa movie, has vote_count $vc;\n  $g isa genre, has genre_name $gn;\n  in_genre (media: $m, genre: $g);\nreduce $avg = mean($vc) groupby $g, $gn;\nsort $avg desc;\nlimit 3;\nfetch {\n  \"genre\": $gn,\n  \"avg_votes\": $avg\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 819,
+      "question": "List the first 3 genres of movies with the highest average vote count.",
+      "cypher": "MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)\nWITH g, avg(m.vote_count) AS avg_votes\nORDER BY avg_votes DESC\nLIMIT 3\nRETURN g.name AS genre, avg_votes",
+      "typeql": "match\n  $m isa movie, has vote_count $votes;\n  in_genre (media: $m, genre: $g);\n  $g has genre_name $name;\nreduce $avg = mean($votes) groupby $g, $name;\nsort $avg desc;\nlimit 3;\nfetch { \"genre\": $name, \"avg_votes\": $avg };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 837,
+      "question": "List the first 3 movies with the most unique spoken languages.",
+      "cypher": "MATCH (m:Movie)-[:SPOKEN_IN_LANGUAGE]->(l:Language)\nRETURN m.title AS movie, collect(DISTINCT l.name) AS languages, size(collect(DISTINCT l.name)) AS numLanguages\nORDER BY numLanguages DESC\nLIMIT 3",
+      "typeql": "match\n  $m isa movie;\n  spoken_in_language (media: $m, language: $l);\nreduce $num_languages = count($l) groupby $m;\nsort $num_languages desc;\nlimit 3;\nfetch {\n  \"movie\": $m.title,\n  \"numLanguages\": $num_languages\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 839,
+      "question": "Who are the first 3 actors to have roles in movies with at least five different production companies?",
+      "cypher": "MATCH (p:Person)-[:CAST_FOR]->(m:Movie)<-[:PRODUCED_BY]-(c:ProductionCompany)\nWITH p, count(DISTINCT c) AS num_companies\nWHERE num_companies >= 5\nRETURN p.name\nORDER BY num_companies DESC\nLIMIT 3",
+      "typeql": "match\n  $p isa person, has person_name $name;\n  $m isa movie;\n  $c isa production_company;\n  cast_for (actor: $p, film: $m);\n  produced_by (media: $m, producer: $c);\nselect $p, $c, $name;\ndistinct;\nreduce $count = count($c) groupby $p, $name;\nmatch $count >= 5;\nsort $count desc;\nlimit 3;\nfetch {\n  \"name\": $name\n};\n",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Movie)-[:PRODUCED_BY]->(ProductionCompany) but schema says ProductionCompany->Movie"
+      ]
+    },
+    {
+      "index": 848,
+      "question": "List the first 3 movies with the highest number of directors.",
+      "cypher": "MATCH (m:Movie)<-[:CREW_FOR]-(p:Person)\nWHERE p.job = 'Director'\nWITH m, count(p) AS num_directors\nORDER BY num_directors DESC\nRETURN m.title AS movie, num_directors\nLIMIT 3",
+      "typeql": "match\n  $m isa movie, has title $title;\n  $crew isa crew_for (crew_member: $p, film: $m), has job \"Director\";\nreduce $count = count($p) groupby $m, $title;\nsort $count desc;\nlimit 3;\nfetch { \"movie\": $title, \"num_directors\": $count };",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.job but \"job\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 855,
+      "question": "Who are the first 3 directors to have made both adult films and videos?",
+      "cypher": "MATCH (p:Person)-[:CREW_FOR]->(a:Adult), (p)-[:CREW_FOR]->(v:Video)\nWHERE a.id IS NOT NULL AND v.id IS NOT NULL\nWITH p, count(DISTINCT a) AS numAdult, count(DISTINCT v) AS numVideo\nWHERE numAdult > 0 AND numVideo > 0\nRETURN p.name\nLIMIT 3",
+      "typeql": "match\n$p isa person;\n$a isa adult_video;\n$r1 isa crew_for (crew_member: $p, film: $a), has job \"Director\";\n$v isa video;\nnot { $v isa adult_video; };\n$r2 isa crew_for (crew_member: $p, film: $v), has job \"Director\";\nselect $p;\ndistinct;\nlimit 3;\nfetch { \"name\": $p.person_name };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 421,
+      "question": "What are the first 5 actors who have starred in both a movie and an adult film?",
+      "cypher": "MATCH (p:Person)-[:CAST_FOR]->(m:Movie)\nWHERE EXISTS {\n  (p)-[:CAST_FOR]->(:Adult)\n}\nRETURN p.name\nLIMIT 5",
+      "typeql": "match\n$p isa person;\n$m isa movie;\ncast_for (actor: $p, film: $m);\n$a isa adult_video;\ncast_for (actor: $p, film: $a);\nselect $p;\ndistinct;\nlimit 5;\nfetch { \"name\": $p.person_name };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 795,
+      "question": "Who are the first 3 actors with roles in both movies and adult films?",
+      "cypher": "MATCH (p:Person)-[:CAST_FOR]->(m:Movie)\nWHERE EXISTS {(p)-[:CAST_FOR]->(:Adult)}\nRETURN p.name\nLIMIT 3",
+      "typeql": "match\n$p isa person;\n$m isa movie;\ncast_for (actor: $p, film: $m);\n$a isa adult_video;\ncast_for (actor: $p, film: $a);\nselect $p;\ndistinct;\nlimit 3;\nfetch { \"name\": $p.person_name };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 80,
+      "question": "List all movies that have a backdrop path available.",
+      "cypher": "MATCH (m:Movie)\nWHERE m.backdrop_path IS NOT NULL\nRETURN m.title",
+      "typeql": "match\n$m isa movie, has backdrop_path $bp;\nfetch { \"title\": $m.title };",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses m.backdrop_path but \"backdrop_path\" is not on :Movie (exists on other types)"
+      ]
+    },
+    {
+      "index": 228,
+      "question": "List the first 3 movies with a backdrop path that includes '/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg'.",
+      "cypher": "MATCH (m:Movie)\nWHERE m.backdrop_path IS NOT NULL AND m.backdrop_path CONTAINS '/9FBwqcd9IRruEDUrTdcaafOMKUq.jpg'\nRETURN m.title\nLIMIT 3",
+      "typeql": "match\n$m isa movie, has backdrop_path $bp;\n$bp like \".*9FBwqcd9IRruEDUrTdcaafOMKUq.*\";\nlimit 3;\nfetch { \"title\": $m.title };",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses m.backdrop_path but \"backdrop_path\" is not on :Movie (exists on other types)"
+      ]
+    },
+    {
+      "index": 527,
+      "question": "Which movies have a runtime longer than the average runtime of all movies?",
+      "cypher": "MATCH (m:Movie)\nWITH m, avg(m.runtime) AS avg_runtime\nWHERE m.runtime > avg_runtime\nRETURN m.title, m.runtime\nORDER BY m.runtime DESC",
+      "typeql": "with fun avg_movie_runtime() -> double:\n  match $m isa movie, has runtime $r;\n  return mean($r);\n\nmatch\n$m isa movie, has runtime $r;\nlet $avg = avg_movie_runtime();\n$r > $avg;\nsort $r desc;\nfetch { \"title\": $m.title, \"runtime\": $r };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 897,
+      "question": "List the top 3 actors who have appeared in both movies and videos.",
+      "cypher": "MATCH (p:Person)-[:CAST_FOR]->(m:Movie)\nWITH p, count(m) AS numMovies\nWHERE numMovies > 0\nMATCH (p)-[:CAST_FOR]->(v:Video) \nWITH p, numMovies, count(v) AS numVideos\nWHERE numVideos > 0\nRETURN p.name AS actor, numMovies, numVideos\nORDER BY numMovies + numVideos DESC\nLIMIT 3",
+      "typeql": "with fun movie_count($p: person) -> integer:\n  match cast_for (actor: $p, film: $m); $m isa movie;\n  return count;\n\nwith fun video_count($p: person) -> integer:\n  match cast_for (actor: $p, film: $v); $v isa video;\n  return count;\n\nmatch\n$p isa person;\nlet $num_movies = movie_count($p);\nlet $num_videos = video_count($p);\n$num_movies > 0;\n$num_videos > 0;\nlet $total = $num_movies + $num_videos;\nsort $total desc;\nlimit 3;\nfetch { \"actor\": $p.person_name, \"numMovies\": $num_movies, \"numVideos\": $num",
+      "checks_failed": [
+        "cypher_missing_condition",
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND",
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 796,
+      "question": "List the first 3 actors with roles in both movies and videos.",
+      "cypher": "MATCH (p:Person)-[:CAST_FOR]->(m:Movie)\nWHERE exists{ (p)-[:CAST_FOR]->(:Video) }\nRETURN p.name\nLIMIT 3",
+      "typeql": "match\n$p isa person;\n$m isa movie;\ncast_for (actor: $p, film: $m);\n$v isa video;\ncast_for (actor: $p, film: $v);\nselect $p;\ndistinct;\nlimit 3;\nfetch { \"name\": $p.person_name };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 902,
+      "question": "List the top 5 movies with the most diverse cast, measured by the number of different countries actors come from.",
+      "cypher": "MATCH (m:Movie)<-[:CAST_FOR]-(p:Person)\nWITH m, size(collect(distinct p.country)) AS num_countries\nORDER BY num_countries DESC\nLIMIT 5\nRETURN m.title AS movie, num_countries AS number_of_countries",
+      "typeql": "match\n$m isa movie;\n$p isa person;\ncast_for (actor: $p, film: $m);\nborn_in (person: $p, country: $co);\nselect $m, $co;\ndistinct;\nreduce $num_countries = count($co) groupby $m;\nsort $num_countries desc;\nlimit 5;\nfetch { \"movie\": $m.title, \"number_of_countries\": $num_countries };",
+      "checks_failed": [
+        "cypher_missing_count",
+        "cypher_invalid_property",
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()",
+        "Cypher accesses p.country but \"country\" is not a property of :Person (valid: ['gender', 'id', 'name', 'profile_path'])",
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    }
+  ],
+  "categories": {
+    "cypher_wrong_direction": [
+      3,
+      369,
+      380,
+      406,
+      839
+    ],
+    "cypher_lacks_negation_vs_typeql": [
+      105,
+      490,
+      545,
+      813,
+      66,
+      229,
+      564,
+      855
+    ],
+    "cypher_lacks_count_vs_typeql": [
+      151,
+      803,
+      819,
+      837,
+      902
+    ],
+    "cypher_missing_condition": [
+      192,
+      220,
+      533,
+      801,
+      421,
+      795,
+      897,
+      796
+    ],
+    "cypher_missing_avg": [
+      244,
+      807
+    ],
+    "cypher_lacks_sort_vs_typeql": [
+      59,
+      133
+    ],
+    "cypher_lacks_optional_vs_typeql": [
+      147,
+      527,
+      897
+    ],
+    "cypher_lacks_string_op_vs_typeql": [
+      386
+    ],
+    "cypher_invalid_rel_type": [
+      529
+    ],
+    "cypher_wrong_label_property": [
+      848,
+      80,
+      228
+    ],
+    "cypher_missing_count": [
+      902
+    ],
+    "cypher_invalid_property": [
+      902
+    ]
+  }
+}

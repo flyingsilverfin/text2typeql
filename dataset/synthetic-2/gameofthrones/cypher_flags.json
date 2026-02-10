@@ -1,0 +1,262 @@
+{
+  "database": "gameofthrones",
+  "source": "synthetic-2",
+  "total_queries": 384,
+  "flagged": 17,
+  "flags": [
+    {
+      "index": 97,
+      "question": "Which characters are in the top 5 for the sum of their INTERACTS1 and INTERACTS2 weights?",
+      "cypher": "MATCH (c:Character)-[r1:INTERACTS1]->(:Character)\nWITH c, SUM(r1.weight) AS interacts1Weight\nMATCH (c)-[r2:INTERACTS2]->(:Character)\nWITH c, interacts1Weight, SUM(r2.weight) AS interacts2Weight\nRETURN c.name AS characterName, (interacts1Weight + interacts2Weight) AS totalWeight\nORDER BY totalWeight DESC\nLIMIT 5",
+      "typeql": "with fun interacts1_total($c: character) -> integer:\n    match $r1 isa interacts1 (character1: $c);\n    $r1 has weight $w1;\n    return sum($w1);\nwith fun interacts2_total($c: character) -> integer:\n    match $r2 isa interacts2 (character1: $c);\n    $r2 has weight $w2;\n    return sum($w2);\nmatch\n$c isa character;\nlet $total = interacts1_total($c) + interacts2_total($c);\nsort $total desc;\nlimit 5;\nfetch {\n    \"characterName\": $c.name,\n    \"totalWeight\": $total\n};",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 103,
+      "question": "Identify the top 3 characters based on the sum of their centrality values across all books.",
+      "cypher": "MATCH (c:Character)\nWITH c, \n     c.centrality + c.book1BetweennessCentrality + c.book1PageRank + c.book45PageRank AS totalCentrality\nRETURN c.name AS characterName, totalCentrality\nORDER BY totalCentrality DESC\nLIMIT 3",
+      "typeql": "match\n$c isa character, has name $name;\n$c has centrality $cent;\n$c has book1_betweenness_centrality $b1bc;\n$c has book1_page_rank $b1pr;\n$c has book45_page_rank $b45pr;\nlet $total = $cent + $b1bc + $b1pr + $b45pr;\nsort $total desc;\nlimit 3;\nfetch {\n  \"characterName\": $name,\n  \"totalCentrality\": $total\n};",
+      "checks_failed": [
+        "cypher_missing_sum"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for total/sum but Cypher has no sum()"
+      ]
+    },
+    {
+      "index": 105,
+      "question": "Find the characters who have a louvain community number of 10 and a pagerank greater than 0.5.",
+      "cypher": "MATCH (c:Character)\nWHERE c.louvain = 10 AND c.pagerank > 0.5\nRETURN c.name, c.louvain, c.pagerank",
+      "typeql": "match\n$c isa character, has louvain $l, has pagerank $pr;\n$l == 10;\n$pr > 0.5;\nfetch {\n  \"name\": $c.name,\n  \"louvain\": $l,\n  \"pagerank\": $pr\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 109,
+      "question": "List the characters who are part of both community 578 and 579. Limit to 5 characters.",
+      "cypher": "MATCH (c:Character)\nWHERE c.community IN [578, 579]\nWITH c, collect(c.community) AS communities\nWHERE 578 IN communities AND 579 IN communities\nRETURN c.name\nLIMIT 5",
+      "typeql": "match\n$c isa character, has community 578, has community 579;\nlimit 5;\nfetch { \"name\": $c.name };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 125,
+      "question": "Name the top 3 characters based on the sum of their book1PageRank and book45PageRank.",
+      "cypher": "MATCH (c:Character)\nWITH c, (c.book1PageRank + c.book45PageRank) AS totalPageRank\nRETURN c.name AS characterName, totalPageRank\nORDER BY totalPageRank DESC\nLIMIT 3",
+      "typeql": "match\n$c isa character, has book1_page_rank $b1, has book45_page_rank $b45, has name $name;\nlet $total = $b1 + $b45;\nsort $total desc;\nlimit 3;\nfetch {\n  \"characterName\": $name,\n  \"totalPageRank\": $total\n};",
+      "checks_failed": [
+        "cypher_missing_sum"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for total/sum but Cypher has no sum()"
+      ]
+    },
+    {
+      "index": 127,
+      "question": "Identify the top 3 characters with the highest book1BetweennessCentrality and a community number of 759.",
+      "cypher": "MATCH (c:Character)\nWHERE c.community = 759\nRETURN c.name, c.book1BetweennessCentrality\nORDER BY c.book1BetweennessCentrality DESC\nLIMIT 3",
+      "typeql": "match\n$c isa character, has community 759, has book1_betweenness_centrality $b;\nsort $b desc;\nlimit 3;\nfetch {\n  \"name\": $c.name,\n  \"book1_betweenness_centrality\": $b\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 134,
+      "question": "Which characters have the highest sum of pagerank values across all books? Limit to top 5.",
+      "cypher": "MATCH (c:Character)\nWITH c, \n     c.book1PageRank + c.book45PageRank + c.pagerank AS totalPageRank\nORDER BY totalPageRank DESC\nLIMIT 5\nRETURN c.name AS characterName, totalPageRank",
+      "typeql": "match\n$c isa character, has book1_page_rank $b1, has book45_page_rank $b45, has pagerank $pr;\nlet $total = $b1 + $b45 + $pr;\nsort $total desc;\nlimit 5;\nfetch {\n  \"characterName\": $c.name,\n  \"totalPageRank\": $total\n};",
+      "checks_failed": [
+        "cypher_missing_sum"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for total/sum but Cypher has no sum()"
+      ]
+    },
+    {
+      "index": 135,
+      "question": "Identify the top 5 characters based on the average of their centrality values across all books.",
+      "cypher": "MATCH (c:Character)\nWITH c, \n     (c.centrality + c.book1BetweennessCentrality + c.book1PageRank + c.book45PageRank) / 4 AS avgCentrality\nRETURN c.name AS characterName, avgCentrality\nORDER BY avgCentrality DESC\nLIMIT 5",
+      "typeql": "match\n$c isa character;\n$c has centrality $cent;\n$c has book1_betweenness_centrality $b1bc;\n$c has book1_page_rank $b1pr;\n$c has book45_page_rank $b45pr;\nlet $avg_centrality = ($cent + $b1bc + $b1pr + $b45pr) / 4.0;\nsort $avg_centrality desc;\nlimit 5;\nfetch {\n  \"characterName\": $c.name,\n  \"avgCentrality\": $avg_centrality\n};",
+      "checks_failed": [
+        "cypher_missing_avg"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for average but Cypher has no avg()"
+      ]
+    },
+    {
+      "index": 140,
+      "question": "List the characters who have a centrality value of exactly 0.8. Limit to top 5.",
+      "cypher": "MATCH (c:Character)\nWHERE c.centrality = 0.8\nRETURN c.name\nLIMIT 5",
+      "typeql": "match\n$c isa character, has centrality 0.8;\nlimit 5;\nfetch {\n  \"name\": $c.name\n};",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 179,
+      "question": "Which characters have a louvain community number less than 5? Limit to 5 characters.",
+      "cypher": "MATCH (c:Character)\nWHERE c.louvain < 5\nRETURN c.name, c.louvain\nLIMIT 5",
+      "typeql": "match\n$c isa character, has louvain $l, has name $n;\n$l < 5;\nsort $l;\nlimit 5;\nfetch {\n  \"name\": $n,\n  \"louvain\": $l\n};",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 199,
+      "question": "Display characters with a 'community' of 504 and list top 3.",
+      "cypher": "MATCH (c:Character)\nWHERE c.community = 504\nRETURN c.name, c.community\nLIMIT 3",
+      "typeql": "match\n$c isa character, has community 504;\nlimit 3;\nfetch {\n  \"name\": $c.name,\n  \"community\": $c.community\n};",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 224,
+      "question": "Display characters with a 'community' of 735 and list top 3.",
+      "cypher": "MATCH (c:Character)\nWHERE c.community = 735\nRETURN c.name, c.community\nLIMIT 3",
+      "typeql": "match\n$c isa character, has community 735;\nlimit 3;\nfetch {\n  \"name\": $c.name,\n  \"community\": $c.community\n};",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 248,
+      "question": "Retrieve the names of the characters who have a louvain community number of 6.",
+      "cypher": "MATCH (c:Character)\nWHERE c.louvain = 6\nRETURN c.name",
+      "typeql": "match\n$c isa character, has louvain 6;\nfetch {\n  \"name\": $c.name\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 251,
+      "question": "Find characters who have a book45PageRank less than 0.7 and limit the results to three.",
+      "cypher": "MATCH (c:Character)\nWHERE c.book45PageRank < 0.7\nRETURN c.name, c.book45PageRank\nLIMIT 3",
+      "typeql": "match\n$c isa character, has book45_page_rank $r;\n$r < 0.7;\nsort $r asc;\nlimit 3;\nfetch {\n  \"name\": $c.name,\n  \"book45_page_rank\": $r\n};",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 262,
+      "question": "Retrieve the names of 3 characters who have a louvain community number of 1.",
+      "cypher": "MATCH (c:Character)\nWHERE c.louvain = 1\nRETURN c.name\nLIMIT 3",
+      "typeql": "match\n$c isa character, has louvain 1;\nlimit 3;\nfetch { \"name\": $c.name };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 274,
+      "question": "Display characters with a 'community' of 642 and list top 3.",
+      "cypher": "MATCH (c:Character)\nWHERE c.community = 642\nRETURN c.name, c.community\nLIMIT 3",
+      "typeql": "match\n$c isa character, has community $comm, has name $n;\n$comm == 642;\nlimit 3;\nfetch {\n  \"name\": $n,\n  \"community\": $comm\n};",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 282,
+      "question": "Which characters are part of community 579? Provide top 5 results.",
+      "cypher": "MATCH (c:Character)\nWHERE c.community = 579\nRETURN c.name\nLIMIT 5",
+      "typeql": "match\n$c isa character, has community 579;\nlimit 5;\nfetch {\n  \"name\": $c.name\n};",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but Cypher has no ORDER BY"
+      ]
+    }
+  ],
+  "categories": {
+    "cypher_lacks_optional_vs_typeql": [
+      97
+    ],
+    "cypher_missing_sum": [
+      103,
+      125,
+      134
+    ],
+    "cypher_missing_count": [
+      105,
+      127,
+      248,
+      262
+    ],
+    "cypher_missing_condition": [
+      109
+    ],
+    "cypher_missing_avg": [
+      135
+    ],
+    "cypher_missing_order": [
+      140,
+      199,
+      224,
+      274,
+      282
+    ],
+    "cypher_lacks_sort_vs_typeql": [
+      179,
+      251
+    ]
+  }
+}

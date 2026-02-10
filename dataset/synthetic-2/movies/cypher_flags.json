@@ -1,0 +1,1327 @@
+{
+  "database": "movies",
+  "source": "synthetic-2",
+  "total_queries": 728,
+  "flagged": 91,
+  "flags": [
+    {
+      "index": 9,
+      "question": "List the first 5 movies that have been acted in by someone with the role 'Captain' and reviewed with a rating below 60.",
+      "cypher": "MATCH (p:Person)-[:ACTED_IN]->(m:Movie)\nWHERE 'Captain' IN p.roles\nWITH m\nMATCH (m)<-[:REVIEWED]-(r:Person)\nWHERE r.rating < 60\nRETURN m.title AS MovieTitle\nLIMIT 5",
+      "typeql": "match\n$m isa movie;\n$act isa acted_in (actor: $p, film: $m);\n$act has roles \"Captain\";\n$rev isa reviewed (reviewer: $r, film: $m);\n$rev has rating $rat;\n$rat < 60;\nlimit 5;\nfetch {\n  \"MovieTitle\": $m.title\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property",
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.roles but \"roles\" is not on :Person (exists on other types)",
+        "Cypher accesses r.rating but \"rating\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 29,
+      "question": "List the first 5 people who wrote a movie with a rating of at least 80 in a review.",
+      "cypher": "MATCH (p:Person)-[:WROTE]->(m:Movie)<-[:REVIEWED]-(r:Person)\nWHERE r.rating >= 80\nRETURN DISTINCT p.name\nLIMIT 5",
+      "typeql": "match\n$p isa person;\n$m isa movie;\nwrote (writer: $p, film: $m);\n$rev isa reviewed (reviewer: $r, film: $m);\n$rev has rating $rat;\n$rat >= 80;\nselect $p;\ndistinct;\nlimit 5;\nfetch {\n  \"name\": $p.name\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses r.rating but \"rating\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 36,
+      "question": "Which top 5 movies released between 1980 and 1990 have been reviewed with a summary mentioning 'compelling'?",
+      "cypher": "MATCH (m:Movie)-[:REVIEWED]->(r:REVIEWED)\nWHERE m.released >= 1980 AND m.released <= 1990 AND r.summary CONTAINS 'compelling'\nRETURN m.title, m.released, COUNT(r) AS review_count\nORDER BY review_count DESC\nLIMIT 5",
+      "typeql": "match\n$m isa movie, has released $rel, has title $t;\n$rel >= 1980; $rel <= 1990;\n$rev isa reviewed (film: $m), has summary $s;\n$s like \".*compelling.*\";\nreduce $count = count($rev) groupby $m, $t, $rel;\nsort $count desc;\nlimit 5;",
+      "checks_failed": [
+        "cypher_invalid_label"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references label \"REVIEWED\" not in Neo4j schema (valid: ['Movie', 'Person'])"
+      ]
+    },
+    {
+      "index": 38,
+      "question": "Who are the top 3 directors of movies that have been reviewed with a summary stating 'Pretty funny at times'?",
+      "cypher": "MATCH (p:Person)-[:DIRECTED]->(m:Movie)<-[:REVIEWED]-(r:Person)\nWHERE r.summary = 'Pretty funny at times'\nRETURN p.name AS Director, COUNT(m) AS MovieCount\nORDER BY MovieCount DESC\nLIMIT 3",
+      "typeql": "match\n$p isa person;\n$m isa movie;\ndirected (director: $p, film: $m);\n$rev isa reviewed (reviewer: $r, film: $m);\n$rev has summary \"Pretty funny at times\";\nreduce $count = count($m) groupby $p;\nsort $count desc;\nlimit 3;\nfetch { \"Director\": $p.name, \"MovieCount\": $count };",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses r.summary but \"summary\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 48,
+      "question": "Which movies have been reviewed with the summary 'Dark, but compelling'?",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE p.summary = 'Dark, but compelling'\nRETURN m.title",
+      "typeql": "match\n$m isa movie;\n$rel isa reviewed (reviewer: $p, film: $m);\n$rel has summary \"Dark, but compelling\";\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.summary but \"summary\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 67,
+      "question": "List all movies with a 'Pretty funny at times' review summary.",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE p.summary = 'Pretty funny at times'\nRETURN m.title",
+      "typeql": "match\n$m isa movie;\n$r isa reviewed (reviewer: $p, film: $m);\n$r has summary \"Pretty funny at times\";\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.summary but \"summary\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 72,
+      "question": "What are the summaries of reviews for movies released before 1985?",
+      "cypher": "MATCH (m:Movie)-[r:REVIEWED]->(p:Person)\nWHERE m.released < 1985\nRETURN m.title AS movie, r.summary AS review_summary",
+      "typeql": "match\n$m isa movie, has title $t, has released $r;\n$r < 1985;\n$rel isa reviewed (reviewer: $p, film: $m), has summary $s;\nfetch {\n  \"movie\": $t,\n  \"review_summary\": $s\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Movie)-[:REVIEWED]->(Person) but schema says Person->Movie"
+      ]
+    },
+    {
+      "index": 78,
+      "question": "List all movies that have a 'Fun, but a little far fetched' review summary.",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE p.summary = 'Fun, but a little far fetched'\nRETURN m.title",
+      "typeql": "match\n$m isa movie;\n$rev isa reviewed (reviewer: $p, film: $m);\n$rev has summary \"Fun, but a little far fetched\";\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.summary but \"summary\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 84,
+      "question": "Who has produced the highest-rated reviewed movie?",
+      "cypher": "MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:REVIEWED]-(r:Person)\nWITH p, m, MAX(r.rating) AS maxRating\nORDER BY maxRating DESC\nLIMIT 1\nRETURN p.name AS producer, m.title AS movie, maxRating AS rating",
+      "typeql": "match\n$p isa person;\n$m isa movie;\nproduced (producer: $p, film: $m);\n$rev isa reviewed (reviewer: $r, film: $m);\n$rev has rating $rating;\nreduce $maxRating = max($rating) groupby $p, $m;\nsort $maxRating desc;\nlimit 1;\nfetch {\n  \"producer\": $p.name,\n  \"movie\": $m.title,\n  \"rating\": $maxRating\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses r.rating but \"rating\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 86,
+      "question": "Which people have reviewed the movie with the highest votes?",
+      "cypher": "MATCH (m:Movie)\nWITH m\nORDER BY m.votes DESC\nLIMIT 1\nMATCH (p:Person)-[:REVIEWED]->(m)\nRETURN p.name",
+      "typeql": "with fun max_votes() -> integer:\n    match $m isa movie, has votes $v;\n    return max($v);\nmatch\n    $m isa movie, has votes $v;\n    let $max = max_votes();\n    $v == $max;\n    reviewed (reviewer: $p, film: $m);\n    $p has name $n;\nfetch {\n    \"name\": $n\n};",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 120,
+      "question": "What are the roles of Keanu Reeves in the movies he acted in?",
+      "cypher": "MATCH (p:Person {name: \"Keanu Reeves\"})-[:ACTED_IN]->(m:Movie)\nRETURN m.title AS movie, p.name AS actor, m.roles AS roles",
+      "typeql": "match\n$p isa person, has name \"Keanu Reeves\";\n$rel isa acted_in (actor: $p, film: $m);\n$m isa movie;\nfetch {\n  \"movie\": $m.title,\n  \"actor\": $p.name,\n  \"roles\": [ $rel.roles ]\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses m.roles but \"roles\" is not on :Movie (exists on other types)"
+      ]
+    },
+    {
+      "index": 123,
+      "question": "Display the top 5 movies that have been reviewed with the summary 'Dark, but compelling'.",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE p.summary = 'Dark, but compelling'\nRETURN m.title, COUNT(p) AS review_count\nORDER BY review_count DESC\nLIMIT 5",
+      "typeql": "match\n$m isa movie;\n$p isa person;\n$rev isa reviewed (reviewer: $p, film: $m);\n$rev has summary \"Dark, but compelling\";\nreduce $review_count = count($p) groupby $m;\nsort $review_count desc;\nlimit 5;\nfetch { \"title\": $m.title, \"review_count\": $review_count };",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.summary but \"summary\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 155,
+      "question": "Which top 3 movies released before 1985 were reviewed with a rating above 90?",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE m.released < 1985 AND p.rating > 90\nRETURN m.title, m.released, p.rating\nORDER BY p.rating DESC\nLIMIT 3",
+      "typeql": "match\n$m isa movie, has released $r;\n$p isa person;\n$rev isa reviewed (reviewer: $p, film: $m), has rating $rat;\n$r < 1985;\n$rat > 90;\nsort $rat desc;\nlimit 3;\nfetch {\n  \"title\": $m.title,\n  \"released\": $r,\n  \"rating\": $rat\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.rating but \"rating\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 169,
+      "question": "List all movies with more than one role listed in the 'ACTED_IN' relationship.",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWHERE size(r.roles) > 1\nRETURN m.title AS MovieTitle, r.roles AS Roles",
+      "typeql": "match\n$p isa person;\n$m isa movie;\n$r isa acted_in (actor: $p, film: $m);\n$r has roles $role;\nreduce $count = count($role) groupby $r, $m;\nmatch $count > 1;\nfetch { \"MovieTitle\": $m.title, \"Roles\": [ $r.roles ] };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 175,
+      "question": "Which person has the most roles in a single movie?",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWITH p, r, size(r.roles) AS numRoles\nORDER BY numRoles DESC\nLIMIT 1\nRETURN p.name AS person, numRoles",
+      "typeql": "match\n$p isa person;\n$rel isa acted_in (actor: $p, film: $m), has roles $r;\nreduce $numRoles = count($r) groupby $p, $rel;\nsort $numRoles desc;\nlimit 1;\nfetch { \"person\": $p.name, \"numRoles\": $numRoles };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 176,
+      "question": "List the first 3 movies with a review summary of 'Fun, but a little far fetched'.",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE p.summary = 'Fun, but a little far fetched'\nRETURN m.title\nLIMIT 3",
+      "typeql": "match\n$m isa movie;\n$p isa person;\n$rev isa reviewed (reviewer: $p, film: $m);\n$rev has summary \"Fun, but a little far fetched\";\nlimit 3;\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.summary but \"summary\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 180,
+      "question": "What are the top 5 movies with the most roles listed in their 'ACTED_IN' relationship?",
+      "cypher": "MATCH (m:Movie)<-[r:ACTED_IN]-()\nWITH m, size(r.roles) AS num_roles\nORDER BY num_roles DESC\nLIMIT 5\nRETURN m.title AS movie_title, num_roles",
+      "typeql": "match\n$m isa movie;\n$rel isa acted_in (film: $m);\n$rel has roles $r;\nreduce $num_roles = count($r) groupby $m;\nsort $num_roles desc;\nlimit 5;\nfetch { \"movie_title\": $m.title, \"num_roles\": $num_roles };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 192,
+      "question": "Which 3 movies reviewed with a summary 'Dark, but compelling' were produced by someone born before 1960?",
+      "cypher": "MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:REVIEWED]-(r:Person)\nWHERE p.born < 1960 AND r.summary = 'Dark, but compelling'\nRETURN m.title\nLIMIT 3",
+      "typeql": "match\n$p isa person, has born $b;\n$b < 1960;\n$m isa movie;\nproduced (producer: $p, film: $m);\n$rev isa reviewed (reviewer: $r, film: $m);\n$rev has summary \"Dark, but compelling\";\nlimit 3;\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses r.summary but \"summary\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 201,
+      "question": "List the top 5 actors who acted in movies reviewed with a summary 'Slapstick redeemed only by the Robin Williams and '.",
+      "cypher": "MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:REVIEWED]-(r:Person)\nWHERE r.summary = 'Slapstick redeemed only by the Robin Williams and '\nRETURN p.name AS actor, COUNT(m) AS movie_count\nORDER BY movie_count DESC\nLIMIT 5",
+      "typeql": "match\n$p isa person, has name $name;\n$m isa movie;\n$r isa person;\nacted_in (actor: $p, film: $m);\n$rev isa reviewed (reviewer: $r, film: $m), has summary \"Slapstick redeemed only by the Robin Williams and \";\nreduce $movie_count = count($m) groupby $p, $name;\nsort $movie_count desc;\nlimit 5;\nfetch { \"actor\": $name, \"movie_count\": $movie_count };",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses r.summary but \"summary\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 208,
+      "question": "What are the top 5 movies with the most roles for actors born after 1970?",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWHERE p.born > 1970\nWITH m, size(r.roles) AS num_roles\nORDER BY num_roles DESC\nLIMIT 5\nRETURN m.title AS movie_title, num_roles",
+      "typeql": "match\n$p isa person, has born $b;\n$b > 1970;\n$rel isa acted_in (actor: $p, film: $m);\n$rel has roles $r;\n$m has title $t;\nreduce $num_roles = count($r) groupby $m, $t;\nsort $num_roles desc;\nlimit 5;\nfetch { \"movie_title\": $t, \"num_roles\": $num_roles };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 217,
+      "question": "Name the top 5 people who followed and were followed by 'Laurence Fishburne'.",
+      "cypher": "MATCH (laurence:Person {name: 'Laurence Fishburne'})-[:FOLLOWS]->(followed:Person),\n      (follower:Person)-[:FOLLOWS]->(laurence)\nWITH followed, follower\nRETURN followed.name AS FollowedByLaurence, follower.name AS FollowsLaurence\nLIMIT 5",
+      "typeql": "match\n$laurence isa person, has name \"Laurence Fishburne\";\nfollows (follower: $laurence, followed: $followed);\nfollows (follower: $follower, followed: $laurence);\nlimit 5;\nfetch {\n  \"FollowedByLaurence\": $followed.name,\n  \"FollowsLaurence\": $follower.name\n};",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 220,
+      "question": "Who are the top 3 actors with the most roles in movies released before 1990?",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWHERE m.released < 1990\nWITH p, size(r.roles) AS numRoles\nRETURN p.name AS actor, sum(numRoles) AS totalRoles\nORDER BY totalRoles DESC\nLIMIT 3",
+      "typeql": "match\n$p isa person;\n$m isa movie, has released $r;\n$r < 1990;\n$rel isa acted_in (actor: $p, film: $m), has roles $role;\nreduce $totalRoles = count($role) groupby $p;\nsort $totalRoles desc;\nlimit 3;\nfetch {\n  \"actor\": $p.name,\n  \"totalRoles\": $totalRoles\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 225,
+      "question": "Which movies released after 2000 have been reviewed with a rating above 80?",
+      "cypher": "MATCH (m:Movie)-[r:REVIEWED]->(p:Person)\nWHERE m.released > 2000 AND r.rating > 80\nRETURN m.title, m.released, r.rating",
+      "typeql": "match\n$m isa movie, has released $r;\n$m has title $t;\n$rev isa reviewed (film: $m, reviewer: $p), has rating $rat;\n$p isa person;\n$r > 2000;\n$rat > 80;\nfetch {\n  \"title\": $t,\n  \"released\": $r,\n  \"rating\": $rat\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Movie)-[:REVIEWED]->(Person) but schema says Person->Movie"
+      ]
+    },
+    {
+      "index": 230,
+      "question": "List the roles of actors in the top 5 movies with the most votes.",
+      "cypher": "MATCH (m:Movie)<-[:ACTED_IN]-(p:Person)\nWITH m, p, m.votes AS votes, m.title AS title, p.name AS actor, collect(p.roles) AS roles\nORDER BY votes DESC\nLIMIT 5\nRETURN title, actor, roles",
+      "typeql": "match\n$m isa movie, has title $title, has votes $votes;\n$rel isa acted_in (actor: $p, film: $m), has roles $roles;\n$p has name $actor;\nsort $votes desc;\nlimit 5;\nfetch {\n  \"title\": $title,\n  \"actor\": $actor,\n  \"roles\": $roles\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.roles but \"roles\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 233,
+      "question": "Which people have reviewed the same movie and what were their review summaries?",
+      "cypher": "MATCH (p1:Person)-[r1:REVIEWED]->(m:Movie)<-[r2:REVIEWED]-(p2:Person)\nWHERE p1 <> p2\nRETURN m.title AS movie, p1.name AS reviewer1, r1.summary AS summary1, p2.name AS reviewer2, r2.summary AS summary2\nORDER BY m.title, p1.name, p2.name",
+      "typeql": "match\n$m isa movie, has title $t;\n$p1 isa person, has name $n1;\n$p2 isa person, has name $n2;\n$r1 isa reviewed (reviewer: $p1, film: $m), has summary $s1;\n$r2 isa reviewed (reviewer: $p2, film: $m), has summary $s2;\nnot { $p1 is $p2; };\nsort $t, $n1, $n2;\nfetch {\n  \"movie\": $t,\n  \"reviewer1\": $n1,\n  \"summary1\": $s1,\n  \"reviewer2\": $n2,\n  \"summary2\": $s2\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 245,
+      "question": "What are the first 3 movies that received a review with a rating less than 50?",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE p.rating < 50\nRETURN m.title AS MovieTitle, p.rating AS Rating\nORDER BY p.rating ASC\nLIMIT 3",
+      "typeql": "match\n$m isa movie;\n$rev isa reviewed (reviewer: $p, film: $m);\n$rev has rating $r;\n$r < 50;\nsort $r asc;\nlimit 3;\nfetch {\n  \"MovieTitle\": $m.title,\n  \"Rating\": $r\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.rating but \"rating\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 254,
+      "question": "What are the top 5 movies with the highest average review rating?",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(r:Person)\nWITH m, avg(r.rating) AS avgRating\nRETURN m.title, avgRating\nORDER BY avgRating DESC\nLIMIT 5",
+      "typeql": "match\n$m isa movie;\n$rev isa reviewed (reviewer: $p, film: $m);\n$rev has rating $r;\nreduce $avg = mean($r) groupby $m;\nsort $avg desc;\nlimit 5;\nfetch {\n  \"title\": $m.title,\n  \"avgRating\": $avg\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses r.rating but \"rating\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 256,
+      "question": "What are the names of the movies that received a review summary 'Dark, but compelling'?",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE p.summary = 'Dark, but compelling'\nRETURN m.title AS movieTitle",
+      "typeql": "match\n$m isa movie;\n$rev isa reviewed (reviewer: $p, film: $m), has summary \"Dark, but compelling\";\n$p isa person;\nfetch {\n  \"movieTitle\": $m.title\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.summary but \"summary\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 273,
+      "question": "Name the movies acted in by the oldest actor in the database.",
+      "cypher": "// First, find the oldest actor in the database\nMATCH (p:Person)\nWITH p\nORDER BY p.born ASC\nLIMIT 1\n// Then, find the movies they acted in\nMATCH (p)-[:ACTED_IN]->(m:Movie)\nRETURN m.title AS MovieTitle",
+      "typeql": "with fun min_born() -> integer:\n  match $p isa person, has born $b;\n  return min($b);\nmatch\n$p isa person, has born $b;\nlet $min = min_born();\n$b == $min;\nacted_in (actor: $p, film: $m);\nfetch { \"MovieTitle\": $m.title };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 283,
+      "question": "Name the people who have the role of both actor and director in the most movies.",
+      "cypher": "MATCH (p:Person)-[:ACTED_IN]->(m:Movie)\nWITH p, count(m) AS actedInCount\nMATCH (p)-[:DIRECTED]->(m:Movie)\nWITH p, actedInCount, count(m) AS directedCount\nWHERE actedInCount > 0 AND directedCount > 0\nWITH p, actedInCount + directedCount AS totalMovies\nORDER BY totalMovies DESC\nLIMIT 1\nRETURN p.name AS personName, totalMovies",
+      "typeql": "with fun acted_count($p: person) -> integer:\n    match acted_in (actor: $p, film: $m);\n    return count($m);\nwith fun directed_count($p: person) -> integer:\n    match directed (director: $p, film: $m);\n    return count($m);\nmatch\n    $p isa person;\n    acted_in (actor: $p);\n    directed (director: $p);\nlet $total = acted_count($p) + directed_count($p);\nsort $total desc;\nlimit 1;\nfetch { \"personName\": $p.name, \"totalMovies\": $total };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 305,
+      "question": "Retrieve the top five movies released before 1985 that were reviewed with a rating above 85.",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE m.released < 1985 AND p.rating > 85\nRETURN m.title, m.released, p.rating\nORDER BY p.rating DESC\nLIMIT 5",
+      "typeql": "match\n$m isa movie, has title $t, has released $r;\n$r < 1985;\n$rev isa reviewed (reviewer: $p, film: $m), has rating $rat;\n$p isa person;\n$rat > 85;\nsort $rat desc;\nlimit 5;\nfetch {\n  \"title\": $t,\n  \"released\": $r,\n  \"rating\": $rat\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.rating but \"rating\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 309,
+      "question": "Which 3 movies reviewed with a rating above 90 have the tagline 'Dark, but compelling'?",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE m.tagline = 'Dark, but compelling' AND p.rating > 90\nRETURN m.title\nLIMIT 3",
+      "typeql": "match\n  $m isa movie, has tagline \"Dark, but compelling\";\n  $rev isa reviewed (reviewer: $p, film: $m), has rating $r;\n  $p isa person;\n  $r > 90;\nsort $r desc;\nlimit 3;\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property",
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.rating but \"rating\" is not on :Person (exists on other types)",
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 322,
+      "question": "List the first three people who wrote a movie and also acted in a different movie.",
+      "cypher": "MATCH (p:Person)-[:WROTE]->(m1:Movie)\nMATCH (p)-[:ACTED_IN]->(m2:Movie)\nWHERE m1 <> m2\nRETURN DISTINCT p.name\nLIMIT 3",
+      "typeql": "match\n  $p isa person;\n  wrote (writer: $p, film: $m1);\n  acted_in (actor: $p, film: $m2);\n  not { $m1 is $m2; };\nselect $p;\ndistinct;\nlimit 3;\nfetch {\n  \"name\": $p.name\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 338,
+      "question": "Find the first three movies that have been reviewed with the summary 'Silly, but fun' and were released in the 1990s.",
+      "cypher": "MATCH (m:Movie)-[r:REVIEWED]->(p:Person)\nWHERE r.summary = 'Silly, but fun' AND m.released >= 1990 AND m.released < 2000\nRETURN m.title, m.released\nORDER BY m.released\nLIMIT 3",
+      "typeql": "match\n$m isa movie, has title $t, has released $r;\n$rel isa reviewed (film: $m), has summary \"Silly, but fun\";\n$r >= 1990;\n$r < 2000;\nsort $r asc;\nlimit 3;\nfetch {\n  \"title\": $m.title,\n  \"released\": $r\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Movie)-[:REVIEWED]->(Person) but schema says Person->Movie"
+      ]
+    },
+    {
+      "index": 345,
+      "question": "List the movies with exactly 3 roles in the ACTED_IN relationship.",
+      "cypher": "MATCH (m:Movie)<-[r:ACTED_IN]-(p:Person)\nWHERE size(r.roles) = 3\nRETURN m.title AS MovieTitle",
+      "typeql": "match\n$r isa acted_in (actor: $p, film: $m);\n$r has roles $role;\nreduce $count = count($role) groupby $r, $m;\nmatch\n$count == 3;\nfetch {\n  \"MovieTitle\": $m.title\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 347,
+      "question": "Find the top 5 movies with the lowest ratings in REVIEWS.",
+      "cypher": "MATCH (:Person)-[r:REVIEWED]->(m:Movie)\nRETURN m.title AS movie, AVG(r.rating) AS average_rating\nORDER BY average_rating ASC\nLIMIT 5",
+      "typeql": "match\n$m isa movie;\n$rev isa reviewed (reviewer: $p, film: $m);\n$rev has rating $rating;\nreduce $sum = sum($rating), $count = count groupby $m;\nmatch\nlet $avg = $sum / $count;\nsort $avg asc;\nlimit 5;\nfetch {\n  \"movie\": $m.title,\n  \"average_rating\": $avg\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 355,
+      "question": "What are the common roles for Keanu Reeves across all his movies?",
+      "cypher": "MATCH (p:Person {name: \"Keanu Reeves\"})-[:ACTED_IN]->(m:Movie)\nWITH p, m\nUNWIND m.roles AS role\nRETURN role, COUNT(role) AS frequency\nORDER BY frequency DESC",
+      "typeql": "match\n$p isa person, has name \"Keanu Reeves\";\n$rel isa acted_in (actor: $p, film: $m);\n$rel has roles $role;\nreduce $frequency = count($rel) groupby $role;\nsort $frequency desc;",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses m.roles but \"roles\" is not on :Movie (exists on other types)"
+      ]
+    },
+    {
+      "index": 356,
+      "question": "List the top 5 movies with the most diverse cast in terms of birth years.",
+      "cypher": "MATCH (m:Movie)<-[:ACTED_IN]-(p:Person)\nWITH m, COLLECT(DISTINCT p.born) AS birth_years\nRETURN m.title, SIZE(birth_years) AS diversity\nORDER BY diversity DESC\nLIMIT 5",
+      "typeql": "match\n$m isa movie, has title $t;\n$p isa person, has born $b;\nacted_in (actor: $p, film: $m);\nselect $m, $t, $b;\ndistinct;\nreduce $diversity = count groupby $m, $t;\nsort $diversity desc;\nlimit 5;\nfetch { \"title\": $t, \"diversity\": $diversity };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 358,
+      "question": "Which movies have been reviewed with a rating of 100?",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE p.rating = 100\nRETURN m.title",
+      "typeql": "match\n$m isa movie;\n$rev isa reviewed (reviewer: $p, film: $m);\n$rev has rating 100;\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.rating but \"rating\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 360,
+      "question": "List the top 5 movies with the most roles listed in ACTED_IN relationship.",
+      "cypher": "MATCH (:Person)-[a:ACTED_IN]->(m:Movie)\nWITH m, size(a.roles) AS role_count\nORDER BY role_count DESC\nLIMIT 5\nRETURN m.title AS movie_title, role_count",
+      "typeql": "match\n$m isa movie;\n$a isa acted_in (film: $m);\n$a has roles $r;\nreduce $count = count($r) groupby $m;\nsort $count desc;\nlimit 5;\nfetch { \"movie_title\": $m.title, \"role_count\": $count };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 380,
+      "question": "Name 3 people who were born after 1980 and have directed a movie.",
+      "cypher": "MATCH (p:Person)-[:DIRECTED]->(m:Movie)\nWHERE p.born > 1980\nRETURN p.name\nLIMIT 3",
+      "typeql": "match\n$p isa person, has born $b;\n$b > 1980;\ndirected (director: $p, film: $m);\nsort $b;\nlimit 3;\nfetch {\n  \"name\": $p.name\n};",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 414,
+      "question": "List three movies reviewed with a rating above 90.",
+      "cypher": "MATCH (:Person)-[r:REVIEWED]->(m:Movie)\nWHERE r.rating > 90\nRETURN m.title AS MovieTitle, r.rating AS Rating\nLIMIT 3",
+      "typeql": "match\n$r isa reviewed (reviewer: $p, film: $m);\n$r has rating $rating;\n$rating > 90;\nsort $rating desc;\nlimit 3;\nfetch {\n  \"MovieTitle\": $m.title,\n  \"Rating\": $rating\n};",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 419,
+      "question": "Who directed the first 3 movies reviewed with a rating of 100 and what are their titles?",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE p.rating = 100\nWITH m\nORDER BY m.released\nLIMIT 3\nMATCH (d:Person)-[:DIRECTED]->(m)\nRETURN d.name AS Director, m.title AS MovieTitle",
+      "typeql": "match\n$m isa movie, has title $t, has released $r;\n$rev isa reviewed (reviewer: $p, film: $m), has rating 100;\n$p isa person;\ndirected (director: $d, film: $m);\n$d has name $dn;\nsort $r asc;\nlimit 3;\nfetch {\n  \"Director\": $dn,\n  \"MovieTitle\": $t\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.rating but \"rating\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 422,
+      "question": "Which movies released before 2000 have a person who both acted and directed in them?",
+      "cypher": "MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:DIRECTED]-(p)\nWHERE m.released < 2000\nRETURN m.title AS MovieTitle, p.name AS PersonName",
+      "typeql": "match\n$p isa person, has name $name;\n$m isa movie, has title $title, has released $r;\n$r < 2000;\nacted_in (actor: $p, film: $m);\ndirected (director: $p, film: $m);\nfetch {\n  \"MovieTitle\": $title,\n  \"PersonName\": $name\n};",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 426,
+      "question": "List the first 3 movies with at least one role listed as 'Villain' and their actors.",
+      "cypher": "MATCH (m:Movie)<-[:ACTED_IN]-(p:Person)\nWHERE 'Villain' IN m.roles\nWITH m, p\nLIMIT 3\nRETURN m.title AS MovieTitle, collect(p.name) AS Actors",
+      "typeql": "match\n$m isa movie;\n$p isa person;\n$rel isa acted_in (actor: $p, film: $m), has roles \"Villain\";\nlimit 3;\nfetch {\n  \"MovieTitle\": $m.title,\n  \"Actor\": $p.name\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses m.roles but \"roles\" is not on :Movie (exists on other types)"
+      ]
+    },
+    {
+      "index": 430,
+      "question": "List the top 5 movies with roles including 'Doctor' and the actors who played them.",
+      "cypher": "MATCH (m:Movie)<-[:ACTED_IN]-(p:Person)\nWHERE 'Doctor' IN p.roles\nWITH m, p\nORDER BY m.votes DESC\nLIMIT 5\nRETURN m.title AS MovieTitle, p.name AS ActorName, p.roles AS Roles",
+      "typeql": "match\n$m isa movie, has votes $v;\n$p isa person;\n$rel isa acted_in (actor: $p, film: $m), has roles $roles;\n$roles like \".*Doctor.*\";\nsort $v desc;\nlimit 5;\nfetch {\n  \"MovieTitle\": $m.title,\n  \"ActorName\": $p.name,\n  \"Roles\": $roles\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property",
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.roles but \"roles\" is not on :Person (exists on other types)",
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 453,
+      "question": "List the first 3 movies with roles that include 'Captain' and their actors.",
+      "cypher": "MATCH (m:Movie)<-[:ACTED_IN]-(p:Person)\nWHERE 'Captain' IN m.roles\nRETURN m.title AS movie, p.name AS actor\nLIMIT 3",
+      "typeql": "match\n$m isa movie;\n$p isa person;\n$rel isa acted_in (actor: $p, film: $m);\n$rel has roles $r;\n$r like \".*Captain.*\";\nlimit 3;\nfetch {\n  \"movie\": $m.title,\n  \"actor\": $p.name\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property",
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses m.roles but \"roles\" is not on :Movie (exists on other types)",
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 457,
+      "question": "Who are the top 3 actors with roles in the most diverse genres (based on taglines)?",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWITH p, collect(DISTINCT m.tagline) AS genres\nORDER BY size(genres) DESC\nLIMIT 3\nRETURN p.name AS actor, size(genres) AS genre_count, genres",
+      "typeql": "match\n$p isa person;\nacted_in (actor: $p, film: $m);\n$m has tagline $tagline;\nselect $p, $tagline;\ndistinct;\nreduce $genre_count = count groupby $p;\nsort $genre_count desc;\nlimit 3;\nfetch { \"actor\": $p.name, \"genre_count\": $genre_count };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 468,
+      "question": "Find all movies with a rating above 90.",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE p.rating > 90\nRETURN m.title",
+      "typeql": "match\n$m isa movie;\n$rev isa reviewed (reviewer: $p, film: $m);\n$rev has rating $r;\n$r > 90;\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.rating but \"rating\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 490,
+      "question": "What are the first 3 movies produced by persons born before 1960 with a rating over 90?",
+      "cypher": "MATCH (p:Person)-[:PRODUCED]->(m:Movie)<-[:REVIEWED]-(r:Person)\nWHERE p.born < 1960 AND r.rating > 90\nRETURN m.title AS MovieTitle, m.released AS ReleaseYear\nORDER BY m.released\nLIMIT 3",
+      "typeql": "match\n  $p isa person, has born $b;\n  $b < 1960;\n  produced (producer: $p, film: $m);\n  $rev isa reviewed (reviewer: $r, film: $m);\n  $rev has rating $rat;\n  $rat > 90;\n  $m has released $rel;\nsort $rel asc;\nlimit 3;\nfetch {\n  \"MovieTitle\": $m.title,\n  \"ReleaseYear\": $rel\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses r.rating but \"rating\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 506,
+      "question": "List 3 movies with the most roles listed in the ACTED_IN relationship.",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWITH m, size(r.roles) AS role_count\nORDER BY role_count DESC\nLIMIT 3\nRETURN m.title AS movie_title, role_count",
+      "typeql": "match\n$m isa movie;\n$rel isa acted_in (actor: $p, film: $m);\n$rel has roles $r;\nreduce $role_count = count($r) groupby $m;\nsort $role_count desc;\nlimit 3;\nfetch { \"movie_title\": $m.title, \"role_count\": $role_count };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 518,
+      "question": "Which 3 directors have the highest average movie rating for movies they directed?",
+      "cypher": "MATCH (director:Person)-[:DIRECTED]->(movie:Movie)<-[:REVIEWED]-(review:Person)\nWITH director, avg(review.rating) AS avgRating\nORDER BY avgRating DESC\nLIMIT 3\nRETURN director.name AS Director, avgRating AS AverageRating",
+      "typeql": "match\n  $director isa person;\n  directed (director: $director, film: $movie);\n  $rev isa reviewed (reviewer: $reviewer, film: $movie);\n  $rev has rating $r;\nreduce $avg_rating = mean($r) groupby $director;\nsort $avg_rating desc;\nlimit 3;\nfetch {\n  \"Director\": $director.name,\n  \"AverageRating\": $avg_rating\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses review.rating but \"rating\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 524,
+      "question": "Find the top 3 longest relationships in terms of roles between a person and a movie.",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nRETURN p.name AS person, m.title AS movie, size(r.roles) AS numberOfRoles\nORDER BY numberOfRoles DESC\nLIMIT 3",
+      "typeql": "match\n$p isa person, has name $name;\n$m isa movie, has title $t;\n$rel isa acted_in (actor: $p, film: $m), has roles $r;\nreduce $count = count($r) groupby $p, $m, $name, $t;\nsort $count desc;\nlimit 3;\nfetch {\n  \"person\": $name,\n  \"movie\": $t,\n  \"numberOfRoles\": $count\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 535,
+      "question": "List the first 3 movies to have been reviewed with a summary containing 'slapstick'.",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE toLower(m.summary) CONTAINS 'slapstick'\nRETURN m.title AS MovieTitle\nORDER BY m.released\nLIMIT 3",
+      "typeql": "match\n$m isa movie, has released $r;\n$rev isa reviewed (reviewer: $p, film: $m), has summary $s;\n$p isa person;\n$s like \".*slapstick.*\";\nsort $r;\nlimit 3;\nfetch {\n  \"MovieTitle\": $m.title\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses m.summary but \"summary\" is not on :Movie (exists on other types)"
+      ]
+    },
+    {
+      "index": 536,
+      "question": "What are the top 3 movies by the number of roles available in the ACTED_IN relationship?",
+      "cypher": "MATCH (m:Movie)<-[r:ACTED_IN]-()\nWITH m, size(r.roles) AS num_roles\nRETURN m.title, num_roles\nORDER BY num_roles DESC\nLIMIT 3",
+      "typeql": "match\n$m isa movie;\n$rel isa acted_in (film: $m);\n$rel has roles $r;\nreduce $count = count($r) groupby $m;\nsort $count desc;\nlimit 3;\nfetch {\n  \"title\": $m.title,\n  \"num_roles\": $count\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 540,
+      "question": "Who has the most roles in movies released before 1985?",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWHERE m.released < 1985\nWITH p, size(r.roles) AS numRoles\nRETURN p.name AS person, sum(numRoles) AS totalRoles\nORDER BY totalRoles DESC\nLIMIT 1",
+      "typeql": "match\n$p isa person;\n$m isa movie, has released $r;\n$r < 1985;\n$a isa acted_in (actor: $p, film: $m), has roles $role;\nreduce $totalRoles = count($role) groupby $p;\nsort $totalRoles desc;\nlimit 1;\nfetch {\n  \"person\": $p.name,\n  \"totalRoles\": $totalRoles\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 565,
+      "question": "Which 3 persons have the most distinct roles in the ACTED_IN relationship?",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWITH p, collect(distinct r.roles) AS roles\nRETURN p.name, size(apoc.coll.flatten(roles)) AS role_count\nORDER BY role_count DESC\nLIMIT 3",
+      "typeql": "match\n$p isa person, has name $n;\n$rel isa acted_in (actor: $p), has roles $r;\nselect $p, $n, $r;\ndistinct;\nreduce $count = count($r) groupby $p, $n;\nsort $count desc;\nlimit 3;\nfetch { \"name\": $n, \"role_count\": $count };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 573,
+      "question": "List the top 5 actors by the variety of roles they played in movies.",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWITH p, size(apoc.coll.toSet(collect(r.roles))) AS roleVariety\nRETURN p.name AS actor, roleVariety\nORDER BY roleVariety DESC\nLIMIT 5",
+      "typeql": "match\n$p isa person, has name $n;\n$rel isa acted_in (actor: $p), has roles $r;\nselect $p, $n, $r;\ndistinct;\nreduce $count = count($r) groupby $p, $n;\nsort $count desc;\nlimit 5;\nfetch { \"actor\": $n, \"roleVariety\": $count };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 576,
+      "question": "List 3 movies with at least 2 reviews with a summary mentioning 'compelling'.",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(r1:Person), (m)<-[:REVIEWED]-(r2:Person)\nWHERE r1.summary CONTAINS 'compelling' AND r2.summary CONTAINS 'compelling' AND r1 <> r2\nWITH m, COUNT(DISTINCT r1) AS reviewCount\nWHERE reviewCount >= 2\nRETURN m.title AS movieTitle\nLIMIT 3",
+      "typeql": "match\n$m isa movie;\n$rev isa reviewed (reviewer: $p, film: $m), has summary $s;\n$s like \".*compelling.*\";\nreduce $count = count($rev) groupby $m;\nmatch $count >= 2;\nlimit 3;\nfetch { \"movieTitle\": $m.title };",
+      "checks_failed": [
+        "cypher_wrong_label_property",
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses r1.summary but \"summary\" is not on :Person (exists on other types)",
+        "Cypher accesses r2.summary but \"summary\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 589,
+      "question": "List 3 movies with exactly 3 roles in the ACTED_IN relationship.",
+      "cypher": "MATCH (m:Movie)<-[r:ACTED_IN]-(p:Person)\nWHERE size(r.roles) = 3\nRETURN m.title AS MovieTitle\nLIMIT 3",
+      "typeql": "match\n$m isa movie;\n$rel isa acted_in (actor: $p, film: $m);\n$rel has roles $r;\nreduce $count = count($r) groupby $m, $rel;\nmatch $count == 3;\nlimit 3;\nfetch { \"MovieTitle\": $m.title };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 600,
+      "question": "What are the top 3 reviewed movies with summaries mentioning 'fun'?",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE toLower(m.summary) CONTAINS 'fun'\nRETURN m.title, COUNT(*) AS review_count\nORDER BY review_count DESC\nLIMIT 3",
+      "typeql": "match\n$m isa movie, has title $t;\n$rev isa reviewed (reviewer: $p, film: $m), has summary $s;\n$p isa person;\n$s like \".*fun.*\";\nreduce $count = count($rev) groupby $m;\nsort $count desc;\nlimit 3;\nfetch { \"title\": $m.title };",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses m.summary but \"summary\" is not on :Movie (exists on other types)"
+      ]
+    },
+    {
+      "index": 606,
+      "question": "What are the top 3 movies with the most distinct taglines?",
+      "cypher": "MATCH (m:Movie)\nWHERE m.tagline IS NOT NULL\nRETURN m.title, m.tagline, COUNT(m.tagline) AS tagline_count\nORDER BY tagline_count DESC\nLIMIT 3",
+      "typeql": "match\n$m isa movie, has tagline $t;\nreduce $count = count($t) groupby $m;\nsort $count desc;\nlimit 3;\nfetch { \"title\": $m.title, \"tagline_count\": $count };",
+      "checks_failed": [
+        "cypher_missing_distinct"
+      ],
+      "confidence": "low",
+      "details": [
+        "Question asks for distinct/unique but Cypher has no DISTINCT"
+      ]
+    },
+    {
+      "index": 610,
+      "question": "Name 3 people who have the most combined roles across all their ACTED_IN movies.",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWITH p, size(r.roles) AS numRoles\nRETURN p.name, sum(numRoles) AS totalRoles\nORDER BY totalRoles DESC\nLIMIT 3",
+      "typeql": "match\n$p isa person;\n$rel isa acted_in (actor: $p, film: $m);\n$rel has roles $r;\nreduce $totalRoles = count($r) groupby $p;\nsort $totalRoles desc;\nlimit 3;\nfetch {\n  \"name\": $p.name,\n  \"totalRoles\": $totalRoles\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 615,
+      "question": "Which movies have been reviewed with a summary 'Dark, but compelling'?",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE p.summary = 'Dark, but compelling'\nRETURN m.title",
+      "typeql": "match\n$m isa movie;\n$p isa person;\n$rev isa reviewed (reviewer: $p, film: $m);\n$rev has summary \"Dark, but compelling\";\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.summary but \"summary\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 618,
+      "question": "What are the most common roles in the movie 'The Matrix Revolutions'?",
+      "cypher": "MATCH (m:Movie {title: 'The Matrix Revolutions'})<-[:ACTED_IN]-(p:Person)\nUNWIND p.roles AS role\nRETURN role, COUNT(role) AS role_count\nORDER BY role_count DESC\nLIMIT 1",
+      "typeql": "match\n$m isa movie, has title \"The Matrix Revolutions\";\n$rel isa acted_in (actor: $p, film: $m);\n$rel has roles $role;\nreduce $count = count groupby $role;\nsort $count desc;\nlimit 1;\nfetch {\n  \"role\": $role,\n  \"role_count\": $count\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.roles but \"roles\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 628,
+      "question": "Name 3 movies reviewed with a rating over 90.",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE p.rating > 90\nRETURN m.title\nLIMIT 3",
+      "typeql": "match\n$m isa movie;\n$rev isa reviewed (reviewer: $p, film: $m);\n$rev has rating $r;\n$r > 90;\nlimit 3;\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.rating but \"rating\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 632,
+      "question": "Who are the top 3 persons with the most roles in movies they have acted in?",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWITH p, size(r.roles) AS numRoles\nRETURN p.name, sum(numRoles) AS totalRoles\nORDER BY totalRoles DESC\nLIMIT 3",
+      "typeql": "match\n$p isa person;\n$rel isa acted_in (actor: $p, film: $m);\n$rel has roles $r;\nreduce $totalRoles = count($r) groupby $p;\nsort $totalRoles desc;\nlimit 3;\nfetch { \"name\": $p.name, \"totalRoles\": $totalRoles };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 633,
+      "question": "List all movies that have been reviewed with a summary including 'amazing journey'.",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE 'amazing journey' IN [(r)-[:REVIEWED]->(m) | r.summary]\nRETURN m.title",
+      "typeql": "match\n$m isa movie;\n$r isa reviewed (reviewer: $p, film: $m);\n$r has summary $s;\n$s like \".*amazing journey.*\";\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 636,
+      "question": "Which movie has the most roles in the 'ACTED_IN' relationship and what are those roles?",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWITH m, r.roles AS roles, size(r.roles) AS numRoles\nORDER BY numRoles DESC\nLIMIT 1\nRETURN m.title AS movieTitle, roles",
+      "typeql": "match\n$m isa movie;\n$rel isa acted_in (film: $m), has roles $r;\nreduce $count = count($r) groupby $m;\nsort $count desc;\nlimit 1;\nmatch\n$rel2 isa acted_in (film: $m), has roles $role;\nfetch { \"movieTitle\": $m.title, \"roles\": $role };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 637,
+      "question": "What are the top 3 shortest role lists in movies reviewed by persons born before 1960?",
+      "cypher": "MATCH (p:Person)-[:REVIEWED]->(m:Movie)<-[:ACTED_IN]-(actor:Person)\nWHERE p.born < 1960\nWITH m, actor, size(actor.roles) AS role_count\nORDER BY role_count ASC\nLIMIT 3\nRETURN m.title AS movie_title, actor.name AS actor_name, role_count",
+      "typeql": "match\n$p isa person, has born $b;\n$b < 1960;\nreviewed (reviewer: $p, film: $m);\n$ai isa acted_in (actor: $actor, film: $m);\n$ai has roles $r;\nreduce $role_count = count($r) groupby $m, $actor, $ai;\nsort $role_count asc;\nlimit 3;\nfetch {\n  \"movie_title\": $m.title,\n  \"actor_name\": $actor.name,\n  \"role_count\": $role_count\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property",
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher accesses actor.roles but \"roles\" is not on :Person (exists on other types)",
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 639,
+      "question": "What are the roles of Keanu Reeves in movies with a released year divisible by 5?",
+      "cypher": "MATCH (p:Person {name: \"Keanu Reeves\"})-[:ACTED_IN]->(m:Movie)\nWHERE m.released % 5 = 0\nRETURN m.title AS movie, m.released AS release_year, p.name AS actor, m.roles AS roles",
+      "typeql": "match\n  $p isa person, has name \"Keanu Reeves\";\n  $rel isa acted_in (actor: $p, film: $m);\n  $m has title $t, has released $r;\n  $rel has roles $roles;\n  $r % 5 == 0;\nfetch {\n  \"movie\": $t,\n  \"release_year\": $r,\n  \"actor\": $p.name,\n  \"roles\": $roles\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses m.roles but \"roles\" is not on :Movie (exists on other types)"
+      ]
+    },
+    {
+      "index": 647,
+      "question": "What are the summaries of reviews for 'Speed Racer'?",
+      "cypher": "MATCH (m:Movie {title: 'Speed Racer'})<-[:REVIEWED]-(p:Person)\nRETURN p.name AS reviewer, p.summary AS review_summary",
+      "typeql": "match\n  $m isa movie, has title \"Speed Racer\";\n  $rev isa reviewed (reviewer: $p, film: $m);\n  $rev has summary $s;\n  $p has name $n;\nfetch {\n  \"reviewer\": $n,\n  \"review_summary\": $s\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.summary but \"summary\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 650,
+      "question": "What are the first 3 movies with the most roles listed?",
+      "cypher": "MATCH (m:Movie)<-[:ACTED_IN]-(p:Person)\nWITH m, size(collect(p)) AS role_count\nORDER BY role_count DESC\nLIMIT 3\nRETURN m.title AS movie_title, role_count",
+      "typeql": "match\n$m isa movie;\nacted_in (actor: $p, film: $m);\nreduce $role_count = count($p) groupby $m;\nsort $role_count desc;\nlimit 3;\nfetch {\n  \"movie_title\": $m.title,\n  \"role_count\": $role_count\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 658,
+      "question": "Who are the top 3 actors in terms of the diversity of roles played?",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWITH p, size(apoc.coll.toSet(collect(r.roles))) AS roleDiversity\nRETURN p.name AS actor, roleDiversity\nORDER BY roleDiversity DESC\nLIMIT 3",
+      "typeql": "match\n$p isa person, has name $n;\n$rel isa acted_in (actor: $p, film: $m), has roles $r;\nselect $p, $n, $r;\ndistinct;\nreduce $diversity = count($r) groupby $p, $n;\nsort $diversity desc;\nlimit 3;\nfetch { \"actor\": $n, \"diversity\": $diversity };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 661,
+      "question": "What are the top 5 reviewed movies by summary 'An amazing journey'?",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE p.summary = 'An amazing journey'\nRETURN m.title, COUNT(p) AS review_count\nORDER BY review_count DESC\nLIMIT 5",
+      "typeql": "match\n$m isa movie;\n$p isa person;\n$rel isa reviewed (reviewer: $p, film: $m);\n$rel has summary \"An amazing journey\";\nreduce $count = count($p) groupby $m;\nsort $count desc;\nlimit 5;\nfetch { \"title\": $m.title, \"review_count\": $count };",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.summary but \"summary\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 668,
+      "question": "List the actors born after 1980 who have acted in more than one movie.",
+      "cypher": "MATCH (p:Person)-[:ACTED_IN]->(m:Movie)\nWHERE p.born > 1980\nWITH p, count(m) AS movieCount\nWHERE movieCount > 1\nRETURN p.name AS actorName, movieCount",
+      "typeql": "match\n$p isa person, has born $b;\n$b > 1980;\nacted_in (actor: $p, film: $m);\nreduce $count = count($m) groupby $p;\nmatch $count > 1;\n$p has name $n;\nsort $count desc;\nfetch { \"actorName\": $n, \"movieCount\": $count };",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 679,
+      "question": "Who has produced, directed, and acted in the most movies?",
+      "cypher": "MATCH (p:Person)-[:PRODUCED]->(m1:Movie)\nMATCH (p)-[:DIRECTED]->(m2:Movie)\nMATCH (p)-[:ACTED_IN]->(m3:Movie)\nWITH p, COUNT(DISTINCT m1) AS producedCount, COUNT(DISTINCT m2) AS directedCount, COUNT(DISTINCT m3) AS actedCount\nRETURN p.name AS person, (producedCount + directedCount + actedCount) AS totalMovies\nORDER BY totalMovies DESC\nLIMIT 1",
+      "typeql": "with fun produced_count($p: person) -> integer:\n  match produced (producer: $p, film: $m);\n  return count($m);\n\nwith fun directed_count($p: person) -> integer:\n  match directed (director: $p, film: $m);\n  return count($m);\n\nwith fun acted_count($p: person) -> integer:\n  match acted_in (actor: $p, film: $m);\n  return count($m);\n\nmatch\n$p isa person, has name $n;\nproduced (producer: $p);\ndirected (director: $p);\nacted_in (actor: $p);\nlet $pc = produced_count($p);\nlet $dc = directed_count($p);\nlet ",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 682,
+      "question": "What are the first 3 movies with the longest role lists in 'ACTED_IN' relationships?",
+      "cypher": "MATCH (m:Movie)<-[r:ACTED_IN]-(:Person)\nRETURN m.title, size(r.roles) AS role_count\nORDER BY role_count DESC\nLIMIT 3",
+      "typeql": "match\n$m isa movie;\n$rel isa acted_in (actor: $p, film: $m);\n$rel has roles $r;\nreduce $role_count = count($r) groupby $m, $rel;\nsort $role_count desc;\nlimit 3;\nfetch {\n  \"title\": $m.title,\n  \"role_count\": $role_count\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 689,
+      "question": "What are the roles of Keanu Reeves in movies released in the 1990s?",
+      "cypher": "MATCH (p:Person {name: \"Keanu Reeves\"})-[:ACTED_IN]->(m:Movie)\nWHERE m.released >= 1990 AND m.released < 2000\nRETURN m.title AS movie, m.released AS release_year, p.name AS actor, m.roles AS roles",
+      "typeql": "match\n$p isa person, has name \"Keanu Reeves\";\n$m isa movie, has released $r;\n$r >= 1990;\n$r < 2000;\n$rel isa acted_in (actor: $p, film: $m);\nfetch {\n  \"movie\": $m.title,\n  \"release_year\": $m.released,\n  \"actor\": $p.name,\n  \"roles\": [ $rel.roles ]\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses m.roles but \"roles\" is not on :Movie (exists on other types)"
+      ]
+    },
+    {
+      "index": 692,
+      "question": "Which persons born in the 1960s have directed movies?",
+      "cypher": "MATCH (p:Person)-[:DIRECTED]->(m:Movie)\nWHERE p.born >= 1960 AND p.born < 1970\nRETURN p.name AS DirectorName, p.born AS BirthYear, collect(m.title) AS DirectedMovies",
+      "typeql": "match\n$p isa person, has born $b;\n$b >= 1960;\n$b < 1970;\ndirected (director: $p, film: $m);\nsort $b;\nfetch {\n  \"DirectorName\": $p.name,\n  \"BirthYear\": $b,\n  \"DirectedMovies\": [ $m.title ]\n};",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 697,
+      "question": "Find persons who have acted in, directed, and produced different movies.",
+      "cypher": "MATCH (p:Person)-[:ACTED_IN]->(m1:Movie),\n      (p)-[:DIRECTED]->(m2:Movie),\n      (p)-[:PRODUCED]->(m3:Movie)\nWHERE m1 <> m2 AND m1 <> m3 AND m2 <> m3\nRETURN DISTINCT p.name",
+      "typeql": "match\n$p isa person;\nacted_in (actor: $p, film: $m1);\ndirected (director: $p, film: $m2);\nproduced (producer: $p, film: $m3);\nnot { $m1 is $m2; };\nnot { $m1 is $m3; };\nnot { $m2 is $m3; };\nselect $p;\ndistinct;\nfetch {\n  \"name\": $p.name\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 701,
+      "question": "Which movies released between 1990 and 2000 have been reviewed?",
+      "cypher": "MATCH (m:Movie)-[:REVIEWED]->(p:Person)\nWHERE m.released >= 1990 AND m.released <= 2000\nRETURN m.title, m.released",
+      "typeql": "match\n$m isa movie, has title $t, has released $r;\n$r >= 1990; $r <= 2000;\nreviewed (film: $m);\nfetch {\n  \"title\": $t,\n  \"released\": $r\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Movie)-[:REVIEWED]->(Person) but schema says Person->Movie"
+      ]
+    },
+    {
+      "index": 711,
+      "question": "Which movies have been reviewed with a rating exactly at 75?",
+      "cypher": "MATCH (m:Movie)<-[:REVIEWED]-(p:Person)\nWHERE p.rating = 75\nRETURN m.title",
+      "typeql": "match\n$m isa movie;\n$rev isa reviewed (reviewer: $p, film: $m), has rating 75;\n$p isa person;\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.rating but \"rating\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 712,
+      "question": "List the top 5 movies by number of roles in the 'ACTED_IN' relationship.",
+      "cypher": "MATCH (m:Movie)<-[r:ACTED_IN]-()\nWITH m, size(r.roles) AS numRoles\nORDER BY numRoles DESC\nLIMIT 5\nRETURN m.title AS movieTitle, numRoles",
+      "typeql": "match\n$m isa movie;\n$rel isa acted_in (film: $m);\n$rel has roles $r;\nreduce $numRoles = count($r) groupby $m;\nsort $numRoles desc;\nlimit 5;\nfetch {\n  \"movieTitle\": $m.title,\n  \"numRoles\": $numRoles\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 714,
+      "question": "Show the first 3 movies with the most complex role lists in the 'ACTED_IN' relationship.",
+      "cypher": "MATCH (m:Movie)<-[r:ACTED_IN]-(:Person)\nWITH m, size(r.roles) AS role_count\nORDER BY role_count DESC\nLIMIT 3\nRETURN m.title AS movie_title, role_count",
+      "typeql": "match\n$m isa movie;\n$rel isa acted_in (actor: $p, film: $m);\n$rel has roles $r;\nreduce $role_count = count($r) groupby $m, $rel;\nsort $role_count desc;\nlimit 3;\nfetch {\n  \"movie_title\": $m.title,\n  \"role_count\": $role_count\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 723,
+      "question": "What are the most common roles in movies released before 1980?",
+      "cypher": "MATCH (m:Movie)<-[:ACTED_IN]-(p:Person)\nWHERE m.released < 1980\nUNWIND p.roles AS role\nRETURN role, COUNT(role) AS role_count\nORDER BY role_count DESC\nLIMIT 10",
+      "typeql": "match\n$m isa movie, has released $r;\n$r < 1980;\n$rel isa acted_in (actor: $p, film: $m), has roles $role;\nreduce $count = count groupby $role;\nsort $count desc;\nlimit 10;\nfetch {\n  \"role\": $role,\n  \"role_count\": $count\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.roles but \"roles\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 727,
+      "question": "List the roles of Keanu Reeves in 'The Matrix'.",
+      "cypher": "MATCH (p:Person {name: \"Keanu Reeves\"})-[:ACTED_IN]->(m:Movie {title: \"The Matrix\"})\nRETURN p.name AS actor, m.title AS movie, p.roles AS roles",
+      "typeql": "match\n$p isa person, has name \"Keanu Reeves\";\n$m isa movie, has title \"The Matrix\";\n$rel isa acted_in (actor: $p, film: $m);\nfetch {\n  \"actor\": $p.name,\n  \"movie\": $m.title,\n  \"roles\": [ $rel.roles ]\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses p.roles but \"roles\" is not on :Person (exists on other types)"
+      ]
+    },
+    {
+      "index": 735,
+      "question": "Which movies released in the 2000s have been reviewed with a rating below 60?",
+      "cypher": "MATCH (m:Movie)-[:REVIEWED]->(r:Person)\nWHERE m.released >= 2000 AND m.released < 2010 AND r.rating < 60\nRETURN m.title",
+      "typeql": "match\n$m isa movie, has title $t, has released $r;\n$r >= 2000;\n$r < 2010;\n$rev isa reviewed (reviewer: $p, film: $m), has rating $rat;\n$rat < 60;\nfetch {\n  \"title\": $t\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property",
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher accesses r.rating but \"rating\" is not on :Person (exists on other types)",
+        "Cypher has (Movie)-[:REVIEWED]->(Person) but schema says Person->Movie"
+      ]
+    },
+    {
+      "index": 736,
+      "question": "List all movies with exactly 5 roles in the 'ACTED_IN' relationship.",
+      "cypher": "MATCH (m:Movie)<-[r:ACTED_IN]-(p:Person)\nWHERE size(r.roles) = 5\nRETURN m.title",
+      "typeql": "match\n$m isa movie, has title $t;\n$p isa person;\n$r isa acted_in (actor: $p, film: $m);\n$r has roles $role;\nreduce $count = count($role) groupby $r, $m, $t;\nmatch $count == 5;\nfetch { \"title\": $t };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 127,
+      "question": "List all people who have produced a movie and acted in another.",
+      "cypher": "MATCH (p:Person)-[:PRODUCED]->(m1:Movie)\nMATCH (p)-[:ACTED_IN]->(m2:Movie)\nWHERE m1 <> m2\nRETURN DISTINCT p.name",
+      "typeql": "match\n$p isa person;\nproduced (producer: $p, film: $m1);\nacted_in (actor: $p, film: $m2);\nnot { $m1 is $m2; };\nfetch { \"name\": $p.name };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 672,
+      "question": "What are the distinct roles played by Laurence Fishburne across all movies?",
+      "cypher": "MATCH (p:Person {name: \"Laurence Fishburne\"})-[:ACTED_IN]->(m:Movie)\nUNWIND m.roles AS role\nRETURN DISTINCT role",
+      "typeql": "match\n$p isa person, has name \"Laurence Fishburne\";\n$rel isa acted_in (actor: $p, film: $m);\n$rel has roles $role;\nselect $role;\ndistinct;\nfetch { \"role\": $role };",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses m.roles but \"roles\" is not on :Movie (exists on other types)"
+      ]
+    }
+  ],
+  "categories": {
+    "cypher_wrong_label_property": [
+      9,
+      9,
+      29,
+      38,
+      48,
+      67,
+      78,
+      84,
+      120,
+      123,
+      155,
+      176,
+      192,
+      201,
+      230,
+      245,
+      254,
+      256,
+      305,
+      309,
+      355,
+      358,
+      419,
+      426,
+      430,
+      453,
+      468,
+      490,
+      518,
+      535,
+      576,
+      576,
+      600,
+      615,
+      618,
+      628,
+      637,
+      639,
+      647,
+      661,
+      689,
+      711,
+      723,
+      727,
+      735,
+      672
+    ],
+    "cypher_invalid_label": [
+      36
+    ],
+    "cypher_wrong_direction": [
+      72,
+      225,
+      338,
+      701,
+      735
+    ],
+    "cypher_lacks_optional_vs_typeql": [
+      86,
+      273,
+      283,
+      679
+    ],
+    "cypher_lacks_count_vs_typeql": [
+      169,
+      175,
+      180,
+      208,
+      220,
+      345,
+      347,
+      356,
+      360,
+      457,
+      506,
+      524,
+      536,
+      540,
+      565,
+      573,
+      589,
+      610,
+      632,
+      636,
+      637,
+      650,
+      658,
+      682,
+      712,
+      714,
+      736
+    ],
+    "cypher_missing_order": [
+      217
+    ],
+    "cypher_lacks_negation_vs_typeql": [
+      233,
+      322,
+      697,
+      127
+    ],
+    "cypher_lacks_sort_vs_typeql": [
+      309,
+      380,
+      414,
+      668,
+      692
+    ],
+    "cypher_missing_condition": [
+      422
+    ],
+    "cypher_lacks_string_op_vs_typeql": [
+      430,
+      453,
+      633
+    ],
+    "cypher_missing_distinct": [
+      606
+    ]
+  }
+}

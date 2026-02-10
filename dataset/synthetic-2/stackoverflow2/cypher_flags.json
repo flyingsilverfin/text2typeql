@@ -1,0 +1,206 @@
+{
+  "database": "stackoverflow2",
+  "source": "synthetic-2",
+  "total_queries": 299,
+  "flagged": 13,
+  "flags": [
+    {
+      "index": 6,
+      "question": "Which users have provided answers to the question with the title 'even after null check why I am getting null value in neo4j?' Limit to the top 3.",
+      "cypher": "MATCH (q:Question {title: 'even after null check why I am getting null value in neo4j?'})<-[:ANSWERED]-(a:Answer)<-[:PROVIDED]-(u:User)\nRETURN u.display_name AS user\nLIMIT 3",
+      "typeql": "match\n$q isa question, has title \"even after null check why I am getting null value in neo4j?\";\nanswered (answer: $a, question: $q);\nprovided (provider: $u, answer: $a);\nlimit 3;\nfetch { \"user\": $u.display_name };",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 11,
+      "question": "Which questions have been commented on by the user with the display name 'DoubleMiP'? Limit to the top 3.",
+      "cypher": "MATCH (u:User {display_name: 'DoubleMiP'})-[:COMMENTED]->(c:Comment)-[:COMMENTED_ON]->(q:Question)\nRETURN q.title, q.link\nLIMIT 3",
+      "typeql": "match\n  $u isa user, has display_name \"DoubleMiP\";\n  commented (commenter: $u, comment: $c);\n  commented_on (comment: $c, question: $q);\nlimit 3;\nfetch {\n  \"title\": $q.title,\n  \"link\": $q.question_link\n};",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 16,
+      "question": "Who commented on the question titled 'Neo4j- APOC trigger fires without any reason'?",
+      "cypher": "MATCH (q:Question {title: 'Neo4j- APOC trigger fires without any reason'})<-[:COMMENTED_ON]-(c:Comment)<-[:COMMENTED]-(u:User)\nRETURN u.display_name",
+      "typeql": "match\n$q isa question, has title \"Neo4j- APOC trigger fires without any reason\";\ncommented_on (comment: $c, question: $q);\ncommented (commenter: $u, comment: $c);\nfetch {\n  \"display_name\": $u.display_name\n};",
+      "checks_failed": [
+        "cypher_missing_negation"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question implies negation but Cypher has no NOT/WHERE NOT/IS NULL"
+      ]
+    },
+    {
+      "index": 27,
+      "question": "How many users have commented on the question with the title 'Neo4j- APOC trigger fires without any reason'?",
+      "cypher": "MATCH (q:Question {title: 'Neo4j- APOC trigger fires without any reason'})<-[:COMMENTED_ON]-(c:Comment)<-[:COMMENTED]-(u:User)\nRETURN COUNT(DISTINCT u) AS numberOfUsers",
+      "typeql": "match\n$q isa question, has title \"Neo4j- APOC trigger fires without any reason\";\ncommented_on (comment: $c, question: $q);\ncommented (commenter: $u, comment: $c);\nselect $u;\ndistinct;\nreduce $count = count;",
+      "checks_failed": [
+        "cypher_missing_negation"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question implies negation but Cypher has no NOT/WHERE NOT/IS NULL"
+      ]
+    },
+    {
+      "index": 52,
+      "question": "Identify the 3 answers with the lowest scores provided to the most viewed questions.",
+      "cypher": "MATCH (q:Question)-[:ANSWERED]-(a:Answer)\nWITH q, a\nORDER BY q.view_count DESC\nLIMIT 1\nWITH a\nORDER BY a.score ASC\nLIMIT 3\nRETURN a.link AS answer_link, a.title AS answer_title, a.score AS answer_score",
+      "typeql": "match\n$q isa question, has view_count $vc;\nanswered (question: $q);\nreduce $max_vc = max($vc);\nmatch\n$q2 isa question, has view_count $vc2;\n$vc2 == $max_vc;\nanswered (question: $q2, answer: $a);\n$a has answer_link $link, has title $title, has score $s;\nsort $s asc;\nlimit 3;\nfetch { \"answer_link\": $link, \"answer_title\": $title, \"answer_score\": $s };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 57,
+      "question": "What are the top 5 questions with the highest number of answers?",
+      "cypher": "MATCH (q:Question)\nRETURN q.title, q.link, q.answer_count\nORDER BY q.answer_count DESC\nLIMIT 5",
+      "typeql": "match\n$q isa question, has answer_count $ac;\nsort $ac desc;\nlimit 5;\nfetch {\n  \"title\": $q.title,\n  \"link\": $q.question_link,\n  \"answer_count\": $ac\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 77,
+      "question": "Show the first 5 questions where the accepted answer was provided by a user who has answered more than 50 questions.",
+      "cypher": "MATCH (q:Question)-[:ANSWERED]-(a:Answer)-[:PROVIDED]-(u:User)\nWHERE a.is_accepted = true\nWITH u, q, COUNT(a) AS answer_count\nWHERE answer_count > 50\nRETURN q.link, q.title, q.creation_date\nORDER BY q.creation_date\nLIMIT 5",
+      "typeql": "with fun answer_count($u: user) -> integer:\n  match provided (provider: $u, answer: $a);\n  return count;\nmatch\n$q isa question;\nanswered (answer: $a, question: $q);\n$a has is_accepted true;\nprovided (provider: $u, answer: $a);\nlet $cnt = answer_count($u);\n$cnt > 50;\n$q has creation_date $cd;\nsort $cd;\nlimit 5;\nfetch {\n  \"link\": $q.question_link,\n  \"title\": $q.title,\n  \"creation_date\": $cd\n};",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 128,
+      "question": "Show 3 questions with the highest number of answers.",
+      "cypher": "MATCH (q:Question)\nRETURN q.title, q.link, q.answer_count\nORDER BY q.answer_count DESC\nLIMIT 3",
+      "typeql": "match\n$q isa question, has answer_count $ac;\nsort $ac desc;\nlimit 3;\nfetch {\n  \"title\": $q.title,\n  \"link\": $q.question_link,\n  \"answer_count\": $ac\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 183,
+      "question": "What are the 3 most recent comments on the question with the highest view count?",
+      "cypher": "MATCH (q:Question)\nWITH q\nORDER BY q.view_count DESC\nLIMIT 1\nMATCH (c:Comment)-[:COMMENTED_ON]->(q)\nRETURN c\nORDER BY c.uuid DESC\nLIMIT 3",
+      "typeql": "match\n$q isa question, has view_count $vc;\nreduce $max_vc = max($vc);\nmatch\n$q2 isa question, has view_count $vc2;\n$vc2 == $max_vc;\ncommented_on (comment: $c, question: $q2);\n$c has comment_uuid $uuid;\nsort $uuid desc;\nlimit 3;\nfetch { \"comment\": $c };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 219,
+      "question": "List all the comments made by the user with the highest comment score.",
+      "cypher": "// Step 1: Find the user with the highest comment score\nMATCH (u:User)-[:COMMENTED]->(c:Comment)\nWITH u, MAX(c.score) AS maxScore\nMATCH (u)-[:COMMENTED]->(c:Comment)\nWHERE c.score = maxScore\n\n// Step 2: Retrieve all comments made by this user\nMATCH (u)-[:COMMENTED]->(allComments:Comment)\nRETURN u.display_name AS user, allComments.uuid AS comment_id, allComments.link AS comment_link, allComments.score AS comment_score",
+      "typeql": "match\n$u isa user;\ncommented (commenter: $u, comment: $c);\n$c has score $s;\nreduce $max_score = max($s) groupby $u;\nsort $max_score desc;\nlimit 1;\nmatch\ncommented (commenter: $u, comment: $all_comments);\n$all_comments has comment_uuid $comment_id;\n$all_comments has comment_link $comment_link;\n$all_comments has score $comment_score;\nfetch {\n  \"user\": $u.display_name,\n  \"comment_id\": $comment_id,\n  \"comment_link\": $comment_link,\n  \"comment_score\": $comment_score\n};",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 242,
+      "question": "What are the top 3 questions with the highest number of tags and answers?",
+      "cypher": "MATCH (q:Question)-[:TAGGED]->(t:Tag)\nWITH q, COUNT(t) AS tag_count\nMATCH (q)-[:ANSWERED]->(a:Answer)\nWITH q, tag_count, COUNT(a) AS answer_count\nRETURN q.title AS question_title, q.link AS question_link, tag_count, answer_count\nORDER BY tag_count DESC, answer_count DESC\nLIMIT 3",
+      "typeql": "match\n$q isa question;\ntagged (question: $q, tag: $t);\nanswered (question: $q, answer: $a);\nreduce $tag_count = count($t), $answer_count = count($a) groupby $q;\nsort $tag_count desc, $answer_count desc;\nlimit 3;\nfetch {\n  \"question_title\": $q.title,\n  \"question_link\": $q.question_link,\n  \"tag_count\": $tag_count,\n  \"answer_count\": $answer_count\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Question)-[:ANSWERED]->(Answer) but schema says Answer->Question"
+      ]
+    },
+    {
+      "index": 264,
+      "question": "List the top 3 most answered questions and their accepted answers.",
+      "cypher": "MATCH (q:Question)-[:ANSWERED]-(a:Answer)\nWHERE q.answer_count > 0\nWITH q, COUNT(a) AS answerCount\nORDER BY answerCount DESC, q.view_count DESC\nLIMIT 3\nMATCH (q)-[:ANSWERED]->(acceptedAnswer:Answer)\nWHERE acceptedAnswer.is_accepted = true\nRETURN q.title AS questionTitle, q.link AS questionLink, acceptedAnswer.link AS acceptedAnswerLink, acceptedAnswer.body_markdown AS acceptedAnswerBody",
+      "typeql": "match\n$q isa question, has answer_count $ac, has view_count $vc;\n$ac > 0;\nanswered (question: $q, answer: $a);\nreduce $count = count($a) groupby $q, $vc;\nsort $count desc, $vc desc;\nlimit 3;\nmatch\nanswered (question: $q, answer: $acceptedAnswer);\n$acceptedAnswer has is_accepted true;\nfetch {\n  \"questionTitle\": $q.title,\n  \"questionLink\": $q.question_link,\n  \"acceptedAnswerLink\": $acceptedAnswer.answer_link,\n  \"acceptedAnswerBody\": $acceptedAnswer.body_markdown\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Question)-[:ANSWERED]->(Answer) but schema says Answer->Question"
+      ]
+    },
+    {
+      "index": 295,
+      "question": "What are the top 3 tags used in the most viewed questions?",
+      "cypher": "MATCH (q:Question)-[:TAGGED]->(t:Tag)\nWITH t, SUM(q.view_count) AS total_views\nORDER BY total_views DESC\nLIMIT 3\nRETURN t.name AS tag, total_views",
+      "typeql": "match\n$q isa question, has view_count $v;\n$t isa tag;\ntagged (question: $q, tag: $t);\nreduce $total_views = sum($v) groupby $t;\nsort $total_views desc;\nlimit 3;\nfetch { \"tag\": $t.name, \"total_views\": $total_views };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    }
+  ],
+  "categories": {
+    "cypher_missing_order": [
+      6,
+      11
+    ],
+    "cypher_missing_negation": [
+      16,
+      27
+    ],
+    "cypher_lacks_count_vs_typeql": [
+      52,
+      183,
+      295
+    ],
+    "cypher_missing_count": [
+      57,
+      128
+    ],
+    "cypher_lacks_optional_vs_typeql": [
+      77
+    ],
+    "cypher_lacks_sort_vs_typeql": [
+      219
+    ],
+    "cypher_wrong_direction": [
+      242,
+      264
+    ]
+  }
+}

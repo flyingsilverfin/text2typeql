@@ -1,0 +1,328 @@
+{
+  "database": "network",
+  "source": "synthetic-2",
+  "total_queries": 613,
+  "flagged": 22,
+  "flags": [
+    {
+      "index": 16,
+      "question": "Identify all machines with a disk size greater than 256 GB in zone 4.",
+      "cypher": "MATCH (m:Machine)-[:TYPE]->(t:Type), (m)-[:ROUTES]->(i:Interface), (i)-[:ROUTES]->(z:Zone)\nWHERE t.disk > 256 AND z.zone = 4\nRETURN m.name",
+      "typeql": "match\n$m isa machine, has name $mn;\n$t isa machine_type_spec, has disk $d;\n$d > 256;\ntyped_as (machine: $m, spec: $t);\nroutes (routing_device: $m, routed_interface: $i);\n$nz isa network_zone, has zone $z;\n$z == 4;\nroutes (routing_device: $nz, routed_interface: $i);\nfetch {\n  \"name\": $mn\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Interface)-[:ROUTES]->(Zone) but schema says Zone->Interface"
+      ]
+    },
+    {
+      "index": 51,
+      "question": "Name the top 5 Machines held in Rack 'DC1-RCK-1-1'.",
+      "cypher": "MATCH (rack:Rack {name: 'DC1-RCK-1-1'})-[:HOLDS]->(machine:Machine)\nRETURN machine.name\nLIMIT 5",
+      "typeql": "match\n$rack isa rack, has name \"DC1-RCK-1-1\";\n$machine isa machine;\nholds (containing_rack: $rack, held_equipment: $machine);\nlimit 5;\nfetch {\n  \"name\": $machine.name\n};",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 66,
+      "question": "What are the first 3 previous versions of Version '7.1'?",
+      "cypher": "MATCH (v:Version {name: '7.1'})-[:PREVIOUS*1..3]->(prev:Version)\nRETURN prev.name\nLIMIT 3",
+      "typeql": "match\n$v isa version, has name \"7.1\";\nprevious (newer_version: $v, older_version: $v1);\ntry {\n  previous (newer_version: $v1, older_version: $v2);\n  try {\n    previous (newer_version: $v2, older_version: $v3);\n  };\n};\nfetch {\n  \"prev_version_1\": $v1.name,\n  \"prev_version_2\": $v2.name,\n  \"prev_version_3\": $v3.name\n};",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 97,
+      "question": "What are the top 5 IP addresses of interfaces connected to the router 'DC1-R-1'?",
+      "cypher": "MATCH (router:Router {name: 'DC1-R-1'})-[:ROUTES]->(interface:Interface)\nRETURN interface.ip\nLIMIT 5",
+      "typeql": "match\n  $router isa router, has name \"DC1-R-1\";\n  routes (routing_device: $router, routed_interface: $interface);\nlimit 5;\nfetch {\n  \"ip\": $interface.ip\n};",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 130,
+      "question": "Which 3 applications are instances of the software 'webapp'?",
+      "cypher": "MATCH (s:Software)-[:INSTANCE]->(a:Application {name: 'webapp'})\nRETURN a.name\nLIMIT 3",
+      "typeql": "match\n  $s isa software, has name \"webapp\";\n  $a isa application;\n  instance_of (running_instance: $a, template: $s);\nlimit 3;\nfetch {\n  \"name\": $a.name\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Software)-[:INSTANCE]->(Application) but schema says Application->Software"
+      ]
+    },
+    {
+      "index": 146,
+      "question": "What are the first 3 processes that are instances of the process '8966'?",
+      "cypher": "MATCH (p:Process {pid: 8966})-[:INSTANCE]->(v:Version)<-[:INSTANCE]-(relatedProcess:Process)\nRETURN relatedProcess\nORDER BY relatedProcess.startTime\nLIMIT 3",
+      "typeql": "match\n$p isa process, has pid 8966;\ninstance_of (running_instance: $p, template: $v);\n$v isa version;\ninstance_of (running_instance: $relatedProcess, template: $v);\n$relatedProcess isa process, has start_time $st;\nnot { $relatedProcess is $p; };\nsort $st asc;\nlimit 3;\nfetch {\n  \"relatedProcess\": {\n    \"name\": $relatedProcess.name,\n    \"start_time\": $relatedProcess.start_time,\n    \"pid\": $relatedProcess.pid\n  }\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 285,
+      "question": "What are the names of all networks in zone 2?",
+      "cypher": "MATCH (n:Network)\nWHERE n.zone = 2\nRETURN n.name",
+      "typeql": "match\n$n isa network, has zone 2;\nfetch {\n  \"ip\": $n.ip\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses n.name but \"name\" is not on :Network (exists on other types)"
+      ]
+    },
+    {
+      "index": 335,
+      "question": "List all interfaces that connect racks in zone 4.",
+      "cypher": "MATCH (r1:Rack {zone: 4})-[:HOLDS]->(m1:Machine)-[:ROUTES]->(i:Interface)<-[:ROUTES]-(m2:Machine)<-[:HOLDS]-(r2:Rack {zone: 4})\nRETURN DISTINCT i.ip AS InterfaceIP",
+      "typeql": "match\n$r1 isa rack, has zone 4;\n$r2 isa rack, has zone 4;\nholds (containing_rack: $r1, held_equipment: $m1);\nholds (containing_rack: $r2, held_equipment: $m2);\n$m1 isa machine;\n$m2 isa machine;\nroutes (routing_device: $m1, routed_interface: $i);\nroutes (routing_device: $m2, routed_interface: $i);\nnot { $r1 is $r2; };\n$i has ip $ip;\nselect $ip;\ndistinct;\nfetch { \"InterfaceIP\": $ip };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 353,
+      "question": "Find all interfaces connected to '10.0.0.254'.",
+      "cypher": "MATCH (i1:Interface {ip: '10.0.0.254'})-[:CONNECTS]-(i2:Interface)\nRETURN i2.ip AS connected_interfaces",
+      "typeql": "match\n  $i1 isa interface, has ip \"10.0.0.254\";\n  $i2 isa interface;\n  connects ($i1, $i2);\n  not { $i1 is $i2; };\nfetch {\n  \"connected_interfaces\": $i2.ip\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 385,
+      "question": "What are the names of all switches in rack 5?",
+      "cypher": "MATCH (rack:Rack {rack: 5})-[:HOLDS]->(switch:Switch)\nRETURN switch.name",
+      "typeql": "match\n$rack isa rack, has rack_number 5;\nholds (containing_rack: $rack, held_equipment: $switch);\n$switch isa switch;\nfetch {\n  \"switch_ip\": $switch.ip\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses switch.name but \"name\" is not on :Switch (exists on other types)"
+      ]
+    },
+    {
+      "index": 429,
+      "question": "What are the names and IPs of the first 3 interfaces routed by the network with IP '10.2'?",
+      "cypher": "MATCH (network:Network {ip: '10.2'})-[:ROUTES]->(interface:Interface)\nRETURN interface.name, interface.ip\nLIMIT 3",
+      "typeql": "match\n$network isa network, has ip \"10.2\";\nroutes (routing_device: $network, routed_interface: $i);\n$i isa interface, has ip $ip;\nlimit 3;\nfetch {\n  \"ip\": $ip\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses interface.name but \"name\" is not on :Interface (exists on other types)"
+      ]
+    },
+    {
+      "index": 435,
+      "question": "Identify the top 5 machines held in rack 'DC1-RCK-1-10' and their types.",
+      "cypher": "MATCH (rack:Rack {name: 'DC1-RCK-1-10'})-[:HOLDS]->(machine:Machine)-[:TYPE]->(type:Type)\nRETURN machine.name AS machine_name, type.name AS type_name\nLIMIT 5",
+      "typeql": "match\n$rack isa rack, has name \"DC1-RCK-1-10\";\nholds (containing_rack: $rack, held_equipment: $machine);\n$machine isa machine;\ntyped_as (machine: $machine, spec: $type);\nlimit 5;\nfetch {\n  \"machine_name\": $machine.name,\n  \"type_name\": $type.name\n};",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 438,
+      "question": "List the top 5 IP addresses of interfaces connected to the router named 'DC1-R-1'.",
+      "cypher": "MATCH (r:Router {name: 'DC1-R-1'})-[:ROUTES]->(i:Interface)\nRETURN i.ip\nLIMIT 5",
+      "typeql": "match\n$r isa router, has name \"DC1-R-1\";\nroutes (routing_device: $r, routed_interface: $i);\n$i isa interface, has ip $ip;\nlimit 5;\nfetch {\n  \"ip\": $ip\n};",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 440,
+      "question": "List the first 3 machines that run the latest version of the software 'RHEL'.",
+      "cypher": "MATCH (s:Software {name: 'RHEL'})-[:VERSION]->(v:Version)\nWITH s, v\nORDER BY v.name DESC\nLIMIT 1\nMATCH (m:Machine)-[:RUNS]->(:OS {name: 'RHEL'})-[:INSTANCE]->(v)\nRETURN m.name\nLIMIT 3",
+      "typeql": "match\n$s isa software, has name \"RHEL\";\nhas_version (versioned_software: $s, release_version: $v);\n$v has name $vn;\nnot {\n  has_version (versioned_software: $s, release_version: $v2);\n  $v2 has name $vn2;\n  $vn2 > $vn;\n};\n$os isa os, has name \"RHEL\";\ninstance_of (running_instance: $os, template: $v);\nruns (host_machine: $m, running_process: $os);\n$m has name $mn;\nlimit 3;\nfetch { \"name\": $mn };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 476,
+      "question": "Name the top 3 Services listening on Port 80.",
+      "cypher": "MATCH (s:Service)-[:LISTENS]->(p:Port {port: 80})\nRETURN s.name AS service_name\nLIMIT 3",
+      "typeql": "match\n$s isa service, has name $n;\n$p isa port, has port_number 80;\nlistens (listening_process: $s, listened_port: $p);\nlimit 3;\nfetch { \"service_name\": $n };",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 488,
+      "question": "List the top 5 routers located in zone 2.",
+      "cypher": "MATCH (r:Router)\nWHERE r.zone = 2\nRETURN r.name\nLIMIT 5",
+      "typeql": "match\n$r isa router, has zone 2;\nlimit 5;\nfetch {\n  \"name\": $r.name\n};",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 511,
+      "question": "What are the names and IPs of interfaces that connect to zone 1's network?",
+      "cypher": "MATCH (zone:Zone {zone: 1})-[:ROUTES]->(interface:Interface)\nRETURN interface.ip AS ip, interface.name AS name",
+      "typeql": "match\n$z isa network_zone, has zone 1;\nroutes (routing_device: $z, routed_interface: $i);\n$i isa interface;\nfetch {\n  \"ip\": $i.ip\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses interface.name but \"name\" is not on :Interface (exists on other types)"
+      ]
+    },
+    {
+      "index": 528,
+      "question": "What are the names and IPs of interfaces that connect to network '10.3'?",
+      "cypher": "MATCH (network:Network {ip: '10.3'})-[:ROUTES]->(interface:Interface)\nRETURN interface.name AS interfaceName, interface.ip AS interfaceIP",
+      "typeql": "match\n  $network isa network, has ip \"10.3\";\n  routes (routing_device: $network, routed_interface: $interface);\n  $interface isa interface;\nfetch {\n  \"interfaceIP\": $interface.ip\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses interface.name but \"name\" is not on :Interface (exists on other types)"
+      ]
+    },
+    {
+      "index": 550,
+      "question": "Find the top 5 egress routes from DataCenter 'DC1'.",
+      "cypher": "MATCH (dc:DataCenter {name: 'DC1'})-[:CONTAINS]->(e:Egress)-[:ROUTES]->(i:Interface)\nRETURN e.name AS egress, i.ip AS interface_ip\nLIMIT 5",
+      "typeql": "match\n$dc isa data_center, has name \"DC1\";\ndc_contains (data_center: $dc, contained_equipment: $e);\n$e isa egress;\nroutes (routing_device: $e, routed_interface: $i);\n$i isa interface;\nlimit 5;\nfetch {\n  \"egress\": $e.name,\n  \"interface_ip\": $i.ip\n};",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 563,
+      "question": "What are the names and IPs of all switches in zone 4?",
+      "cypher": "MATCH (s:Switch)-[:ROUTES]->(i:Interface)\nMATCH (r:Rack)-[:HOLDS]->(s)\nWHERE r.zone = 4\nRETURN s.name AS switchName, i.ip AS switchIP",
+      "typeql": "match\n$r isa rack, has zone 4;\nholds (containing_rack: $r, held_equipment: $s);\n$s isa switch;\nroutes (routing_device: $s, routed_interface: $i);\n$i isa interface;\nfetch {\n  \"switchIP\": $s.ip,\n  \"interfaceIP\": $i.ip\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses s.name but \"name\" is not on :Switch (exists on other types)"
+      ]
+    },
+    {
+      "index": 568,
+      "question": "Which versions of software are instances of other applications?",
+      "cypher": "MATCH (s:Software)-[:INSTANCE]->(a:Application)\nRETURN DISTINCT s.name AS SoftwareName, a.name AS ApplicationName",
+      "typeql": "match\n$s isa software, has name $sn;\n$a isa application, has name $an;\ninstance_of (template: $s, running_instance: $a);\nselect $sn, $an;\ndistinct;\nfetch {\n  \"SoftwareName\": $sn,\n  \"ApplicationName\": $an\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Software)-[:INSTANCE]->(Application) but schema says Application->Software"
+      ]
+    },
+    {
+      "index": 594,
+      "question": "Identify the top 5 machines held in racks within zone 1.",
+      "cypher": "MATCH (dc:DataCenter)-[:CONTAINS]->(r:Rack {zone: 1})-[:HOLDS]->(m:Machine)\nRETURN m.name AS machine_name\nLIMIT 5",
+      "typeql": "match\n$dc isa data_center;\n$r isa rack, has zone 1;\n$m isa machine;\ndc_contains (data_center: $dc, contained_equipment: $r);\nholds (containing_rack: $r, held_equipment: $m);\nlimit 5;\nfetch { \"machine_name\": $m.name };",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but Cypher has no ORDER BY"
+      ]
+    }
+  ],
+  "categories": {
+    "cypher_wrong_direction": [
+      16,
+      130,
+      568
+    ],
+    "cypher_missing_order": [
+      51,
+      97,
+      435,
+      438,
+      476,
+      488,
+      550,
+      594
+    ],
+    "cypher_lacks_optional_vs_typeql": [
+      66
+    ],
+    "cypher_lacks_negation_vs_typeql": [
+      146,
+      335,
+      353,
+      440
+    ],
+    "cypher_wrong_label_property": [
+      285,
+      385,
+      429,
+      511,
+      528,
+      563
+    ]
+  }
+}

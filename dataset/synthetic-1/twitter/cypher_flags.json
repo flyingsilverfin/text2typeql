@@ -1,0 +1,495 @@
+{
+  "database": "twitter",
+  "source": "synthetic-1",
+  "total_queries": 491,
+  "flagged": 33,
+  "flags": [
+    {
+      "index": 12,
+      "question": "How many users does 'Neo4j' follow?",
+      "cypher": "MATCH (me:Me {name: 'Neo4j'})\nRETURN me.following AS following",
+      "typeql": "match\n$me isa me, has name \"Neo4j\";\nfetch { \"following\": $me.following };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 43,
+      "question": "Which 3 users amplified Neo4j the most?",
+      "cypher": "MATCH (me:Me)<-[:AMPLIFIES]-(u:User)\nRETURN u.screen_name AS user, count(*) AS amplifications\nORDER BY amplifications DESC\nLIMIT 3",
+      "typeql": "match\n$me isa me;\n$u isa user;\n$a isa amplifies (amplifier: $u, amplified_user: $me);\nreduce $amplifications = count($a) groupby $u;\nsort $amplifications desc;\nlimit 3;\nfetch { \"user\": $u.screen_name, \"amplifications\": $amplifications };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Me)-[:AMPLIFIES]->(User) but schema says User->Me"
+      ]
+    },
+    {
+      "index": 154,
+      "question": "Which three tweets have the highest retweet counts?",
+      "cypher": "MATCH (t:Tweet)\nRETURN t.text, t.favorites\nORDER BY t.favorites DESC\nLIMIT 3",
+      "typeql": "match\n$t isa tweet, has text $txt;\nretweets (original_tweet: $t, retweeting_tweet: $rt);\nreduce $count = count($rt) groupby $txt;\nsort $count desc;\nlimit 3;\nfetch { \"text\": $txt, \"retweet_count\": $count };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 158,
+      "question": "List the top 5 tweets which mention the user with the highest followers.",
+      "cypher": "MATCH (u:User)-[:MENTIONS]-(t:Tweet)\nWHERE u.followers IS NOT NULL\nWITH u, t\nORDER BY u.followers DESC\nLIMIT 1\nMATCH (t:Tweet)-[:MENTIONS]->(u) \nRETURN t.text AS tweet_text\nORDER BY t.favorites DESC\nLIMIT 5",
+      "typeql": "with fun max_followers() -> integer:\n  match $u isa user, has followers $f;\n  return max($f);\nmatch\n$u isa user, has followers $f;\n$f == max_followers();\n$t isa tweet;\nmentions (source_tweet: $t, mentioned_user: $u);\n$t has favorites $fav;\nsort $fav desc;\nlimit 5;\nfetch { \"tweet_text\": $t.text };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 170,
+      "question": "Find the first 3 tweets that have been retweeted more than 100 times.",
+      "cypher": "MATCH (t:Tweet)\nWHERE t.favorites > 100\nRETURN t\nORDER BY t.favorites DESC\nLIMIT 3",
+      "typeql": "match\n$tweet isa tweet;\nretweets (original_tweet: $tweet, retweeting_tweet: $retweet);\nreduce $count = count groupby $tweet;\nmatch\n$count > 100;\nsort $count desc;\nlimit 3;\nfetch {\n  \"tweet\": $tweet.text,\n  \"retweets\": $count\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 182,
+      "question": "List the first 3 users who interact most frequently with 'Neo4j' based on the INTERACTS_WITH relationship.",
+      "cypher": "MATCH (u:User)-[i:INTERACTS_WITH]->(me:Me {screen_name: 'neo4j'})\nRETURN u.screen_name AS user, count(i) AS interactions\nORDER BY interactions DESC\nLIMIT 3",
+      "typeql": "match\n$me isa me, has screen_name \"neo4j\";\n$u isa user;\ninteracts_with (interactor: $u, target: $me);\nreduce $interactions = count($u) groupby $u;\nsort $interactions desc;\nlimit 3;\nfetch { \"user\": $u.screen_name, \"interactions\": $interactions };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:INTERACTS_WITH]->(Me) but schema says Me->User"
+      ]
+    },
+    {
+      "index": 194,
+      "question": "Which tweets posted by 'Neo4j' include links and were created in January 2021? Show the first 3.",
+      "cypher": "MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:CONTAINS]->(link:Link)\nWHERE tweet.created_at >= date('2021-01-01') AND tweet.created_at < date('2021-02-01') \nRETURN tweet.text, tweet.created_at, link.url\nLIMIT 3",
+      "typeql": "match\n$me isa me, has screen_name \"neo4j\";\n$tweet isa tweet, has created_at $ca;\n$link isa link;\nposts (author: $me, content: $tweet);\ncontains (containing_tweet: $tweet, contained_link: $link);\n$ca >= 2021-01-01T00:00:00;\n$ca < 2021-02-01T00:00:00;\nlimit 3;\nfetch { \"text\": $tweet.text, \"created_at\": $ca, \"url\": $link.link_url };",
+      "checks_failed": [
+        "cypher_missing_return_props"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for \"links and were\" but neither appears in RETURN"
+      ]
+    },
+    {
+      "index": 195,
+      "question": "What are the top 5 tweets that 'Neo4j' has amplified?",
+      "cypher": "MATCH (me:Me {screen_name: 'neo4j'})-[:AMPLIFIES]->(u:User)<-[:POSTS]-(t:Tweet)\nRETURN t.text AS tweet_text, t.favorites AS favorites\nORDER BY t.favorites DESC\nLIMIT 5",
+      "typeql": "match\n$me isa me, has screen_name \"neo4j\";\n$u isa user;\n$t isa tweet, has favorites $f;\namplifies (amplifier: $me, amplified_user: $u);\nposts (author: $u, content: $t);\nsort $f desc;\nlimit 5;\nfetch { \"tweet_text\": $t.text, \"favorites\": $f };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:POSTS]->(Tweet) but schema says Tweet->User"
+      ]
+    },
+    {
+      "index": 204,
+      "question": "List the first 3 users that 'Neo4j' follows with the highest number of tweets.",
+      "cypher": "MATCH (me:Me {screen_name: 'neo4j'})-[:FOLLOWS]->(followed:User)\nWHERE exists{ (followed)-[:POSTS]->(:Tweet) }\nRETURN followed.screen_name AS user, count{(followed)-[:POSTS]->(:Tweet)} AS num_tweets\nORDER BY num_tweets DESC\nLIMIT 3",
+      "typeql": "match\n$me isa me, has screen_name \"neo4j\";\n$followed isa user;\n$t isa tweet;\nfollows (follower: $me, followed: $followed);\nposts (author: $followed, content: $t);\nreduce $num_tweets = count($t) groupby $followed;\nsort $num_tweets desc;\nlimit 3;\nfetch { \"user\": $followed.screen_name, \"num_tweets\": $num_tweets };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 211,
+      "question": "Identify the top 5 users who interact with 'Neo4j' and have a location specified as 'Graphs Are Everywhere'.",
+      "cypher": "MATCH (u:User)-[:INTERACTS_WITH]->(me:Me {screen_name: 'neo4j'})\nWHERE u.location IS NOT NULL AND u.location = 'Graphs Are Everywhere'\nRETURN u.screen_name AS user, u.location AS location\nORDER BY count{(u)-[:INTERACTS_WITH]->(me)} DESC\nLIMIT 5",
+      "typeql": "match\n$me isa me, has screen_name \"neo4j\";\n$u isa user, has location \"Graphs Are Everywhere\";\ninteracts_with (interactor: $u, target: $me);\nreduce $interactions = count($u) groupby $u;\nsort $interactions desc;\nlimit 5;\nfetch { \"user\": $u.screen_name, \"location\": $u.location };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:INTERACTS_WITH]->(Me) but schema says Me->User"
+      ]
+    },
+    {
+      "index": 281,
+      "question": "Show the first 3 hashtags tagged in tweets that have been retweeted more than 100 times.",
+      "cypher": "MATCH (t:Tweet)-[:TAGS]->(h:Hashtag)\nWHERE t.favorites > 100\nRETURN h.name\nLIMIT 3",
+      "typeql": "match\n$tweet isa tweet;\nretweets (original_tweet: $tweet, retweeting_tweet: $retweet);\nreduce $count = count groupby $tweet;\nmatch\n$count > 100;\ntags (tagged_tweet: $tweet, tag: $hashtag);\nlimit 3;\nfetch {\n  \"hashtag\": $hashtag.hashtag_name\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 289,
+      "question": "Show the top 5 tweets by 'Neo4j' that were posted from a location outside 'Graphs Are Everywhere'.",
+      "cypher": "MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)\nWHERE me.location <> 'Graphs Are Everywhere'\nRETURN tweet.text, tweet.created_at\nORDER BY tweet.favorites DESC\nLIMIT 5",
+      "typeql": "match\n  $me isa me, has screen_name \"neo4j\", has location $loc;\n  not { $me has location \"Graphs Are Everywhere\"; };\n  posts (author: $me, content: $tweet);\n  $tweet has text $text, has created_at $created_at, has favorites $favorites;\nsort $favorites desc;\nlimit 5;\nfetch { \"text\": $text, \"created_at\": $created_at };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 293,
+      "question": "Display the top 5 users who follow both 'Neo4j' and 'Me'.",
+      "cypher": "MATCH (u:User)-[:FOLLOWS]->(:User {screen_name: 'neo4j'})\nWHERE (u)-[:FOLLOWS]->(:Me)\nRETURN u.screen_name, u.name\nORDER BY u.followers DESC\nLIMIT 5",
+      "typeql": "match\n  $neo4j isa user, has screen_name \"neo4j\";\n  $me isa me;\n  follows (follower: $u, followed: $neo4j);\n  follows (follower: $u, followed: $me);\n  $u has screen_name $sn, has name $name, has followers $followers;\nsort $followers desc;\nlimit 5;\nfetch { \"screen_name\": $sn, \"name\": $name };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 295,
+      "question": "Show all hashtags that have appeared in more than 5 tweets mentioning 'Neo4j'.",
+      "cypher": "MATCH (t:Tweet)-[:MENTIONS]->(:User {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:TAGS]->(h:Hashtag)\nWITH h, count(tweet) AS tweet_count\nWHERE tweet_count > 5\nRETURN h.name AS hashtag, tweet_count\nORDER BY tweet_count DESC",
+      "typeql": "match\n  $tweet isa tweet, has text $text;\n  $text like \".*Neo4j.*\";\n  tags (tagged_tweet: $tweet, tag: $tag);\nreduce $count = count groupby $tag;\nmatch\n  $count > 5;\nfetch {\n  \"tag\": $tag.hashtag_name,\n  \"appearances_with_neo4j\": $count\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 296,
+      "question": "List the top 5 users who have a similar betweenness to 'Neo4j'.",
+      "cypher": "MATCH (me:Me {name: 'Neo4j'}), (u:User)\nWHERE u.betweenness IS NOT NULL\nWITH me, u\nORDER BY abs(me.betweenness - u.betweenness) \nLIMIT 5\nRETURN u.name AS user, u.betweenness AS betweenness",
+      "typeql": "match\n$neo4j isa me, has name \"Neo4j\", has betweenness $neo4j_betweenness;\n$user isa user, has betweenness $betweenness;\nnot { $neo4j is $user; };\nlet $difference = abs($betweenness - $neo4j_betweenness);\nsort $difference asc;\nlimit 5;\nfetch {\n  \"user\": $user.name\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 298,
+      "question": "Display all tweets by 'Neo4j' that mention at least two different users.",
+      "cypher": "MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)\nWHERE size([(tweet)-[:MENTIONS]->(u:User) | u]) >= 2\nRETURN tweet",
+      "typeql": "match\n  $me isa me, has screen_name \"neo4j\";\n  posts (author: $me, content: $tweet);\n  mentions (source_tweet: $tweet, mentioned_user: $u1);\n  mentions (source_tweet: $tweet, mentioned_user: $u2);\n  not { $u1 is $u2; };\n  $tweet has text $text, has tweet_id $id;\nfetch { \"tweet_id\": $id, \"text\": $text };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 304,
+      "question": "Identify all tweets by 'Neo4j' that were posted using a source other than 'Buffer'.",
+      "cypher": "MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)-[:USING]->(source:Source)\nWHERE source.name <> 'Buffer'\nRETURN tweet",
+      "typeql": "match\n  $me isa me, has screen_name \"neo4j\";\n  posts (author: $me, content: $tweet);\n  using (tweet_content: $tweet, platform: $source);\n  $source has source_name $name;\n  not { $source has source_name \"Buffer\"; };\n  $tweet has text $text, has tweet_id $id;\nfetch { \"tweet_id\": $id, \"text\": $text };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 310,
+      "question": "Show all tweets that 'Me' has amplified.",
+      "cypher": "MATCH (me:Me)-[:AMPLIFIES]->(u:User)<-[:POSTS]-(t:Tweet)\nRETURN t",
+      "typeql": "match\n  $me isa me;\n  amplifies (amplifier: $me, amplified_user: $u);\n  posts (author: $u, content: $t);\n  $t has text $text, has tweet_id $id;\nfetch { \"tweet_id\": $id, \"text\": $text };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:POSTS]->(Tweet) but schema says Tweet->User"
+      ]
+    },
+    {
+      "index": 330,
+      "question": "Which users have the highest following to follower ratio?",
+      "cypher": "MATCH (u:User)\nWHERE u.followers IS NOT NULL AND u.following IS NOT NULL\nRETURN u.screen_name AS user, \n       toFloat(u.following) / u.followers AS followingToFollowerRatio\nORDER BY followingToFollowerRatio DESC\nLIMIT 10",
+      "typeql": "with fun follower_count($user: user) -> integer:\n  match follows (followed: $user);\n  return count;\nwith fun follows_count($user: user) -> integer:\n  match follows (follower: $user);\n  return count;\nmatch\n$user isa user;\nlet $followers = follower_count($user);\nlet $follows = follows_count($user);\n$followers > 0;\n$follows > 0;\nlet $ratio = $follows / $followers;\nsort $ratio desc;\nlimit 10;\nfetch {\n  \"user\": $user.name,\n  \"ratio\": $ratio\n};",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 359,
+      "question": "Which users have a betweenness greater than 300 million?",
+      "cypher": "MATCH (u:User)\nWHERE u.betweenness > 3.0E8\nRETURN u.screen_name, u.betweenness",
+      "typeql": "match\n  $u isa user, has screen_name $sn, has betweenness $betweenness;\n  $betweenness > 300000000.0;\nfetch { \"screen_name\": $sn, \"betweenness\": $betweenness };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 300000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 376,
+      "question": "What are the top 3 tweets by number of retweets?",
+      "cypher": "MATCH (t:Tweet)\nRETURN t.text AS tweet_text, count{(t)<-[:RETWEETS]-(:Tweet)} AS retweets\nORDER BY retweets DESC\nLIMIT 3",
+      "typeql": "match\n  $t isa tweet, has text $text;\n  retweets (original_tweet: $t, retweeting_tweet: $rt);\nreduce $count = count($rt) groupby $text;\nsort $count desc;\nlimit 3;\nfetch { \"tweet_text\": $text, \"retweets\": $count };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 402,
+      "question": "Find the first 3 users who follow 'neo4j' and have a betweenness greater than 100 million.",
+      "cypher": "MATCH (u:User)-[:FOLLOWS]->(:Me {screen_name: 'neo4j'})\nWHERE u.betweenness > 1E8\nRETURN u\nLIMIT 3",
+      "typeql": "match\n  $u isa user, has screen_name $sn, has name $name, has betweenness $betweenness;\n  $betweenness > 100000000.0;\n  $me isa me, has screen_name \"neo4j\";\n  follows (follower: $u, followed: $me);\nlimit 3;\nfetch { \"screen_name\": $sn, \"name\": $name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 406,
+      "question": "What are the top 5 locations of users who interact with 'neo4j'?",
+      "cypher": "MATCH (u:User)-[:INTERACTS_WITH]->(me:Me {screen_name: 'neo4j'})\nWHERE u.location IS NOT NULL\nRETURN u.location, count(*) AS num_users\nORDER BY num_users DESC\nLIMIT 5",
+      "typeql": "match\n  $u isa user, has location $location;\n  $me isa me, has screen_name \"neo4j\";\n  interacts_with (interactor: $u, target: $me);\nreduce $count = count($u) groupby $location;\nsort $count desc;\nlimit 5;\nfetch { \"location\": $location, \"num_users\": $count };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:INTERACTS_WITH]->(Me) but schema says Me->User"
+      ]
+    },
+    {
+      "index": 415,
+      "question": "Which users followed by 'neo4j' have a higher status count than 'neo4j'?",
+      "cypher": "MATCH (me:Me {screen_name: 'neo4j'})-[:FOLLOWS]->(u:User)\nWHERE u.statuses > me.statuses\nRETURN u.screen_name, u.statuses",
+      "typeql": "match\n  $me isa me, has screen_name \"neo4j\", has statuses $me_statuses;\n  follows (follower: $me, followed: $u);\n  $u has screen_name $sn, has statuses $u_statuses;\n  $u_statuses > $me_statuses;\nfetch { \"screen_name\": $sn, \"statuses\": $u_statuses };",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses me.statuses but \"statuses\" is not on :Me (exists on other types)"
+      ]
+    },
+    {
+      "index": 416,
+      "question": "Show the first 3 tweets from users who have interacted with 'neo4j'.",
+      "cypher": "MATCH (u:User)-[:INTERACTS_WITH]->(me:Me {screen_name: 'neo4j'})\nMATCH (u)-[:POSTS]->(t:Tweet)\nRETURN u.screen_name, t.text\nORDER BY t.created_at\nLIMIT 3",
+      "typeql": "match\n  $u isa user, has screen_name $sn;\n  $me isa me, has screen_name \"neo4j\";\n  interacts_with (interactor: $u, target: $me);\n  posts (author: $u, content: $t);\n  $t has text $text, has created_at $created_at;\nsort $created_at asc;\nlimit 3;\nfetch { \"screen_name\": $sn, \"text\": $text };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:INTERACTS_WITH]->(Me) but schema says Me->User"
+      ]
+    },
+    {
+      "index": 429,
+      "question": "Which tweets by 'neo4j' have been retweeted more than 50 times?",
+      "cypher": "MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)\nWHERE tweet.favorites > 50\nRETURN tweet.text, tweet.favorites",
+      "typeql": "match\n$me isa me, has screen_name \"neo4j\";\nposts (author: $me, content: $tweet);\nretweets (original_tweet: $tweet, retweeting_tweet: $retweet);\nreduce $count = count groupby $tweet;\nmatch\n$count > 50;\nfetch {\n  \"tweet\": $tweet.text,\n  \"retweets\": $count\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 468,
+      "question": "List the top 3 tweets from 'Neo4j' that have been retweeted more than 100 times.",
+      "cypher": "MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)\nWHERE tweet.favorites > 100\nRETURN tweet.text, tweet.favorites\nORDER BY tweet.favorites DESC\nLIMIT 3",
+      "typeql": "match\n$me isa me, has screen_name \"neo4j\";\nposts (author: $me, content: $tweet);\nretweets (original_tweet: $tweet, retweeting_tweet: $retweet);\nreduce $count = count groupby $tweet;\nmatch\n$count > 100;\nsort $count desc;\nlimit 3;\nfetch {\n  \"tweet\": $tweet.text,\n  \"retweets\": $count\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 481,
+      "question": "Who are the top 5 users interacting with 'Neo4j' via the INTERACTS_WITH relationship?",
+      "cypher": "MATCH (u:User)-[i:INTERACTS_WITH]->(me:Me {screen_name: 'neo4j'})\nRETURN u.screen_name AS user, count(i) AS interactions\nORDER BY interactions DESC\nLIMIT 5",
+      "typeql": "match\n  $me isa me, has screen_name \"neo4j\";\n  $i isa interacts_with (interactor: $u, target: $me);\n  $u has screen_name $sn;\nreduce $count = count($i) groupby $sn;\nsort $count desc;\nlimit 5;\nfetch { \"user\": $sn, \"interactions\": $count };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:INTERACTS_WITH]->(Me) but schema says Me->User"
+      ]
+    },
+    {
+      "index": 77,
+      "question": "List the first 3 tweets that mention the user with the highest betweenness.",
+      "cypher": "MATCH (u:User)-[:MENTIONS]-(t:Tweet)\nWHERE u.betweenness IS NOT NULL\nWITH u, t\nORDER BY u.betweenness DESC\nLIMIT 1\nMATCH (t2:Tweet)-[:MENTIONS]->(u) \nRETURN t2.text\nLIMIT 3",
+      "typeql": "with fun max_betweenness() -> double:\n  match $u isa user, has betweenness $b;\n  return max($b);\nmatch\n$u isa user, has betweenness $b;\n$b == max_betweenness();\n$t isa tweet;\nmentions (source_tweet: $t, mentioned_user: $u);\nlimit 3;\nfetch { \"text\": $t.text };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 136,
+      "question": "List the tweets by 'neo4j' that have been retweeted by more than 5 different users.",
+      "cypher": "MATCH (me:Me {screen_name: 'neo4j'})-[:POSTS]->(tweet:Tweet)\nWHERE count{(tweet)<-[:RETWEETS]-(:Tweet)<-[:POSTS]-(:User)} > 5\nRETURN tweet.text, count{(tweet)<-[:RETWEETS]-(:Tweet)<-[:POSTS]-(:User)} AS retweets",
+      "typeql": "with fun retweeting_users($tweet: tweet) -> integer:\n  match\n    retweets (original_tweet: $tweet, retweeting_tweet: $retweet);\n    posts (author: $retweeter, content: $retweet);\n  select $retweeter;\n  distinct;\n  return count;\nmatch\n$me isa user, has screen_name \"neo4j\";\nposts (author: $me, content: $tweet);\nlet $count = retweeting_users($tweet);\n$count > 5;\nfetch {\n  \"tweet_text\": $tweet.text,\n  \"retweets\": $count\n};",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 163,
+      "question": "Identify the top 5 tweets linking to the most popular external sources.",
+      "cypher": "MATCH (t:Tweet)-[:CONTAINS]->(l:Link)\nWITH t, l.url AS url, count(*) AS link_count\nORDER BY link_count DESC\nLIMIT 5\nRETURN t.text AS tweet_text, url, link_count",
+      "typeql": "with fun link_popularity($link: link) -> integer:\n  match contains (contained_link: $link);\n  return count;\nmatch\n$t isa tweet;\n$l isa link;\ncontains (containing_tweet: $t, contained_link: $l);\nlet $link_count = link_popularity($l);\nsort $link_count desc;\nlimit 5;\nfetch { \"tweet_text\": $t.text, \"url\": $l.link_url, \"link_count\": $link_count };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 390,
+      "question": "Show the first 3 tweets that 'neo4j' has amplified.",
+      "cypher": "MATCH (me:Me {screen_name: 'neo4j'})-[:AMPLIFIES]->(u:User)<-[:POSTS]-(t:Tweet)\nRETURN t.text\nLIMIT 3",
+      "typeql": "match\n  $me isa me, has screen_name \"neo4j\";\n  amplifies (amplifier: $me, amplified_user: $u);\n  posts (author: $u, content: $t);\n  $t has text $text;\nlimit 3;\nfetch { \"text\": $text };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:POSTS]->(Tweet) but schema says Tweet->User"
+      ]
+    },
+    {
+      "index": 294,
+      "question": "Identify the first 3 tweets by 'Me' that have been mentioned by another user.",
+      "cypher": "MATCH (me:Me)-[:POSTS]->(tweet:Tweet)<-[:MENTIONS]-(user:User)\nRETURN tweet.text, user.screen_name\nORDER BY tweet.created_at\nLIMIT 3",
+      "typeql": "match\n$me isa me;\nposts (author: $me, content: $t);\nmentions (source_tweet: $t, mentioned_user: $u);\nnot { $u isa me; };\n$t has created_at $ca;\nsort $ca asc;\nlimit 3;\nfetch {\n  \"text\": $t.text,\n  \"screen_name\": $u.screen_name\n};",
+      "checks_failed": [
+        "cypher_wrong_direction",
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Tweet)-[:MENTIONS]->(User) but schema says User->Tweet",
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    }
+  ],
+  "categories": {
+    "cypher_missing_count": [
+      12,
+      204,
+      376
+    ],
+    "cypher_wrong_direction": [
+      43,
+      182,
+      195,
+      211,
+      310,
+      406,
+      416,
+      481,
+      390,
+      294
+    ],
+    "cypher_lacks_count_vs_typeql": [
+      154,
+      170,
+      281,
+      429,
+      468
+    ],
+    "cypher_lacks_optional_vs_typeql": [
+      158,
+      330,
+      77,
+      136,
+      163
+    ],
+    "cypher_missing_return_props": [
+      194
+    ],
+    "cypher_lacks_negation_vs_typeql": [
+      289,
+      296,
+      298,
+      304,
+      294
+    ],
+    "cypher_missing_condition": [
+      293
+    ],
+    "cypher_lacks_string_op_vs_typeql": [
+      295
+    ],
+    "cypher_missing_threshold": [
+      359,
+      402
+    ],
+    "cypher_wrong_label_property": [
+      415
+    ]
+  }
+}

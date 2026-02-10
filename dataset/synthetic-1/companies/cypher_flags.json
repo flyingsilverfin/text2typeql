@@ -1,0 +1,2167 @@
+{
+  "database": "companies",
+  "source": "synthetic-1",
+  "total_queries": 930,
+  "flagged": 148,
+  "flags": [
+    {
+      "index": 0,
+      "question": "List the top 5 organizations where the number of employees is greater than 1000.",
+      "cypher": "MATCH (o:Organization)\nWHERE o.nbrEmployees > 1000\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees\nORDER BY o.nbrEmployees DESC\nLIMIT 5",
+      "typeql": "match\n  $o isa organization;\n  $o has nbr_employees $o_nbr_employees;\n  $o_nbr_employees > 1000;\nsort $o_nbr_employees desc;\nlimit 5;\nfetch { \"organization\": $o.name, \"numberOfEmployees\": $o.nbr_employees };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 15,
+      "question": "List the top 3 people who are investors in more than one organization.",
+      "cypher": "MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization)\nWITH p, count(o) as num_orgs\nWHERE num_orgs > 1\nRETURN p.name as person, num_orgs as number_of_organizations_invested_in\nORDER BY num_orgs DESC\nLIMIT 3",
+      "typeql": "match\n  $p isa person;\n  $o isa organization;\n  (investor: $p, organization: $o) isa invested_in;\nreduce $num_orgs = count($o) groupby $p;\nmatch $num_orgs > 1;\nsort $num_orgs desc;\nlimit 3;\nfetch { \"person\": $p.name, \"number_of_organizations_invested_in\": $num_orgs };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_INVESTOR]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 27,
+      "question": "Find the first 3 people who have the role of CEO in more than one organization.",
+      "cypher": "MATCH (p:Person)-[:HAS_CEO]->(o:Organization)\nWITH p, count(o) as num_ceo_roles\nWHERE num_ceo_roles > 1\nRETURN p.name as person, num_ceo_roles as number_of_ceo_roles\nORDER BY num_ceo_roles DESC\nLIMIT 3",
+      "typeql": "match\n  $p isa person, has name $n;\n  (organization: $o1, ceo: $p) isa ceo_of;\n  (organization: $o2, ceo: $p) isa ceo_of;\n  $o1 has organization_id $id1;\n  $o2 has organization_id $id2;\n  $id1 != $id2;\nlimit 3;\nfetch { \"person\": $n };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_CEO]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 49,
+      "question": "List the names and titles of articles mentioning organizations that have been dissolved.",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization)\nWHERE o.isDissolved = true\nRETURN a.title AS articleTitle, a.summary AS articleSummary",
+      "typeql": "match\n  $a isa article;\n  $o isa organization;\n  (article: $a, mentioned: $o) isa mentions;\n  $o has is_dissolved true;\nfetch { \"articleTitle\": $a.title, \"articleSummary\": $a.article_summary };",
+      "checks_failed": [
+        "cypher_missing_return_props"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for \"names and titles\" but neither appears in RETURN"
+      ]
+    },
+    {
+      "index": 52,
+      "question": "Which organizations have an investor named 'David Correa'?",
+      "cypher": "MATCH (o:Organization)<-[:HAS_INVESTOR]-(p:Person {name: 'David Correa'})\nRETURN o.name AS organization",
+      "typeql": "match\n  $o isa organization;\n  $p isa person, has name \"David Correa\";\n  (investor: $p, organization: $o) isa invested_in;\nfetch { \"organization\": $o.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Organization)-[:HAS_INVESTOR]->(Person) but schema says Person->Organization"
+      ]
+    },
+    {
+      "index": 79,
+      "question": "List the persons who are both investors and board members in the same organization.",
+      "cypher": "MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization)<-[:HAS_BOARD_MEMBER]-(p)\nRETURN p.name AS person, o.name AS organization",
+      "typeql": "match\n  $p isa person;\n  $o isa organization;\n  (investor: $p, organization: $o) isa invested_in;\n(organization: $o, member: $p) isa board_member_of; fetch { \"person\": $p.name, \"organization\": $o.name };",
+      "checks_failed": [
+        "cypher_wrong_direction",
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_INVESTOR]->(Organization) but schema says Organization->Person",
+        "Cypher has (Organization)-[:HAS_BOARD_MEMBER]->(Person) but schema says Person->Organization"
+      ]
+    },
+    {
+      "index": 84,
+      "question": "Which organizations have a CEO who has written an article?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)<-[:AUTHOR]-(a:Article)\nRETURN o.name AS organization, ceo.name AS ceo, a.title AS article",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (organization: $o, ceo: $p) isa ceo_of;\nfetch { \"organization\": $o.name, \"ceo\": $p.name };",
+      "checks_failed": [
+        "cypher_invalid_rel_type"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references relationship type \"AUTHOR\" not in Neo4j schema (valid: ['HAS_BOARD_MEMBER', 'HAS_CATEGORY', 'HAS_CEO', 'HAS_CHILD', 'HAS_CHUNK', 'HAS_COMPETITOR', 'HAS_INVESTOR', 'HAS_PARENT', 'HAS_SUBSIDIARY', 'HAS_SUPPLIER', 'IN_CITY', 'IN_COUNTRY', 'MENTIONS'])"
+      ]
+    },
+    {
+      "index": 90,
+      "question": "Which CEOs have led an organization for more than 10 years?",
+      "cypher": "MATCH (p:Person)-[r:HAS_CEO]->(o:Organization)\nWHERE duration.between(r.startDate, coalesce(r.endDate, date())).years > 10\nRETURN p.name AS ceoName, o.name AS orgName, duration.between(r.startDate, coalesce(r.endDate, date())).years AS yearsAsCEO",
+      "typeql": "match\n  $p isa person;\n  $o isa organization;\n(organization: $o, ceo: $p) isa ceo_of; fetch { \"ceoName\": $p.name, \"orgName\": $o.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_CEO]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 120,
+      "question": "Which cities are the headquarters for the top 5 organizations by number of employees?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City)\nWHERE o.nbrEmployees IS NOT NULL\nRETURN c.name AS city, o.name AS organization, o.nbrEmployees AS employees\nORDER BY o.nbrEmployees DESC\nLIMIT 5",
+      "typeql": "match\n  $o isa organization;\n  $c isa city;\n  (organization: $o, city: $c) isa located_in;\n  $o has nbr_employees $o_nbr_employees;\nsort $o_nbr_employees desc;\nlimit 5;\nfetch { \"city\": $c.city_name, \"organization\": $o.name, \"employees\": $o.nbr_employees };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 134,
+      "question": "What are the names of the first 3 people who are investors in organizations based in 'Seattle'?",
+      "cypher": "MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization)-[:IN_CITY]->(:City {name: 'Seattle'})\nRETURN p.name\nLIMIT 3",
+      "typeql": "match\n  $p isa person;\n  $o isa organization;\n  (investor: $p, organization: $o) isa invested_in;\n  $city isa city, has city_name \"Seattle\"; (organization: $o, city: $city) isa located_in;\nlimit 3;\nfetch { \"name\": $p.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_INVESTOR]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 141,
+      "question": "Who are the first 3 board members of organizations with more than 100 million in revenue?",
+      "cypher": "MATCH (o:Organization)-[:HAS_BOARD_MEMBER]->(p:Person)\nWHERE o.revenue > 1E8\nRETURN p.name AS boardMember, o.name AS organization\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (organization: $o, member: $p) isa board_member_of;\n  $o has revenue $o_revenue;\n  $o_revenue > 100000000;\nlimit 3;\nfetch { \"boardMember\": $p.name, \"organization\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 157,
+      "question": "Who are the first 3 competitors of organizations with more than 1 billion in revenue?",
+      "cypher": "MATCH (o:Organization)-[:HAS_COMPETITOR]->(c:Organization)\nWHERE o.revenue > 1.0E9\nRETURN c.name as competitor\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $c isa organization;\n  (competitor: $o, competitor: $c) isa competes_with;\n  $o has revenue $o_revenue;\n  $o_revenue > 1000000000;\nlimit 3;\nfetch { \"competitor\": $c.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 1000000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 166,
+      "question": "Who are the first 3 children of CEOs of organizations with more than 500 million in revenue?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nWHERE o.revenue > 5e8\nWITH ceo\nMATCH (ceo)-[:HAS_CHILD]->(child:Person)\nRETURN child.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $ceo isa person;\n  (organization: $o, ceo: $ceo) isa ceo_of;\n  $child isa person;\n  $o has revenue $o_revenue;\n  $o_revenue > 500000000;\n(parent: $ceo, child: $child) isa parent_of; limit 3;\nfetch { \"name\": $child.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 500000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 181,
+      "question": "List the first 3 organizations with the highest number of employees that are not public.",
+      "cypher": "MATCH (o:Organization)\nWHERE o.isPublic = false AND o.nbrEmployees IS NOT NULL\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees\nORDER BY o.nbrEmployees DESC\nLIMIT 3",
+      "typeql": "match\n  $o isa organization, has name $on;\n  $o has is_public false;\n  $o has nbr_employees $ne;\nsort $ne desc;\nlimit 3;\nfetch { \"organization\": $on, \"numberOfEmployees\": $ne };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 189,
+      "question": "Who are the first 3 investors in organizations that have a revenue greater than 500 million?",
+      "cypher": "MATCH (o:Organization)-[:HAS_INVESTOR]->(i)\nWHERE o.revenue > 5e8\nRETURN i.name as investor\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $investor isa person, has name $in;\n  (organization: $o, investor: $investor) isa invested_in;\n  $o has revenue $r;\n  $r > 500000000;\nlimit 3;\nfetch { \"investor\": $in };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 500000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 198,
+      "question": "Who are the first 3 CEOs of organizations that have subsidiaries and a revenue above 1 billion?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nWHERE o.revenue > 1e9 AND EXISTS {(o)-[:HAS_SUBSIDIARY]->(:Organization)}\nRETURN ceo.name AS ceoName, o.name AS orgName\nLIMIT 3",
+      "typeql": "match\n  $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;\n  $ceo isa person;\n  (organization: $o, ceo: $ceo) isa ceo_of;\n  $o has revenue $o_revenue;\n  $o_revenue > 1000000000;\nlimit 3;\nfetch { \"ceoName\": $ceo.name, \"orgName\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 1000000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 200,
+      "question": "Which organizations have a revenue above 1 billion and are in the 'Technology' industry?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Technology'})\nWHERE o.revenue > 1e9\nRETURN o.name AS organization, o.revenue AS revenue",
+      "typeql": "match\n  $o isa organization;\n  $c isa industry_category, has industry_category_name \"Technology\";\n  (organization: $o, category: $c) isa in_category;\n  $o has revenue $o_revenue;\n  $o_revenue > 1000000000;\nfetch { \"organization\": $o.name, \"revenue\": $o.revenue };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 1000000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 218,
+      "question": "Who are the first 3 board members of organizations with a CEO named 'Julie Spellman Sweet' and a revenue above 500 million?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person {name: 'Julie Spellman Sweet'})\nWHERE o.revenue > 5e8\nWITH o\nMATCH (o)-[:HAS_BOARD_MEMBER]->(boardMember:Person)\nRETURN boardMember.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $ceo isa person, has name \"Julie Spellman Sweet\";\n  (organization: $o, ceo: $ceo) isa ceo_of;\n  $boardMember isa person;\n  (organization: $o, member: $boardMember) isa board_member_of;\n  $o has revenue $o_revenue;\n  $o_revenue > 500000000;\nlimit 3;\nfetch { \"name\": $boardMember.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 500000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 223,
+      "question": "Who are the first 3 CEOs of organizations that have a public status and a revenue above 1 billion?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(p:Person)\nWHERE o.isPublic = true AND o.revenue > 1e9\nRETURN p.name AS ceoName, o.name AS orgName\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (organization: $o, ceo: $p) isa ceo_of;\n  $o has is_public true;\n  $o has revenue $o_revenue;\n  $o_revenue > 1000000000;\nlimit 3;\nfetch { \"ceoName\": $p.name, \"orgName\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 1000000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 226,
+      "question": "Find the first 3 organizations that have a CEO named 'Julie Spellman Sweet' and have a revenue above 1 billion.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'})\nWHERE o.revenue > 1e9\nRETURN o\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $p isa person, has name \"Julie Spellman Sweet\";\n  (organization: $o, ceo: $p) isa ceo_of;\n  $o has revenue $o_revenue;\n  $o_revenue > 1000000000;\nlimit 3;\nfetch { \"o\": $o };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 1000000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 236,
+      "question": "Which organizations are public and have a revenue of over 500 million?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.isPublic = true AND o.revenue > 5e8\nRETURN o.name AS organization, o.revenue AS revenue",
+      "typeql": "match\n  $o isa organization;\n  $o has is_public true;\n  $o has revenue $o_revenue;\n  $o_revenue > 500000000;\nfetch { \"organization\": $o.name, \"revenue\": $o.revenue };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 500000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 245,
+      "question": "Which organization has the highest number of employees?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.nbrEmployees IS NOT NULL\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees\nORDER BY o.nbrEmployees DESC\nLIMIT 1",
+      "typeql": "match\n  $o isa organization;\n  $o has nbr_employees $o_nbr_employees;\nsort $o_nbr_employees desc;\nlimit 1;\nfetch { \"organization\": $o.name, \"numberOfEmployees\": $o.nbr_employees };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 249,
+      "question": "List three persons who are both investors and board members in any organization.",
+      "cypher": "MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization)<-[:HAS_BOARD_MEMBER]-(p)\nRETURN p.name AS person, o.name AS organization\nLIMIT 3",
+      "typeql": "match\n  $p isa person;\n  $o isa organization;\n  (investor: $p, organization: $o) isa invested_in;\n(organization: $o, member: $p) isa board_member_of; limit 3;\nfetch { \"person\": $p.name, \"organization\": $o.name };",
+      "checks_failed": [
+        "cypher_wrong_direction",
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_INVESTOR]->(Organization) but schema says Organization->Person",
+        "Cypher has (Organization)-[:HAS_BOARD_MEMBER]->(Person) but schema says Person->Organization"
+      ]
+    },
+    {
+      "index": 256,
+      "question": "Which countries host organizations that have a revenue over 50 million?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country)\nWHERE o.revenue > 5e7\nRETURN DISTINCT c.name AS country",
+      "typeql": "match\n  $o isa organization;\n  $c isa country;\n  $o has revenue $o_revenue;\n  $o_revenue > 50000000;\n  $city isa city; (organization: $o, city: $city) isa located_in;\n(child: $city, parent: $c) isa location-contains; fetch { \"country\": $c.country_name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 50000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 266,
+      "question": "What is the summary description of the organization with the lowest number of employees?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.nbrEmployees IS NOT NULL\nRETURN o.summary AS summary\nORDER BY o.nbrEmployees\nLIMIT 1",
+      "typeql": "match\n  $o isa organization;\n  $o has nbr_employees $o_nbr_employees;\nsort $o_nbr_employees asc;\nlimit 1;\nfetch { \"summary\": $o.summary };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 272,
+      "question": "Who are the investors of organizations that have been dissolved?",
+      "cypher": "MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization)\nWHERE o.isDissolved IS NOT NULL AND o.isDissolved = true\nRETURN p.name AS investor, o.name AS dissolved_organization",
+      "typeql": "match\n  $p isa person;\n  $o isa organization;\n  (investor: $p, organization: $o) isa invested_in;\n  $o has is_dissolved $o_is_dissolved;\n  $o has is_dissolved true;\nfetch { \"investor\": $p.name, \"dissolved_organization\": $o.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_INVESTOR]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 275,
+      "question": "Which organizations have a city as their headquarters and have a revenue of over 1 million?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City) \nWHERE o.revenue > 1E6\nRETURN o.name AS organization, c.name AS city, o.revenue AS revenue",
+      "typeql": "match\n  $o isa organization;\n  $c isa city;\n  (organization: $o, city: $c) isa located_in;\n  $o has revenue $o_revenue;\n  $o_revenue > 1000000;\nfetch { \"organization\": $o.name, \"city\": $c.city_name, \"revenue\": $o.revenue };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 1000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 286,
+      "question": "Who are the top 3 investors in terms of the number of organizations they invest in?",
+      "cypher": "MATCH (i:Person)-[:HAS_INVESTOR]->(o:Organization)\nWITH i, count(o) as num_investments\nORDER BY num_investments DESC\nLIMIT 3\nRETURN i.name as investor, num_investments",
+      "typeql": "match\n  $i isa person;\n  $o isa organization;\n  (investor: $i, organization: $o) isa invested_in;\nreduce $num_investments = count($o) groupby $i;\nsort $num_investments desc;\nlimit 3;\nfetch { \"investor\": $i.name, \"num_investments\": $num_investments };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_INVESTOR]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 333,
+      "question": "Which 3 people are mentioned as investors in multiple organizations?",
+      "cypher": "MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization)\nWITH p, count(o) as num_orgs_invested\nWHERE num_orgs_invested > 1\nRETURN p.name as person, num_orgs_invested as number_of_organizations_invested_in\nORDER BY num_orgs_invested DESC\nLIMIT 3",
+      "typeql": "match\n  $p isa person;\n  $o isa organization;\n  (investor: $p, organization: $o) isa invested_in;\nreduce $num_orgs_invested = count($o) groupby $p;\nmatch $num_orgs_invested > 1;\nsort $num_orgs_invested desc;\nlimit 3;\nfetch { \"person\": $p.name, \"number_of_organizations_invested_in\": $num_orgs_invested };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_INVESTOR]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 367,
+      "question": "Name the top 3 organizations in terms of revenue that are headquartered in countries with developing economies.",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country)\nWHERE c.name IN ['China', 'India', 'Brazil', 'Russia', 'Mexico', 'Indonesia', 'Turkey']\n  AND o.revenue IS NOT NULL\nRETURN o.name AS organization, o.revenue AS revenue\nORDER BY o.revenue DESC\nLIMIT 3",
+      "typeql": "match\n  $o isa organization, has name $on;\n  $c isa country, has country_name $cn;\n  $city isa city;\n  (organization: $o, city: $city) isa located_in;\n  (child: $city, parent: $c) isa location-contains;\n  { $cn like \"China\"; } or { $cn like \"India\"; } or { $cn like \"Brazil\"; } or { $cn like \"Russia\"; } or { $cn like \"Mexico\"; } or { $cn like \"Indonesia\"; } or { $cn like \"Turkey\"; };\n  $o has revenue $r;\nsort $r desc;\nlimit 3;\nfetch { \"organization\": $on, \"revenue\": $r };",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 369,
+      "question": "List the first 3 articles that mention organizations with a significant number of layoffs in the past year.",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization)\nWHERE o.nbrEmployees IS NOT NULL\n  AND exists {\n    (o)-[:HAS_SUBSIDIARY*]->(sub:Organization)\n    WHERE sub.nbrEmployees < o.nbrEmployees * 0.9\n  }\nRETURN a.title, a.summary, a.date\nORDER BY a.date DESC\nLIMIT 3",
+      "typeql": "match\n  $a isa article;\n  $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;\n  (article: $a, mentioned: $o) isa mentions;\n  $a has date $a_date;\nsort $a_date desc;\nlimit 3;\nfetch { \"title\": $a.title, \"article_summary\": $a.article_summary, \"date\": $a.date };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 370,
+      "question": "Name the first 3 organizations that have a CEO who has authored a book on leadership.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nWHERE EXISTS {\n  (ceo)-[:HAS_AUTHORED]->(:Book)-[:HAS_CATEGORY]->(:Category {name: 'Leadership'})\n}\nRETURN o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $ceo isa person;\n  (organization: $o, ceo: $ceo) isa ceo_of;\n  $ic isa industry_category; (organization: $o, category: $ic) isa in_category;\nlimit 3;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_invalid_label",
+        "cypher_invalid_label",
+        "cypher_invalid_rel_type"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references label \"Category\" not in Neo4j schema (valid: ['Article', 'Chunk', 'City', 'Country', 'Fewshot', 'IndustryCategory', 'Organization', 'Person'])",
+        "Cypher references label \"Book\" not in Neo4j schema (valid: ['Article', 'Chunk', 'City', 'Country', 'Fewshot', 'IndustryCategory', 'Organization', 'Person'])",
+        "Cypher references relationship type \"HAS_AUTHORED\" not in Neo4j schema (valid: ['HAS_BOARD_MEMBER', 'HAS_CATEGORY', 'HAS_CEO', 'HAS_CHILD', 'HAS_CHUNK', 'HAS_COMPETITOR', 'HAS_INVESTOR', 'HAS_PARENT', 'HAS_SUBSIDIARY', 'HAS_SUPPLIER', 'IN_CITY', 'IN_COUNTRY', 'MENTIONS'])"
+      ]
+    },
+    {
+      "index": 371,
+      "question": "Name the first 3 organizations that have a CEO who has authored a book on leadership.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nWHERE EXISTS {\n  (ceo)-[:HAS_AUTHORED]->(:Book)-[:HAS_CATEGORY]->(:Category {name: 'Leadership'})\n}\nRETURN o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $ceo isa person;\n  (organization: $o, ceo: $ceo) isa ceo_of;\n  $ic isa industry_category; (organization: $o, category: $ic) isa in_category;\nlimit 3;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_invalid_label",
+        "cypher_invalid_label",
+        "cypher_invalid_rel_type"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references label \"Category\" not in Neo4j schema (valid: ['Article', 'Chunk', 'City', 'Country', 'Fewshot', 'IndustryCategory', 'Organization', 'Person'])",
+        "Cypher references label \"Book\" not in Neo4j schema (valid: ['Article', 'Chunk', 'City', 'Country', 'Fewshot', 'IndustryCategory', 'Organization', 'Person'])",
+        "Cypher references relationship type \"HAS_AUTHORED\" not in Neo4j schema (valid: ['HAS_BOARD_MEMBER', 'HAS_CATEGORY', 'HAS_CEO', 'HAS_CHILD', 'HAS_CHUNK', 'HAS_COMPETITOR', 'HAS_INVESTOR', 'HAS_PARENT', 'HAS_SUBSIDIARY', 'HAS_SUPPLIER', 'IN_CITY', 'IN_COUNTRY', 'MENTIONS'])"
+      ]
+    },
+    {
+      "index": 372,
+      "question": "Name the first 3 organizations that have a CEO who has authored a book on leadership.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nWHERE EXISTS {\n  (ceo)-[:HAS_AUTHORED]->(:Book)-[:HAS_CATEGORY]->(:Category {name: 'Leadership'})\n}\nRETURN o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $ceo isa person;\n  (organization: $o, ceo: $ceo) isa ceo_of;\n  $ic isa industry_category; (organization: $o, category: $ic) isa in_category;\nlimit 3;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_invalid_label",
+        "cypher_invalid_label",
+        "cypher_invalid_rel_type"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references label \"Category\" not in Neo4j schema (valid: ['Article', 'Chunk', 'City', 'Country', 'Fewshot', 'IndustryCategory', 'Organization', 'Person'])",
+        "Cypher references label \"Book\" not in Neo4j schema (valid: ['Article', 'Chunk', 'City', 'Country', 'Fewshot', 'IndustryCategory', 'Organization', 'Person'])",
+        "Cypher references relationship type \"HAS_AUTHORED\" not in Neo4j schema (valid: ['HAS_BOARD_MEMBER', 'HAS_CATEGORY', 'HAS_CEO', 'HAS_CHILD', 'HAS_CHUNK', 'HAS_COMPETITOR', 'HAS_INVESTOR', 'HAS_PARENT', 'HAS_SUBSIDIARY', 'HAS_SUPPLIER', 'IN_CITY', 'IN_COUNTRY', 'MENTIONS'])"
+      ]
+    },
+    {
+      "index": 394,
+      "question": "What are the names of organizations that have a revenue greater than 100 million?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.revenue > 1E8\nRETURN o.name",
+      "typeql": "match\n  $o isa organization;\n  $o has revenue $o_revenue;\n  $o_revenue > 100000000;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 401,
+      "question": "Name persons who are board members of more than three organizations.",
+      "cypher": "MATCH (p:Person)-[:HAS_BOARD_MEMBER]->(o:Organization)\nWITH p, count(o) as num_orgs\nWHERE num_orgs > 3\nRETURN p.name as person_name, num_orgs as number_of_organizations",
+      "typeql": "match\n  $p isa person, has name $pn;\n  $o1 isa organization;\n  $o2 isa organization;\n  $o3 isa organization;\n  $o4 isa organization;\n  (organization: $o1, member: $p) isa board_member_of;\n  (organization: $o2, member: $p) isa board_member_of;\n  (organization: $o3, member: $p) isa board_member_of;\n  (organization: $o4, member: $p) isa board_member_of;\n  $o1 has organization_id $id1;\n  $o2 has organization_id $id2;\n  $o3 has organization_id $id3;\n  $o4 has organization_id $id4;\n  $id1 != $id2;\n  $",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_BOARD_MEMBER]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 403,
+      "question": "What are the names of organizations with suppliers that have a revenue above 50 million?",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUPPLIER]->(s:Organization)\nWHERE s.revenue > 5e7\nRETURN o.name",
+      "typeql": "match\n  $o isa organization;\n  $s isa organization;\n  (customer: $o, supplier: $s) isa supplies;\n  $s has revenue $s_revenue;\n  $s_revenue > 50000000;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 50000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 407,
+      "question": "Which organizations are mentioned in articles published after 2020?",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization) WHERE a.date > date(\"2020-01-01\") RETURN DISTINCT o",
+      "typeql": "match\n  $o isa organization;\n  $a isa article;\n  (article: $a, mentioned: $o) isa mentions;\nreduce $mentionCount = count($a) groupby $o;\nlimit 3;\nfetch { \"organization\": $o.name, \"mentionCount\": $mentionCount };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 413,
+      "question": "Which organizations are both suppliers and competitors to other organizations?",
+      "cypher": "MATCH (o1:Organization)-[:HAS_SUPPLIER]->(o2:Organization) WHERE (o1)-[:HAS_COMPETITOR]->(o2) RETURN o1.name AS org1, o2.name AS org2",
+      "typeql": "match $o1 isa organization; $o2 isa organization; (customer: $o1, supplier: $o2) isa supplies; (competitor: $o1, competitor: $o2) isa competes_with; fetch { \"org1\": $o1.name, \"org2\": $o2.name };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 428,
+      "question": "Which persons are investors in organizations that have a revenue over 100 million?",
+      "cypher": "MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization) WHERE o.revenue > 1E8 RETURN p.name AS investor, o.name AS organization, o.revenue AS revenue",
+      "typeql": "match\n  $o isa organization;\n  $investor isa person;\n  (organization: $o, investor: $investor) isa invested_in;\n  $o has revenue $o_revenue;\n  $o_revenue > 100000000;\nfetch { \"investor\": $investor.name, \"organization\": $o.name, \"revenue\": $o.revenue };",
+      "checks_failed": [
+        "cypher_missing_threshold",
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher",
+        "Cypher has (Person)-[:HAS_INVESTOR]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 436,
+      "question": "Which organizations have a CEO who has written an article?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)<-[:AUTHOR]-(a:Article) RETURN o.name AS organization, ceo.name AS ceo, a.title AS article",
+      "typeql": "match $o isa organization; $ceo isa person; $a isa article; (organization: $o, ceo: $ceo) isa ceo_of; fetch { \"organization\": $o.name, \"ceo\": $ceo.name, \"article\": $a.title };",
+      "checks_failed": [
+        "cypher_invalid_rel_type"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references relationship type \"AUTHOR\" not in Neo4j schema (valid: ['HAS_BOARD_MEMBER', 'HAS_CATEGORY', 'HAS_CEO', 'HAS_CHILD', 'HAS_CHUNK', 'HAS_COMPETITOR', 'HAS_INVESTOR', 'HAS_PARENT', 'HAS_SUBSIDIARY', 'HAS_SUPPLIER', 'IN_CITY', 'IN_COUNTRY', 'MENTIONS'])"
+      ]
+    },
+    {
+      "index": 443,
+      "question": "Name the CEOs of the top 5 organizations by number of employees.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nWHERE o.nbrEmployees IS NOT NULL\nRETURN ceo.name AS ceoName, o.name AS orgName, o.nbrEmployees AS numEmployees\nORDER BY o.nbrEmployees DESC\nLIMIT 5",
+      "typeql": "match\n  $o isa organization;\n  $ceo isa person;\n  (organization: $o, ceo: $ceo) isa ceo_of;\n  $o has nbr_employees $o_nbr_employees;\nsort $o_nbr_employees desc;\nlimit 5;\nfetch { \"ceoName\": $ceo.name, \"orgName\": $o.name, \"numEmployees\": $o.nbr_employees };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 450,
+      "question": "Which organizations have a CEO who is also an investor in other organizations?",
+      "cypher": "MATCH (ceo:Person)<-[:HAS_CEO]-(org:Organization)-[:HAS_INVESTOR]->(investedOrg:Organization) WHERE (ceo)-[:HAS_INVESTOR]->(investedOrg) RETURN org.name AS organization, ceo.name AS ceo, investedOrg.name AS investedOrganization",
+      "typeql": "match $ceo isa person; $org isa organization; $investedOrg isa organization; (organization: $org, ceo: $ceo) isa ceo_of; (organization: $org, investor: $ceo) isa invested_in; fetch { \"organization\": $org.name, \"ceo\": $ceo.name, \"investedOrganization\": $investedOrg.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_INVESTOR]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 451,
+      "question": "List the organizations that have both a high revenue and a high number of employees.",
+      "cypher": "MATCH (o:Organization) WHERE o.revenue > 1E8 AND o.nbrEmployees > 1000 ... ORDER BY o.revenue DESC, o.nbrEmployees DESC",
+      "typeql": "match $o isa organization; $o has revenue $o_revenue; $o has nbr_employees $o_nbr_employees; $o_revenue > 100000000; $o_nbr_employees > 1000; sort $o_revenue desc; fetch { \"organization\": $o.name, \"revenue\": $o.revenue, \"employees\": $o.nbr_employees };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 478,
+      "question": "Who are the CEOs of the top 3 public organizations by number of employees?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nWHERE o.isPublic = true AND o.nbrEmployees IS NOT NULL\nWITH o, ceo\nORDER BY o.nbrEmployees DESC\nLIMIT 3\nRETURN o.name AS organization, ceo.name AS ceo",
+      "typeql": "match\n  $o isa organization;\n  $ceo isa person;\n  (organization: $o, ceo: $ceo) isa ceo_of;\n  $o has is_public true;\n  $o has nbr_employees $o_nbr_employees;\nsort $o_nbr_employees desc;\nlimit 3;\nfetch { \"organization\": $o.name, \"ceo\": $ceo.name };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 483,
+      "question": "Who are the top 3 investors in the tech industry?",
+      "cypher": "MATCH (i:Person)-[:HAS_INVESTOR]->(o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory)\nWHERE c.name CONTAINS 'Tech'\nWITH i, count(o) as investments\nORDER BY investments DESC\nLIMIT 3\nRETURN i.name as investor, investments",
+      "typeql": "match\n  $i isa person;\n  $o isa organization;\n  $c isa industry_category;\n  (investor: $i, organization: $o) isa invested_in;\n  $c has industry_category_name $c_industry_category_name;\n  $c_industry_category_name contains \"Tech\";\n  (organization: $o, category: $c) isa in_category;\nreduce $investments = count($o) groupby $i;\nsort $investments desc;\nlimit 3;\nfetch { \"investor\": $i.name, \"investments\": $investments };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_INVESTOR]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 491,
+      "question": "List the top 5 organizations by number of employees that are located in a country with 'America' in its name.",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country) WHERE c.name CONTAINS 'America' RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees ORDER BY o.nbrEmployees DESC LIMIT 5",
+      "typeql": "match $o isa organization; $co isa country; $city isa city; (organization: $o, city: $city) isa located_in; (child: $city, parent: $co) isa location-contains; $co has country_name $c_country_name; $c_country_name contains \"America\"; $o has nbr_employees $o_nbr_employees; sort $o_nbr_employees desc; limit 5; fetch { \"organization\": $o.name, \"numberOfEmployees\": $o.nbr_employees };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 503,
+      "question": "Who are the first 3 board members of organizations that have a revenue of over 1 million?",
+      "cypher": "MATCH (o:Organization)-[:HAS_BOARD_MEMBER]->(p:Person) WHERE o.revenue > 1e6 RETURN p.name AS boardMember, o.name AS organization LIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (organization: $o, member: $p) isa board_member_of;\n  $o has revenue $o_revenue;\n  $o_revenue > 1000000;\nlimit 3;\nfetch { \"boardMember\": $p.name, \"organization\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 1000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 507,
+      "question": "Identify the first 3 organizations that have both a subsidiary and a supplier.",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(:Organization)\nWHERE EXISTS {(o)-[:HAS_SUPPLIER]->(:Organization)}\nRETURN o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;\n  (customer: $o, supplier: $subsidiary) isa supplies;\nlimit 3;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 510,
+      "question": "What are the names of the first 3 'Electronic Products Manufacturers' with a revenue of over 500 million?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Electronic Products Manufacturers'}) WHERE o.revenue > 5e8 RETURN o.name LIMIT 3",
+      "typeql": "match $o isa organization; $c isa industry_category, has industry_category_name \"Electronic Products Manufacturers\"; (organization: $o, category: $c) isa in_category; $o has revenue $o_revenue; $o_revenue > 500000000; limit 3; fetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 500000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 537,
+      "question": "What is the summary of the person with ID 'Eaf0bpz6NNoqLVUCqNZPAew'?",
+      "cypher": "MATCH (p:Person {id: 'Eaf0bpz6NNoqLVUCqNZPAew'})\nRETURN p.summary",
+      "typeql": "match\n  $o isa organization;\n  $a isa article;\n  (article: $a, mentioned: $o) isa mentions;\nreduce $mentionCount = count($a) groupby $o;\nsort $mentionCount desc;\nlimit 3;\nfetch { \"organization\": $o.name, \"mentionCount\": $mentionCount };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql",
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()",
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 541,
+      "question": "Provide the names and IDs of the first 3 persons who are CEOs of public companies.",
+      "cypher": "MATCH (p:Person)-[:HAS_CEO]-(o:Organization)\nWHERE o.isPublic = true\nRETURN p.name AS name, p.id AS id\nLIMIT 3",
+      "typeql": "match\n  $p isa person, has name $pn, has person_id $pid;\n  $o isa organization;\n  (organization: $o, ceo: $p) isa ceo_of;\n  $o has is_public true;\nlimit 3;\nfetch { \"name\": $pn, \"id\": $pid };",
+      "checks_failed": [
+        "cypher_missing_return_props"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for \"names and ids\" but neither appears in RETURN"
+      ]
+    },
+    {
+      "index": 549,
+      "question": "List the first 3 organizations that have an investor who is a person.",
+      "cypher": "MATCH (o:Organization)<-[:HAS_INVESTOR]-(p:Person)\nRETURN o.name AS organization, p.name AS investor\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (investor: $p, organization: $o) isa invested_in;\nlimit 3;\nfetch { \"organization\": $o.name, \"investor\": $p.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Organization)-[:HAS_INVESTOR]->(Person) but schema says Person->Organization"
+      ]
+    },
+    {
+      "index": 554,
+      "question": "Who are the board members of the first 3 public organizations?",
+      "cypher": "MATCH (o:Organization) WHERE o.isPublic = true ... MATCH (o)-[:HAS_BOARD_MEMBER]->(p:Person) RETURN o.name AS organization, collect(p.name) AS board_members",
+      "typeql": "match $o isa organization; $p isa person; (organization: $o, member: $p) isa board_member_of; $o has is_public $o_is_public; $o has is_public true; $o has name $o_name; sort $o_name asc; limit 3; fetch { \"organization\": $o.name };",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 564,
+      "question": "What are the top 5 organizations by number of employees?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.nbrEmployees IS NOT NULL\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees\nORDER BY o.nbrEmployees DESC\nLIMIT 5",
+      "typeql": "match $o isa organization, has name $n; $a isa article; (article: $a, mentioned: $o) isa mentions; reduce $mentions = count($a) groupby $o; match $o has name $n; sort $mentions desc; limit 5; fetch { \"organization\": $n, \"mentions\": $mentions };",
+      "checks_failed": [
+        "cypher_missing_count",
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()",
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 574,
+      "question": "List the first 3 organizations that have been competitors for more than 5 years.",
+      "cypher": "MATCH (o1:Organization)-[c:HAS_COMPETITOR]->(o2:Organization) WHERE c.since < date() - duration('P5Y') RETURN o1, o2 LIMIT 3",
+      "typeql": "match $o1 isa organization; $o2 isa organization; (competitor: $o1, competitor: $o2) isa competes_with; limit 3; fetch { \"o1\": $o1, \"o2\": $o2 };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 5 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 581,
+      "question": "Name the first 3 organizations that have a CEO and a board member with different nationalities.",
+      "cypher": "MATCH ... (ceo)-[:HAS_NATIONALITY]->(ceoCountry:Country), (board)-[:HAS_NATIONALITY]->(boardCountry:Country) WHERE ceoCountry <> boardCountry",
+      "typeql": "match $o isa organization; $ceo isa person; $board isa person; $ceoCountry isa country; $boardCountry isa country; (organization: $o, ceo: $ceo) isa ceo_of; (organization: $o, member: $board) isa board_member_of; limit 3; fetch { \"organization\": $o.name, \"ceo\": $ceo.name, \"ceoCountry\": $ceoCountry.country_name };",
+      "checks_failed": [
+        "cypher_invalid_rel_type"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references relationship type \"HAS_NATIONALITY\" not in Neo4j schema (valid: ['HAS_BOARD_MEMBER', 'HAS_CATEGORY', 'HAS_CEO', 'HAS_CHILD', 'HAS_CHUNK', 'HAS_COMPETITOR', 'HAS_INVESTOR', 'HAS_PARENT', 'HAS_SUBSIDIARY', 'HAS_SUPPLIER', 'IN_CITY', 'IN_COUNTRY', 'MENTIONS'])"
+      ]
+    },
+    {
+      "index": 622,
+      "question": "Which organization has the highest number of employees and is located in a capital city?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City)-[:IN_COUNTRY]->(country:Country)\nWHERE c.name = country.name\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees\nORDER BY o.nbrEmployees DESC\nLIMIT 1",
+      "typeql": "match\n  $o isa organization, has name $on;\n  $c isa city;\n  (organization: $o, city: $c) isa located_in;\n  $o has nbr_employees $ne;\nsort $ne desc;\nlimit 1;\nfetch { \"organization\": $on, \"numberOfEmployees\": $ne };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 642,
+      "question": "What are the relationships of 'Julie Spellman Sweet' within the context of the organization she is associated with?",
+      "cypher": "MATCH (p:Person {name: 'Julie Spellman Sweet'})-[r]-(o:Organization)\nWHERE p.name IS NOT NULL AND o.name IS NOT NULL\nRETURN p, r, o",
+      "typeql": "match\n  $c isa city;\n  $o isa organization;\n  $ic isa industry_category;\n  (organization: $o, city: $c) isa located_in;\n  $ic has industry_category_name $ic_industry_category_name;\n  $ic_industry_category_name contains \"Environmental\";\n  (organization: $o, category: $ic) isa in_category;\nreduce $orgCount = count($o) groupby $c;\nsort $orgCount desc;\nlimit 3;\nfetch { \"city\": $c.city_name, \"orgCount\": $orgCount };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql",
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()",
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 646,
+      "question": "List the cities where organizations with a summary mentioning 'financial services' are based.",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City)\nWHERE o.summary CONTAINS 'financial services'\nRETURN DISTINCT c.name",
+      "typeql": "match\n  $c isa city;\n  $o isa organization;\n  $ic isa industry_category;\n  (organization: $o, city: $c) isa located_in;\n  $ic has industry_category_name $ic_industry_category_name;\n  $ic_industry_category_name contains \"Food\";\n  (organization: $o, category: $ic) isa in_category;\nreduce $orgCount = count($o) groupby $c;\nsort $orgCount desc;\nlimit 3;\nfetch { \"city\": $c.city_name, \"orgCount\": $orgCount };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql",
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()",
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 649,
+      "question": "Which organizations have a CEO who is also a board member of another organization?",
+      "cypher": "MATCH (o1:Organization)-[:HAS_CEO]->(ceo:Person),\n      (ceo)-[:HAS_BOARD_MEMBER]->(o2:Organization)\nWHERE o1 <> o2\nRETURN o1.name AS org1, ceo.name AS ceo_name, o2.name AS org2",
+      "typeql": "match\n  $o1 isa organization, has name $on1;\n  $ceo isa person, has name $ceon;\n  $o2 isa organization, has name $on2;\n  (organization: $o1, ceo: $ceo) isa ceo_of;\n  (organization: $o2, member: $ceo) isa board_member_of;\n  $o1 has organization_id $id1;\n  $o2 has organization_id $id2;\n  $id1 != $id2;\nfetch { \"org1\": $on1, \"ceo_name\": $ceon, \"org2\": $on2 };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_BOARD_MEMBER]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 659,
+      "question": "Which organizations have investors who are also board members?",
+      "cypher": "MATCH (o:Organization)<-[:HAS_INVESTOR]-(p:Person)-[:HAS_BOARD_MEMBER]->(o) RETURN o.name AS organization, p.name AS investor_board_member",
+      "typeql": "match $o isa organization; $p isa person; (investor: $p, organization: $o) isa invested_in; (organization: $o, member: $p) isa board_member_of; fetch { \"organization\": $o.name, \"investor_board_member\": $p.name };",
+      "checks_failed": [
+        "cypher_wrong_direction",
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_BOARD_MEMBER]->(Organization) but schema says Organization->Person",
+        "Cypher has (Organization)-[:HAS_INVESTOR]->(Person) but schema says Person->Organization"
+      ]
+    },
+    {
+      "index": 690,
+      "question": "Name 3 countries hosting organizations with revenue over 100 million.",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country) WHERE o.revenue > 1E8 RETURN DISTINCT c.name LIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $c isa country, has country_name $cn;\n  $city isa city;\n  (organization: $o, city: $city) isa located_in;\n  (child: $city, parent: $c) isa location-contains;\n  $o has revenue $r;\n  $r > 100000000;\nlimit 3;\nfetch { \"country\": $cn };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 698,
+      "question": "Which 3 organizations have changed their CEOs in the last year?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(p:Person)\nWHERE p.name IS NOT NULL\nWITH o\nORDER BY o.name\nLIMIT 3\nMATCH (o)-[:MENTIONED_IN]->(a:Article)\nWHERE a.date >= datetime() - duration('P1Y') \nRETURN DISTINCT o.name AS organization, a.title AS article_title",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (organization: $o, ceo: $p) isa ceo_of;\n  $a isa article;\n  $p has name $p_name;\n  $o has name $o_name;\nsort $o_name asc;\nlimit 3;\nfetch { \"organization\": $o.name, \"article_title\": $a.title };",
+      "checks_failed": [
+        "cypher_invalid_rel_type"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references relationship type \"MENTIONED_IN\" not in Neo4j schema (valid: ['HAS_BOARD_MEMBER', 'HAS_CATEGORY', 'HAS_CEO', 'HAS_CHILD', 'HAS_CHUNK', 'HAS_COMPETITOR', 'HAS_INVESTOR', 'HAS_PARENT', 'HAS_SUBSIDIARY', 'HAS_SUPPLIER', 'IN_CITY', 'IN_COUNTRY', 'MENTIONS'])"
+      ]
+    },
+    {
+      "index": 713,
+      "question": "Find the top 5 organizations with revenue over 100 million that have subsidiaries.",
+      "cypher": "MATCH (o:Organization)\nWHERE o.revenue > 1E8 AND EXISTS {\n  (o)-[:HAS_SUBSIDIARY]->(:Organization)\n}\nRETURN o.name AS organization, o.revenue AS revenue\nORDER BY o.revenue DESC\nLIMIT 5",
+      "typeql": "match\n  $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of;\n  $o has revenue $o_revenue;\n  $o_revenue > 100000000;\nsort $o_revenue desc;\nlimit 5;\nfetch { \"organization\": $o.name, \"revenue\": $o.revenue };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 734,
+      "question": "List the top 5 CEOs of organizations with revenue greater than 50 million.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person) WHERE o.revenue > 5e7 RETURN ceo.name AS ceoName, o.name AS orgName, o.revenue AS revenue ORDER BY o.revenue DESC LIMIT 5",
+      "typeql": "match $o isa organization; $ceo isa person; (organization: $o, ceo: $ceo) isa ceo_of; $o has revenue $o_revenue; $o_revenue > 50000000; sort $o_revenue desc; limit 5; fetch { \"ceoName\": $ceo.name, \"orgName\": $o.name, \"revenue\": $o.revenue };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 50000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 744,
+      "question": "Who are the top 3 parents of 'Julie Spellman Sweet'?",
+      "cypher": "MATCH (p:Person {name: 'Julie Spellman Sweet'})<-[:HAS_CHILD]-(parent:Person) RETURN parent.name LIMIT 3",
+      "typeql": "match $p isa person, has name \"Julie Spellman Sweet\"; $parent isa person; (parent: $p, child: $parent) isa parent_of; limit 3; fetch { \"name\": $parent.name };",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 750,
+      "question": "Which organizations in Rome have a 'Software' category, list the top 3.",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(:City {name: 'Rome'})\nWHERE (o)-[:HAS_CATEGORY]->(:IndustryCategory {name: 'Software'})\nRETURN o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $city isa city, has city_name \"Rome\"; (organization: $o, city: $city) isa located_in;\n  $ic isa industry_category, has industry_category_name \"Software\"; (organization: $o, category: $ic) isa in_category;\nlimit 3;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 760,
+      "question": "Which organizations have a board member named 'Julie Spellman Sweet', list the top 3.",
+      "cypher": "MATCH (p:Person {name: 'Julie Spellman Sweet'})<-[:HAS_BOARD_MEMBER]-(o:Organization)\nRETURN o.name AS organization\nLIMIT 3",
+      "typeql": "match\n  $p isa person, has name \"Julie Spellman Sweet\";\n  $o isa organization;\n  (organization: $o, member: $p) isa board_member_of;\nlimit 3;\nfetch { \"organization\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 761,
+      "question": "List the top 5 organizations that have an investor named 'Julie Spellman Sweet'.",
+      "cypher": "MATCH (p:Person {name: 'Julie Spellman Sweet'})-[:HAS_INVESTOR]->(o:Organization)\nRETURN o.name AS organization, o.summary AS summary\nLIMIT 5",
+      "typeql": "match\n  $p isa person, has name \"Julie Spellman Sweet\";\n  $o isa organization;\n  (investor: $p, organization: $o) isa invested_in;\nlimit 5;\nfetch { \"organization\": $o.name, \"summary\": $o.summary };",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 784,
+      "question": "List the organizations that have a sentiment score above 0.8 in their latest article mention.",
+      "cypher": "MATCH (o:Organization)<-[:MENTIONS]-(a:Article)\nWITH o, max(a.date) AS latestDate\nMATCH (o)<-[:MENTIONS]-(article:Article {date: latestDate})\nWHERE article.sentiment > 0.8\nRETURN o.name AS organization, article.title AS latestArticle, article.sentiment AS sentiment",
+      "typeql": "with fun latest_article_date($org: organization) -> datetime:\n  match\n    $a isa article, has date $d;\n    mentions (article: $a, mentioned: $org);\n  return max($d);\nmatch\n  $o isa organization;\n  $a isa article, has date $d, has sentiment $s;\n  mentions (article: $a, mentioned: $o);\n  $d == latest_article_date($o);\n  $s > 0.8;\nfetch { \"organization\": $o.name, \"latestArticle\": $a.title, \"sentiment\": $s };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 790,
+      "question": "Who are the investors in the organization 'Accenture' who are also people?",
+      "cypher": "MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization {name: 'Accenture'})\nRETURN p.name AS investor",
+      "typeql": "match\n  $p isa person;\n  $o isa organization, has name \"Accenture\";\n  (investor: $p, organization: $o) isa invested_in;\nfetch { \"investor\": $p.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_INVESTOR]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 792,
+      "question": "Which organizations have more than 10,000 employees and are located in a city that is not the capital of a country?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City)-[:IN_COUNTRY]->(country:Country) WHERE o.nbrEmployees > 10000 AND NOT EXISTS {(c)<-[:CAPITAL_OF]-(country)} RETURN o.name AS organization, c.name AS city, country.name AS country",
+      "typeql": "match $o isa organization; $c isa city; $country isa country; (organization: $o, city: $c) isa located_in; $o has nbr_employees $o_nbr_employees; $o_nbr_employees > 10000; (child: $c, parent: $country) isa location-contains; fetch { \"organization\": $o.name, \"city\": $c.city_name, \"country\": $country.country_name };",
+      "checks_failed": [
+        "cypher_invalid_rel_type"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references relationship type \"CAPITAL_OF\" not in Neo4j schema (valid: ['HAS_BOARD_MEMBER', 'HAS_CATEGORY', 'HAS_CEO', 'HAS_CHILD', 'HAS_CHUNK', 'HAS_COMPETITOR', 'HAS_INVESTOR', 'HAS_PARENT', 'HAS_SUBSIDIARY', 'HAS_SUPPLIER', 'IN_CITY', 'IN_COUNTRY', 'MENTIONS'])"
+      ]
+    },
+    {
+      "index": 795,
+      "question": "What are the names of the top 5 organizations in terms of number of employees?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.nbrEmployees IS NOT NULL\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees\nORDER BY o.nbrEmployees DESC\nLIMIT 5",
+      "typeql": "match\n  $o isa organization, has nbr_employees $ne;\nsort $ne desc;\nlimit 5;\nfetch { \"organization\": $o.name, \"nbr_employees\": $ne };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 823,
+      "question": "Which organizations have a CEO who has authored articles?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)<-[:AUTHOR]-(a:Article) RETURN o.name AS organization, ceo.name AS ceo, a.title AS article",
+      "typeql": "match $o isa organization; $ceo isa person; $a isa article; (organization: $o, ceo: $ceo) isa ceo_of; fetch { \"organization\": $o.name, \"ceo\": $ceo.name, \"article\": $a.title };",
+      "checks_failed": [
+        "cypher_invalid_rel_type"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references relationship type \"AUTHOR\" not in Neo4j schema (valid: ['HAS_BOARD_MEMBER', 'HAS_CATEGORY', 'HAS_CEO', 'HAS_CHILD', 'HAS_CHUNK', 'HAS_COMPETITOR', 'HAS_INVESTOR', 'HAS_PARENT', 'HAS_SUBSIDIARY', 'HAS_SUPPLIER', 'IN_CITY', 'IN_COUNTRY', 'MENTIONS'])"
+      ]
+    },
+    {
+      "index": 825,
+      "question": "Which organizations have CEOs that are also board members of other organizations?",
+      "cypher": "MATCH (o1:Organization)-[:HAS_CEO]->(p:Person) WHERE EXISTS { (p)-[:HAS_BOARD_MEMBER]->(o2:Organization) WHERE o1 <> o2 } RETURN o1.name AS organization, p.name AS ceo_and_board_member",
+      "typeql": "match $o1 isa organization; $p isa person; (organization: $o1, ceo: $p) isa ceo_of; (organization: $o1, member: $p) isa board_member_of; fetch { \"organization\": $o1.name, \"ceo_and_board_member\": $p.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_BOARD_MEMBER]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 851,
+      "question": "Which organizations have a revenue greater than 100 million and are not dissolved?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.revenue > 1E8 AND o.isDissolved IS NOT NULL AND NOT o.isDissolved\nRETURN o",
+      "typeql": "match\n  $o isa organization;\n  $o has revenue $o_revenue;\n  $o_revenue > 100000000;\n  $o has is_dissolved false;\nfetch { \"o\": $o };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 861,
+      "question": "Find the top 3 organizations that have been invested in by more than one person.",
+      "cypher": "MATCH (o:Organization)<-[:HAS_INVESTOR]-(p:Person)\nWITH o, count(p) AS num_investors\nWHERE num_investors > 1\nRETURN o.name AS organization, num_investors\nORDER BY num_investors DESC\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (investor: $p, organization: $o) isa invested_in;\nreduce $num_investors = count($p) groupby $o;\nmatch $num_investors > 1;\nsort $num_investors desc;\nlimit 3;\nfetch { \"organization\": $o.name, \"num_investors\": $num_investors };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Organization)-[:HAS_INVESTOR]->(Person) but schema says Person->Organization"
+      ]
+    },
+    {
+      "index": 866,
+      "question": "What are the names of the people who are board members of at least two different organizations?",
+      "cypher": "MATCH (p:Person)-[:HAS_BOARD_MEMBER]->(o:Organization)\nWITH p, count(o) as num_orgs\nWHERE num_orgs >= 2\nRETURN p.name",
+      "typeql": "match\n  $p isa person, has name $pn;\n  $o1 isa organization;\n  $o2 isa organization;\n  (organization: $o1, member: $p) isa board_member_of;\n  (organization: $o2, member: $p) isa board_member_of;\n  $o1 has organization_id $id1;\n  $o2 has organization_id $id2;\n  $id1 != $id2;\nfetch { \"name\": $pn };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_BOARD_MEMBER]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 872,
+      "question": "List the first 5 people who are investors in more than one organization.",
+      "cypher": "MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization)\nWITH p, count(o) as num_orgs_invested\nWHERE num_orgs_invested > 1\nRETURN p.name as person, num_orgs_invested as number_of_organizations\nORDER BY num_orgs_invested DESC\nLIMIT 5",
+      "typeql": "match\n  $p isa person;\n  $o isa organization;\n  (investor: $p, organization: $o) isa invested_in;\nreduce $num_orgs_invested = count($o) groupby $p;\nmatch $num_orgs_invested > 1;\nsort $num_orgs_invested desc;\nlimit 5;\nfetch { \"person\": $p.name, \"number_of_organizations\": $num_orgs_invested };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_INVESTOR]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 875,
+      "question": "List the first 5 organizations with the most number of employees that have a subsidiary.",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(:Organization)\nWHERE o.nbrEmployees IS NOT NULL\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees\nORDER BY o.nbrEmployees DESC\nLIMIT 5",
+      "typeql": "match\n  $o isa organization, has nbr_employees $ne;\n  $sub isa organization;\n  subsidiary_of (parent: $o, subsidiary: $sub);\nsort $ne desc;\nlimit 5;\nfetch { \"organization\": $o.name, \"nbr_employees\": $ne };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 878,
+      "question": "List the first 5 organizations that have a CEO who has authored an article.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)<-[:AUTHORED]-(a:Article)\nRETURN o.name AS organization, ceo.name AS ceo, a.title AS article\nLIMIT 5",
+      "typeql": "match\n  $o isa organization;\n  $ceo isa person;\n  $a isa article;\n  (organization: $o, ceo: $ceo) isa ceo_of;\nlimit 5;\nfetch { \"organization\": $o.name, \"ceo\": $ceo.name, \"article\": $a.title };",
+      "checks_failed": [
+        "cypher_invalid_rel_type"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references relationship type \"AUTHORED\" not in Neo4j schema (valid: ['HAS_BOARD_MEMBER', 'HAS_CATEGORY', 'HAS_CEO', 'HAS_CHILD', 'HAS_CHUNK', 'HAS_COMPETITOR', 'HAS_INVESTOR', 'HAS_PARENT', 'HAS_SUBSIDIARY', 'HAS_SUPPLIER', 'IN_CITY', 'IN_COUNTRY', 'MENTIONS'])"
+      ]
+    },
+    {
+      "index": 881,
+      "question": "List the first 5 organizations with a revenue greater than 50 million that have a competitor.",
+      "cypher": "MATCH (o:Organization)\nWHERE o.revenue > 5e7 AND EXISTS {\n  (o)-[:HAS_COMPETITOR]->(:Organization)\n}\nRETURN o.name AS organization, o.revenue AS revenue\nLIMIT 5",
+      "typeql": "match\n  $o1 isa organization;\n  $o2 isa organization;\n  (competitor: $o1, competitor: $o2) isa competes_with;\nlimit 5;\nfetch { \"org1\": $o1.name, \"org2\": $o2.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 50000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 887,
+      "question": "What are the names of the organizations that have a supplier with a revenue less than 5 million?",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUPPLIER]->(s:Organization)\nWHERE s.revenue < 5e6\nRETURN o.name",
+      "typeql": "match\n  $o isa organization;\n  $s isa organization;\n  (customer: $o, supplier: $s) isa supplies;\n  $s has revenue $s_revenue;\n  $s_revenue < 5000000;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 5000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 890,
+      "question": "Which organizations have a CEO with the name 'Julie Spellman Sweet' and a revenue greater than 100 million?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'})\nWHERE o.revenue > 1E8\nRETURN o",
+      "typeql": "match\n  $o isa organization, has revenue $r;\n  $r > 100000000;\n  $p isa person, has name \"Julie Spellman Sweet\";\n  ceo_of (organization: $o, ceo: $p);\nfetch { \"organization\": $o.name, \"revenue\": $r };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 898,
+      "question": "List the first 5 organizations that have a supplier with a revenue greater than 100 million.",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUPPLIER]->(s:Organization)\nWHERE s.revenue > 1E8\nRETURN o.name AS organization, s.name AS supplier\nLIMIT 5",
+      "typeql": "match\n  $o isa organization;\n  $s isa organization;\n  (customer: $o, supplier: $s) isa supplies;\n  $s has revenue $s_revenue;\n  $s_revenue > 100000000;\nlimit 5;\nfetch { \"organization\": $o.name, \"supplier\": $s.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 909,
+      "question": "Which organizations have a board member who has authored an article?",
+      "cypher": "MATCH (o:Organization)-[:HAS_BOARD_MEMBER]->(p:Person)<-[:AUTHORED]-(a:Article)\nRETURN DISTINCT o.name AS organization, p.name AS board_member, a.title AS article_title",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  $a isa article;\n  (organization: $o, member: $p) isa board_member_of;\nfetch { \"organization\": $o.name, \"board_member\": $p.name, \"article_title\": $a.title };",
+      "checks_failed": [
+        "cypher_invalid_rel_type"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references relationship type \"AUTHORED\" not in Neo4j schema (valid: ['HAS_BOARD_MEMBER', 'HAS_CATEGORY', 'HAS_CEO', 'HAS_CHILD', 'HAS_CHUNK', 'HAS_COMPETITOR', 'HAS_INVESTOR', 'HAS_PARENT', 'HAS_SUBSIDIARY', 'HAS_SUPPLIER', 'IN_CITY', 'IN_COUNTRY', 'MENTIONS'])"
+      ]
+    },
+    {
+      "index": 912,
+      "question": "What are the names of the organizations that have a subsidiary with a revenue greater than 50 million?",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(s:Organization)\nWHERE s.revenue > 5e7\nRETURN o.name",
+      "typeql": "match\n  $o isa organization;\n  $s isa organization;\n  (parent: $o, subsidiary: $s) isa subsidiary_of;\n  $s has revenue $s_revenue;\n  $s_revenue > 50000000;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 50000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 922,
+      "question": "What are the names of the organizations that have a board member named 'Julie Spellman Sweet' and a revenue greater than 100 million?",
+      "cypher": "MATCH (o:Organization)-[:HAS_BOARD_MEMBER]->(p:Person {name: 'Julie Spellman Sweet'})\nWHERE o.revenue > 1E8\nRETURN o.name",
+      "typeql": "match\n  $o isa organization;\n  $p isa person, has name \"Julie Spellman Sweet\";\n  (organization: $o, member: $p) isa board_member_of;\n  $o has revenue $o_revenue;\n  $o_revenue > 100000000;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 923,
+      "question": "Find the top 3 organizations that have a CEO with a summary mentioning 'Accenture' and a revenue greater than 50 million.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(p:Person)\nWHERE p.summary CONTAINS 'Accenture' AND o.revenue > 5e7\nRETURN o.name AS organization, p.name AS ceo\nORDER BY o.revenue DESC\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (organization: $o, ceo: $p) isa ceo_of;\n  $p has summary $p_summary;\n  $p_summary contains \"Accenture\";\n  $o has revenue $o_revenue;\n  $o_revenue > 50000000;\nsort $o_revenue desc;\nlimit 3;\nfetch { \"organization\": $o.name, \"ceo\": $p.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 50000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 926,
+      "question": "Identify the top 3 organizations that have a subsidiary with the largest number of employees.",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(sub:Organization)\nWHERE sub.nbrEmployees IS NOT NULL\nWITH o, max(sub.nbrEmployees) AS maxEmployees\nORDER BY maxEmployees DESC\nLIMIT 3\nRETURN o.name AS organization, maxEmployees",
+      "typeql": "match\n  $o isa organization;\n  $sub isa organization, has nbr_employees $sub_nbr_employees;\n  (parent: $o, subsidiary: $sub) isa subsidiary_of;\nsort $sub_nbr_employees desc;\nlimit 3;\nfetch { \"organization\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 927,
+      "question": "What are the names of the organizations that have a CEO with a summary mentioning 'Accenture' and a revenue greater than 100 million?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(p:Person)\nWHERE p.summary CONTAINS 'Accenture' AND o.revenue > 1E8\nRETURN o.name",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (organization: $o, ceo: $p) isa ceo_of;\n  $p has summary $p_summary;\n  $p_summary contains \"Accenture\";\n  $o has revenue $o_revenue;\n  $o_revenue > 100000000;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 929,
+      "question": "List the first 5 organizations that have a CEO with a name mentioned in at least two different articles and a revenue greater than 50 million.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nWHERE o.revenue > 5e7\nWITH o, ceo\nMATCH (article1:Article)-[:MENTIONS]->(ceo)\nWITH o, ceo, count(article1) AS mentionCount\nWHERE mentionCount >= 2\nRETURN o.name AS organization, ceo.name AS ceo\nLIMIT 5",
+      "typeql": "match\n  $o isa organization, has name $on;\n  $ceo isa person, has name $ceon;\n  $a1 isa article;\n  $a2 isa article;\n  (organization: $o, ceo: $ceo) isa ceo_of;\n  (article: $a1, mentioned: $o) isa mentions;\n  (article: $a2, mentioned: $o) isa mentions;\n  $a1 has article_id $aid1;\n  $a2 has article_id $aid2;\n  $aid1 != $aid2;\n  $o has revenue $r;\n  $r > 50000000;\nlimit 5;\nfetch { \"organization\": $on, \"ceo\": $ceon };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 50000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 932,
+      "question": "List the first 5 organizations that have a CEO with a name mentioned in more than one article and a revenue greater than 100 million.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nWHERE o.revenue > 1E8\nWITH o, ceo\nMATCH (article:Article)-[:MENTIONS]->(o)\nWHERE article.title CONTAINS ceo.name\nWITH o, ceo, count(article) AS mentionCount\nWHERE mentionCount > 1\nRETURN o.name AS organization, ceo.name AS ceo\nLIMIT 5",
+      "typeql": "match\n  $o isa organization, has name $on;\n  $ceo isa person, has name $ceon;\n  $a1 isa article;\n  $a2 isa article;\n  (organization: $o, ceo: $ceo) isa ceo_of;\n  (article: $a1, mentioned: $o) isa mentions;\n  (article: $a2, mentioned: $o) isa mentions;\n  $a1 has article_id $aid1;\n  $a2 has article_id $aid2;\n  $aid1 != $aid2;\n  $o has revenue $r;\n  $r > 100000000;\nlimit 5;\nfetch { \"organization\": $on, \"ceo\": $ceon };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 53,
+      "question": "Identify organizations that are both suppliers and investors to other organizations.",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUPPLIER]->(s:Organization) \nWHERE EXISTS {(s)-[:HAS_INVESTOR]->(o)}\nRETURN o.name AS organization, s.name AS supplier_investor",
+      "typeql": "match\n$supplier isa organization, has name $sn;\n$customer isa organization;\n$investee isa organization;\nsupplies (supplier: $supplier, customer: $customer);\ninvested_in (organization: $investee, investor: $supplier);\nfetch { \"organization\": $sn };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 70,
+      "question": "Which organizations have foreign investors (investors from a different country)?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c1:Country),\n      (o)<-[:HAS_INVESTOR]-(investor:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c2:Country)\nWHERE c1 <> c2\nRETURN o.name AS organization, c1.name AS organization_country,\n       investor.name AS investor, c2.name AS investor_country",
+      "typeql": "match\n$o isa organization;\n$investor isa organization;\ninvested_in (organization: $o, investor: $investor);\n$c1 isa city; $c2 isa city;\n$country1 isa country; $country2 isa country;\nlocated_in (organization: $o, city: $c1);\nlocated_in (organization: $investor, city: $c2);\nlocation-contains (parent: $country1, child: $c1);\nlocation-contains (parent: $country2, child: $c2);\n$country1 has country_name $cn1;\n$country2 has country_name $cn2;\nnot { $cn1 == $cn2; };\nfetch { \"organization\": $o.name, \"in",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 154,
+      "question": "Identify the first 3 organizations that have the same investor and are competitors.",
+      "cypher": "MATCH (o1:Organization)-[:HAS_INVESTOR]->(investor)<-[:HAS_INVESTOR]-(o2:Organization)\nWHERE (o1)-[:HAS_COMPETITOR]->(o2)\nRETURN o1.name AS Org1, o2.name AS Org2, investor.name AS CommonInvestor\nLIMIT 3",
+      "typeql": "match\n$o1 isa organization, has name $n1;\n$o2 isa organization, has name $n2;\n$investor isa organization, has name $inv_name;\ninvested_in (organization: $o1, investor: $investor);\ninvested_in (organization: $o2, investor: $investor);\ncompetes_with (competitor: $o1, competitor: $o2);\nnot { $o1 is $o2; };\nlimit 3;\nfetch { \"org1\": $n1, \"org2\": $n2, \"investor\": $inv_name };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 212,
+      "question": "Identify the first 3 organizations that have the same investor and are based in 'Italy'.",
+      "cypher": "MATCH (o1:Organization)-[:HAS_INVESTOR]->(investor)<-[:HAS_INVESTOR]-(o2:Organization)\nWHERE o1 <> o2 AND o1.id < o2.id\n  AND (o1)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(:Country {name: 'Italy'})\n  AND (o2)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(:Country {name: 'Italy'})\nRETURN o1.name AS org1, o2.name AS org2, investor.name AS investor\nLIMIT 3",
+      "typeql": "match\n$o1 isa organization, has name $n1;\n$o2 isa organization, has name $n2;\n$investor isa organization, has name $inv_name;\ninvested_in (organization: $o1, investor: $investor);\ninvested_in (organization: $o2, investor: $investor);\n$c1 isa city; $c2 isa city;\n$italy isa country, has country_name \"Italy\";\nlocated_in (organization: $o1, city: $c1);\nlocated_in (organization: $o2, city: $c2);\nlocation-contains (parent: $italy, child: $c1);\nlocation-contains (parent: $italy, child: $c2);\nnot { $o1 ",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 329,
+      "question": "Name the first 3 organizations that are headquartered in cities with more than 5 million inhabitants.",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City)\nWHERE c.population > 5000000\nRETURN o.name\nLIMIT 3",
+      "typeql": "match\n$o isa organization;\n$c isa city, has population $pop;\nlocated_in (organization: $o, city: $c);\n$pop > 5000000;\nlimit 3;\nfetch { \"organization\": $o.name };",
+      "checks_failed": [
+        "cypher_invalid_property"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher accesses c.population but \"population\" is not a property of :City (valid: ['id', 'name', 'summary'])"
+      ]
+    },
+    {
+      "index": 338,
+      "question": "List the names of the cities where the headquarters of the first 5 organizations founded before 1950 are located.",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City)\nWHERE o.foundingDate < date('1950-01-01')\nRETURN c.name\nLIMIT 5",
+      "typeql": "match\n$o isa organization, has founding-date $fd;\n$c isa city;\nlocated_in (organization: $o, city: $c);\n$fd < 1950-01-01T00:00:00;\nlimit 5;\nfetch { \"city\": $c.city_name };",
+      "checks_failed": [
+        "cypher_invalid_property"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher accesses o.foundingDate but \"foundingDate\" is not a property of :Organization (valid: ['id', 'isDissolved', 'isPublic', 'motto', 'name', 'nbrEmployees', 'revenue', 'summary'])"
+      ]
+    },
+    {
+      "index": 356,
+      "question": "Which 3 organizations have the longest history of continuous operation according to their founding dates in the database?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.foundingDate IS NOT NULL\nRETURN o.name AS organization, o.foundingDate AS founded\nORDER BY o.foundingDate\nLIMIT 3",
+      "typeql": "match\n$o isa organization, has founding-date $fd, has name $n;\nsort $fd asc;\nlimit 3;\nfetch { \"organization\": $n, \"founded\": $fd };",
+      "checks_failed": [
+        "cypher_invalid_property"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher accesses o.foundingDate but \"foundingDate\" is not a property of :Organization (valid: ['id', 'isDissolved', 'isPublic', 'motto', 'name', 'nbrEmployees', 'revenue', 'summary'])"
+      ]
+    },
+    {
+      "index": 391,
+      "question": "Which 3 organizations have the most patents filed according to the database?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.nbrPatents IS NOT NULL\nRETURN o.name, o.nbrPatents\nORDER BY o.nbrPatents DESC\nLIMIT 3",
+      "typeql": "match\n$o isa organization, has patent-count $pc, has name $n;\nsort $pc desc;\nlimit 3;\nfetch { \"name\": $n, \"patents\": $pc };",
+      "checks_failed": [
+        "cypher_invalid_property"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher accesses o.nbrPatents but \"nbrPatents\" is not a property of :Organization (valid: ['id', 'isDissolved', 'isPublic', 'motto', 'name', 'nbrEmployees', 'revenue', 'summary'])"
+      ]
+    },
+    {
+      "index": 448,
+      "question": "Which organizations are based in a city with a population less than 100,000?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City)\nWHERE c.population < 100000\nRETURN o.name AS organization, c.name AS city",
+      "typeql": "match\n$o isa organization;\n$c isa city, has population $pop;\n$pop < 100000;\nlocated_in (organization: $o, city: $c);\nfetch { \"organization\": $o.name, \"city\": $c.city_name };",
+      "checks_failed": [
+        "cypher_invalid_property"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher accesses c.population but \"population\" is not a property of :City (valid: ['id', 'name', 'summary'])"
+      ]
+    },
+    {
+      "index": 452,
+      "question": "Which organizations have CEOs who have been in their position for less than 3 years?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(p:Person)\nWHERE p.startDate IS NOT NULL AND duration.between(p.startDate, date()).years < 3\nRETURN o.name AS organization, p.name AS ceo",
+      "typeql": "match\n$o isa organization;\n$p isa person;\n$rel isa ceo_of (organization: $o, ceo: $p);\n$rel has start-date $sd;\n$sd > 2023-01-22T00:00:00;\nfetch { \"organization\": $o.name, \"ceo\": $p.name };",
+      "checks_failed": [
+        "cypher_invalid_property"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher accesses p.startDate but \"startDate\" is not a property of :Person (valid: ['id', 'name', 'summary'])"
+      ]
+    },
+    {
+      "index": 695,
+      "question": "Which 3 organizations have the oldest founding dates?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.foundingDate IS NOT NULL\nRETURN o.name, o.foundingDate\nORDER BY o.foundingDate\nLIMIT 3",
+      "typeql": "match\n$o isa organization, has founding-date $fd, has name $n;\nsort $fd asc;\nlimit 3;\nfetch { \"name\": $n, \"founded\": $fd };",
+      "checks_failed": [
+        "cypher_invalid_property"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher accesses o.foundingDate but \"foundingDate\" is not a property of :Organization (valid: ['id', 'isDissolved', 'isPublic', 'motto', 'name', 'nbrEmployees', 'revenue', 'summary'])"
+      ]
+    },
+    {
+      "index": 28,
+      "question": "List the names and IDs of the top 5 cities by the number of public organizations located in them.",
+      "cypher": "MATCH (c:City)<-[:IN_CITY]-(o:Organization)\nWHERE o.isPublic = true\nWITH c, count(o) as orgCount\nORDER BY orgCount DESC\nLIMIT 5\nRETURN c.name as cityName, c.id as cityId",
+      "typeql": "match\n  $c isa city;\n  $o isa organization, has is_public true;\n  located_in (organization: $o, city: $c);\nreduce $count = count($o) groupby $c;\nsort $count desc;\nlimit 5;\nfetch { \"cityName\": $c.city_name, \"cityId\": $c.city_id };",
+      "checks_failed": [
+        "cypher_missing_return_props"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for \"names and ids\" but neither appears in RETURN"
+      ]
+    },
+    {
+      "index": 51,
+      "question": "Find the organizations that are suppliers to 'New Energy Group' and their number of employees.",
+      "cypher": "MATCH (o:Organization)<-[:HAS_SUPPLIER]-(supplier:Organization {name: 'New Energy Group'})\nWHERE supplier.nbrEmployees IS NOT NULL\nRETURN supplier.name AS supplier, supplier.nbrEmployees AS numberOfEmployees",
+      "typeql": "match\n  $neg isa organization, has name \"New Energy Group\";\n  $o isa organization, has nbr_employees $employees;\n  supplies (supplier: $o, customer: $neg);\nfetch { \"supplier\": $o.name, \"numberOfEmployees\": $employees };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 54,
+      "question": "List the names and summaries of articles that mention organizations with a revenue of at least $1 million.",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization)\nWHERE o.revenue >= 1e6\nRETURN a.title AS title, a.summary AS summary",
+      "typeql": "match\n  $a isa article;\n  $o isa organization;\n  (article: $a, mentioned: $o) isa mentions;\n  $o has revenue $o_revenue;\n  $o_revenue >= 1000000;\nfetch { \"title\": $a.title, \"summary\": $a.article_summary };",
+      "checks_failed": [
+        "cypher_missing_return_props"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for \"names and summaries\" but neither appears in RETURN"
+      ]
+    },
+    {
+      "index": 60,
+      "question": "Which organizations have a revenue greater than 100 million and are not public?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.revenue > 1E8 AND o.isPublic IS NOT NULL AND NOT o.isPublic\nRETURN o",
+      "typeql": "match\n  $o isa organization;\n  $o has revenue $o_revenue;\n  $o_revenue > 100000000;\n  $o has is_public false;\nfetch { \"organization\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 89,
+      "question": "Which organizations have a supplier based in a different country?",
+      "cypher": "MATCH (o1:Organization)-[:HAS_SUPPLIER]->(o2:Organization),\n       (o1)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c1:Country),\n       (o2)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c2:Country)\nWHERE c1 <> c2\nRETURN o1.name AS Organization, o2.name AS Supplier, c1.name AS OrgCountry, c2.name AS SupplierCountry",
+      "typeql": "match\n  $o1 isa organization;\n  $o2 isa organization;\n  $c1 isa country;\n  $c2 isa country;\n  supplies (customer: $o1, supplier: $o2);\n  $city1 isa city;\n  located_in (organization: $o1, city: $city1);\n  location-contains (child: $city1, parent: $c1);\n  $city2 isa city;\n  located_in (organization: $o2, city: $city2);\n  location-contains (child: $city2, parent: $c2);\n  not { $c1 is $c2; };\nfetch { \"Organization\": $o1.name, \"Supplier\": $o2.name, \"OrgCountry\": $c1.country_name, \"SupplierCountry\": $",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 97,
+      "question": "List the top 3 cities where organizations with a revenue of more than 100 million are located.",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City)\nWHERE o.revenue > 1E8\nRETURN c.name AS city, count(*) AS orgCount\nORDER BY orgCount DESC\nLIMIT 3",
+      "typeql": "match\n  $o isa organization, has revenue $r;\n  $r > 100000000;\n  located_in (organization: $o, city: $c);\n  $c has city_name $cn;\nreduce $count = count($o) groupby $c, $cn;\nsort $count desc;\nlimit 3;\nfetch { \"city\": $cn };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 100,
+      "question": "Can you name 3 people who are both investors and CEOs of different organizations?",
+      "cypher": "MATCH (p:Person)\nWHERE EXISTS {(p)-[:HAS_CEO]->(:Organization)}\n  AND EXISTS {(p)-[:HAS_INVESTOR]->(:Organization)}\nWITH p LIMIT 3\nRETURN p.name AS name",
+      "typeql": "match\n  $p isa person;\n  ceo_of (organization: $o1, ceo: $p);\n  invested_in (organization: $o2, investor: $p);\n  not { $o1 is $o2; };\nlimit 3;\nfetch { \"name\": $p.name };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 144,
+      "question": "Which 3 organizations have been dissolved and are mentioned in articles with a sentiment score below 0.5?",
+      "cypher": "MATCH (o:Organization)-[:MENTIONED_IN]->(a:Article)\nWHERE o.isDissolved = true AND a.sentiment < 0.5\nRETURN o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization, has is_dissolved true;\n  $a isa article, has sentiment $s;\n  $s < 0.5;\n  mentions (mentioned: $o, article: $a);\nlimit 3;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_invalid_rel_type"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references relationship type \"MENTIONED_IN\" not in Neo4j schema (valid: ['HAS_BOARD_MEMBER', 'HAS_CATEGORY', 'HAS_CEO', 'HAS_CHILD', 'HAS_CHUNK', 'HAS_COMPETITOR', 'HAS_INVESTOR', 'HAS_PARENT', 'HAS_SUBSIDIARY', 'HAS_SUPPLIER', 'IN_CITY', 'IN_COUNTRY', 'MENTIONS'])"
+      ]
+    },
+    {
+      "index": 159,
+      "question": "Which organizations have CEOs who are also board members of other organizations?",
+      "cypher": "MATCH (o1:Organization)-[:HAS_CEO]->(p:Person)\nWHERE EXISTS {\n  (p)-[:HAS_BOARD_MEMBER]->(o2:Organization)\n  WHERE o1 <> o2\n}\nRETURN o1.name AS organization, p.name AS ceo_and_board_member",
+      "typeql": "match\n  $o1 isa organization;\n  $o2 isa organization;\n  $p isa person;\n  ceo_of (organization: $o1, ceo: $p);\n  board_member_of (organization: $o2, member: $p);\n  not { $o1 is $o2; };\nfetch { \"organization\": $o1.name, \"ceo_and_board_member\": $p.name };",
+      "checks_failed": [
+        "cypher_wrong_direction",
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_BOARD_MEMBER]->(Organization) but schema says Organization->Person",
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 196,
+      "question": "Find the first 3 articles mentioning organizations with a CEO named 'Julie Spellman Sweet' and a revenue above 500 million.",
+      "cypher": "MATCH (article:Article)-[:MENTIONS]->(org:Organization)\nWHERE org.revenue > 5e8 AND (org)-[:HAS_CEO]->(:Person {name: 'Julie Spellman Sweet'})\nRETURN article.title, article.summary, article.date\nLIMIT 3",
+      "typeql": "match\n  $article isa article, has title $title, has article_summary $summary, has date $date;\n  mentions (article: $article, mentioned: $o);\n  $o isa organization, has revenue $r;\n  $r > 500000000;\n  ceo_of (organization: $o, ceo: $p);\n  $p isa person, has name \"Julie Spellman Sweet\";\nlimit 3;\nfetch { \"title\": $title, \"summary\": $summary, \"date\": $date };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 500000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 232,
+      "question": "Which organizations have a revenue greater than 100 million but less than 500 million?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.revenue > 1E8 AND o.revenue < 5E8\nRETURN o.name AS organization, o.revenue AS revenue",
+      "typeql": "match\n  $o isa organization;\n  $o has revenue $o_revenue;\n  $o_revenue > 100000000;\n  $o_revenue < 500000000;\nfetch { \"organization\": $o.name, \"revenue\": $o.revenue };",
+      "checks_failed": [
+        "cypher_missing_threshold",
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher",
+        "Question mentions threshold 500000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 244,
+      "question": "What are the top 3 articles by sentiment that mention an organization with a revenue of over 1 billion?",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization)\nWHERE o.revenue > 1e9\nRETURN a.title AS article, a.sentiment AS sentiment\nORDER BY sentiment DESC\nLIMIT 3",
+      "typeql": "match\n  $a isa article;\n  $o isa organization;\n  mentions (article: $a, mentioned: $o);\n  $o has revenue $o_revenue;\n  $o_revenue > 1000000000;\n  $a has sentiment $sentiment;\nsort $sentiment desc;\nlimit 3;\nfetch { \"article\": $a.title, \"sentiment\": $sentiment };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 1000000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 277,
+      "question": "What are the names of organizations that have at least 2 board members?",
+      "cypher": "MATCH (o:Organization)\nWHERE size([(o)-[:HAS_BOARD_MEMBER]->(:Person) | 1]) >= 2\nRETURN o.name",
+      "typeql": "match\n  $o isa organization;\n  board_member_of (organization: $o, member: $p);\nreduce $count = count($p) groupby $o;\nmatch $count >= 2;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 278,
+      "question": "Which countries have organizations with a revenue less than 10 million?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country)\nWHERE o.revenue < 1E7\nRETURN DISTINCT c.name",
+      "typeql": "match\n$o isa organization, has revenue $o_revenue;\n$o_revenue < 10000000;\n$city isa city;\nlocated_in (organization: $o, city: $city);\nlocation-contains (child: $city, parent: $c);\n$c isa country, has country_name $name;\nselect $name;\ndistinct;\nfetch { \"country_name\": $name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 10000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 285,
+      "question": "What is the name of the organization that has the highest number of employees and is headquartered in a city named 'Seattle'?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City {name: 'Seattle'})\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees\nORDER BY o.nbrEmployees DESC\nLIMIT 1",
+      "typeql": "match\n  $o isa organization, has name $name, has nbr_employees $emp;\n  $c isa city, has city_name \"Seattle\";\n  located_in (organization: $o, city: $c);\nsort $emp desc;\nlimit 1;\nfetch { \"organization\": $name };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 287,
+      "question": "Which organizations are headquartered in a city that is not in 'United States of America' and have a revenue of over 100 million?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City)-[:IN_COUNTRY]->(country:Country)\nWHERE country.name <> 'United States of America' AND o.revenue > 1E8\nRETURN o.name AS organization, c.name AS city, country.name AS country, o.revenue AS revenue",
+      "typeql": "match\n  $o isa organization;\n  $c isa city;\n  $country isa country;\n  (organization: $o, city: $c) isa located_in;\n  (child: $c, parent: $country) isa location-contains;\n  $o has revenue $o_revenue;\n  $o_revenue > 100000000;\n  not { $country has country_name \"United States of America\"; };\nfetch { \"organization\": $o.name, \"city\": $c.city_name, \"country\": $country.country_name, \"revenue\": $o.revenue };",
+      "checks_failed": [
+        "cypher_missing_threshold",
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher",
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 294,
+      "question": "Which organizations have a CEO who is also a board member in another organization?",
+      "cypher": "MATCH (o1:Organization)-[:HAS_CEO]->(p:Person)<-[:HAS_BOARD_MEMBER]-(o2:Organization)\nWHERE o1 <> o2\nRETURN o1.name AS org1, p.name AS ceo_board_member, o2.name AS org2",
+      "typeql": "match\n$o1 isa organization;\n$o2 isa organization;\n$p isa person;\nceo_of (organization: $o1, ceo: $p);\nboard_member_of (organization: $o2, member: $p);\nnot { $o1 is $o2; };\nfetch { \"org1\": $o1.name, \"ceo_board_member\": $p.name, \"org2\": $o2.name };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 313,
+      "question": "Name the first 3 organizations that have at least one board member who is also a CEO of another organization.",
+      "cypher": "MATCH (o:Organization)-[:HAS_BOARD_MEMBER]->(p:Person)\nWHERE EXISTS {(p)-[:HAS_CEO]-(:Organization)}\nRETURN o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  board_member_of (organization: $o, member: $p);\n  $o2 isa organization;\n  ceo_of (organization: $o2, ceo: $p);\n  not { $o is $o2; };\nlimit 3;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 323,
+      "question": "List the top 5 organizations that have a subsidiary in the same city where they are headquartered.",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(s:Organization), \n      (o)-[:IN_CITY]->(c:City)<-[:IN_CITY]-(s)\nRETURN o.name AS organization, c.name AS city\nLIMIT 5",
+      "typeql": "match\n  $o isa organization;\n  $s isa organization;\n  $c isa city;\n  (parent: $o, subsidiary: $s) isa subsidiary_of;\n  (organization: $o, city: $c) isa located_in;\n  (organization: $s, city: $c) isa located_in;\nlimit 5;\nfetch { \"organization\": $o.name, \"city\": $c.city_name };",
+      "checks_failed": [
+        "cypher_missing_order"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 332,
+      "question": "Name the top 3 articles that discuss organizations with a history of more than 50 years.",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization)\nWHERE date(o.foundingDate) < date() - duration('P50Y')\nWITH a, o\nORDER BY a.date DESC\nLIMIT 3\nRETURN a.title AS article, collect(o.name) AS organizations",
+      "typeql": "match\n  $a isa article;\n  $o isa organization, has founding-date $fd;\n  $fd < 1976-01-22;\n  mentions (article: $a, mentioned: $o);\n  $a has date $a_date;\nsort $a_date desc;\nlimit 3;\nfetch { \"article\": $a.title };",
+      "checks_failed": [
+        "cypher_missing_threshold",
+        "cypher_invalid_property"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 50 but it does not appear in Cypher",
+        "Cypher accesses o.foundingDate but \"foundingDate\" is not a property of :Organization (valid: ['id', 'isDissolved', 'isPublic', 'motto', 'name', 'nbrEmployees', 'revenue', 'summary'])"
+      ]
+    },
+    {
+      "index": 336,
+      "question": "What are the names of 3 organizations that have a CEO who was previously a board member of a competitor?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nWHERE EXISTS {\n  (ceo)-[:HAS_BOARD_MEMBER]->(competitor:Organization)<-[:HAS_COMPETITOR]-(o)\n}\nRETURN o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  ceo_of (organization: $o, ceo: $ceo);\n  $competitor isa organization;\n  competes_with (competitor: $o, competitor: $competitor);\n  board_member_of (organization: $competitor, member: $ceo);\nlimit 3;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_BOARD_MEMBER]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 375,
+      "question": "Name the top 3 organizations with the most mentions in articles about technology innovation.",
+      "cypher": "MATCH (o:Organization)<-[:MENTIONS]-(a:Article)\nWHERE (a)-[:HAS_CHUNK]->(:Chunk)\nWITH o, count(a) AS mentionCount\nORDER BY mentionCount DESC\nLIMIT 3\nRETURN o.name AS organization, mentionCount",
+      "typeql": "match\n  $o isa organization;\n  $a isa article;\n  mentions (article: $a, mentioned: $o);\n  { $a has title $t1; $t1 like \".*[Tt]echnology.*\"; } or \n  { $a has title $t2; $t2 like \".*[Ii]nnovation.*\"; } or\n  { $a has article_summary $s1; $s1 like \".*[Tt]echnology.*\"; } or\n  { $a has article_summary $s2; $s2 like \".*[Ii]nnovation.*\"; };\nreduce $count = count($a) groupby $o;\nsort $count desc;\nlimit 3;\nfetch { \"organization\": $o.name, \"mentionCount\": $count };",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 412,
+      "question": "List the top 5 organizations by number of employees.",
+      "cypher": "MATCH (o:Organization)\nWHERE o.nbrEmployees IS NOT NULL\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees\nORDER BY o.nbrEmployees DESC\nLIMIT 5",
+      "typeql": "match\n  $o isa organization, has nbr_employees $n;\nsort $n desc;\nlimit 5;\nfetch { \"organization\": $o.name, \"numberOfEmployees\": $n };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 415,
+      "question": "Which articles mention organizations with a revenue less than 10 million?",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization) WHERE o.revenue < 1E7 RETURN a, o",
+      "typeql": "match\n  $a isa article;\n  $o isa organization, has revenue $r;\n  $r < 10000000;\n  mentions (article: $a, mentioned: $o);\nfetch { \"article\": $a.title, \"organization\": $o.name };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 10000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 417,
+      "question": "List the organizations that have their CEOs also serving as board members in other organizations.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person) WHERE EXISTS { (ceo)-[:HAS_BOARD_MEMBER]-(:Organization) } RETURN o.name AS organization, ceo.name AS ceo",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (organization: $o, ceo: $p) isa ceo_of;\n  $other isa organization;\n  (organization: $other, member: $p) isa board_member_of;\n  not { $o is $other; };\nfetch { \"organization\": $o.name, \"ceo\": $p.name };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 419,
+      "question": "Which organizations are based in cities not in the 'United States of America'?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City)-[:IN_COUNTRY]->(country:Country) WHERE country.name <> 'United States of America' RETURN o.name AS organization, c.name AS city, country.name AS country",
+      "typeql": "match $o isa organization; $c isa city; $country isa country, has country_name $cn; (organization: $o, city: $c) isa located_in; (child: $c, parent: $country) isa location-contains; not { $cn == \"United States of America\"; }; fetch { \"organization\": $o.name, \"city\": $c.city_name, \"country\": $cn };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 453,
+      "question": "Name the organizations with the most board members who are also CEOs of other organizations.",
+      "cypher": "MATCH (o:Organization)<-[:HAS_BOARD_MEMBER]-(boardMember:Person)\nWHERE EXISTS {\n  (boardMember)-[:HAS_CEO]->(:Organization)\n}\nWITH o, count(boardMember) AS boardMemberCEOCount\nRETURN o.name AS organization, boardMemberCEOCount\nORDER BY boardMemberCEOCount DESC\nLIMIT 10",
+      "typeql": "match\n  $o isa organization;\n  $bm isa person;\n  $other isa organization;\n  board_member_of (organization: $o, member: $bm);\n  ceo_of (organization: $other, ceo: $bm);\n  not { $o is $other; };\nreduce $count = count($bm) groupby $o;\nsort $count desc;\nlimit 10;\nfetch { \"organization\": $o.name, \"boardMemberCEOCount\": $count };",
+      "checks_failed": [
+        "cypher_wrong_direction",
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Organization)-[:HAS_BOARD_MEMBER]->(Person) but schema says Person->Organization",
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 492,
+      "question": "Which organizations have a revenue greater than 1 billion and are public?",
+      "cypher": "MATCH (o:Organization) WHERE o.revenue > 1e9 AND o.isPublic = true RETURN o",
+      "typeql": "match\n  $o isa organization, has revenue $r, has is_public true;\n  $r > 1000000000;\nfetch { \"organization\": $o };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 1000000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 493,
+      "question": "What are the names of the first 3 persons who are investors in more than one organization?",
+      "cypher": "MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization)\nWITH p, count(o) as num_orgs\nWHERE num_orgs > 1\nRETURN p.name\nLIMIT 3",
+      "typeql": "match\n  $p isa person;\n  $o isa organization;\n  (investor: $p, organization: $o) isa invested_in;\nreduce $num_orgs = count($o) groupby $p;\nmatch $num_orgs > 1;\nlimit 3;\nfetch { \"name\": $p.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Person)-[:HAS_INVESTOR]->(Organization) but schema says Organization->Person"
+      ]
+    },
+    {
+      "index": 494,
+      "question": "What are the names of the first 3 organizations with the least number of employees?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.nbrEmployees IS NOT NULL\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees\nORDER BY o.nbrEmployees\nLIMIT 3",
+      "typeql": "match\n  $o isa organization, has nbr_employees $n;\nsort $n asc;\nlimit 3;\nfetch { \"organization\": $o.name, \"numberOfEmployees\": $n };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 514,
+      "question": "List top 5 organizations that have a revenue greater than 100 million.",
+      "cypher": "MATCH (o:Organization)\nWHERE o.revenue > 1E8\nRETURN o.name AS organization, o.revenue AS revenue\nORDER BY o.revenue DESC\nLIMIT 5",
+      "typeql": "match\n  $o isa organization, has revenue $r;\n  $r > 100000000;\nsort $r desc;\nlimit 5;\nfetch { \"organization\": $o.name, \"revenue\": $r };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 588,
+      "question": "Which organizations have a CEO and are headquartered in a country other than the USA?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(:Person) WHERE EXISTS { (o)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country) WHERE c.name <> 'United States of America' } RETURN o.name AS organization, o.summary AS summary",
+      "typeql": "match\n$o isa organization;\n$ceo isa person;\nceo_of (organization: $o, ceo: $ceo);\n$city isa city;\nlocated_in (organization: $o, city: $city);\n$country isa country, has country_name $cn;\nlocation-contains (parent: $country, child: $city);\nnot { $cn == \"United States of America\"; };\nfetch { \"organization\": $o.name, \"summary\": $o.summary };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 730,
+      "question": "List the first 3 organizations with the highest number of employees that are public.",
+      "cypher": "MATCH (o:Organization)\nWHERE o.isPublic = true AND o.nbrEmployees IS NOT NULL\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees\nORDER BY o.nbrEmployees DESC\nLIMIT 3",
+      "typeql": "match\n  $o isa organization, has is_public true, has nbr_employees $n;\nsort $n desc;\nlimit 3;\nfetch { \"organization\": $o.name, \"numberOfEmployees\": $n };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 749,
+      "question": "List the top 5 organizations that are public and have a revenue less than 10 million.",
+      "cypher": "MATCH (o:Organization) WHERE o.isPublic = true AND o.revenue < 1E7 RETURN o.name AS organization, o.revenue AS revenue ORDER BY o.revenue DESC LIMIT 5",
+      "typeql": "match\n$o isa organization, has is_public true, has revenue $r;\n$r < 10000000;\nsort $r desc;\nlimit 5;\nfetch { \"organization\": $o.name, \"revenue\": $r };",
+      "checks_failed": [
+        "cypher_missing_threshold"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 10000000 but it does not appear in Cypher"
+      ]
+    },
+    {
+      "index": 829,
+      "question": "List articles that mention organizations based in countries not in North America.",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country) WHERE c.name <> 'United States of America' AND c.name <> 'Canada' AND c.name <> 'Mexico' RETURN a.title, a.siteName, a.date, o.name, c.name",
+      "typeql": "match\n  $a isa article;\n  $o isa organization;\n  $city isa city;\n  $c isa country, has country_name $cn;\n  mentions (article: $a, mentioned: $o);\n  located_in (organization: $o, city: $city);\n  location-contains (parent: $c, child: $city);\n  not { $cn == \"United States of America\"; };\n  not { $cn == \"Canada\"; };\n  not { $cn == \"Mexico\"; };\nfetch {\n  \"title\": $a.title,\n  \"siteName\": $a.site_name,\n  \"date\": $a.date,\n  \"organization\": $o.name,\n  \"country\": $cn\n};\n",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 858,
+      "question": "What are the names of the people who have both a parent and a child listed in the schema?",
+      "cypher": "MATCH (p:Person)-[:HAS_PARENT]->(parent:Person)\nWHERE EXISTS {(p)-[:HAS_CHILD]->(:Person)}\nRETURN p.name",
+      "typeql": "match\n  $p isa person;\n  parent_of (parent: $parent, child: $p);\n  parent_of (parent: $p, child: $child);\nfetch { \"name\": $p.name };",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 864,
+      "question": "Which organizations have a board member who is also a CEO of another organization?",
+      "cypher": "MATCH (o1:Organization)-[:HAS_BOARD_MEMBER]->(p:Person)<-[:HAS_CEO]-(o2:Organization)\nWHERE o1 <> o2\nRETURN o1.name AS BoardMemberOrg, p.name AS Person, o2.name AS CEOOrg",
+      "typeql": "match\n  $o1 isa organization;\n  $p isa person;\n  $o2 isa organization;\n  board_member_of (organization: $o1, member: $p);\n  ceo_of (organization: $o2, ceo: $p);\n  not { $o1 is $o2; };\nfetch {\n  \"BoardMemberOrg\": $o1.name,\n  \"Person\": $p.name,\n  \"CEOOrg\": $o2.name\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 880,
+      "question": "Identify the top 3 organizations with the smallest number of employees that are public.",
+      "cypher": "MATCH (o:Organization)\nWHERE o.isPublic = true AND o.nbrEmployees IS NOT NULL\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees\nORDER BY o.nbrEmployees\nLIMIT 3",
+      "typeql": "match\n  $o isa organization,\n    has is_public true,\n    has nbr_employees $employees;\nsort $employees asc;\nlimit 3;\nfetch {\n  \"organization\": $o.name,\n  \"numberOfEmployees\": $employees\n};\n",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 895,
+      "question": "List the first 5 organizations that have a CEO who is also a board member of a competitor.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nWHERE EXISTS {\n  (o)-[:HAS_COMPETITOR]->(competitor:Organization)<-[:HAS_BOARD_MEMBER]-(ceo)\n}\nRETURN o.name AS organization, ceo.name AS ceo\nLIMIT 5",
+      "typeql": "match\n  $o isa organization;\n  $ceo isa person;\n  $competitor isa organization;\n  ceo_of (organization: $o, ceo: $ceo);\n  competes_with (competitor: $o, competitor: $competitor);\n  board_member_of (organization: $competitor, member: $ceo);\nlimit 5;\nfetch { \"organization\": $o.name, \"ceo\": $ceo.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Organization)-[:HAS_BOARD_MEMBER]->(Person) but schema says Person->Organization"
+      ]
+    },
+    {
+      "index": 897,
+      "question": "Identify the top 3 organizations with the most board members.",
+      "cypher": "MATCH (o:Organization)<-[:HAS_BOARD_MEMBER]-(p:Person)\nWITH o, count(p) AS boardMemberCount\nORDER BY boardMemberCount DESC\nLIMIT 3\nRETURN o.name AS organization, boardMemberCount",
+      "typeql": "match\n  $o isa organization, has name $on;\n  board_member_of (organization: $o, member: $p);\nreduce $count = count($p) groupby $o, $on;\nsort $count desc;\nlimit 3;\nfetch { \"organization\": $on, \"board_member_count\": $count };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Organization)-[:HAS_BOARD_MEMBER]->(Person) but schema says Person->Organization"
+      ]
+    },
+    {
+      "index": 916,
+      "question": "Identify the top 3 organizations with a CEO who has authored an article.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)<-[:AUTHOR]-(a:Article)\nRETURN o.name AS organization, ceo.name AS ceo, count(a) AS articleCount\nORDER BY articleCount DESC\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $p isa person, has name $ceo_name;\n  ceo_of (organization: $o, ceo: $p);\n  $a isa article, has author $author_name;\n  $ceo_name == $author_name;\nreduce $articleCount = count($a) groupby $o, $p;\nsort $articleCount desc;\nlimit 3;\nfetch { \"organization\": $o.name, \"ceo\": $p.name, \"articleCount\": $articleCount };",
+      "checks_failed": [
+        "cypher_invalid_rel_type"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher references relationship type \"AUTHOR\" not in Neo4j schema (valid: ['HAS_BOARD_MEMBER', 'HAS_CATEGORY', 'HAS_CEO', 'HAS_CHILD', 'HAS_CHUNK', 'HAS_COMPETITOR', 'HAS_INVESTOR', 'HAS_PARENT', 'HAS_SUBSIDIARY', 'HAS_SUPPLIER', 'IN_CITY', 'IN_COUNTRY', 'MENTIONS'])"
+      ]
+    },
+    {
+      "index": 919,
+      "question": "Find the top 3 organizations that have the most board members who are also CEOs of other organizations.",
+      "cypher": "MATCH (o:Organization)<-[:HAS_BOARD_MEMBER]-(p:Person)\nWHERE EXISTS {(p)-[:HAS_CEO]->(:Organization)}\nWITH o, count(p) AS ceo_board_members\nRETURN o.name AS organization, ceo_board_members\nORDER BY ceo_board_members DESC\nLIMIT 3",
+      "typeql": "match\n  $o isa organization, has name $on;\n  $p isa person;\n  $other isa organization;\n  board_member_of (organization: $o, member: $p);\n  ceo_of (organization: $other, ceo: $p);\n  $o has organization_id $oid;\n  $other has organization_id $otherid;\n  $oid != $otherid;\nreduce $count = count($p) groupby $o, $on;\nsort $count desc;\nlimit 3;\nfetch { \"organization\": $on, \"ceo_board_members\": $count };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Organization)-[:HAS_BOARD_MEMBER]->(Person) but schema says Person->Organization"
+      ]
+    },
+    {
+      "index": 708,
+      "question": "Which 3 organizations have the most detailed organizational summaries?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.summary IS NOT NULL\nRETURN o.name AS organization, o.summary AS summary\nORDER BY size(o.summary) DESC\nLIMIT 3",
+      "typeql": "match\n$o isa organization, has summary $s;\nnot { $s == \"\"; };\nlet $len = len($s);\nsort $len desc;\nlimit 3;\nfetch {\n  \"organization\": $o.name,\n  \"summary\": $s\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    }
+  ],
+  "categories": {
+    "cypher_missing_count": [
+      0,
+      120,
+      181,
+      245,
+      266,
+      369,
+      443,
+      451,
+      478,
+      491,
+      564,
+      622,
+      795,
+      875,
+      926,
+      51,
+      285,
+      412,
+      494,
+      730,
+      880
+    ],
+    "cypher_wrong_direction": [
+      15,
+      27,
+      52,
+      79,
+      79,
+      90,
+      134,
+      249,
+      249,
+      272,
+      286,
+      333,
+      401,
+      428,
+      450,
+      483,
+      549,
+      649,
+      659,
+      659,
+      790,
+      825,
+      861,
+      866,
+      872,
+      159,
+      336,
+      453,
+      493,
+      895,
+      897,
+      919
+    ],
+    "cypher_missing_return_props": [
+      49,
+      541,
+      28,
+      54
+    ],
+    "cypher_invalid_rel_type": [
+      84,
+      370,
+      371,
+      372,
+      436,
+      581,
+      698,
+      792,
+      823,
+      878,
+      909,
+      144,
+      916
+    ],
+    "cypher_missing_threshold": [
+      141,
+      157,
+      166,
+      189,
+      198,
+      200,
+      218,
+      223,
+      226,
+      236,
+      256,
+      275,
+      394,
+      403,
+      428,
+      503,
+      510,
+      574,
+      690,
+      713,
+      734,
+      851,
+      881,
+      887,
+      890,
+      898,
+      912,
+      922,
+      923,
+      927,
+      929,
+      932,
+      60,
+      97,
+      196,
+      232,
+      232,
+      244,
+      278,
+      287,
+      332,
+      415,
+      492,
+      514,
+      749
+    ],
+    "cypher_lacks_string_op_vs_typeql": [
+      367,
+      375
+    ],
+    "cypher_invalid_label": [
+      370,
+      370,
+      371,
+      371,
+      372,
+      372
+    ],
+    "cypher_lacks_count_vs_typeql": [
+      407,
+      537,
+      564,
+      642,
+      646,
+      277
+    ],
+    "cypher_missing_condition": [
+      413,
+      507,
+      53,
+      858
+    ],
+    "cypher_lacks_sort_vs_typeql": [
+      537,
+      554,
+      642,
+      646
+    ],
+    "cypher_missing_order": [
+      744,
+      750,
+      760,
+      761,
+      323
+    ],
+    "cypher_lacks_optional_vs_typeql": [
+      784
+    ],
+    "cypher_lacks_negation_vs_typeql": [
+      70,
+      154,
+      212,
+      89,
+      100,
+      159,
+      287,
+      294,
+      313,
+      417,
+      419,
+      453,
+      588,
+      829,
+      864,
+      708
+    ],
+    "cypher_invalid_property": [
+      329,
+      338,
+      356,
+      391,
+      448,
+      452,
+      695,
+      332
+    ]
+  }
+}

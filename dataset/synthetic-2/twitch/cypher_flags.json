@@ -1,0 +1,736 @@
+{
+  "database": "twitch",
+  "source": "synthetic-2",
+  "total_queries": 566,
+  "flagged": 50,
+  "flags": [
+    {
+      "index": 26,
+      "question": "Who are the first 5 users who are chatters and VIPs in the same streams?",
+      "cypher": "MATCH (u:User)-[:CHATTER]->(s:Stream)<-[:VIP]-(u)\nRETURN u.name AS userName\nLIMIT 5",
+      "typeql": "match\n$u isa user;\n$s isa stream;\nchat_activity (chatting_user: $u, chatting_channel: $s);\nvip_status (vip_user: $u, vip_channel: $s);\nlimit 5;\nfetch { \"userName\": $u.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Stream)-[:VIP]->(User) but schema says User->Stream"
+      ]
+    },
+    {
+      "index": 46,
+      "question": "Which users are moderators in more than one stream?",
+      "cypher": "MATCH (u:User)-[:MODERATOR]->(s:Stream)\nWITH u, COUNT(s) AS streamCount\nWHERE streamCount > 1\nRETURN u.name AS moderatorName, streamCount",
+      "typeql": "match\n$u isa user, has name $n;\n$s isa stream;\nmoderation (moderating_user: $u, moderated_channel: $s);\nreduce $streamCount = count($s) groupby $u, $n;\nmatch $streamCount > 1;\nsort $streamCount desc;\nfetch { \"moderatorName\": $n, \"streamCount\": $streamCount };",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 52,
+      "question": "What are the names of users who are both moderators and VIPs in any stream?",
+      "cypher": "MATCH (u:User)-[:MODERATOR]->(s:Stream), (u)-[:VIP]->(s)\nRETURN DISTINCT u.name AS userName",
+      "typeql": "match $u isa user; $s isa stream; moderation (moderated_channel: $s, moderating_user: $u); vip_status (channel_with_vips: $s, vip_user: $u); select $u; distinct; fetch { \"userName\": $u.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 56,
+      "question": "What is the total view count of streams that are moderated by 'itsbigchase'?",
+      "cypher": "MATCH (u:User {name: 'itsbigchase'})-[:MODERATOR]->(s:Stream)\nRETURN sum(s.total_view_count) AS total_view_count",
+      "typeql": "match\n$u isa user, has name \"itsbigchase\";\nmoderation (moderating_user: $u, moderated_channel: $s);\n$s has total_view_count $v;\nreduce $total = sum($v);",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 66,
+      "question": "Which streams have users with the role of both VIP and moderator?",
+      "cypher": "MATCH (s:Stream)<-[:VIP]-(u:User)-[:MODERATOR]->(s)\nRETURN s.name AS streamName, s.url AS streamUrl, u.name AS userName",
+      "typeql": "match\n$s isa stream;\n$u isa user;\nvip_status (vip_user: $u, vip_channel: $s);\nmoderation (moderating_user: $u, moderated_channel: $s);\nfetch {\n  \"streamName\": $s.name,\n  \"streamUrl\": $s.url,\n  \"userName\": $u.name\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Stream)-[:VIP]->(User) but schema says User->Stream"
+      ]
+    },
+    {
+      "index": 72,
+      "question": "Which users have been VIPs in streams with a total view count over 5 million?",
+      "cypher": "MATCH (u:User)-[:VIP]->(s:Stream)\nWHERE s.total_view_count > 5000000\nRETURN u.name",
+      "typeql": "match\n$u isa user;\n$s isa stream, has total_view_count $tvc;\n$tvc > 5000000;\nvip_status (vip_user: $u, vip_channel: $s);\nfetch {\n  \"name\": $u.name\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 75,
+      "question": "Which streams have more than two team associations?",
+      "cypher": "MATCH (s:Stream)-[:HAS_TEAM]->(t:Team)\nWITH s, COUNT(t) AS teamCount\nWHERE teamCount > 2\nRETURN s.name AS streamName, teamCount",
+      "typeql": "match\n$s isa stream;\nteam_membership (member_stream: $s, organization: $t);\nreduce $teamCount = count($t) groupby $s;\nmatch\n$teamCount > 2;\n$s has name $name;\nsort $name;\nfetch {\n  \"streamName\": $name,\n  \"teamCount\": $teamCount\n};",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 81,
+      "question": "Name the top 3 users who are VIPs in the stream with the most followers.",
+      "cypher": "MATCH (s:Stream)\nWITH s\nORDER BY s.followers DESC\nLIMIT 1\nMATCH (s)-[:VIP]->(u:User)\nRETURN u.name\nORDER BY s.followers DESC\nLIMIT 3",
+      "typeql": "with fun max_followers() -> integer:\n  match $s isa stream, has followers $f;\n  return max($f);\nmatch\n$s isa stream, has followers $f;\nlet $max = max_followers();\n$f == $max;\nvip_status (vip_channel: $s, vip_user: $u);\n$u isa user;\nlimit 3;\nfetch {\n  \"name\": $u.name\n};",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 111,
+      "question": "Who are the first 5 moderators for the stream with the highest total view count?",
+      "cypher": "MATCH (s:Stream)-[:MODERATOR]->(u:User)\nWITH s, u\nORDER BY s.total_view_count DESC\nLIMIT 1\nMATCH (s)-[:MODERATOR]->(moderator:User)\nRETURN moderator.name\nLIMIT 5",
+      "typeql": "with fun max_moderated_view_count() -> integer :\n  match\n  $s isa stream, has total_view_count $tvc;\n  moderation (moderated_channel: $s, moderating_user: $u);\n  return max($tvc);\nmatch\n$s isa stream, has total_view_count $tvc;\nlet $max = max_moderated_view_count();\n$tvc == $max;\nmoderation (moderated_channel: $s, moderating_user: $m);\n$m isa user;\nlimit 5;\nfetch {\n  \"name\": $m.name\n};",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 115,
+      "question": "List the first 3 users who are both moderators and VIPs in different streams.",
+      "cypher": "MATCH (u:User)-[:MODERATOR]->(s1:Stream), (u)-[:VIP]->(s2:Stream)\nWHERE s1 <> s2\nRETURN u.name AS userName\nLIMIT 3",
+      "typeql": "match\n$u isa user;\n$s1 isa stream;\n$s2 isa stream;\nmoderation (moderating_user: $u, moderating_channel: $s1);\nvip_status (vip_user: $u, vip_channel: $s2);\nnot { $s1 is $s2; };\nlimit 3;\nfetch {\n  \"userName\": $u.name\n};",
+      "checks_failed": [
+        "cypher_missing_condition",
+        "cypher_wrong_direction",
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND",
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User",
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 128,
+      "question": "Who are the first 3 moderators for the oldest stream?",
+      "cypher": "MATCH (s:Stream)\nWITH s\nORDER BY s.createdAt ASC\nLIMIT 1\nMATCH (s)-[:MODERATOR]->(u:User)\nRETURN u.name\nLIMIT 3",
+      "typeql": "with fun oldest_stream_date() -> datetime:\n  match $s isa stream, has created_at $d;\n  return min($d);\nmatch\n  $s isa stream, has created_at $d;\n  let $min_d = oldest_stream_date();\n  $d == $min_d;\n  moderation (moderated_channel: $s, moderating_user: $u);\n  $u has name $n;\nlimit 3;\nfetch { \"name\": $n };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 133,
+      "question": "Who are the first 5 users who have been VIPs in streams with fewer than 10,000 followers?",
+      "cypher": "MATCH (u:User)-[:VIP]->(s:Stream)\nWHERE s.followers < 10000\nRETURN u.name\nORDER BY s.createdAt\nLIMIT 5",
+      "typeql": "match\n$u isa user;\n$s isa stream, has followers $f, has created_at $ca;\n$f < 10000;\nvip_status (vip_user: $u, vip_channel: $s);\nsort $ca;\nlimit 5;\nfetch { \"name\": $u.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 142,
+      "question": "Which streams are the first 3 that have a VIP user with over 500,000 followers?",
+      "cypher": "MATCH (s:Stream)-[:VIP]->(u:User)\nWHERE u.followers > 500000\nRETURN s\nORDER BY s.createdAt\nLIMIT 3",
+      "typeql": "match\n$s isa stream, has created_at $ca;\n$u isa user, has followers $f;\nvip_status (channel_with_vips: $s, vip_user: $u);\n$f > 500000;\nsort $ca asc;\nlimit 3;\nfetch {\n  \"stream\": $s.name\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses u.followers but \"followers\" is not on :User (exists on other types)"
+      ]
+    },
+    {
+      "index": 146,
+      "question": "Who are the first 5 chatters in the stream with the highest follower count?",
+      "cypher": "MATCH (s:Stream)-[:CHATTER]->(u:User)\nWITH s, u\nORDER BY s.followers DESC\nLIMIT 1\nMATCH (s)-[:CHATTER]->(first5Chatters:User)\nRETURN first5Chatters.name\nLIMIT 5",
+      "typeql": "with fun max_followers() -> integer:\n    match $s isa stream, has followers $f;\n    chat_activity (channel_with_chatters: $s);\n    return max($f);\nmatch\n$s isa stream, has followers $f;\nlet $max = max_followers();\n$f == $max;\nchat_activity (channel_with_chatters: $s, chatting_user: $u);\n$u has name $n;\nlimit 5;\nfetch { \"name\": $n };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 172,
+      "question": "List the names of the top 5 users who are VIPs in the most number of different streams.",
+      "cypher": "MATCH (u:User)-[:VIP]->(s:Stream)\nWITH u, COUNT(DISTINCT s) AS streamCount\nORDER BY streamCount DESC\nLIMIT 5\nRETURN u.name AS userName, streamCount",
+      "typeql": "match\n$u isa user, has name $name;\n$s isa stream;\nvip_status (vip_user: $u, vip_channel: $s);\nreduce $count = count($s) groupby $u, $name;\nsort $count desc;\nlimit 5;\nfetch {\n  \"userName\": $name,\n  \"streamCount\": $count\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 187,
+      "question": "List the top 5 streams that are part of the team with the newest creation date.",
+      "cypher": "// Step 1: Find the team with the newest creation date\nMATCH (t:Team)\nWITH t\nORDER BY t.createdAt DESC\nLIMIT 1\n\n// Step 2: Find the streams that are part of this team\nMATCH (s:Stream)-[:HAS_TEAM]->(t)\nWITH s\nORDER BY s.followers DESC\nLIMIT 5\n\n// Step 3: Return the top 5 streams based on followers\nRETURN s.name AS stream_name, s.followers AS followers, s.url AS stream_url",
+      "typeql": "match\n$t isa team, has created_at $ca;\nnot { $t2 isa team, has created_at $ca2; $ca2 > $ca; };\nteam_membership (member_stream: $s, organization: $t);\n$s has followers $f;\nsort $f desc;\nlimit 5;\nfetch {\n  \"stream_name\": $s.name,\n  \"followers\": $f,\n  \"stream_url\": $s.url\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 198,
+      "question": "Identify the streams where 'itsbigchase' is both a moderator and VIP.",
+      "cypher": "MATCH (u:User {name: 'itsbigchase'})\nMATCH (u)-[:MODERATOR]->(s:Stream)\nMATCH (u)-[:VIP]->(s)\nRETURN s.name AS stream_name, s.url AS stream_url",
+      "typeql": "match\n  $u isa user, has name \"itsbigchase\";\n  $s isa stream;\n  moderation (moderating_user: $u, moderated_channel: $s);\n  vip_status (vip_user: $u, vip_channel: $s);\nfetch {\n  \"stream_name\": $s.name,\n  \"stream_url\": $s.url\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 206,
+      "question": "Which users are VIP in both 'itsbigchase' and another stream?",
+      "cypher": "MATCH (u:User)-[:VIP]->(s1:Stream {name: 'itsbigchase'}),\n      (u)-[:VIP]->(s2:Stream)\nWHERE s1 <> s2\nRETURN u.name AS vipUser",
+      "typeql": "match\n$u isa user, has name $uname;\n$s1 isa stream, has name \"itsbigchase\";\n$s2 isa stream;\nnot { $s2 is $s1; };\nvip_status (vip_user: $u, channel_with_vips: $s1);\nvip_status (vip_user: $u, channel_with_vips: $s2);\nfetch {\n  \"vipUser\": $uname\n};",
+      "checks_failed": [
+        "cypher_missing_condition",
+        "cypher_wrong_direction",
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND",
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User",
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 235,
+      "question": "Which streams are moderated by users who are also VIPs in the same stream?",
+      "cypher": "MATCH (s:Stream)<-[:MODERATOR]-(u:User)-[:VIP]->(s)\nRETURN s.name AS stream_name, u.name AS moderator_vip_name",
+      "typeql": "match\n$s isa stream;\n$u isa user;\nmoderation (moderating_user: $u, moderated_channel: $s);\nvip_status (vip_user: $u, vip_channel: $s);\nfetch {\n  \"stream_name\": $s.name,\n  \"moderator_vip_name\": $u.name\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 244,
+      "question": "List the streams that are moderated by users with more than 10,000 followers.",
+      "cypher": "MATCH (u:User)-[:MODERATOR]->(s:Stream)\nWHERE u.followers > 10000\nRETURN s.name AS stream_name, s.url AS stream_url, s.followers AS stream_followers, s.total_view_count AS stream_total_view_count",
+      "typeql": "match\n$u isa user, has followers $f;\n$f > 10000;\n$s isa stream;\nmoderation (moderating_user: $u, moderated_channel: $s);\nfetch {\n  \"stream_name\": $s.name,\n  \"stream_url\": $s.url,\n  \"stream_followers\": $s.followers,\n  \"stream_total_view_count\": $s.total_view_count\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses u.followers but \"followers\" is not on :User (exists on other types)"
+      ]
+    },
+    {
+      "index": 247,
+      "question": "Identify 3 users who are VIPs for streams with a total view count over 1 million.",
+      "cypher": "MATCH (u:User)-[:VIP]->(s:Stream)\nWHERE s.total_view_count > 1000000\nRETURN u.name AS VIP_User, s.name AS Stream_Name, s.total_view_count AS Total_View_Count\nLIMIT 3",
+      "typeql": "match\n$u isa user, has name $un;\n$s isa stream, has name $sn, has total_view_count $tvc;\n$tvc > 1000000;\nvip_status (vip_user: $u, channel_with_vips: $s);\nlimit 3;\nfetch {\n  \"VIP_User\": $un,\n  \"Stream_Name\": $sn,\n  \"Total_View_Count\": $tvc\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 257,
+      "question": "Show streams that feature more than 3 games.",
+      "cypher": "MATCH (s:Stream)-[:PLAYS]->(g:Game)\nWITH s, COUNT(g) AS gameCount\nWHERE gameCount > 3\nRETURN s.name AS streamName, gameCount",
+      "typeql": "match\n$s isa stream;\n$g isa game;\ngame_play (streaming_channel: $s, played_game: $g);\nreduce $gameCount = count($g) groupby $s;\nmatch $gameCount > 3;\n$s has name $streamName;\nsort $streamName;\nfetch {\n  \"streamName\": $streamName,\n  \"gameCount\": $gameCount\n};",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 258,
+      "question": "Which users are VIPs for the stream with the highest follower count?",
+      "cypher": "MATCH (s:Stream)\nWITH s\nORDER BY s.followers DESC\nLIMIT 1\nMATCH (s)-[:VIP]->(u:User)\nRETURN u.name",
+      "typeql": "with fun max_followers() -> integer:\n  match $s isa stream, has followers $f;\n  return max($f);\nmatch\n  $s isa stream, has followers $f;\n  let $max = max_followers();\n  $f == $max;\n  vip_status (channel_with_vips: $s, vip_user: $u);\n  $u has name $un;\nfetch { \"name\": $un };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 262,
+      "question": "List the streams that have VIP users with less than 10,000 followers.",
+      "cypher": "MATCH (s:Stream)-[:VIP]->(u:User)\nWHERE u.followers < 10000\nRETURN s.name AS stream_name, s.url AS stream_url, u.name AS vip_user_name, u.followers AS vip_user_followers",
+      "typeql": "match\n$s isa stream;\n$u isa user, has followers $f;\n$f < 10000;\nvip_status (channel_with_vips: $s, vip_user: $u);\nfetch {\n  \"stream_name\": $s.name,\n  \"stream_url\": $s.url,\n  \"vip_user_name\": $u.name,\n  \"vip_user_followers\": $f\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses u.followers but \"followers\" is not on :User (exists on other types)"
+      ]
+    },
+    {
+      "index": 268,
+      "question": "List the names of users who are VIPs in more than 3 streams.",
+      "cypher": "MATCH (u:User)-[:VIP]->(s:Stream)\nWITH u, COUNT(s) AS vipStreamCount\nWHERE vipStreamCount > 3\nRETURN u.name",
+      "typeql": "match\n$u isa user;\n$s isa stream;\nvip_status (vip_user: $u, channel_with_vips: $s);\nreduce $count = count($s) groupby $u;\nmatch $count > 3;\nfetch { \"name\": $u.name };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 287,
+      "question": "Identify 5 streams where users are both VIPs and moderators.",
+      "cypher": "MATCH (s:Stream)<-[:VIP]-(u:User)-[:MODERATOR]->(s)\nRETURN s.name AS stream_name, s.url AS stream_url, u.name AS user_name\nLIMIT 5",
+      "typeql": "match\n  $s isa stream;\n  $u isa user;\n  vip_status (channel_with_vips: $s, vip_user: $u);\n  moderation (moderated_channel: $s, moderating_user: $u);\nlimit 5;\nfetch {\n  \"stream_name\": $s.name,\n  \"stream_url\": $s.url,\n  \"user_name\": $u.name\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Stream)-[:VIP]->(User) but schema says User->Stream"
+      ]
+    },
+    {
+      "index": 294,
+      "question": "Show the top 5 users who are VIPs in the most streams.",
+      "cypher": "MATCH (u:User)-[:VIP]->(s:Stream)\nWITH u, COUNT(s) AS vip_count\nORDER BY vip_count DESC\nLIMIT 5\nRETURN u.name AS userName, vip_count",
+      "typeql": "match\n$u isa user;\n$s isa stream;\nvip_status (vip_user: $u, vip_channel: $s);\nreduce $vip_count = count($s) groupby $u;\nsort $vip_count desc;\nlimit 5;\nfetch { \"userName\": $u.name, \"vip_count\": $vip_count };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 312,
+      "question": "Which streams have both a 'MODERATOR' and a 'VIP' relationship with the same user?",
+      "cypher": "MATCH (u:User)-[:MODERATOR]->(s:Stream)<-[:VIP]-(u)\nRETURN s.name AS streamName, u.name AS userName",
+      "typeql": "match\n$s isa stream;\n$u isa user;\nmoderation (moderating_user: $u, moderated_channel: $s);\nvip_status (vip_user: $u, vip_channel: $s);\nfetch {\n  \"streamName\": $s.name,\n  \"userName\": $u.name\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Stream)-[:VIP]->(User) but schema says User->Stream"
+      ]
+    },
+    {
+      "index": 345,
+      "question": "What are the first 3 users who are VIPs in streams with more than 10,000 total views?",
+      "cypher": "MATCH (u:User)-[:VIP]->(s:Stream)\nWHERE s.total_view_count > 10000\nRETURN u.name\nLIMIT 3",
+      "typeql": "match\n$u isa user;\n$s isa stream, has total_view_count $tvc;\n$tvc > 10000;\nvip_status (vip_user: $u, vip_channel: $s);\nlimit 3;\nfetch {\n  \"name\": $u.name\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 351,
+      "question": "List the top 5 streams that have chatters with more than 5000 followers.",
+      "cypher": "MATCH (s:Stream)<-[:CHATTER]-(u:User)\nWHERE u.followers > 5000\nRETURN s.name, s.followers\nORDER BY s.followers DESC\nLIMIT 5",
+      "typeql": "match\n$s isa stream;\n$u isa user, has followers $uf;\n$uf > 5000;\nchat_activity (channel_with_chatters: $s, chatting_user: $u);\n$s has followers $sf;\nsort $sf desc;\nlimit 5;\nfetch {\n  \"name\": $s.name,\n  \"followers\": $sf\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses u.followers but \"followers\" is not on :User (exists on other types)"
+      ]
+    },
+    {
+      "index": 353,
+      "question": "What are the first 3 streams that have a language setup other than 'en' or 'ru'?",
+      "cypher": "MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)\nWHERE l.name <> 'en' AND l.name <> 'ru'\nRETURN s\nORDER BY s.createdAt\nLIMIT 3",
+      "typeql": "match\n$s isa stream;\n$l isa language, has name $ln;\nlanguage_usage (channel: $s, used_language: $l);\nnot { $ln == \"en\"; };\nnot { $ln == \"ru\"; };\n$s has created_at $ca;\nsort $ca asc;\nlimit 3;\nfetch {\n  \"stream\": { $s.* }\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 366,
+      "question": "Which streams have chatters who have less than 1000 followers?",
+      "cypher": "MATCH (s:Stream)<-[:CHATTER]-(u:User)\nWHERE u.followers < 1000\nRETURN s.name AS stream_name, s.id AS stream_id",
+      "typeql": "match\n$s isa stream;\n$u isa user, has followers $f;\nchat_activity (channel_with_chatters: $s, chatting_user: $u);\n$f < 1000;\nfetch {\n  \"stream_name\": $s.name,\n  \"stream_id\": $s.stream_id\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses u.followers but \"followers\" is not on :User (exists on other types)"
+      ]
+    },
+    {
+      "index": 367,
+      "question": "How many users have VIP status in more than one stream?",
+      "cypher": "MATCH (u:User)-[:VIP]->(s1:Stream)\nWITH u, COUNT(DISTINCT s1) AS streamCount\nWHERE streamCount > 1\nRETURN COUNT(u) AS vipUsersInMultipleStreams",
+      "typeql": "match\n$u isa user;\nvip_status (vip_user: $u, vip_channel: $s);\n$s isa stream;\nreduce $stream_count = count($s) groupby $u;\nmatch\n$stream_count > 1;\nreduce $count = count($u);",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 378,
+      "question": "Which 3 users have VIP status in the most streams?",
+      "cypher": "MATCH (u:User)-[:VIP]->(s:Stream)\nWITH u, COUNT(s) AS vip_stream_count\nORDER BY vip_stream_count DESC\nLIMIT 3\nRETURN u.name AS userName, vip_stream_count",
+      "typeql": "match\n$u isa user, has name $n;\n$s isa stream;\nvip_status (vip_user: $u, vip_channel: $s);\nreduce $count = count($s) groupby $u, $n;\nsort $count desc;\nlimit 3;\nfetch { \"userName\": $n, \"vip_stream_count\": $count };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 384,
+      "question": "Which 3 users are VIPs in the most number of different users' streams?",
+      "cypher": "MATCH (vipUser:User)-[:VIP]->(stream:Stream)\nWITH vipUser, count(DISTINCT stream) AS streamCount\nORDER BY streamCount DESC\nLIMIT 3\nRETURN vipUser.name AS vipUserName, streamCount",
+      "typeql": "match\n$vipUser isa user;\nvip_status (vip_user: $vipUser, vip_channel: $stream);\nreduce $streamCount = count($stream) groupby $vipUser;\nsort $streamCount desc;\nlimit 3;\nfetch { \"vipUserName\": $vipUser.name, \"streamCount\": $streamCount };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 387,
+      "question": "List the first 3 streams that have chatters who are also streams.",
+      "cypher": "MATCH (s:Stream)<-[:CHATTER]-(u:User)-[:CHATTER]->(s2:Stream)\nRETURN DISTINCT s2.name AS stream_name, s2.url AS stream_url\nLIMIT 3",
+      "typeql": "match\n$s isa stream;\n$s2 isa stream;\n$u isa user;\nchat_activity (channel_with_chatters: $s, chatting_user: $u);\nchat_activity (channel_with_chatters: $s2, chatting_user: $u);\nnot { $s is $s2; };\nselect $s2;\ndistinct;\nlimit 3;\nfetch {\n  \"stream_name\": $s2.name,\n  \"stream_url\": $s2.url\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 407,
+      "question": "Identify the first 3 streams that have a language set to 'ru' and a moderator with a follower count above 5000.",
+      "cypher": "MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language {name: 'ru'})\nMATCH (s)-[:MODERATOR]->(u:User)\nWHERE u.followers > 5000\nRETURN s\nORDER BY s.createdAt ASC\nLIMIT 3",
+      "typeql": "match\n$s isa stream, has created_at $ca;\n$l isa language, has name \"ru\";\nlanguage_usage (channel: $s, used_language: $l);\n$u isa user, has followers $f;\nmoderation (moderated_channel: $s, moderating_user: $u);\n$f > 5000;\nsort $ca asc;\nlimit 3;\nfetch {\n  \"stream\": $s.name,\n  \"created_at\": $s.created_at\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses u.followers but \"followers\" is not on :User (exists on other types)"
+      ]
+    },
+    {
+      "index": 420,
+      "question": "Which 3 streams have the least followers but are associated with a game with more than 100,000 total views?",
+      "cypher": "MATCH (s:Stream)-[:PLAYS]->(g:Game)\nWHERE s.followers IS NOT NULL AND s.followers >= 0\nWITH s, g\nORDER BY s.followers ASC\nLIMIT 3\nMATCH (s)-[:PLAYS]->(g)\nWHERE g.total_view_count > 100000\nRETURN s.name AS StreamName, s.followers AS Followers, g.name AS GameName, g.total_view_count AS GameTotalViews\nORDER BY s.followers ASC\nLIMIT 3",
+      "typeql": "match\n  $s isa stream, has name $sn, has followers $f, has total_view_count $tv;\n  $g isa game, has name $gn;\n  game_play (streaming_channel: $s, played_game: $g);\n  $tv > 100000;\nsort $f asc;\nlimit 3;\nfetch {\n  \"StreamName\": $sn,\n  \"Followers\": $f,\n  \"GameName\": $gn\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses g.total_view_count but \"total_view_count\" is not on :Game (exists on other types)"
+      ]
+    },
+    {
+      "index": 422,
+      "question": "Which 3 streams have the most VIP users who also have more than 5000 followers?",
+      "cypher": "MATCH (s:Stream)-[:VIP]->(u:User)\nWHERE u.followers > 5000\nWITH s, COUNT(u) AS vip_count\nORDER BY vip_count DESC\nLIMIT 3\nRETURN s.name AS stream_name, vip_count",
+      "typeql": "match\n$s isa stream;\n$u isa user, has followers $f;\n$f > 5000;\nvip_status (channel_with_vips: $s, vip_user: $u);\nreduce $vip_count = count($u) groupby $s;\nsort $vip_count desc;\nlimit 3;\nfetch {\n  \"stream_name\": $s.name,\n  \"vip_count\": $vip_count\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses u.followers but \"followers\" is not on :User (exists on other types)"
+      ]
+    },
+    {
+      "index": 438,
+      "question": "Which users are VIPs in streams with a total view count exceeding 500,000?",
+      "cypher": "MATCH (u:User)-[:VIP]->(s:Stream)\nWHERE s.total_view_count > 500000\nRETURN u.name AS vip_user, s.name AS stream_name, s.total_view_count AS view_count",
+      "typeql": "match\n  $u isa user, has name $un;\n  $s isa stream, has name $sn, has total_view_count $tvc;\n  vip_status (vip_user: $u, channel_with_vips: $s);\n  $tvc > 500000;\nfetch {\n  \"vip_user\": $un,\n  \"stream_name\": $sn,\n  \"view_count\": $tvc\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 457,
+      "question": "Who are the top 3 users who are VIPs in the stream with the name '9linda'?",
+      "cypher": "MATCH (s:Stream {name: '9linda'})-[:VIP]->(u:User)\nRETURN u.name\nORDER BY u.followers DESC\nLIMIT 3",
+      "typeql": "match\n$s isa stream, has name \"9linda\";\n$u isa user, has name $name, has followers $f;\nvip_status (channel_with_vips: $s, vip_user: $u);\nsort $f desc;\nlimit 3;\nfetch {\n  \"name\": $name\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses u.followers but \"followers\" is not on :User (exists on other types)"
+      ]
+    },
+    {
+      "index": 469,
+      "question": "Which users are VIPs in more than one stream?",
+      "cypher": "MATCH (u:User)-[:VIP]->(s:Stream)\nWITH u, COUNT(s) AS streamCount\nWHERE streamCount > 1\nRETURN u.name AS vipUser, streamCount",
+      "typeql": "match\n$u isa user;\n$s isa stream;\nvip_status (vip_user: $u, vip_channel: $s);\nreduce $streamCount = count($s) groupby $u;\nmatch\n$streamCount > 1;\nfetch {\n  \"vipUser\": $u.name,\n  \"streamCount\": $streamCount\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 470,
+      "question": "List the first 5 streams that have been VIP in more than one stream.",
+      "cypher": "MATCH (s:Stream)-[:VIP]->(u:User)-[:VIP]->(otherStream:Stream)\nWITH s, COUNT(DISTINCT otherStream) AS vipCount\nWHERE vipCount > 1\nRETURN s.name AS streamName, s.url AS streamUrl, vipCount\nORDER BY vipCount DESC\nLIMIT 5",
+      "typeql": "match\n$s isa stream;\n$u isa user;\n$otherStream isa stream;\nvip_status (channel_with_vips: $s, vip_user: $u);\nvip_status (channel_with_vips: $otherStream, vip_user: $u);\nnot { $s is $otherStream; };\nselect $s, $otherStream;\ndistinct;\nreduce $vipCount = count($otherStream) groupby $s;\nmatch $vipCount > 1;\nsort $vipCount desc;\nlimit 5;\nfetch { \"streamName\": $s.name, \"streamUrl\": $s.url, \"vipCount\": $vipCount };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 473,
+      "question": "Who are the top 3 users who chatter in the stream with the highest total view count?",
+      "cypher": "MATCH (s:Stream)-[:CHATTER]->(u:User)\nWITH s, u\nORDER BY s.total_view_count DESC\nLIMIT 1\nMATCH (s)-[:CHATTER]->(u:User)\nRETURN u.name AS userName, COUNT(*) AS chatterCount\nORDER BY chatterCount DESC\nLIMIT 3",
+      "typeql": "with fun max_stream_views() -> integer :\n    match\n        $s isa stream, has total_view_count $v;\n        chat_activity (channel_with_chatters: $s, chatting_user: $u);\n        $u isa user;\n    return max($v);\nmatch\n    $s isa stream, has total_view_count $v;\n    let $max = max_stream_views();\n    $v == $max;\n    $rel isa chat_activity (channel_with_chatters: $s, chatting_user: $u);\n    $u isa user;\nreduce $count = count($rel) groupby $u;\nsort $count desc;\nlimit 3;\nfetch { \"userName\": $u.name };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 484,
+      "question": "What are the names of the first 3 users who are both moderators and VIPs for any stream?",
+      "cypher": "MATCH (u:User)-[:MODERATOR]->(s:Stream)\nMATCH (u)-[:VIP]->(s)\nRETURN u.name\nLIMIT 3",
+      "typeql": "match\n$u isa user, has name $n;\n$s isa stream;\nmoderation (moderating_user: $u, moderated_channel: $s);\nvip_status (vip_user: $u, vip_channel: $s);\nlimit 3;\nfetch {\n  \"name\": $n\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 487,
+      "question": "Who are the top 3 moderators for the stream with the highest follower count?",
+      "cypher": "MATCH (s:Stream)\nWITH s\nORDER BY s.followers DESC\nLIMIT 1\nMATCH (s)-[:MODERATOR]->(u:User)\nRETURN u.name AS moderator_name\nORDER BY s.followers DESC\nLIMIT 3",
+      "typeql": "with fun max_followers() -> integer:\n    match $s isa stream, has followers $f;\n    return max($f);\nmatch\n    $s isa stream, has followers $f;\n    let $max = max_followers();\n    $f == $max;\n    moderation (moderated_channel: $s, moderating_user: $u);\n    $u has name $name;\nlimit 3;\nfetch { \"moderator_name\": $name };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 509,
+      "question": "What are the top 3 most viewed games by streams that have a team?",
+      "cypher": "MATCH (s:Stream)-[:PLAYS]->(g:Game)\nMATCH (s)-[:HAS_TEAM]->(:Team)\nRETURN g.name AS game, SUM(s.total_view_count) AS total_views\nORDER BY total_views DESC\nLIMIT 3",
+      "typeql": "match\n$s isa stream, has total_view_count $v;\n$g isa game;\ngame_play (streaming_channel: $s, played_game: $g);\nteam_membership (member_stream: $s, organization: $t);\nreduce $total_views = sum($v) groupby $g;\nsort $total_views desc;\nlimit 3;\nfetch { \"game\": $g.name, \"total_views\": $total_views };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 517,
+      "question": "Which 3 users are VIPs on the most diverse set of streams?",
+      "cypher": "MATCH (u:User)-[:VIP]->(s:Stream)\nWITH u, count(DISTINCT s) AS streamCount\nORDER BY streamCount DESC\nLIMIT 3\nRETURN u.name AS userName, streamCount",
+      "typeql": "match\n$u isa user;\n$s isa stream;\nvip_status (vip_user: $u, vip_channel: $s);\nreduce $streamCount = count($s) groupby $u;\nsort $streamCount desc;\nlimit 3;\nfetch { \"userName\": $u.name, \"streamCount\": $streamCount };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 532,
+      "question": "Which 3 users have VIP status on the most streams?",
+      "cypher": "MATCH (u:User)-[:VIP]->(s:Stream)\nWITH u, COUNT(s) AS vip_stream_count\nORDER BY vip_stream_count DESC\nLIMIT 3\nRETURN u.name AS userName, vip_stream_count",
+      "typeql": "match\n$u isa user;\n$s isa stream;\nvip_status (vip_user: $u, vip_channel: $s);\nreduce $count = count($s) groupby $u;\nsort $count desc;\nlimit 3;\nfetch { \"userName\": $u.name, \"vip_stream_count\": $count };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (User)-[:VIP]->(Stream) but schema says Stream->User"
+      ]
+    },
+    {
+      "index": 554,
+      "question": "Which 3 streams have the highest number of VIP users?",
+      "cypher": "MATCH (s:Stream)<-[:VIP]-(u:User)\nWITH s, COUNT(u) AS vip_count\nORDER BY vip_count DESC\nLIMIT 3\nRETURN s.name AS stream_name, vip_count",
+      "typeql": "match\n$s isa stream;\n$u isa user;\nvip_status (channel_with_vips: $s, vip_user: $u);\nreduce $vip_count = count($u) groupby $s;\nsort $vip_count desc;\nlimit 3;\nfetch { \"stream_name\": $s.name, \"vip_count\": $vip_count };",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Stream)-[:VIP]->(User) but schema says User->Stream"
+      ]
+    }
+  ],
+  "categories": {
+    "cypher_wrong_direction": [
+      26,
+      52,
+      66,
+      72,
+      115,
+      133,
+      172,
+      198,
+      206,
+      235,
+      247,
+      268,
+      287,
+      294,
+      312,
+      345,
+      367,
+      378,
+      384,
+      438,
+      469,
+      484,
+      517,
+      532,
+      554
+    ],
+    "cypher_lacks_sort_vs_typeql": [
+      46,
+      75,
+      257
+    ],
+    "cypher_lacks_count_vs_typeql": [
+      56,
+      509
+    ],
+    "cypher_lacks_optional_vs_typeql": [
+      81,
+      111,
+      128,
+      146,
+      258,
+      473,
+      487
+    ],
+    "cypher_missing_condition": [
+      115,
+      206
+    ],
+    "cypher_lacks_negation_vs_typeql": [
+      115,
+      187,
+      206,
+      353,
+      387,
+      470
+    ],
+    "cypher_wrong_label_property": [
+      142,
+      244,
+      262,
+      351,
+      366,
+      407,
+      420,
+      422,
+      457
+    ]
+  }
+}

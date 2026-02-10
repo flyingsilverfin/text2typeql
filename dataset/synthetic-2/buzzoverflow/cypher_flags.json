@@ -1,0 +1,262 @@
+{
+  "database": "buzzoverflow",
+  "source": "synthetic-2",
+  "total_queries": 584,
+  "flagged": 17,
+  "flags": [
+    {
+      "index": 41,
+      "question": "Identify the top 5 questions with the highest number of favorites that have been asked in 2020.",
+      "cypher": "MATCH (q:Question)-[:ASKED]->(u:User)\nWHERE q.createdAt >= datetime('2020-01-01T00:00:00Z') AND q.createdAt < datetime('2021-01-01T00:00:00Z')\nRETURN q.title AS title, q.favorites AS favorites, q.link AS link, q.createdAt AS createdAt\nORDER BY q.favorites DESC\nLIMIT 5",
+      "typeql": "match\n$q isa question, has created_at $ca, has favorites $f;\n$ca >= 2020-01-01T00:00:00Z;\n$ca < 2021-01-01T00:00:00Z;\nsort $f desc;\nlimit 5;\nfetch {\n  \"title\": $q.title,\n  \"favorites\": $f,\n  \"link\": $q.link,\n  \"createdAt\": $ca\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Question)-[:ASKED]->(User) but schema says User->Question"
+      ]
+    },
+    {
+      "index": 50,
+      "question": "What are the 3 most recent questions asked by the user with the highest reputation?",
+      "cypher": "// Step 1: Find the user with the highest reputation\nMATCH (u:User)\nWITH u\nORDER BY u.reputation DESC\nLIMIT 1\n\n// Step 2: Find the questions asked by this user\nMATCH (u)-[:ASKED]->(q:Question)\nWITH q\nORDER BY q.createdAt DESC\nLIMIT 3\n\n// Step 3: Return the details of the 3 most recent questions\nRETURN q.title AS title, q.text AS text, q.link AS link, q.createdAt AS createdAt",
+      "typeql": "with fun max_reputation() -> integer :\n    match $u isa user, has reputation $r;\n    return max($r);\nmatch\n    $u isa user, has reputation $rep;\n    $rep == max_reputation();\n    asked (asker: $u, asked_question: $q);\n    $q has created_at $ca;\nsort $ca desc;\nlimit 3;\nfetch {\n    \"title\": $q.title,\n    \"text\": $q.text,\n    \"link\": $q.link,\n    \"createdAt\": $q.created_at\n};",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 73,
+      "question": "Which 3 users have asked questions that are all unanswered but highly upVoted?",
+      "cypher": "MATCH (u:User)-[:ASKED]->(q:Question)\nWHERE q.answered = false AND q.upVotes > 0\nWITH u, COUNT(q) AS totalQuestions, COLLECT(q) AS questions\nWHERE totalQuestions = SIZE([q IN questions WHERE q.answered = false])\nRETURN u.display_name, u.link, u.reputation\nORDER BY SIZE([q IN questions WHERE q.upVotes > 0]) DESC\nLIMIT 3",
+      "typeql": "match\n$u isa user;\nasked (asker: $u, asked_question: $q);\n$q isa question, has answered false, has up_votes $uv;\n$uv > 0;\nnot {\n  asked (asker: $u, asked_question: $q2);\n  $q2 has answered true;\n};\nreduce $count = count($q) groupby $u;\nsort $count desc;\nlimit 3;\nfetch {\n  \"display_name\": $u.display_name,\n  \"link\": $u.user_link,\n  \"reputation\": $u.reputation\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 89,
+      "question": "What are the first 3 questions asked by the user with the highest reputation?",
+      "cypher": "MATCH (u:User)-[:ASKED]->(q:Question)\nWITH u, q\nORDER BY u.reputation DESC\nLIMIT 1\nWITH u, q\nORDER BY q.createdAt ASC\nLIMIT 3\nRETURN q.title, q.link, q.createdAt",
+      "typeql": "with fun max_rep() -> integer :\n    match $u isa user, has reputation $r;\n    return max($r);\nmatch\n$u isa user, has reputation $rep;\nlet $max = max_rep();\n$rep == $max;\nasked (asker: $u, asked_question: $q);\n$q has created_at $ca;\nsort $ca asc;\nlimit 3;\nfetch {\n    \"title\": $q.title,\n    \"link\": $q.link,\n    \"createdAt\": $ca\n};",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 126,
+      "question": "Which 3 users' questions have the most variations in favorites count?",
+      "cypher": "MATCH (u:User)-[:ASKED]->(q:Question)\nWITH u, collect(q.favorites) AS favoritesList\nWITH u, favoritesList, apoc.coll.max(favoritesList) - apoc.coll.min(favoritesList) AS favoritesVariation\nORDER BY favoritesVariation DESC\nLIMIT 3\nRETURN u.display_name AS user, favoritesVariation",
+      "typeql": "with fun max_fav($u: user) -> integer:\n  match\n    asked (asker: $u, asked_question: $q);\n    $q has favorites $f;\n  return max($f);\nwith fun min_fav($u: user) -> integer:\n  match\n    asked (asker: $u, asked_question: $q);\n    $q has favorites $f;\n  return min($f);\nmatch\n  $u isa user;\nlet $max = max_fav($u);\nlet $min = min_fav($u);\nlet $variation = $max - $min;\nsort $variation desc;\nlimit 3;\nfetch {\n  \"user\": $u.display_name,\n  \"favoritesVariation\": $variation\n};",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 178,
+      "question": "Provide the titles and links of questions that have more than 2 tags.",
+      "cypher": "MATCH (q:Question)-[:TAGGED]->(t:Tag)\nWITH q, COUNT(t) AS tagCount\nWHERE tagCount > 2\nRETURN q.title AS title, q.link AS link",
+      "typeql": "match\n$q isa question;\ntagged (tagged_question: $q, tag: $t);\nreduce $tag_count = count($t) groupby $q;\nmatch\n$tag_count > 2;\nfetch {\n  \"title\": $q.title,\n  \"link\": $q.link\n};",
+      "checks_failed": [
+        "cypher_missing_return_props"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for \"titles and links\" but neither appears in RETURN"
+      ]
+    },
+    {
+      "index": 179,
+      "question": "List all tags for questions that were asked by the user with the lowest reputation.",
+      "cypher": "// First, find the user with the lowest reputation\nMATCH (u:User)\nWITH u\nORDER BY u.reputation ASC\nLIMIT 1\n\n// Then, find all questions asked by this user\nMATCH (u)-[:ASKED]->(q:Question)\n\n// Finally, find all tags for these questions\nMATCH (q)-[:TAGGED]->(t:Tag)\nRETURN DISTINCT t.name AS tag",
+      "typeql": "with fun min_reputation() -> integer :\n  match $u isa user, has reputation $rep;\n  return min($rep);\nmatch\n$u isa user, has reputation $rep;\nlet $min_rep = min_reputation();\n$rep == $min_rep;\nasked (asker: $u, asked_question: $q);\ntagged (tagged_question: $q, tag: $t);\n$t has tag_name $tn;\nselect $tn;\ndistinct;\nfetch { \"tag\": $tn };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 188,
+      "question": "Provide the list of users who asked a question on the first day of any month.",
+      "cypher": "MATCH (u:User)-[:ASKED]->(q:Question)\nWHERE q.createdAt.day = 1\nRETURN u.display_name AS userName, q.title AS questionTitle, q.createdAt AS questionDate",
+      "typeql": "match\n$u isa user;\n$q isa question, has created_at $ca;\nasked (asker: $u, asked_question: $q);\n$ca like \".*-01T.*\";\nfetch { \"userName\": $u.display_name, \"questionTitle\": $q.title, \"questionDate\": $ca };",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 200,
+      "question": "Provide the titles and links of questions that were asked by users with an image link containing 'googleusercontent' and have more than 3 favorites.",
+      "cypher": "MATCH (u:User)-[:ASKED]->(q:Question)\nWHERE u.image CONTAINS 'googleusercontent' AND q.favorites > 3\nRETURN q.title AS title, q.link AS link",
+      "typeql": "match\n$u isa user, has image $img;\n$img like \".*googleusercontent.*\";\n$q isa question, has favorites $f;\n$f > 3;\nasked (asker: $u, asked_question: $q);\nfetch {\n  \"title\": $q.title,\n  \"link\": $q.link\n};",
+      "checks_failed": [
+        "cypher_missing_return_props"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for \"titles and links\" but neither appears in RETURN"
+      ]
+    },
+    {
+      "index": 225,
+      "question": "Provide the titles and links of questions asked by users with a display name containing 'Le' and a reputation over 10000.",
+      "cypher": "MATCH (u:User)-[:ASKED]->(q:Question)\nWHERE u.display_name CONTAINS 'Le' AND u.reputation > 10000\nRETURN q.title, q.link",
+      "typeql": "match\n$u isa user, has display_name $dn, has reputation $r;\n$dn like \".*Le.*\";\n$r > 10000;\nasked (asker: $u, asked_question: $q);\n$q isa question;\nfetch {\n  \"title\": $q.title,\n  \"link\": $q.link\n};",
+      "checks_failed": [
+        "cypher_missing_return_props"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for \"titles and links\" but neither appears in RETURN"
+      ]
+    },
+    {
+      "index": 275,
+      "question": "Which tags are associated with questions that have more than 2 upVotes? List the first 5 tags.",
+      "cypher": "MATCH (q:Question)-[:TAGGED]->(t:Tag)\nWHERE q.upVotes > 2\nRETURN DISTINCT t.name\nLIMIT 5",
+      "typeql": "match\n$q isa question, has up_votes $uv;\n$uv > 2;\ntagged (tagged_question: $q, tag: $t);\n$t has tag_name $tn;\nselect $tn;\ndistinct;\nsort $tn;\nlimit 5;\nfetch { \"tag_name\": $tn };",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 316,
+      "question": "Which users have asked more than 3 questions?",
+      "cypher": "MATCH (u:User)-[:ASKED]->(q:Question)\nWITH u, COUNT(q) AS questionCount\nWHERE questionCount > 3\nRETURN u.display_name AS userName, questionCount",
+      "typeql": "match\n$u isa user;\n$q isa question;\nasked (asker: $u, asked_question: $q);\nreduce $questionCount = count($q) groupby $u;\nmatch\n$questionCount > 3;\nsort $questionCount desc;\nfetch {\n  \"userName\": $u.display_name,\n  \"questionCount\": $questionCount\n};",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 362,
+      "question": "Which users have asked more than 3 questions?",
+      "cypher": "MATCH (u:User)-[:ASKED]->(q:Question)\nWITH u, COUNT(q) AS questionCount\nWHERE questionCount > 3\nRETURN u.display_name AS userName, questionCount",
+      "typeql": "match\n$u isa user;\n$q isa question;\nasked (asker: $u, asked_question: $q);\nreduce $questionCount = count($q) groupby $u;\nmatch $questionCount > 3;\n$u has display_name $name;\nsort $name;\nfetch {\n  \"userName\": $name,\n  \"questionCount\": $questionCount\n};",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 440,
+      "question": "Show the top 5 questions by the number of times they have been favorited.",
+      "cypher": "MATCH (q:Question)\nRETURN q.title, q.favorites\nORDER BY q.favorites DESC\nLIMIT 5",
+      "typeql": "match\n$q isa question, has title $t, has favorites $f;\nsort $f desc;\nlimit 5;\nfetch {\n  \"title\": $t,\n  \"favorites\": $f\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 443,
+      "question": "List 3 users who have never been downvoted on their questions.",
+      "cypher": "MATCH (u:User)-[:ASKED]->(q:Question)\nWHERE q.downVotes = 0\nWITH u, COUNT(q) AS questionCount\nMATCH (u)-[:ASKED]->(q2:Question)\nWITH u, questionCount, COUNT(q2) AS totalQuestions\nWHERE questionCount = totalQuestions\nRETURN u.display_name AS userName, u.id AS userId, u.link AS userLink\nLIMIT 3",
+      "typeql": "match\n$u isa user;\nasked (asker: $u, asked_question: $q);\n$q isa question;\nnot { $u isa user; asked (asker: $u, asked_question: $q2); $q2 isa question, has down_votes $dv; $dv > 0; };\nlimit 3;\nfetch {\n  \"userName\": $u.display_name,\n  \"userId\": $u.user_id,\n  \"userLink\": $u.user_link\n};",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 464,
+      "question": "Which 3 users have the highest rate of answered questions?",
+      "cypher": "MATCH (u:User)-[:ASKED]->(q:Question)\nWHERE q.answered = true\nWITH u, COUNT(q) AS answeredQuestions\nMATCH (u)-[:ASKED]->(allQuestions:Question)\nWITH u, answeredQuestions, COUNT(allQuestions) AS totalQuestions\nWITH u, answeredQuestions, totalQuestions, (toFloat(answeredQuestions) / totalQuestions) AS answerRate\nORDER BY answerRate DESC\nLIMIT 3\nRETURN u.display_name AS user, answerRate",
+      "typeql": "with fun answered_count($u: user) -> integer:\n  match\n  asked (asker: $u, asked_question: $q);\n  $q isa question, has answered true;\n  return count;\nwith fun total_count($u: user) -> integer:\n  match\n  asked (asker: $u, asked_question: $q);\n  $q isa question;\n  return count;\nmatch\n$u isa user;\nlet $answered = answered_count($u);\nlet $total = total_count($u);\n$total > 0;\nlet $answer_rate = $answered / $total;\nsort $answer_rate desc;\nlimit 3;\nfetch {\n  \"user\": $u.display_name,\n  \"answerRate\": $ans",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 138,
+      "question": "Identify the first 3 questions with the most detailed descriptions based on the number of characters.",
+      "cypher": "MATCH (q:Question)\nWITH q, size(q.text) AS descriptionLength\nORDER BY descriptionLength DESC\nLIMIT 3\nRETURN q.title AS title, q.text AS description, descriptionLength",
+      "typeql": "match\n$q isa question, has text $text, has title $title;\nlet $len = len($text);\nsort $len desc;\nlimit 3;\nfetch {\n  \"title\": $title,\n  \"description\": $text,\n  \"descriptionLength\": $len\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    }
+  ],
+  "categories": {
+    "cypher_wrong_direction": [
+      41
+    ],
+    "cypher_lacks_optional_vs_typeql": [
+      50,
+      89,
+      126,
+      179,
+      464
+    ],
+    "cypher_lacks_negation_vs_typeql": [
+      73,
+      443
+    ],
+    "cypher_missing_return_props": [
+      178,
+      200,
+      225
+    ],
+    "cypher_lacks_string_op_vs_typeql": [
+      188
+    ],
+    "cypher_lacks_sort_vs_typeql": [
+      275,
+      316,
+      362
+    ],
+    "cypher_missing_count": [
+      440,
+      138
+    ]
+  }
+}

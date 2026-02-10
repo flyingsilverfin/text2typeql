@@ -1,0 +1,919 @@
+{
+  "database": "recommendations",
+  "source": "synthetic-2",
+  "total_queries": 722,
+  "flagged": 63,
+  "flags": [
+    {
+      "index": 20,
+      "question": "List the first 5 actors who have acted in movies directed by a director born in Nebraska.",
+      "cypher": "MATCH (d:Director)-[:DIRECTED]->(m:Movie)<-[:ACTED_IN]-(a:Actor)\nWHERE d.bornIn CONTAINS \"Nebraska\"\nRETURN DISTINCT a.name\nLIMIT 5",
+      "typeql": "match\n$d isa person, has born_in $bi;\n$bi like \".*Nebraska.*\";\ndirected (director: $d, film: $m);\nacted_in (actor: $a, film: $m);\n$a has name $name;\nselect $name;\ndistinct;\nsort $name;\nlimit 5;\nfetch {\n  \"name\": $name\n};",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 25,
+      "question": "List the top 5 highest-rated movies by users named 'John'.",
+      "cypher": "MATCH (u:User {name: 'John'})-[:RATED]->(m:Movie)\nWITH m, avg(u.rating) AS avgRating\nORDER BY avgRating DESC\nLIMIT 5\nRETURN m.title AS title, avgRating",
+      "typeql": "match\n$u isa user, has name \"John\";\n$rel isa rated (user: $u, film: $m);\n$rel has rating $r;\nreduce $avg_rating = mean($r) groupby $m;\nsort $avg_rating desc;\nlimit 5;\nfetch {\n  \"title\": $m.title,\n  \"avgRating\": $avg_rating\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses u.rating but \"rating\" is not on :User (exists on other types)"
+      ]
+    },
+    {
+      "index": 26,
+      "question": "Show the first 3 genres that have movies with both an English and French language option.",
+      "cypher": "MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)\nWHERE \"English\" IN m.languages AND \"French\" IN m.languages\nRETURN DISTINCT g.name\nLIMIT 3",
+      "typeql": "match\n$m isa movie, has languages $l;\n$l like \".*English.*\";\n$l like \".*French.*\";\nin_genre (film: $m, genre: $g);\n$g has name $n;\nselect $n;\ndistinct;\nlimit 3;\nfetch { \"name\": $n };",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 30,
+      "question": "Which 3 movies have been rated by the oldest users in terms of account creation date?",
+      "cypher": "MATCH (u:User)-[r:RATED]->(m:Movie)\nWITH u, r, m\nORDER BY u.timestamp ASC\nWITH u, collect(m) AS movies\nLIMIT 3\nUNWIND movies AS movie\nRETURN DISTINCT movie.title AS MovieTitle, movie.released AS ReleaseDate\nLIMIT 3",
+      "typeql": "match\n$u isa user;\n$m isa movie;\n$r isa rated (user: $u, film: $m);\n$r has timestamp $t;\nsort $t asc;\nlimit 3;\nfetch {\n  \"MovieTitle\": $m.title,\n  \"ReleaseDate\": $m.released\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses u.timestamp but \"timestamp\" is not on :User (exists on other types)"
+      ]
+    },
+    {
+      "index": 35,
+      "question": "List the top 5 movies that have been rated by users from more than 5 different countries.",
+      "cypher": "MATCH (m:Movie)<-[:RATED]-(u:User)\nWITH m, collect(DISTINCT u.userId) AS users\nWHERE size(users) > 5\nRETURN m.title AS MovieTitle, size(users) AS NumberOfUsers\nORDER BY NumberOfUsers DESC\nLIMIT 5",
+      "typeql": "match\n$m isa movie;\nrated (user: $u, film: $m);\n$u isa user;\nlocated_in (resident: $u, country: $c);\n$c has name $cn;\nselect $m, $cn;\ndistinct;\nreduce $country_count = count groupby $m;\nmatch $country_count > 5;\n$m has title $t;\nsort $country_count desc;\nlimit 5;\nfetch { \"MovieTitle\": $t, \"NumberOfCountries\": $country_count };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 39,
+      "question": "List the first 5 movies that have a language listed as 'French'.",
+      "cypher": "MATCH (m:Movie)\nWHERE 'French' IN m.languages\nRETURN m.title AS MovieTitle, m.languages AS Languages\nLIMIT 5",
+      "typeql": "match\n$m isa movie, has languages $l, has title $t;\n$l like \".*French.*\";\nlimit 5;\nfetch {\n  \"MovieTitle\": $t,\n  \"Languages\": $l\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 100,
+      "question": "List the top 3 actors by the number of IMDb votes they've received for their movies.",
+      "cypher": "MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)\nWITH a, sum(m.imdbVotes) AS totalVotes\nRETURN a.name AS actorName, totalVotes\nORDER BY totalVotes DESC\nLIMIT 3",
+      "typeql": "match\n$a isa person;\n$m isa movie, has imdb_votes $v;\nacted_in (actor: $a, film: $m);\nreduce $totalVotes = sum($v) groupby $a;\nsort $totalVotes desc;\nlimit 3;\nfetch { \"actorName\": $a.name, \"totalVotes\": $totalVotes };",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 105,
+      "question": "What are the top 3 highest rated movies by users?",
+      "cypher": "MATCH (m:Movie)<-[:RATED]-(u:User)\nWITH m, avg(u.rating) AS avgRating\nORDER BY avgRating DESC\nLIMIT 3\nRETURN m.title AS title, avgRating",
+      "typeql": "match\n$m isa movie;\n$rel isa rated (user: $u, film: $m);\n$rel has rating $r;\nreduce $avg_rating = mean($r) groupby $m;\nsort $avg_rating desc;\nlimit 3;\nfetch { \"title\": $m.title, \"avgRating\": $avg_rating };",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses u.rating but \"rating\" is not on :User (exists on other types)"
+      ]
+    },
+    {
+      "index": 112,
+      "question": "List the top 5 movies with the most number of IMDb votes.",
+      "cypher": "MATCH (m:Movie)\nRETURN m.title AS title, m.imdbVotes AS votes\nORDER BY m.imdbVotes DESC\nLIMIT 5",
+      "typeql": "match\n$m isa movie, has imdb_votes $v;\nsort $v desc;\nlimit 5;\nfetch {\n  \"title\": $m.title,\n  \"votes\": $v\n};",
+      "checks_failed": [
+        "cypher_missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks \"how many\" but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 122,
+      "question": "Which three actors have acted in movies in more than 3 different languages?",
+      "cypher": "MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)\nWITH a, collect(DISTINCT m.languages) AS languages\nWHERE size(apoc.coll.flatten(languages)) > 3\nRETURN a.name AS actor, size(apoc.coll.flatten(languages)) AS language_count\nORDER BY language_count DESC\nLIMIT 3",
+      "typeql": "match\n$a isa person;\nacted_in (actor: $a, film: $m);\n$m has languages $l;\nselect $a, $l;\ndistinct;\nreduce $lang_count = count groupby $a;\nmatch $lang_count > 3;\nsort $lang_count desc;\nlimit 3;\nfetch { \"actor\": $a.name, \"language_count\": $lang_count };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 124,
+      "question": "What are the first 3 movies that have a language list containing 'Turkish'?",
+      "cypher": "MATCH (m:Movie)\nWHERE 'Turkish' IN m.languages\nRETURN m.title AS title, m.languages AS languages\nORDER BY m.released\nLIMIT 3",
+      "typeql": "match\n$m isa movie, has languages $l, has released $r;\n$l like \".*Turkish.*\";\nsort $r asc;\nlimit 3;\nfetch {\n  \"title\": $m.title,\n  \"languages\": $l\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 128,
+      "question": "List the top 3 users who rated movies only in the 'Comedy' genre.",
+      "cypher": "MATCH (u:User)-[r:RATED]->(m:Movie)-[:IN_GENRE]->(g:Genre {name: 'Comedy'})\nWITH u, COUNT(r) AS ratingCount\nMATCH (u)-[r2:RATED]->(m2:Movie)-[:IN_GENRE]->(g2:Genre)\nWHERE g2.name <> 'Comedy'\nWITH u, ratingCount, COUNT(r2) AS nonComedyRatings\nWHERE nonComedyRatings = 0\nRETURN u.name AS userName, ratingCount\nORDER BY ratingCount DESC\nLIMIT 3",
+      "typeql": "match\n$u isa user, has name $name;\n$m isa movie;\n$g isa genre, has name \"Comedy\";\n$rel isa rated (user: $u, film: $m);\nin_genre (film: $m, genre: $g);\nnot {\n  $m2 isa movie;\n  $g2 isa genre, has name $gn;\n  $gn != \"Comedy\";\n  rated (user: $u, film: $m2);\n  in_genre (film: $m2, genre: $g2);\n};\nreduce $ratingCount = count($rel) groupby $u, $name;\nsort $ratingCount desc;\nlimit 3;",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 132,
+      "question": "Which three movies feature both American and Japanese actors?",
+      "cypher": "MATCH (m:Movie)<-[:ACTED_IN]-(a:Actor)\nWHERE a.bornIn = \"USA\" OR a.bornIn = \"Japan\"\nWITH m, COLLECT(DISTINCT a.bornIn) AS actorCountries\nWHERE \"USA\" IN actorCountries AND \"Japan\" IN actorCountries\nRETURN m.title AS MovieTitle\nLIMIT 3",
+      "typeql": "match\n$m isa movie;\n$a1 isa person, has born_in \"USA\";\n$a2 isa person, has born_in \"Japan\";\nacted_in (actor: $a1, film: $m);\nacted_in (actor: $a2, film: $m);\nlimit 3;\nfetch {\n  \"MovieTitle\": $m.title\n};",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 152,
+      "question": "Which 3 users have rated movies with the most diverse range of imdbRatings?",
+      "cypher": "MATCH (u:User)-[r:RATED]->(m:Movie)\nWITH u, collect(m.imdbRating) AS ratings\nWITH u, apoc.coll.sort(ratings) AS sortedRatings\nWITH u, \n     CASE \n         WHEN size(sortedRatings) > 1 THEN \n             sortedRatings[-1] - sortedRatings[0] \n         ELSE \n             0 \n     END AS ratingRange\nORDER BY ratingRange DESC\nLIMIT 3\nRETURN u.userId, u.name, ratingRange",
+      "typeql": "with fun max_imdb_rating($u: user) -> double:\n    match\n      rated (user: $u, film: $m);\n      $m has imdb_rating $ir;\n    return max($ir);\nwith fun min_imdb_rating($u: user) -> double:\n    match\n      rated (user: $u, film: $m);\n      $m has imdb_rating $ir;\n    return min($ir);\nmatch\n  $u isa user;\nlet $max_r = max_imdb_rating($u);\nlet $min_r = min_imdb_rating($u);\nlet $range = $max_r - $min_r;\nsort $range desc;\nlimit 3;\nfetch { \"userId\": $u.user_id, \"name\": $u.name, \"ratingRange\": $range };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 156,
+      "question": "Which 5 actors have acted in movies released in the most distinct years?",
+      "cypher": "MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)\nWITH a, collect(DISTINCT m.year) AS years\nRETURN a.name AS actor, size(years) AS distinct_years\nORDER BY distinct_years DESC\nLIMIT 5",
+      "typeql": "match\n$a isa person;\nacted_in (actor: $a, film: $m);\n$m has year $y;\nselect $a, $y;\ndistinct;\nreduce $count = count($y) groupby $a;\nsort $count desc;\nlimit 5;\nfetch {\n  \"actor\": $a.name,\n  \"distinct_years\": $count\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 159,
+      "question": "Which 3 actors have the most diverse range of genres in the movies they've acted in?",
+      "cypher": "MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)-[:IN_GENRE]->(g:Genre)\nWITH a, collect(DISTINCT g.name) AS genres\nRETURN a.name, size(genres) AS genre_count\nORDER BY genre_count DESC\nLIMIT 3",
+      "typeql": "match\n$a isa person;\n$m isa movie;\n$g isa genre;\nacted_in (actor: $a, film: $m);\nin_genre (film: $m, genre: $g);\nselect $a, $g;\ndistinct;\nreduce $genre_count = count($g) groupby $a;\nsort $genre_count desc;\nlimit 3;\nfetch {\n  \"name\": $a.name,\n  \"genre_count\": $genre_count\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 166,
+      "question": "Which 5 directors have directed movies in more than three different countries?",
+      "cypher": "MATCH (d:Director)-[:DIRECTED]->(m:Movie)\nWITH d, collect(DISTINCT m.countries) AS countries\nWHERE size(countries) > 3\nRETURN d.name AS Director, size(countries) AS CountryCount\nORDER BY CountryCount DESC\nLIMIT 5",
+      "typeql": "match\n$d isa person;\ndirected (director: $d, film: $m);\n$m has countries $c;\nselect $d, $c;\ndistinct;\nreduce $count = count($c) groupby $d;\nmatch\n$count > 3;\n$d has name $dn;\nsort $count desc;\nlimit 5;\nfetch {\n  \"Director\": $dn,\n  \"CountryCount\": $count\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 191,
+      "question": "Which 3 actors have played roles in both acting and directing for the same movie?",
+      "cypher": "MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)<-[:DIRECTED]-(a)\nWITH a, m\nMATCH (a)-[:DIRECTED]->(m)\nRETURN a.name AS actorName, m.title AS movieTitle\nLIMIT 3",
+      "typeql": "match\n$a isa person, has name $an;\nacted_in (actor: $a, film: $m);\ndirected (director: $a, film: $m);\n$m has title $mt;\nsort $an, $mt;\nlimit 3;\nfetch {\n  \"actorName\": $an,\n  \"movieTitle\": $mt\n};",
+      "checks_failed": [
+        "cypher_lacks_sort_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses sort but Cypher has no ORDER BY"
+      ]
+    },
+    {
+      "index": 199,
+      "question": "List the movies where the primary language is English and have a runtime of exactly 96 minutes.",
+      "cypher": "MATCH (m:Movie)\nWHERE \"English\" IN m.languages AND m.runtime = 96\nRETURN m.title AS MovieTitle, m.runtime AS Runtime, m.languages AS Languages",
+      "typeql": "match\n$m isa movie, has runtime $r, has languages $l;\n$r == 96;\n$l like \".*English.*\";\nfetch {\n  \"MovieTitle\": $m.title,\n  \"Runtime\": $r,\n  \"Languages\": $l\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 222,
+      "question": "Which movies have been rated by user '1' and have a rating greater than 8?",
+      "cypher": "MATCH (u:User {userId: '1'})-[:RATED]->(m:Movie)\nWHERE u.rating > 8\nRETURN m.title AS MovieTitle, u.rating AS Rating",
+      "typeql": "match\n$u isa user, has user_id \"1\";\n$rel isa rated (user: $u, film: $m);\n$m isa movie;\n$rel has rating $r;\n$r > 8.0;\nfetch {\n  \"MovieTitle\": $m.title,\n  \"Rating\": $r\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses u.rating but \"rating\" is not on :User (exists on other types)"
+      ]
+    },
+    {
+      "index": 243,
+      "question": "Identify the first 3 movies that have been rated by users younger than 25.",
+      "cypher": "MATCH (u:User)-[r:RATED]->(m:Movie)\nWHERE u.age < 25\nRETURN m.title AS MovieTitle, r.rating AS Rating, u.name AS UserName\nORDER BY r.timestamp ASC\nLIMIT 3",
+      "typeql": "match\n$u isa user, has age $a;\n$a < 25;\n$m isa movie;\n$rel isa rated (user: $u, film: $m), has timestamp $ts, has rating $r;\nsort $ts asc;\nlimit 3;\nfetch {\n  \"MovieTitle\": $m.title,\n  \"Rating\": $r,\n  \"UserName\": $u.name\n};",
+      "checks_failed": [
+        "cypher_invalid_property"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher accesses u.age but \"age\" is not a property of :User (valid: ['name', 'userId'])"
+      ]
+    },
+    {
+      "index": 270,
+      "question": "Show the top 5 highest IMDb rated movies directed by female directors.",
+      "cypher": "MATCH (d:Director)-[:DIRECTED]->(m:Movie)\nWHERE d.gender = 'female'\nRETURN m.title AS MovieTitle, m.imdbRating AS IMDbRating\nORDER BY m.imdbRating DESC\nLIMIT 5",
+      "typeql": "match\n$d isa person, has gender \"female\";\ndirected (director: $d, film: $m);\n$m isa movie, has imdb_rating $ir;\nsort $ir desc;\nlimit 5;\nfetch {\n  \"MovieTitle\": $m.title,\n  \"IMDbRating\": $ir\n};",
+      "checks_failed": [
+        "cypher_invalid_property"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher accesses d.gender but \"gender\" is not a property of :Director (valid: ['bio', 'born', 'bornIn', 'died', 'imdbId', 'name', 'poster', 'tmdbId', 'url'])"
+      ]
+    },
+    {
+      "index": 285,
+      "question": "List the first 5 movies that have been rated by users from more than 10 different countries.",
+      "cypher": "MATCH (m:Movie)<-[:RATED]-(u:User)\nWITH m, collect(distinct u) as users\nWHERE size(users) > 10\nRETURN m.title AS MovieTitle\nORDER BY m.title\nLIMIT 5",
+      "typeql": "match\n$m isa movie, has title $t;\nrated (film: $m, user: $u);\nlocated_in (resident: $u, country: $c);\nselect $m, $t, $c;\ndistinct;\nreduce $count = count($c) groupby $m, $t;\nmatch $count > 10;\nsort $t;\nlimit 5;\nfetch { \"MovieTitle\": $t };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 288,
+      "question": "Which 5 actors have the highest number of credited roles in the database?",
+      "cypher": "MATCH (a:Actor)-[r:ACTED_IN]->(m:Movie)\nWHERE r.role IS NOT NULL AND r.role <> \"\"\nRETURN a.name AS actor, COUNT(r) AS role_count\nORDER BY role_count DESC\nLIMIT 5",
+      "typeql": "match\n$a isa person;\n$rel isa acted_in (actor: $a, film: $m);\n$rel has character_role $cr;\n$cr like \".+\";\nreduce $role_count = count($rel) groupby $a;\nsort $role_count desc;\nlimit 5;\nfetch {\n  \"actor\": $a.name,\n  \"role_count\": $role_count\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 294,
+      "question": "Which actors have acted in both 'Comedy' and 'Drama' genres?",
+      "cypher": "MATCH (a:Actor)-[:ACTED_IN]->(m1:Movie)-[:IN_GENRE]->(g1:Genre {name: 'Comedy'}),\n      (a)-[:ACTED_IN]->(m2:Movie)-[:IN_GENRE]->(g2:Genre {name: 'Drama'})\nWHERE m1 <> m2\nRETURN DISTINCT a.name",
+      "typeql": "match\n$a isa person;\n$m1 isa movie, has movie_id $mid1;\n$m2 isa movie, has movie_id $mid2;\n$g1 isa genre, has name \"Comedy\";\n$g2 isa genre, has name \"Drama\";\nacted_in (actor: $a, film: $m1);\nacted_in (actor: $a, film: $m2);\nin_genre (film: $m1, genre: $g1);\nin_genre (film: $m2, genre: $g2);\n$mid1 != $mid2;\nselect $a;\ndistinct;\nfetch {\n  \"name\": $a.name\n};",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 301,
+      "question": "What are the top 5 oldest actors who have acted in English language movies?",
+      "cypher": "MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)\nWHERE \"English\" IN m.languages\nRETURN a.name, a.born\nORDER BY a.born ASC\nLIMIT 5",
+      "typeql": "match\n$a isa person, has name $n, has born $b;\n$m isa movie, has languages $l;\n$l like \".*English.*\";\nacted_in (actor: $a, film: $m);\nsort $b asc;\nlimit 5;\nfetch {\n  \"name\": $n,\n  \"born\": $b\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 318,
+      "question": "Which actors have acted in both high-budget (over 200 million dollars) and low-budget (under 10 million dollars) movies?",
+      "cypher": "MATCH (actor:Actor)-[:ACTED_IN]->(highBudgetMovie:Movie)\nWHERE highBudgetMovie.budget > 200000000\nWITH actor, highBudgetMovie\nMATCH (actor)-[:ACTED_IN]->(lowBudgetMovie:Movie)\nWHERE lowBudgetMovie.budget < 10000000\nRETURN DISTINCT actor.name",
+      "typeql": "match\n$actor isa person;\nacted_in (actor: $actor, film: $highBudget);\n$highBudget isa movie, has budget $hb;\n$hb > 200000000;\nacted_in (actor: $actor, film: $lowBudget);\n$lowBudget isa movie, has budget $lb;\n$lb < 10000000;\nselect $actor;\ndistinct;\nfetch {\n  \"name\": $actor.name\n};",
+      "checks_failed": [
+        "cypher_missing_condition"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question requires \"both...and\" but Cypher WHERE lacks AND"
+      ]
+    },
+    {
+      "index": 329,
+      "question": "Which directors have directed movies in more than three different languages?",
+      "cypher": "MATCH (d:Director)-[:DIRECTED]->(m:Movie)\nWITH d, collect(DISTINCT m.languages) AS languages\nWHERE size(apoc.coll.flatten(languages)) > 3\nRETURN d.name AS Director, size(apoc.coll.flatten(languages)) AS NumberOfLanguages",
+      "typeql": "match\n  $d isa person;\n  directed (director: $d, film: $m);\n  $m has languages $l;\nselect $d, $l;\ndistinct;\nreduce $count = count groupby $d;\nmatch $count > 3;\nfetch { \"Director\": $d.name, \"NumberOfLanguages\": $count };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 340,
+      "question": "What are the different roles played by actors in the movie with the IMDb ID '0829150'?",
+      "cypher": "MATCH (m:Movie {imdbId: '0829150'})\\u003c-[:ACTED_IN]-(a:Actor)\nRETURN a.name AS actorName, a.tmdbId AS actorTmdbId, a.imdbId AS actorImdbId, a.url AS actorUrl, a.poster AS actorPoster, a.born AS actorBorn, a.bornIn AS actorBornIn, a.died AS actorDied, a.bio AS actorBio, a.role AS role",
+      "typeql": "match\n  $m isa movie, has imdb_id \"0829150\";\n  $rel isa acted_in (actor: $a, film: $m);\n  $a isa person;\n  $rel has character_role $role;\nfetch {\n  \"actorName\": $a.name,\n  \"actorTmdbId\": $a.tmdb_id,\n  \"actorImdbId\": $a.imdb_id,\n  \"actorUrl\": $a.url,\n  \"actorPoster\": $a.poster,\n  \"actorBorn\": $a.born,\n  \"actorBornIn\": $a.born_in,\n  \"actorDied\": $a.died,\n  \"actorBio\": $a.bio,\n  \"role\": $role\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses a.role but \"role\" is not on :Actor (exists on other types)"
+      ]
+    },
+    {
+      "index": 345,
+      "question": "Which actors have featured in movies released in multiple languages?",
+      "cypher": "MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)\nWHERE size(m.languages) > 1\nRETURN DISTINCT a.name",
+      "typeql": "match\n$a isa person;\n$m isa movie, has languages $l;\nacted_in (actor: $a, film: $m);\n$l like \".*,.*\";\nselect $a;\ndistinct;\nfetch {\n  \"name\": $a.name\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 357,
+      "question": "Which 3 movies feature both English and Japanese languages?",
+      "cypher": "MATCH (m:Movie)\nWHERE \"English\" IN m.languages AND \"Japanese\" IN m.languages\nRETURN m.title AS MovieTitle\nLIMIT 3",
+      "typeql": "match\n$m isa movie, has languages $l, has title $t;\n$l like \".*English.*\";\n$l like \".*Japanese.*\";\nlimit 3;\nfetch {\n  \"MovieTitle\": $m.title\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 368,
+      "question": "Which directors have directed movies in more than two languages?",
+      "cypher": "MATCH (d:Director)-[:DIRECTED]->(m:Movie)\nWITH d, collect(DISTINCT m.languages) AS languages\nWHERE size(apoc.coll.flatten(languages)) > 2\nRETURN d.name AS Director, size(apoc.coll.flatten(languages)) AS NumberOfLanguages",
+      "typeql": "match\n$d isa person;\ndirected (director: $d, film: $m);\n$m has languages $l;\nselect $d, $l;\ndistinct;\nreduce $count = count($l) groupby $d;\nmatch $count > 2;\nfetch { \"Director\": $d.name, \"NumberOfLanguages\": $count };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 369,
+      "question": "Find movies where the sum of the revenue and budget is more than 1 billion dollars.",
+      "cypher": "MATCH (m:Movie)\nWHERE (m.revenue + m.budget) > 1000000000\nRETURN m.title AS title, m.revenue AS revenue, m.budget AS budget",
+      "typeql": "match\n$m isa movie, has title $title, has revenue $revenue, has budget $budget;\nlet $total = $revenue + $budget;\n$total > 1000000000;\nfetch {\n  \"title\": $title,\n  \"revenue\": $revenue,\n  \"budget\": $budget\n};",
+      "checks_failed": [
+        "cypher_missing_sum"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for total/sum but Cypher has no sum()"
+      ]
+    },
+    {
+      "index": 380,
+      "question": "What movies have both English and French as their languages?",
+      "cypher": "MATCH (m:Movie)\nWHERE \"English\" IN m.languages AND \"French\" IN m.languages\nRETURN m.title AS MovieTitle, m.languages AS Languages",
+      "typeql": "match\n$m isa movie, has languages $l, has title $t;\n$l like \".*English.*\";\n$l like \".*French.*\";\nfetch {\n  \"MovieTitle\": $m.title,\n  \"Languages\": $m.languages\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 383,
+      "question": "Which actors have acted in movies from at least three different countries?",
+      "cypher": "MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)\nWITH a, collect(DISTINCT m.countries) AS countries\nWHERE size(countries) >= 3\nRETURN a.name AS actorName",
+      "typeql": "match\n$a isa person;\nacted_in (actor: $a, film: $m);\n$m has countries $c;\nselect $a, $c;\ndistinct;\nreduce $count = count($c) groupby $a;\nmatch $count >= 3;\nfetch { \"actorName\": $a.name };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 391,
+      "question": "Which directors have directed movies in more than three different languages?",
+      "cypher": "MATCH (d:Director)-[:DIRECTED]->(m:Movie)\nWITH d, collect(DISTINCT m.languages) AS languages\nWHERE size(apoc.coll.flatten(languages)) > 3\nRETURN d.name AS Director, size(apoc.coll.flatten(languages)) AS NumberOfLanguages",
+      "typeql": "match\n$d isa person;\ndirected (director: $d, film: $m);\n$m has languages $l;\nselect $d, $l;\ndistinct;\nreduce $count = count groupby $d;\nmatch $count > 3;\nfetch { \"Director\": $d.name, \"NumberOfLanguages\": $count };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 393,
+      "question": "What are the top 5 highest-rated movies by users from the USA?",
+      "cypher": "MATCH (u:User)-[r:RATED]->(m:Movie)\nWHERE u.name = \"USA\"\nRETURN m.title AS MovieTitle, AVG(r.rating) AS AverageRating\nORDER BY AverageRating DESC\nLIMIT 5",
+      "typeql": "match\n$u isa user;\n$c isa country, has name \"USA\";\nlocated_in (resident: $u, country: $c);\n$rel isa rated (user: $u, film: $m);\n$rel has rating $rating;\n$m isa movie;\nreduce $avg = mean($rating) groupby $m;\nsort $avg desc;\nlimit 5;\nfetch { \"MovieTitle\": $m.title, \"AverageRating\": $avg };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 404,
+      "question": "Identify movies that have been released in both English and French.",
+      "cypher": "MATCH (m:Movie)\nWHERE \"English\" IN m.languages AND \"French\" IN m.languages\nRETURN m.title AS MovieTitle, m.released AS ReleaseDate",
+      "typeql": "match\n$m isa movie, has languages $l, has title $t, has released $r;\n$l like \".*English.*\";\n$l like \".*French.*\";\nfetch {\n  \"MovieTitle\": $t,\n  \"ReleaseDate\": $r\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 409,
+      "question": "Identify directors who have never directed a movie rated under 6 on IMDb.",
+      "cypher": "MATCH (d:Director)-[:DIRECTED]->(m:Movie)\nWHERE m.imdbRating >= 6\nWITH d, COUNT(m) AS totalMovies\nMATCH (d)-[:DIRECTED]->(m2:Movie)\nWITH d, totalMovies, COUNT(m2) AS directedMovies\nWHERE totalMovies = directedMovies\nRETURN d.name AS DirectorName",
+      "typeql": "match\n$d isa person;\ndirected (director: $d, film: $m);\nnot {\n  directed (director: $d, film: $m2);\n  $m2 has imdb_rating $r;\n  $r < 6.0;\n};\nfetch {\n  \"DirectorName\": $d.name\n};",
+      "checks_failed": [
+        "cypher_missing_negation",
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question implies negation but Cypher has no NOT/WHERE NOT/IS NULL",
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 432,
+      "question": "List all actors who have acted in movies with at least two different directors.",
+      "cypher": "MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)<-[:DIRECTED]-(d:Director)\nWITH a, m, COUNT(DISTINCT d) AS directorCount\nWHERE directorCount >= 2\nRETURN DISTINCT a.name AS ActorName",
+      "typeql": "match\n$a isa person;\nacted_in (actor: $a, film: $m);\ndirected (director: $d1, film: $m);\ndirected (director: $d2, film: $m);\nnot { $d1 is $d2; };\nselect $a;\ndistinct;\nfetch { \"ActorName\": $a.name };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 446,
+      "question": "Which 5 movies have the most diverse cast in terms of countries of origin?",
+      "cypher": "MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)\nWITH m, COLLECT(DISTINCT a.bornIn) AS actorCountries\nRETURN m.title AS movieTitle, SIZE(actorCountries) AS diversity\nORDER BY diversity DESC\nLIMIT 5",
+      "typeql": "match\n$a isa person, has born_in $born_in;\n$m isa movie;\nacted_in (actor: $a, film: $m);\nselect $m, $born_in;\ndistinct;\nreduce $diversity = count groupby $m;\nsort $diversity desc;\nlimit 5;\nfetch {\n  \"movieTitle\": $m.title,\n  \"diversity\": $diversity\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 491,
+      "question": "Which 3 users have the highest average movie rating with at least 20 rated movies?",
+      "cypher": "MATCH (u:User)-[r:RATED]->(m:Movie)\nWITH u, COUNT(r) AS ratedMovies, AVG(r.rating) AS avgRating\nWHERE ratedMovies >= 20\nRETURN u.name AS userName, avgRating\nORDER BY avgRating DESC\nLIMIT 3",
+      "typeql": "with fun rating_count($u: user) -> integer:\n  match $rel isa rated (user: $u);\n  return count;\nmatch\n$u isa user;\nlet $count = rating_count($u);\n$count >= 20;\n$rel isa rated (user: $u, film: $m);\n$rel has rating $r;\nreduce $avg = mean($r) groupby $u;\nsort $avg desc;\nlimit 3;\nfetch { \"userName\": $u.name, \"avgRating\": $avg };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 501,
+      "question": "List the first 3 movies that have both English and French languages.",
+      "cypher": "MATCH (m:Movie)\nWHERE \"English\" IN m.languages AND \"French\" IN m.languages\nRETURN m.title AS title, m.languages AS languages\nORDER BY m.title\nLIMIT 3",
+      "typeql": "match\n$m isa movie, has languages $l;\n$l like \".*English.*\";\n$l like \".*French.*\";\n$m has title $t;\nsort $t;\nlimit 3;\nfetch {\n  \"title\": $m.title,\n  \"languages\": $m.languages\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 519,
+      "question": "Which 3 users have rated both the oldest and the newest movies in the database?",
+      "cypher": "// Find the oldest and newest movies\nMATCH (oldestMovie:Movie)\nWITH oldestMovie\nORDER BY oldestMovie.year ASC\nLIMIT 1\n\nMATCH (newestMovie:Movie)\nWITH oldestMovie, newestMovie\nORDER BY newestMovie.year DESC\nLIMIT 1\n\n// Find users who have rated both the oldest and newest movies\nMATCH (user:User)-[:RATED]->(oldestMovie)\nMATCH (user)-[:RATED]->(newestMovie)\nRETURN user.name AS userName, user.userId AS userId\nLIMIT 3",
+      "typeql": "with fun oldest_year() -> integer:\n  match $m isa movie, has year $y;\n  return min($y);\nwith fun newest_year() -> integer:\n  match $m isa movie, has year $y;\n  return max($y);\nmatch\n  $user isa user;\n  let $min_year = oldest_year();\n  let $max_year = newest_year();\n  $old_movie isa movie, has year $oy;\n  $oy == $min_year;\n  $new_movie isa movie, has year $ny;\n  $ny == $max_year;\n  rated (user: $user, film: $old_movie);\n  rated (user: $user, film: $new_movie);\nlimit 3;\nfetch { \"userName\": $user.n",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 530,
+      "question": "Which 3 actors have acted in both a highest and lowest grossing movie?",
+      "cypher": "// Find the highest and lowest grossing movies\nMATCH (highestGrossing:Movie)\nWITH highestGrossing\nORDER BY highestGrossing.revenue DESC\nLIMIT 1\n\nMATCH (lowestGrossing:Movie)\nWITH highestGrossing, lowestGrossing\nORDER BY lowestGrossing.revenue ASC\nLIMIT 1\n\n// Find actors who acted in both the highest and lowest grossing movies\nMATCH (actor:Actor)-[:ACTED_IN]->(highestGrossing)\nMATCH (actor)-[:ACTED_IN]->(lowestGrossing)\nRETURN actor.name AS actorName\nLIMIT 3",
+      "typeql": "match\n  $high isa movie, has revenue $rh;\n  not { $other_high isa movie, has revenue $rh2; $rh2 > $rh; };\n  $low isa movie, has revenue $rl;\n  not { $other_low isa movie, has revenue $rl2; $rl2 < $rl; };\n  acted_in (actor: $actor, film: $high);\n  acted_in (actor: $actor, film: $low);\n  $actor has name $name;\nlimit 3;\nfetch { \"actorName\": $name };",
+      "checks_failed": [
+        "cypher_lacks_negation_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses not{} but Cypher has no negation"
+      ]
+    },
+    {
+      "index": 558,
+      "question": "Which 3 actors have the lowest average imdbRating for movies they acted in and acted in more than three movies?",
+      "cypher": "MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)\nWITH a, avg(m.imdbRating) AS avgRating, count(m) AS movieCount\nWHERE movieCount > 3\nRETURN a.name AS actorName, avgRating\nORDER BY avgRating ASC\nLIMIT 3",
+      "typeql": "with fun movie_count($a: person) -> integer:\n    match acted_in (actor: $a, film: $m);\n    return count;\nmatch\n    $a isa person;\n    acted_in (actor: $a, film: $m);\n    $m has imdb_rating $r;\nlet $mc = movie_count($a);\nmatch $mc > 3;\nreduce $avg_rating = mean($r) groupby $a;\nsort $avg_rating asc;\nlimit 3;\nfetch { \"actorName\": $a.name, \"avgRating\": $avg_rating };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 568,
+      "question": "What are the top 5 movies that were directed by persons who were not primarily directors?",
+      "cypher": "MATCH (p:Person)-[:DIRECTED]->(m:Movie)\nWHERE NOT EXISTS {\n  MATCH (p)-[:DIRECTED]->(:Movie)\n  WITH p, count(*) AS directedCount\n  MATCH (p)-[:ACTED_IN]->(:Movie)\n  WITH p, directedCount, count(*) AS actedCount\n  WHERE directedCount > actedCount\n}\nRETURN m.title AS MovieTitle, m.imdbRating AS Rating\nORDER BY Rating DESC\nLIMIT 5",
+      "typeql": "with fun directed_count($p: person) -> integer:\n  match directed (director: $p, film: $m);\n  return count;\nwith fun acted_count($p: person) -> integer:\n  match acted_in (actor: $p, film: $m);\n  return count;\nmatch\n  $p isa person;\n  directed (director: $p, film: $m);\n  $m has imdb_rating $r;\n  let $dc = directed_count($p);\n  let $ac = acted_count($p);\n  $dc <= $ac;\nsort $r desc;\nlimit 5;\nfetch { \"MovieTitle\": $m.title, \"Rating\": $r };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 576,
+      "question": "What are the top 5 movies by revenue that were released in languages other than English?",
+      "cypher": "MATCH (m:Movie)\nWHERE NOT \"English\" IN m.languages\nRETURN m.title AS title, m.revenue AS revenue\nORDER BY m.revenue DESC\nLIMIT 5",
+      "typeql": "match\n$m isa movie, has title $t, has revenue $r;\nnot { $m has languages $lang; $lang like \".*English.*\"; };\nsort $r desc;\nlimit 5;\nfetch { \"title\": $t, \"revenue\": $r };",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 579,
+      "question": "Which 3 directors have the most distinct actors worked with across all movies directed?",
+      "cypher": "MATCH (d:Director)-[:DIRECTED]->(m:Movie)<-[:ACTED_IN]-(a:Actor)\nWITH d, a\nORDER BY d.name, a.name\nWITH d, collect(DISTINCT a) AS actors\nRETURN d.name AS Director, size(actors) AS ActorCount\nORDER BY ActorCount DESC\nLIMIT 3",
+      "typeql": "match\n$d isa person;\n$a isa person;\n$m isa movie;\ndirected (director: $d, film: $m);\nacted_in (actor: $a, film: $m);\nselect $d, $a;\ndistinct;\nreduce $count = count($a) groupby $d;\nsort $count desc;\nlimit 3;\nfetch {\n  \"Director\": $d.name,\n  \"ActorCount\": $count\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 584,
+      "question": "Which 5 directors have directed movies in more than 5 different languages?",
+      "cypher": "MATCH (d:Director)-[:DIRECTED]->(m:Movie)\nWITH d, collect(DISTINCT m.languages) AS languages\nWHERE size(apoc.coll.flatten(languages)) > 5\nRETURN d.name AS Director, size(apoc.coll.flatten(languages)) AS NumberOfLanguages\nORDER BY NumberOfLanguages DESC\nLIMIT 5",
+      "typeql": "match\n$d isa person;\ndirected (director: $d, film: $m);\n$m has languages $lang;\nselect $d, $lang;\ndistinct;\nreduce $count = count($lang) groupby $d;\nmatch $count > 5;\nsort $count desc;\nlimit 5;\nfetch { \"Director\": $d.name, \"NumberOfLanguages\": $count };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 586,
+      "question": "Which movies feature both English and Spanish as languages?",
+      "cypher": "MATCH (m:Movie)\nWHERE \"English\" IN m.languages AND \"Spanish\" IN m.languages\nRETURN m.title AS MovieTitle, m.languages AS Languages",
+      "typeql": "match\n$m isa movie, has languages $l, has title $t;\n$l like \".*English.*\";\n$l like \".*Spanish.*\";\nfetch {\n  \"MovieTitle\": $t,\n  \"Languages\": $l\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 589,
+      "question": "Find all movies where the main language is English and have a budget over 50 million dollars.",
+      "cypher": "MATCH (m:Movie)\nWHERE \"English\" IN m.languages AND m.budget > 50000000\nRETURN m.title AS title, m.budget AS budget, m.languages AS languages",
+      "typeql": "match\n$m isa movie, has languages $l, has budget $b;\n$l like \".*English.*\";\n$b > 50000000;\nfetch {\n  \"title\": $m.title,\n  \"budget\": $b,\n  \"languages\": $l\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 614,
+      "question": "Which director has the most diverse portfolio of movie genres directed?",
+      "cypher": "MATCH (d:Director)-[:DIRECTED]->(m:Movie)-[:IN_GENRE]->(g:Genre)\nWITH d, collect(DISTINCT g.name) AS genres\nRETURN d.name AS director, size(genres) AS genre_count\nORDER BY genre_count DESC\nLIMIT 1",
+      "typeql": "match\n$d isa person;\ndirected (director: $d, film: $m);\nin_genre (film: $m, genre: $g);\n$d has name $dn;\n$g has name $gn;\nselect $d, $dn, $gn;\ndistinct;\nreduce $count = count($gn) groupby $d, $dn;\nsort $count desc;\nlimit 1;\nfetch { \"director\": $dn, \"genre_count\": $count };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 633,
+      "question": "Which three directors have directed movies with the most diverse set of languages?",
+      "cypher": "MATCH (d:Director)-[:DIRECTED]->(m:Movie)\nUNWIND m.languages AS language\nWITH d, language\nORDER BY d.name\nWITH d, COLLECT(DISTINCT language) AS languages\nRETURN d.name AS Director, SIZE(languages) AS LanguageCount\nORDER BY LanguageCount DESC\nLIMIT 3",
+      "typeql": "match\n$d isa person;\ndirected (director: $d, film: $m);\n$m has languages $lang;\nselect $d, $lang;\ndistinct;\nreduce $count = count groupby $d;\nsort $count desc;\nlimit 3;\nfetch { \"director\": $d.name, \"language_count\": $count };",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 671,
+      "question": "List the top 3 users who have rated at least one movie in each genre available.",
+      "cypher": "MATCH (u:User)-[r:RATED]->(m:Movie)-[:IN_GENRE]->(g:Genre)\nWITH u, collect(DISTINCT g.name) AS genresRated, count(DISTINCT g.name) AS genreCount\nMATCH (g2:Genre)\nWITH u, genresRated, genreCount, collect(DISTINCT g2.name) AS allGenres\nWHERE genreCount = size(allGenres)\nRETURN u.name AS userName, size(genresRated) AS genresRatedCount\nORDER BY genresRatedCount DESC\nLIMIT 3",
+      "typeql": "with fun user_genre_count($u: user) -> integer:\n  match\n    rated (user: $u, film: $m);\n    in_genre (film: $m, genre: $g);\n  select $g;\n  distinct;\n  return count;\nmatch\n  $u isa user;\n  $g isa genre;\nreduce $total_genres = count($g) groupby $u;\nmatch\n  let $user_genres = user_genre_count($u);\n  $user_genres == $total_genres;\nsort $user_genres desc;\nlimit 3;\nfetch { \"userName\": $u.name, \"genresRatedCount\": $user_genres };",
+      "checks_failed": [
+        "cypher_lacks_optional_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses try{}/custom function but Cypher has no OPTIONAL MATCH"
+      ]
+    },
+    {
+      "index": 677,
+      "question": "Which three movies have the smallest difference between IMDb rating and user rating?",
+      "cypher": "MATCH (m:Movie)<-[:RATED]-(u:User)\nWITH m, AVG(u.rating) AS avgUserRating, m.imdbRating AS imdbRating\nWITH m, abs(imdbRating - avgUserRating) AS ratingDifference\nRETURN m.title AS movieTitle, ratingDifference\nORDER BY ratingDifference ASC\nLIMIT 3",
+      "typeql": "match\n$m isa movie;\n$rel isa rated (film: $m);\n$rel has rating $r;\nreduce $avg_rating = mean($r) groupby $m;\nmatch\n$m has imdb_rating $imdb;\nlet $diff = abs($imdb - $avg_rating);\nsort $diff asc;\nlimit 3;\nfetch {\n  \"movieTitle\": $m.title,\n  \"ratingDifference\": $diff\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses u.rating but \"rating\" is not on :User (exists on other types)"
+      ]
+    },
+    {
+      "index": 690,
+      "question": "List 5 movies that have both English and French as languages.",
+      "cypher": "MATCH (m:Movie)\nWHERE \"English\" IN m.languages AND \"French\" IN m.languages\nRETURN m.title\nLIMIT 5",
+      "typeql": "match\n$m isa movie, has languages $l, has title $t;\n$l like \".*English.*\";\n$l like \".*French.*\";\nlimit 5;\nfetch {\n  \"title\": $t\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 718,
+      "question": "Which 5 users have rated movies in the most diverse set of genres?",
+      "cypher": "MATCH (u:User)-[r:RATED]->(m:Movie)-[:IN_GENRE]->(g:Genre)\nWITH u, collect(DISTINCT g.name) AS genres\nRETURN u.name, size(genres) AS genre_count\nORDER BY genre_count DESC\nLIMIT 5",
+      "typeql": "match\n$u isa user, has name $uname;\nrated (user: $u, film: $m);\nin_genre (film: $m, genre: $g);\nselect $u, $uname, $g;\ndistinct;\nreduce $genre_count = count($g) groupby $u, $uname;\nsort $genre_count desc;\nlimit 5;\nfetch {\n  \"name\": $uname,\n  \"genre_count\": $genre_count\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 736,
+      "question": "Find all movies that have a movieId starting with '1' and have been rated by at least one user.",
+      "cypher": "MATCH (m:Movie)-[:RATED]->(u:User)\nWHERE m.movieId STARTS WITH '1'\nRETURN DISTINCT m.title, m.movieId",
+      "typeql": "match\n$m isa movie, has movie_id $mid, has title $t;\nrated (user: $u, film: $m);\n$mid like \"1.*\";\nselect $t, $mid;\ndistinct;\nfetch {\n  \"title\": $t,\n  \"movieId\": $mid\n};",
+      "checks_failed": [
+        "cypher_wrong_direction"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has (Movie)-[:RATED]->(User) but schema says User->Movie"
+      ]
+    },
+    {
+      "index": 737,
+      "question": "What are the top 5 movies with the highest IMDb rating that have been directed by the same director?",
+      "cypher": "MATCH (d:Director)-[:DIRECTED]->(m:Movie)\nWITH d, m\nORDER BY m.imdbRating DESC\nWITH d, collect(m) AS movies\nWHERE size(movies) > 1\nUNWIND movies AS movie\nRETURN movie.title AS title, movie.imdbRating AS rating, d.name AS director\nORDER BY rating DESC\nLIMIT 5",
+      "typeql": "match\n$d isa person;\ndirected (director: $d, film: $m);\nreduce $count = count($m) groupby $d;\nmatch $count > 1;\ndirected (director: $d, film: $movie);\n$movie has imdb_rating $rating;\n$movie has title $title;\n$d has name $dname;\nsort $rating desc;\nlimit 5;\nfetch {\n  \"title\": $title,\n  \"rating\": $rating,\n  \"director\": $dname\n};",
+      "checks_failed": [
+        "cypher_lacks_count_vs_typeql"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL uses reduce...count but Cypher has no COUNT()"
+      ]
+    },
+    {
+      "index": 760,
+      "question": "Find all directors who have directed a movie in a language other than English.",
+      "cypher": "MATCH (d:Director)-[:DIRECTED]->(m:Movie)\nWHERE NOT \"English\" IN m.languages\nRETURN DISTINCT d.name",
+      "typeql": "match\n$d isa person;\n$m isa movie, has languages $l;\ndirected (director: $d, film: $m);\nnot { $l like \".*English.*\"; };\n$d has name $n;\nselect $n;\ndistinct;\nfetch { \"name\": $n };",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    },
+    {
+      "index": 763,
+      "question": "Which directors have directed a movie that has been rated below 3.0?",
+      "cypher": "MATCH (d:Director)-[:DIRECTED]->(m:Movie)<-[:RATED]-(u:User)\nWHERE u.rating < 3.0\nRETURN DISTINCT d.name",
+      "typeql": "match\n$d isa person;\ndirected (director: $d, film: $m);\n$r isa rated (user: $u, film: $m);\n$r has rating $rating;\n$rating < 3.0;\nselect $d;\ndistinct;\nfetch {\n  \"name\": $d.name\n};",
+      "checks_failed": [
+        "cypher_wrong_label_property"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher accesses u.rating but \"rating\" is not on :User (exists on other types)"
+      ]
+    },
+    {
+      "index": 764,
+      "question": "List all movies that have a language list including Japanese.",
+      "cypher": "MATCH (m:Movie)\nWHERE \"Japanese\" IN m.languages\nRETURN m.title AS title, m.languages AS languages",
+      "typeql": "match\n$m isa movie, has languages $l, has title $t;\n$l like \".*Japanese.*\";\nfetch {\n  \"title\": $t,\n  \"languages\": $l\n};",
+      "checks_failed": [
+        "cypher_lacks_string_op_vs_typeql"
+      ],
+      "confidence": "medium",
+      "details": [
+        "TypeQL uses like pattern but Cypher has no CONTAINS/STARTS WITH/regex"
+      ]
+    }
+  ],
+  "categories": {
+    "cypher_lacks_sort_vs_typeql": [
+      20,
+      191
+    ],
+    "cypher_wrong_label_property": [
+      25,
+      30,
+      105,
+      222,
+      340,
+      677,
+      763
+    ],
+    "cypher_lacks_string_op_vs_typeql": [
+      26,
+      39,
+      124,
+      199,
+      288,
+      301,
+      345,
+      357,
+      380,
+      404,
+      501,
+      576,
+      586,
+      589,
+      690,
+      760,
+      764
+    ],
+    "cypher_lacks_count_vs_typeql": [
+      35,
+      122,
+      156,
+      159,
+      166,
+      285,
+      329,
+      368,
+      383,
+      391,
+      393,
+      446,
+      579,
+      584,
+      614,
+      633,
+      718,
+      737
+    ],
+    "cypher_missing_count": [
+      100,
+      112
+    ],
+    "cypher_lacks_negation_vs_typeql": [
+      128,
+      409,
+      432,
+      530
+    ],
+    "cypher_missing_condition": [
+      132,
+      294,
+      318
+    ],
+    "cypher_lacks_optional_vs_typeql": [
+      152,
+      491,
+      519,
+      558,
+      568,
+      671
+    ],
+    "cypher_invalid_property": [
+      243,
+      270
+    ],
+    "cypher_missing_sum": [
+      369
+    ],
+    "cypher_missing_negation": [
+      409
+    ],
+    "cypher_wrong_direction": [
+      736
+    ]
+  }
+}
