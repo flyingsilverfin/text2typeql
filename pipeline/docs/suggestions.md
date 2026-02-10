@@ -267,6 +267,8 @@ fetch {
 6. **Arithmetic** - `$a + $b`, `$a / $b`, `abs($a - $b)` for computed values (indices 85, 296, 330)
 7. **Role inference** - `$rel isa relation ($player);` matches player in ANY role (all permutations)
 8. **Tuple groupby** - `reduce $c = count groupby $a, $b;` for grouping by multiple variables
+9. **String length** (TypeDB 3.8+) - `let $len = len($str);` for `size()` on strings
+10. **String concatenation** (TypeDB 3.8+) - `let $s = $a + " " + $b;` for building strings
 
 ## Important Scoping Rules
 

@@ -162,6 +162,11 @@ try { $p has nickname $n; };
 | Can't use relation var | Bind: `$rel isa type (role: $x);` |
 | Variable scoping | Don't define vars inside `or {}` blocks if needed outside |
 
+## Newly Supported (TypeDB 3.8+)
+
+- `size(string)` → `let $len = len($str);` (string length)
+- String concatenation → `let $s = $a + " " + $b;`
+
 ## Unsupported (→ failed.csv)
 
-`size()`, `collect()`, `array[N]`, date arithmetic, `split()`, `left()`
+`collect()`, `array[N]`, `split()`, `left()`, `substring()`

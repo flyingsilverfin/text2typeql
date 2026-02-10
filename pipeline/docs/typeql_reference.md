@@ -117,6 +117,12 @@ match $count > 100;  # Filter after aggregation
 ```typeql
 let $ratio = $follows / $followers;
 let $diff = abs($a - $b);
+
+# String length (TypeDB 3.8+)
+let $len = len($name);
+
+# String concatenation (TypeDB 3.8+)
+let $display = $name + " (" + $city + ")";
 ```
 
 ### Select + Distinct (COUNT DISTINCT)
@@ -173,12 +179,16 @@ reduce $count = count($rel);  # Works
 | `count(n)` | `reduce $c = count($n);` |
 | `WITH n, count(m) AS c` | `reduce $c = count($m) groupby $n;` |
 | `HAVING count > N` | `reduce $c = count ...; match $c > N;` |
+| `size(n.prop)` (string) | `let $len = len($prop);` |
+| `a.prop + ' text'` | `let $s = $prop + " text";` |
 | `CONTAINS 'x'` | `$p contains "x";` |
 | `STARTS WITH 'x'` | `$p like "^x.*";` |
 
 ## Unsupported (Record in failed.csv)
 
-- `size()` - string/list length
 - `collect()` - array aggregation
 - `array[N]` - array indexing
-- Date arithmetic with duration
+- `split()` - string splitting
+- `left()` / `substring()` - substring extraction
+
+Note: `size()` for **string length** is now supported via `len()` (TypeDB 3.8+). Only `size()` on collections/lists remains unsupported.
