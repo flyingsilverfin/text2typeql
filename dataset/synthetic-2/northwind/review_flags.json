@@ -1,0 +1,400 @@
+{
+  "database": "northwind",
+  "source": "synthetic-2",
+  "total_queries": 780,
+  "flagged": 25,
+  "flags": [
+    {
+      "index": 0,
+      "question": "Which product categories do not have any discontinued items?",
+      "cypher": "MATCH (c:Category)<-[:PART_OF]-(p:Product)\nWHERE p.discontinued = false\nWITH c, COUNT(p) AS activeProducts\nMATCH (c)<-[:PART_OF]-(allProducts:Product)\nWITH c, activeProducts, COUNT(allProducts) AS totalProducts\nWHERE activeProducts = totalProducts\nRETURN c.categoryName",
+      "typeql": "match\n$c isa category;\npart_of (product: $p, category: $c);\nnot {\n  part_of (product: $d, category: $c);\n  $d has discontinued true;\n};\nfetch {\n  \"categoryName\": $c.category_name\n};",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 131,
+      "question": "Which products have been ordered more than 100 times?",
+      "cypher": "MATCH (:Order)-[o:ORDERS]->(p:Product)\nWHERE o.quantity > 100\nRETURN p.productName, SUM(o.quantity) AS totalOrdered\nORDER BY totalOrdered DESC",
+      "typeql": "match\n$p isa product;\n$o isa orders (order: $ord, product: $p);\nreduce $count = count($o) groupby $p;\nmatch $count > 100;\nfetch { \"productName\": $p.product_name };",
+      "checks_failed": [
+        "missing_sum_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses SUM() but TypeQL has no sum()"
+      ]
+    },
+    {
+      "index": 157,
+      "question": "List the first 3 suppliers whose products have never been discontinued and have a unitsInStock less than 20.",
+      "cypher": "MATCH (s:Supplier)-[:SUPPLIES]->(p:Product)\nWHERE p.discontinued = false AND p.unitsInStock < 20\nWITH s, COUNT(p) AS productCount\nWHERE productCount > 0\nRETURN s.companyName\nORDER BY s.companyName\nLIMIT 3",
+      "typeql": "match\n$s isa supplier, has company_name $cn;\n$p isa product, has discontinued false, has units_in_stock $stock;\n$stock < 20;\nsupplies (supplier: $s, product: $p);\nselect $cn;\ndistinct;\nsort $cn;\nlimit 3;\nfetch {\n  \"companyName\": $cn\n};",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 208,
+      "question": "Which categories do not have any discontinued products?",
+      "cypher": "MATCH (c:Category)<-[:PART_OF]-(p:Product)\nWHERE p.discontinued = false\nWITH c, COUNT(p) AS activeProducts\nMATCH (c)<-[:PART_OF]-(allProducts:Product)\nWITH c, activeProducts, COUNT(allProducts) AS totalProducts\nWHERE activeProducts = totalProducts\nRETURN c.categoryName",
+      "typeql": "match\n$c isa category;\nnot {\n  $p isa product, has discontinued true;\n  part_of (product: $p, category: $c);\n};\nfetch {\n  \"categoryName\": $c.category_name\n};",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 209,
+      "question": "Find all products that have never been reordered (reorder level 0).",
+      "cypher": "MATCH (p:Product)\nWHERE p.reorderLevel = 0\nRETURN p.productName, p.productID, p.unitPrice, p.unitsInStock",
+      "typeql": "match\n$p isa product, has reorder_level 0;\nfetch {\n  \"productName\": $p.product_name,\n  \"productID\": $p.product_id,\n  \"unitPrice\": $p.unit_price,\n  \"unitsInStock\": $p.units_in_stock\n};",
+      "checks_failed": [
+        "missing_negation"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question implies negation but TypeQL has no not{} block"
+      ]
+    },
+    {
+      "index": 343,
+      "question": "Find all suppliers who supply products in both 'Beverages' and 'Condiments' categories.",
+      "cypher": "MATCH (s:Supplier)-[:SUPPLIES]->(p:Product)-[:PART_OF]->(c:Category)\nWHERE c.categoryName IN ['Beverages', 'Condiments']\nWITH s, c.categoryName AS categoryName\nORDER BY s.supplierID, categoryName\nWITH s, collect(categoryName) AS categories\nWHERE 'Beverages' IN categories AND 'Condiments' IN categories\nRETURN s.companyName AS supplierName",
+      "typeql": "match\n$s isa supplier;\n$p1 isa product;\n$p2 isa product;\n$c1 isa category, has category_name \"Beverages\";\n$c2 isa category, has category_name \"Condiments\";\nsupplies (supplier: $s, product: $p1);\nsupplies (supplier: $s, product: $p2);\npart_of (product: $p1, category: $c1);\npart_of (product: $p2, category: $c2);\nfetch {\n  \"supplierName\": $s.company_name\n};",
+      "checks_failed": [
+        "missing_sort_cypher"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 357,
+      "question": "List the first 3 products that have never been reordered (reorder level = 0).",
+      "cypher": "MATCH (p:Product)\nWHERE p.reorderLevel = 0\nRETURN p.productName, p.productID\nLIMIT 3",
+      "typeql": "match\n$p isa product, has reorder_level 0;\nlimit 3;\nfetch {\n  \"productName\": $p.product_name,\n  \"productID\": $p.product_id\n};",
+      "checks_failed": [
+        "missing_negation"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question implies negation but TypeQL has no not{} block"
+      ]
+    },
+    {
+      "index": 358,
+      "question": "List the first 3 suppliers of products in the 'Confections' category.",
+      "cypher": "MATCH (c:Category {categoryName: 'Confections'})\\u003c-[:PART_OF]-(p:Product)\\u003c-[:SUPPLIES]-(s:Supplier)\\nRETURN s.companyName\\nLIMIT 3",
+      "typeql": "match\\n$c isa category, has category_name \"Confections\";\\npart_of (product: $p, category: $c);\\nsupplies (supplier: $s, product: $p);\\nlimit 3;\\nfetch {\\n  \"companyName\": $s.company_name\\n};",
+      "checks_failed": [
+        "invalid_relation",
+        "invalid_relation"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL references relation \"npart_of\" which is not in schema",
+        "TypeQL references relation \"nsupplies\" which is not in schema"
+      ]
+    },
+    {
+      "index": 365,
+      "question": "List the top 5 customers based in London.",
+      "cypher": "MATCH (c:Customer {city: \"London\"})\nRETURN c.companyName, c.contactName, c.contactTitle, c.address, c.postalCode, c.phone, c.fax\nLIMIT 5",
+      "typeql": "match\n$c isa customer, has city \"London\";\nlimit 5;\nfetch {\n  \"companyName\": $c.company_name,\n  \"contactName\": $c.contact_name,\n  \"contactTitle\": $c.contact_title,\n  \"address\": $c.address,\n  \"postalCode\": $c.postal_code,\n  \"phone\": $c.phone,\n  \"fax\": $c.fax\n};",
+      "checks_failed": [
+        "missing_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 383,
+      "question": "Which 3 suppliers have products listed in both 'Beverages' and 'Condiments' categories?",
+      "cypher": "MATCH (s:Supplier)-[:SUPPLIES]->(p:Product)-[:PART_OF]->(c:Category)\nWHERE c.categoryName IN ['Beverages', 'Condiments']\nWITH s, c.categoryName AS categoryName\nORDER BY s.supplierID, categoryName\nWITH s, collect(categoryName) AS categories\nWHERE 'Beverages' IN categories AND 'Condiments' IN categories\nRETURN s.companyName AS supplierName\nLIMIT 3",
+      "typeql": "match\n$s isa supplier, has company_name $name;\n$c1 isa category, has category_name \"Beverages\";\n$c2 isa category, has category_name \"Condiments\";\n$p1 isa product;\n$p2 isa product;\nsupplies (supplier: $s, product: $p1);\nsupplies (supplier: $s, product: $p2);\npart_of (product: $p1, category: $c1);\npart_of (product: $p2, category: $c2);\nlimit 3;\nfetch { \"supplierName\": $name };",
+      "checks_failed": [
+        "missing_sort_cypher"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 394,
+      "question": "Which 3 categories have products that are all discontinued?",
+      "cypher": "MATCH (c:Category)<-[:PART_OF]-(p:Product)\nWHERE p.discontinued = true\nWITH c, COUNT(p) AS totalProducts\nMATCH (c)<-[:PART_OF]-(p:Product)\nWITH c, totalProducts, COUNT(p) AS totalProductsInCategory\nWHERE totalProducts = totalProductsInCategory\nRETURN c.categoryName\nORDER BY c.categoryName\nLIMIT 3",
+      "typeql": "match\n$c isa category, has category_name $name;\npart_of (product: $p, category: $c);\nnot {\n  part_of (product: $p2, category: $c);\n  $p2 has discontinued false;\n};\nsort $name;\nlimit 3;\nfetch { \"categoryName\": $name };",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 398,
+      "question": "List the first 3 customers who have never ordered a discontinued product.",
+      "cypher": "MATCH (c:Customer)-[:PURCHASED]->(o:Order)-[:ORDERS]->(p:Product)\nWHERE p.discontinued = false\nWITH c, COUNT(DISTINCT p) AS productCount\nMATCH (c)-[:PURCHASED]->(o)-[:ORDERS]->(p)\nWITH c, productCount, COUNT(DISTINCT p) AS totalProductCount\nWHERE productCount = totalProductCount\nRETURN c.companyName AS customerName, c.contactName AS contactName, c.customerID AS customerID\nLIMIT 3",
+      "typeql": "match\n$c isa customer;\npurchased (customer: $c, order: $o);\norders (order: $o, product: $p);\nnot {\n  purchased (customer: $c, order: $o2);\n  orders (order: $o2, product: $pd);\n  $pd has discontinued true;\n};\nlimit 3;\nfetch {\n  \"customerName\": $c.company_name,\n  \"contactName\": $c.contact_name,\n  \"customerID\": $c.customer_id\n};",
+      "checks_failed": [
+        "missing_count",
+        "missing_count_distinct"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count",
+        "Cypher uses COUNT(DISTINCT) but TypeQL has no distinct (may be OK if groupby handles it)"
+      ]
+    },
+    {
+      "index": 455,
+      "question": "Which categories contain products that have never been reordered (reorder level is 0)?",
+      "cypher": "MATCH (p:Product)-[:PART_OF]->(c:Category)\nWHERE p.reorderLevel = 0\nRETURN DISTINCT c.categoryName",
+      "typeql": "match\n$p isa product, has reorder_level 0;\npart_of (product: $p, category: $c);\nselect $c;\ndistinct;\nfetch {\n  \"categoryName\": $c.category_name\n};",
+      "checks_failed": [
+        "missing_negation"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question implies negation but TypeQL has no not{} block"
+      ]
+    },
+    {
+      "index": 505,
+      "question": "List the first 3 products that have been ordered with a discount of more than 5%.",
+      "cypher": "MATCH (o:Order)-[ord:ORDERS]->(p:Product)\nWHERE toFloat(ord.discount) > 0.05\nRETURN p.productName AS ProductName, ord.discount AS Discount\nORDER BY ord.discount DESC\nLIMIT 3",
+      "typeql": "match\n$p isa product;\n$rel isa orders (order: $o, product: $p);\n$rel has discount $d;\n$d > 0.05;\nsort $d desc;\nlimit 3;\nfetch {\n  \"ProductName\": $p.product_name,\n  \"Discount\": $d\n};",
+      "checks_failed": [
+        "threshold_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 5 but it does not appear in TypeQL"
+      ]
+    },
+    {
+      "index": 545,
+      "question": "Find the top 5 orders placed by customers from the 'UK'.",
+      "cypher": "MATCH (c:Customer)-[:PURCHASED]->(o:Order)\nWHERE c.country = 'UK'\nWITH o, c\nMATCH (o)-[:ORDERS]->(p:Product)\nRETURN o.orderID AS orderID, c.companyName AS customerName, SUM(toFloat(o.freight)) AS totalFreight\nORDER BY totalFreight DESC\nLIMIT 5",
+      "typeql": "match\n$c isa customer, has country \"UK\";\n$o isa order, has order_id $oid, has freight $f;\npurchased (customer: $c, order: $o);\norders (order: $o, product: $p);\nsort $f desc;\nlimit 5;\nfetch {\n  \"orderID\": $oid,\n  \"customerName\": $c.company_name,\n  \"freight\": $f\n};",
+      "checks_failed": [
+        "missing_sum_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses SUM() but TypeQL has no sum()"
+      ]
+    },
+    {
+      "index": 547,
+      "question": "List the first 5 categories that do not have any discontinued products.",
+      "cypher": "MATCH (c:Category)<-[:PART_OF]-(p:Product)\nWHERE p.discontinued = false\nWITH c, COUNT(p) AS productCount\nWHERE productCount > 0\nRETURN DISTINCT c.categoryName\nLIMIT 5",
+      "typeql": "match\n$c isa category;\npart_of (product: $p, category: $c);\nnot {\n  part_of (product: $p2, category: $c);\n  $p2 has discontinued true;\n};\nlimit 5;\nfetch { \"categoryName\": $c.category_name };",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 561,
+      "question": "Find the top 5 customers who have ordered the product with the highest unit price.",
+      "cypher": "// Step 1: Find the product with the highest unit price\nMATCH (p:Product)\nWITH p\nORDER BY p.unitPrice DESC\nLIMIT 1\n\n// Step 2: Find the orders for this product\nMATCH (p)<-[:ORDERS]-(o:Order)\n\n// Step 3: Find the customers who placed these orders\nMATCH (c:Customer)-[:PURCHASED]->(o)\n\n// Step 4: Count the number of orders per customer and get the top 5 customers\nWITH c, COUNT(o) AS orderCount\nORDER BY orderCount DESC\nLIMIT 5\n\n// Step 5: Return the top 5 customers\nRETURN c.companyName AS customerNa",
+      "typeql": "match\n$p1 isa product, has unit_price $up1;\nreduce $max_price = max($up1);\nmatch\n$p isa product, has unit_price $up;\n$up == $max_price;\norders (product: $p, order: $o);\npurchased (customer: $c, order: $o);\n$c has company_name $cn;\nreduce $order_count = count($o) groupby $c, $cn;\nsort $order_count desc;\nlimit 5;\nfetch { \"customerName\": $cn, \"orderCount\": $order_count };",
+      "checks_failed": [
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 1 but TypeQL limit 5"
+      ]
+    },
+    {
+      "index": 565,
+      "question": "List the first 5 suppliers whose products have never been out of stock.",
+      "cypher": "MATCH (s:Supplier)-[:SUPPLIES]->(p:Product)\nWHERE p.unitsInStock > 0\nWITH s, COUNT(p) AS totalProducts, SUM(CASE WHEN p.unitsInStock > 0 THEN 1 ELSE 0 END) AS inStockProducts\nWHERE totalProducts = inStockProducts\nRETURN s.companyName\nLIMIT 5",
+      "typeql": "match\n$s isa supplier;\nsupplies (supplier: $s, product: $p);\nnot {\n  supplies (supplier: $s, product: $p2);\n  $p2 has units_in_stock $stock;\n  $stock <= 0;\n};\nlimit 5;\nfetch {\n  \"companyName\": $s.company_name\n};",
+      "checks_failed": [
+        "missing_count",
+        "missing_sum_cypher",
+        "missing_case"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count",
+        "Cypher uses SUM() but TypeQL has no sum()",
+        "Cypher uses CASE WHEN but TypeQL may lack equivalent branching"
+      ]
+    },
+    {
+      "index": 657,
+      "question": "Identify the suppliers whose products are all in the 'Beverages' category.",
+      "cypher": "MATCH (s:Supplier)-[:SUPPLIES]->(p:Product)-[:PART_OF]->(c:Category {categoryName: 'Beverages'})\nWITH s, collect(p.productID) AS suppliedProducts\nMATCH (p2:Product)\nWHERE p2.productID IN suppliedProducts AND NOT (p2)-[:PART_OF]->(:Category {categoryName: 'Beverages'})\nWITH s, count(p2) AS nonBeverageProducts\nWHERE nonBeverageProducts = 0\nRETURN s.companyName AS supplierName",
+      "typeql": "match\n$s isa supplier, has company_name $name;\nsupplies (supplier: $s, product: $p);\npart_of (product: $p, category: $c);\n$c has category_name \"Beverages\";\nnot {\n    supplies (supplier: $s, product: $p2);\n    part_of (product: $p2, category: $c2);\n    not { $c2 has category_name \"Beverages\"; };\n};\nfetch {\n    \"supplierName\": $name\n};",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 669,
+      "question": "Identify the customers who have ordered products with a total discount of 0.",
+      "cypher": "MATCH (c:Customer)-[:PURCHASED]->(o:Order)-[r:ORDERS]->(p:Product)\nWHERE r.discount = \"0\"\nRETURN DISTINCT c.companyName AS customerName, c.contactName AS contactName",
+      "typeql": "match\n$c isa customer;\n$o isa order;\n$p isa product;\npurchased (customer: $c, order: $o);\n$rel isa orders (order: $o, product: $p), has discount $d;\n$d == 0.0;\nfetch {\n  \"customerName\": $c.company_name,\n  \"contactName\": $c.contact_name\n};",
+      "checks_failed": [
+        "missing_sum"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for total/sum but TypeQL has no sum()"
+      ]
+    },
+    {
+      "index": 691,
+      "question": "Identify suppliers who do not have a home page listed.",
+      "cypher": "MATCH (s:Supplier)\nWHERE s.homePage = 'NULL'\nRETURN s.companyName AS SupplierName, s.contactName AS ContactName, s.phone AS Phone",
+      "typeql": "match\n$s isa supplier, has home_page \"NULL\";\nfetch {\n  \"SupplierName\": $s.company_name,\n  \"ContactName\": $s.contact_name,\n  \"Phone\": $s.phone\n};",
+      "checks_failed": [
+        "missing_negation"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question implies negation but TypeQL has no not{} block"
+      ]
+    },
+    {
+      "index": 709,
+      "question": "Which suppliers provide products to both 'Beverages' and 'Seafood' categories?",
+      "cypher": "MATCH (s:Supplier)-[:SUPPLIES]->(p:Product)-[:PART_OF]->(c:Category)\nWHERE c.categoryName IN ['Beverages', 'Seafood']\nWITH s, c.categoryName AS categoryName\nORDER BY s.supplierID, categoryName\nWITH s, collect(categoryName) AS categories\nWHERE 'Beverages' IN categories AND 'Seafood' IN categories\nRETURN s.companyName AS supplierName",
+      "typeql": "match\n$s isa supplier;\n$p1 isa product;\n$c1 isa category, has category_name \"Beverages\";\nsupplies (supplier: $s, product: $p1);\npart_of (product: $p1, category: $c1);\n$p2 isa product;\n$c2 isa category, has category_name \"Seafood\";\nsupplies (supplier: $s, product: $p2);\npart_of (product: $p2, category: $c2);\nfetch { \"supplierName\": $s.company_name };",
+      "checks_failed": [
+        "missing_sort_cypher"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 715,
+      "question": "List the categories of products that have never been reordered (reorder level is 0).",
+      "cypher": "MATCH (p:Product)-[:PART_OF]->(c:Category)\nWHERE p.reorderLevel = 0\nRETURN DISTINCT c.categoryName",
+      "typeql": "match\n$p isa product, has reorder_level 0;\npart_of (product: $p, category: $c);\n$c has category_name $name;\nselect $name;\ndistinct;\nfetch { \"categoryName\": $name };",
+      "checks_failed": [
+        "missing_negation"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question implies negation but TypeQL has no not{} block"
+      ]
+    },
+    {
+      "index": 744,
+      "question": "Which 5 categories contain products that are all actively being supplied (none discontinued)?",
+      "cypher": "MATCH (c:Category)<-[:PART_OF]-(p:Product)\nWHERE p.discontinued = false\nWITH c, COUNT(p) AS totalProducts\nMATCH (c)<-[:PART_OF]-(p:Product)\nWITH c, totalProducts, COUNT(p) AS activeProducts\nWHERE totalProducts = activeProducts\nRETURN c.categoryName\nLIMIT 5",
+      "typeql": "match\n$c isa category, has category_name $name;\npart_of (product: $p, category: $c);\nnot { \n  $p2 isa product, has discontinued true;\n  part_of (product: $p2, category: $c);\n};\nlimit 5;\nfetch { \"categoryName\": $name };",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 796,
+      "question": "Find the 5 suppliers whose products have never been out of stock.",
+      "cypher": "MATCH (s:Supplier)-[:SUPPLIES]->(p:Product)\nWHERE p.unitsInStock > 0\nWITH s, COUNT(p) AS totalProducts, SUM(CASE WHEN p.unitsInStock > 0 THEN 1 ELSE 0 END) AS inStockProducts\nWHERE totalProducts = inStockProducts\nRETURN s.companyName\nLIMIT 5",
+      "typeql": "match\n$s isa supplier;\nsupplies (supplier: $s, product: $p);\nnot {\n  supplies (supplier: $s, product: $p2);\n  $p2 has units_in_stock $stock;\n  $stock <= 0;\n};\nselect $s;\ndistinct;\nlimit 5;\nfetch { \"companyName\": $s.company_name };",
+      "checks_failed": [
+        "missing_count",
+        "missing_sum_cypher",
+        "missing_case"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count",
+        "Cypher uses SUM() but TypeQL has no sum()",
+        "Cypher uses CASE WHEN but TypeQL may lack equivalent branching"
+      ]
+    }
+  ],
+  "categories": {
+    "missing_count": [
+      0,
+      157,
+      208,
+      394,
+      398,
+      547,
+      565,
+      657,
+      744,
+      796
+    ],
+    "missing_sum_cypher": [
+      131,
+      545,
+      565,
+      796
+    ],
+    "missing_negation": [
+      209,
+      357,
+      455,
+      691,
+      715
+    ],
+    "missing_sort_cypher": [
+      343,
+      383,
+      709
+    ],
+    "invalid_relation": [
+      358,
+      358
+    ],
+    "missing_sort": [
+      365
+    ],
+    "missing_count_distinct": [
+      398
+    ],
+    "threshold_mismatch": [
+      505
+    ],
+    "limit_mismatch": [
+      561
+    ],
+    "missing_case": [
+      565,
+      796
+    ],
+    "missing_sum": [
+      669
+    ]
+  }
+}

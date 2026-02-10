@@ -1,0 +1,356 @@
+{
+  "database": "movies",
+  "source": "synthetic-2",
+  "total_queries": 728,
+  "flagged": 22,
+  "flags": [
+    {
+      "index": 1,
+      "question": "Which movies released between 2005 and 2010 have the tagline 'Speed has no limits'?",
+      "cypher": "MATCH (m:Movie)\nWHERE m.released >= 2005 AND m.released <= 2010 AND m.tagline = 'Speed has no limits'\nRETURN m.title",
+      "typeql": "match\n$m isa movie, has released $r, has tagline \"Speed has no limits\";\n$r >= 2005;\n$r <= 2010;\nfetch {\n  \"title\": $m.title\n};",
+      "checks_failed": [
+        "invalid_attribute"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL references attribute \"no\" which is not in schema"
+      ]
+    },
+    {
+      "index": 86,
+      "question": "Which people have reviewed the movie with the highest votes?",
+      "cypher": "MATCH (m:Movie)\nWITH m\nORDER BY m.votes DESC\nLIMIT 1\nMATCH (p:Person)-[:REVIEWED]->(m)\nRETURN p.name",
+      "typeql": "with fun max_votes() -> integer:\n    match $m isa movie, has votes $v;\n    return max($v);\nmatch\n    $m isa movie, has votes $v;\n    let $max = max_votes();\n    $v == $max;\n    reviewed (reviewer: $p, film: $m);\n    $p has name $n;\nfetch {\n    \"name\": $n\n};",
+      "checks_failed": [
+        "missing_sort_cypher",
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher has LIMIT 1 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 98,
+      "question": "Who are the first 3 people to have reviewed a movie with the summary 'Silly, but fun'?",
+      "cypher": "MATCH (p:Person)-[r:REVIEWED]->(m:Movie)\nWHERE r.summary = 'Silly, but fun'\nRETURN p.name\nORDER BY r.timestamp ASC\nLIMIT 3",
+      "typeql": "match\n$p isa person;\n$rel isa reviewed (reviewer: $p, film: $m);\n$rel has summary \"Silly, but fun\";\nlimit 3;\nfetch {\n  \"name\": $p.name\n};",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 109,
+      "question": "What are the roles of actors in the movie with the highest number of votes?",
+      "cypher": "MATCH (m:Movie)\nWITH m\nORDER BY m.votes DESC\nLIMIT 1\nMATCH (p:Person)-[r:ACTED_IN]->(m)\nRETURN p.name AS actor, r.roles AS roles",
+      "typeql": "match\n$m isa movie, has votes $v;\nreduce $max_votes = max($v);\nmatch\n$m2 isa movie, has votes $v2;\n$v2 == $max_votes;\n$rel isa acted_in (actor: $p, film: $m2), has roles $r;\n$p has name $n;\nfetch {\n  \"actor\": $n,\n  \"roles\": $r\n};",
+      "checks_failed": [
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has LIMIT 1 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 138,
+      "question": "Show the top 5 movies that have been acted in by the oldest person in the database.",
+      "cypher": "// Step 1: Find the oldest person in the database\nMATCH (p:Person)\nWITH p\nORDER BY p.born ASC\nLIMIT 1\n\n// Step 2: Find the movies that the oldest person has acted in\nMATCH (p)-[:ACTED_IN]->(m:Movie)\nWITH m\nORDER BY m.votes DESC\nLIMIT 5\n\n// Step 3: Return the top 5 movies\nRETURN m.title AS title, m.votes AS votes, m.released AS released",
+      "typeql": "match $p isa person, has born $b;\nreduce $min_born = min($b);\nmatch $p2 isa person, has born $b2;\n$b2 == $min_born;\nacted_in (actor: $p2, film: $m);\n$m has votes $v;\nsort $v desc;\nlimit 5;\nfetch { \"title\": $m.title, \"votes\": $v, \"released\": $m.released };",
+      "checks_failed": [
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 1 but TypeQL limit 5"
+      ]
+    },
+    {
+      "index": 142,
+      "question": "Who are the first 3 actors in the movie with the tagline 'Speed has no limits'?",
+      "cypher": "MATCH (m:Movie {tagline: 'Speed has no limits'})&lt;-[:ACTED_IN]-(p:Person)\nRETURN p.name\nLIMIT 3",
+      "typeql": "match\n$m isa movie, has tagline \"Speed has no limits\";\nacted_in (actor: $p, film: $m);\n$p has name $n;\nlimit 3;\nfetch { \"name\": $n };",
+      "checks_failed": [
+        "invalid_attribute"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL references attribute \"no\" which is not in schema"
+      ]
+    },
+    {
+      "index": 217,
+      "question": "Name the top 5 people who followed and were followed by 'Laurence Fishburne'.",
+      "cypher": "MATCH (laurence:Person {name: 'Laurence Fishburne'})-[:FOLLOWS]->(followed:Person),\n      (follower:Person)-[:FOLLOWS]->(laurence)\nWITH followed, follower\nRETURN followed.name AS FollowedByLaurence, follower.name AS FollowsLaurence\nLIMIT 5",
+      "typeql": "match\n$laurence isa person, has name \"Laurence Fishburne\";\nfollows (follower: $laurence, followed: $followed);\nfollows (follower: $follower, followed: $laurence);\nlimit 5;\nfetch {\n  \"FollowedByLaurence\": $followed.name,\n  \"FollowsLaurence\": $follower.name\n};",
+      "checks_failed": [
+        "missing_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 220,
+      "question": "Who are the top 3 actors with the most roles in movies released before 1990?",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWHERE m.released < 1990\nWITH p, size(r.roles) AS numRoles\nRETURN p.name AS actor, sum(numRoles) AS totalRoles\nORDER BY totalRoles DESC\nLIMIT 3",
+      "typeql": "match\n$p isa person;\n$m isa movie, has released $r;\n$r < 1990;\n$rel isa acted_in (actor: $p, film: $m), has roles $role;\nreduce $totalRoles = count($role) groupby $p;\nsort $totalRoles desc;\nlimit 3;\nfetch {\n  \"actor\": $p.name,\n  \"totalRoles\": $totalRoles\n};",
+      "checks_failed": [
+        "missing_sum_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses SUM() but TypeQL has no sum()"
+      ]
+    },
+    {
+      "index": 268,
+      "question": "Who are the top 3 actors by number of followers?",
+      "cypher": "MATCH (actor:Person)-[:ACTED_IN]->(:Movie)\nOPTIONAL MATCH (follower:Person)-[:FOLLOWS]->(actor)\nWITH actor, COUNT(follower) AS followerCount\nRETURN actor.name AS actorName, followerCount\nORDER BY followerCount DESC\nLIMIT 3",
+      "typeql": "match\n$actor isa person;\nacted_in (actor: $actor);\nfollows (followed: $actor, follower: $follower);\nreduce $count = count($follower) groupby $actor;\nsort $count desc;\nlimit 3;\nfetch { \"actorName\": $actor.name, \"followerCount\": $count };",
+      "checks_failed": [
+        "missing_optional"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses OPTIONAL MATCH but TypeQL has no try{} or equivalent"
+      ]
+    },
+    {
+      "index": 273,
+      "question": "Name the movies acted in by the oldest actor in the database.",
+      "cypher": "// First, find the oldest actor in the database\nMATCH (p:Person)\nWITH p\nORDER BY p.born ASC\nLIMIT 1\n// Then, find the movies they acted in\nMATCH (p)-[:ACTED_IN]->(m:Movie)\nRETURN m.title AS MovieTitle",
+      "typeql": "with fun min_born() -> integer:\n  match $p isa person, has born $b;\n  return min($b);\nmatch\n$p isa person, has born $b;\nlet $min = min_born();\n$b == $min;\nacted_in (actor: $p, film: $m);\nfetch { \"MovieTitle\": $m.title };",
+      "checks_failed": [
+        "missing_sort_cypher",
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher has LIMIT 1 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 300,
+      "question": "Which movies have the tagline 'Speed has no limits' and who are the producers?",
+      "cypher": "MATCH (m:Movie {tagline: 'Speed has no limits'})<-[:PRODUCED]-(p:Person)\nRETURN m.title AS movie, p.name AS producer",
+      "typeql": "match\n$m isa movie, has tagline \"Speed has no limits\";\n$p isa person;\nproduced (producer: $p, film: $m);\nfetch {\n  \"movie\": $m.title,\n  \"producer\": $p.name\n};",
+      "checks_failed": [
+        "invalid_attribute"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL references attribute \"no\" which is not in schema"
+      ]
+    },
+    {
+      "index": 323,
+      "question": "Retrieve the top five movies released in the 2000s that were either directed or produced by the same person.",
+      "cypher": "MATCH (p:Person)-[:DIRECTED|PRODUCED]->(m:Movie)\nWHERE m.released >= 2000 AND m.released < 2010\nWITH m, COUNT(p) AS person_count\nORDER BY m.votes DESC\nLIMIT 5\nRETURN m.title AS title, m.released AS released, m.votes AS votes",
+      "typeql": "match\n$m isa movie, has released $r, has votes $v;\n$r >= 2000;\n$r < 2010;\n$p isa person;\n$rel isa $t ($p, film: $m);\n{ $t label directed; } or { $t label produced; };\nsort $v desc;\nlimit 5;\nfetch {\n  \"title\": $m.title,\n  \"released\": $r,\n  \"votes\": $v\n};",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 347,
+      "question": "Find the top 5 movies with the lowest ratings in REVIEWS.",
+      "cypher": "MATCH (:Person)-[r:REVIEWED]->(m:Movie)\nRETURN m.title AS movie, AVG(r.rating) AS average_rating\nORDER BY average_rating ASC\nLIMIT 5",
+      "typeql": "match\n$m isa movie;\n$rev isa reviewed (reviewer: $p, film: $m);\n$rev has rating $rating;\nreduce $sum = sum($rating), $count = count groupby $m;\nmatch\nlet $avg = $sum / $count;\nsort $avg asc;\nlimit 5;\nfetch {\n  \"movie\": $m.title,\n  \"average_rating\": $avg\n};",
+      "checks_failed": [
+        "missing_avg"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses AVG() but TypeQL has no mean()"
+      ]
+    },
+    {
+      "index": 348,
+      "question": "Who are the actors in the movie with the highest number of votes?",
+      "cypher": "MATCH (m:Movie)\nWITH m\nORDER BY m.votes DESC\nLIMIT 1\nMATCH (p:Person)-[:ACTED_IN]->(m)\nRETURN p.name AS actor_name",
+      "typeql": "match\n$m isa movie, has votes $v;\nreduce $max_votes = max($v);\nmatch\n$m2 isa movie, has votes $v2;\n$v2 == $max_votes;\nacted_in (actor: $p, film: $m2);\n$p has name $n;\nfetch {\n  \"actor_name\": $n\n};",
+      "checks_failed": [
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has LIMIT 1 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 510,
+      "question": "List 3 persons who have acted in, directed, and produced at least one movie each.",
+      "cypher": "MATCH (p:Person)-[:ACTED_IN]->(m1:Movie),\n      (p)-[:DIRECTED]->(m2:Movie),\n      (p)-[:PRODUCED]->(m3:Movie)\nWITH p, COUNT(DISTINCT m1) AS actedInCount, COUNT(DISTINCT m2) AS directedCount, COUNT(DISTINCT m3) AS producedCount\nWHERE actedInCount > 0 AND directedCount > 0 AND producedCount > 0\nRETURN p.name\nLIMIT 3",
+      "typeql": "match\n$p isa person;\nacted_in (actor: $p, film: $m1);\ndirected (director: $p, film: $m2);\nproduced (producer: $p, film: $m3);\nlimit 3;\nfetch {\n  \"name\": $p.name\n};",
+      "checks_failed": [
+        "missing_count",
+        "missing_count_distinct"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count",
+        "Cypher uses COUNT(DISTINCT) but TypeQL has no distinct (may be OK if groupby handles it)"
+      ]
+    },
+    {
+      "index": 539,
+      "question": "List the movies that have been acted in by the oldest actor in the database.",
+      "cypher": "// First, find the oldest actor in the database\nMATCH (p:Person)\nWITH p\nORDER BY p.born ASC\nLIMIT 1\n// Then, find the movies that this actor has acted in\nMATCH (p)-[:ACTED_IN]->(m:Movie)\nRETURN m.title AS MovieTitle",
+      "typeql": "match\n$p isa person, has born $b;\nreduce $min_born = min($b);\nmatch\n$p2 isa person, has born $b2;\n$b2 == $min_born;\nacted_in (actor: $p2, film: $m);\n$m has title $t;\nfetch { \"MovieTitle\": $t };",
+      "checks_failed": [
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has LIMIT 1 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 540,
+      "question": "Who has the most roles in movies released before 1985?",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWHERE m.released < 1985\nWITH p, size(r.roles) AS numRoles\nRETURN p.name AS person, sum(numRoles) AS totalRoles\nORDER BY totalRoles DESC\nLIMIT 1",
+      "typeql": "match\n$p isa person;\n$m isa movie, has released $r;\n$r < 1985;\n$a isa acted_in (actor: $p, film: $m), has roles $role;\nreduce $totalRoles = count($role) groupby $p;\nsort $totalRoles desc;\nlimit 1;\nfetch {\n  \"person\": $p.name,\n  \"totalRoles\": $totalRoles\n};",
+      "checks_failed": [
+        "missing_sum_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses SUM() but TypeQL has no sum()"
+      ]
+    },
+    {
+      "index": 555,
+      "question": "Which 3 persons have reviewed and produced the same movie?",
+      "cypher": "MATCH (p:Person)-[:REVIEWED]->(m:Movie)<-[:PRODUCED]-(p)\nWITH p, m, COUNT(m) AS movieCount\nWHERE movieCount >= 1\nRETURN p.name AS personName, COLLECT(m.title) AS moviesReviewedAndProduced\nLIMIT 3",
+      "typeql": "match\n  $p isa person;\n  $m isa movie;\n  reviewed (reviewer: $p, film: $m);\n  produced (producer: $p, film: $m);\nlimit 3;\nfetch {\n  \"personName\": $p.name,\n  \"movieTitle\": $m.title\n};",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 578,
+      "question": "Which 3 persons have acted in, directed, and produced the same movie?",
+      "cypher": "MATCH (p:Person)-[:ACTED_IN]->(m:Movie)\nMATCH (p)-[:DIRECTED]->(m)\nMATCH (p)-[:PRODUCED]->(m)\nWITH p, COUNT(m) AS movieCount\nWHERE movieCount > 0\nRETURN p.name AS personName\nLIMIT 3",
+      "typeql": "match\n$p isa person;\n$m isa movie;\nacted_in (actor: $p, film: $m);\ndirected (director: $p, film: $m);\nproduced (producer: $p, film: $m);\nselect $p;\ndistinct;\nlimit 3;\nfetch { \"personName\": $p.name };",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 610,
+      "question": "Name 3 people who have the most combined roles across all their ACTED_IN movies.",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWITH p, size(r.roles) AS numRoles\nRETURN p.name, sum(numRoles) AS totalRoles\nORDER BY totalRoles DESC\nLIMIT 3",
+      "typeql": "match\n$p isa person;\n$rel isa acted_in (actor: $p, film: $m);\n$rel has roles $r;\nreduce $totalRoles = count($r) groupby $p;\nsort $totalRoles desc;\nlimit 3;\nfetch {\n  \"name\": $p.name,\n  \"totalRoles\": $totalRoles\n};",
+      "checks_failed": [
+        "missing_sum_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses SUM() but TypeQL has no sum()"
+      ]
+    },
+    {
+      "index": 632,
+      "question": "Who are the top 3 persons with the most roles in movies they have acted in?",
+      "cypher": "MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)\nWITH p, size(r.roles) AS numRoles\nRETURN p.name, sum(numRoles) AS totalRoles\nORDER BY totalRoles DESC\nLIMIT 3",
+      "typeql": "match\n$p isa person;\n$rel isa acted_in (actor: $p, film: $m);\n$rel has roles $r;\nreduce $totalRoles = count($r) groupby $p;\nsort $totalRoles desc;\nlimit 3;\nfetch { \"name\": $p.name, \"totalRoles\": $totalRoles };",
+      "checks_failed": [
+        "missing_sum_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses SUM() but TypeQL has no sum()"
+      ]
+    },
+    {
+      "index": 730,
+      "question": "List the top 3 pairs of persons who follow each other.",
+      "cypher": "MATCH (p1:Person)-[:FOLLOWS]->(p2:Person)\nMATCH (p2)-[:FOLLOWS]->(p1)\nWITH p1, p2, COUNT(*) AS mutualFollows\nORDER BY mutualFollows DESC\nLIMIT 3\nRETURN p1.name AS Person1, p2.name AS Person2",
+      "typeql": "match\n  $p1 isa person, has name $n1;\n  $p2 isa person, has name $n2;\n  follows (follower: $p1, followed: $p2);\n  follows (follower: $p2, followed: $p1);\nlimit 3;\nfetch {\n  \"Person1\": $n1,\n  \"Person2\": $n2\n};",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    }
+  ],
+  "categories": {
+    "invalid_attribute": [
+      1,
+      142,
+      300
+    ],
+    "missing_sort_cypher": [
+      86,
+      98,
+      273,
+      730
+    ],
+    "missing_limit": [
+      86,
+      109,
+      273,
+      348,
+      539
+    ],
+    "missing_sort": [
+      98,
+      217,
+      730
+    ],
+    "limit_mismatch": [
+      138
+    ],
+    "missing_sum_cypher": [
+      220,
+      540,
+      610,
+      632
+    ],
+    "missing_optional": [
+      268
+    ],
+    "missing_count": [
+      323,
+      510,
+      555,
+      578,
+      730
+    ],
+    "missing_avg": [
+      347
+    ],
+    "missing_count_distinct": [
+      510
+    ]
+  }
+}

@@ -2882,6 +2882,7 @@ LIMIT 5","match
   game_play (streaming_channel: $s, played_game: $g);
   moderation (moderated_channel: $s, moderating_user: $m);
   $m has name $mn;
+sort $mn asc;
 limit 5;
 fetch { ""moderator"": $mn };"
 326,List the first 5 streams that have been in the same language and game for over 5 years.,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language), (s)-[:PLAYS]->(g:Game)

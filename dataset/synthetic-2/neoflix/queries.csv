@@ -2816,6 +2816,7 @@ select $p, $name, $pc;
 distinct;
 reduce $pc_count = count($pc) groupby $p, $name;
 match $pc_count >= 5;
+sort $name asc;
 limit 3;
 fetch { ""actor"": $name };"
 212,Which 3 languages are most commonly found in movies with a status of 'In Production'?,"MATCH (m:Movie)-[:SPOKEN_IN_LANGUAGE]->(l:Language)

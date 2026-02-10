@@ -1,0 +1,1362 @@
+{
+  "database": "companies",
+  "source": "synthetic-1",
+  "total_queries": 930,
+  "flagged": 83,
+  "flags": [
+    {
+      "index": 27,
+      "question": "Find the first 3 people who have the role of CEO in more than one organization.",
+      "cypher": "MATCH (p:Person)-[:HAS_CEO]->(o:Organization)\nWITH p, count(o) as num_ceo_roles\nWHERE num_ceo_roles > 1\nRETURN p.name as person, num_ceo_roles as number_of_ceo_roles\nORDER BY num_ceo_roles DESC\nLIMIT 3",
+      "typeql": "match\n  $p isa person, has name $n;\n  (organization: $o1, ceo: $p) isa ceo_of;\n  (organization: $o2, ceo: $p) isa ceo_of;\n  $o1 has organization_id $id1;\n  $o2 has organization_id $id2;\n  $id1 != $id2;\nlimit 3;\nfetch { \"person\": $n };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 47,
+      "question": "Find the top 3 organizations that have a motto and are located in Seattle.",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(:City {name: 'Seattle'})\nWHERE o.motto IS NOT NULL\nRETURN o.name AS organization, o.motto AS motto\nORDER BY o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $o has motto $o_motto;\n  $o has name $o_name;\n  $city isa city, has city_name \"Seattle\"; (organization: $o, city: $city) isa located_in;\nsort $o_name desc;\nlimit 3;\nfetch { \"organization\": $o.name, \"motto\": $o.motto };",
+      "checks_failed": [
+        "sort_direction_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher sorts ASC but TypeQL sorts DESC"
+      ]
+    },
+    {
+      "index": 75,
+      "question": "Which organizations have a revenue decrease mentioned in any articles?",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization)\nWHERE a.sentiment < 0 AND exists {\n  (a)-[:HAS_CHUNK]->(c:Chunk)\n  WHERE c.text CONTAINS 'revenue decrease' OR c.text CONTAINS 'revenue declined'\n}\nRETURN DISTINCT o.name AS organization",
+      "typeql": "match\n  $a isa article;\n  $o isa organization;\n  (article: $a, mentioned: $o) isa mentions;\n  $c has text $c_text;\n  $c_text contains \"revenue decrease\";\nfetch { \"organization\": $o.name };",
+      "checks_failed": [
+        "missing_cypher_filter"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher filters sentiment < 0 but value 0 not in TypeQL"
+      ]
+    },
+    {
+      "index": 90,
+      "question": "Which CEOs have led an organization for more than 10 years?",
+      "cypher": "MATCH (p:Person)-[r:HAS_CEO]->(o:Organization)\nWHERE duration.between(r.startDate, coalesce(r.endDate, date())).years > 10\nRETURN p.name AS ceoName, o.name AS orgName, duration.between(r.startDate, coalesce(r.endDate, date())).years AS yearsAsCEO",
+      "typeql": "match\n  $p isa person;\n  $o isa organization;\n(organization: $o, ceo: $p) isa ceo_of; fetch { \"ceoName\": $p.name, \"orgName\": $o.name };",
+      "checks_failed": [
+        "threshold_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 10 but it does not appear in TypeQL"
+      ]
+    },
+    {
+      "index": 107,
+      "question": "Which organizations have a sentiment score higher than 0.8 in their latest article?",
+      "cypher": "MATCH (o:Organization)<-[:MENTIONS]-(a:Article)\nWHERE a.sentiment > 0.8\nWITH o, max(a.date) AS latestDate\nMATCH (o)<-[:MENTIONS]-(article:Article {date: latestDate})\nRETURN o.name AS organization, article.title AS latestArticle, article.sentiment AS sentiment",
+      "typeql": "match\n  $o isa organization;\n  $a isa article;\n  (article: $a, mentioned: $o) isa mentions;\n  $article isa article;\n  (article: $article, mentioned: $o) isa mentions;\n  $a has sentiment $a_sentiment;\n  $a_sentiment > 0.8;\nfetch { \"organization\": $o.name, \"latestArticle\": $article.title, \"sentiment\": $article.sentiment };",
+      "checks_failed": [
+        "missing_sort_superlative"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question uses superlative \"latest\" but TypeQL has no sort or max/min"
+      ]
+    },
+    {
+      "index": 116,
+      "question": "What are the names of the first 3 organizations that have the same investor?",
+      "cypher": "MATCH (o1:Organization)<-[:HAS_INVESTOR]-(investor)-[:HAS_INVESTOR]->(o2:Organization)\nWHERE o1 <> o2\nWITH investor, collect(o1) + collect(o2) AS orgs\nUNWIND orgs AS org\nRETURN DISTINCT investor.name AS investor, collect(org.name)[..3] AS organizations\nLIMIT 1",
+      "typeql": "match\n  $o isa organization;\n  $investor isa person;\n  (organization: $o, investor: $investor) isa invested_in;\nlimit 3;\nfetch { \"investor\": $investor.name, \"organization\": $o.name };",
+      "checks_failed": [
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 1 but TypeQL limit 3"
+      ]
+    },
+    {
+      "index": 133,
+      "question": "Find the top 5 organizations that are competitors of 'Accenture'.",
+      "cypher": "MATCH (a:Organization {name: 'Accenture'})-[:HAS_COMPETITOR]->(c:Organization)\nRETURN c.name AS competitor, c.revenue AS revenue\nORDER BY revenue DESC\nLIMIT 5",
+      "typeql": "match\n  $a isa organization, has name \"Accenture\";\n  $c isa organization;\n  (competitor: $a, competitor: $c) isa competes_with;\nlimit 5;\nfetch { \"competitor\": $c.name, \"revenue\": $c.revenue };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 153,
+      "question": "List the top 3 CEOs of organizations that are subsidiaries of 'Accenture'.",
+      "cypher": "MATCH (accenture:Organization {name: 'Accenture'})-[:HAS_SUBSIDIARY*]->(sub:Organization)\nWHERE EXISTS {(sub)-[:HAS_CEO]->(:Person)}\nWITH sub, sub.name AS subName\nMATCH (sub)-[:HAS_CEO]->(ceo:Person)\nRETURN ceo.name AS ceoName, subName\nORDER BY ceoName\nLIMIT 3",
+      "typeql": "match\n  $accenture isa organization, has name \"Accenture\";\n  $sub isa organization;\n  $ceo isa person;\n  (organization: $sub, ceo: $ceo) isa ceo_of;\n(parent: $accenture, subsidiary: $sub) isa subsidiary_of; limit 3;\nfetch { \"ceoName\": $ceo.name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 165,
+      "question": "List the top 3 organizations that have a CEO and are mentioned in the latest articles.",
+      "cypher": "MATCH (o:Organization)<-[:MENTIONS]-(a:Article)\nWHERE EXISTS {(o)-[:HAS_CEO]->(:Person)}\nWITH o, max(a.date) AS latestDate\nORDER BY latestDate DESC\nLIMIT 3\nRETURN o.name AS organization, latestDate",
+      "typeql": "match\n  $o isa organization;\n  $a isa article;\n  (article: $a, mentioned: $o) isa mentions;\n$ceo isa person; (organization: $o, ceo: $ceo) isa ceo_of; limit 3;\nfetch { \"organization\": $o.name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 190,
+      "question": "List the first 3 organizations with CEOs who have been mentioned in multiple articles.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)<-[:MENTIONS]-(a:Article)\nWITH o, ceo, count(a) AS mentionCount\nWHERE mentionCount > 1\nRETURN o.name AS organization, ceo.name AS ceo\nORDER BY mentionCount DESC\nLIMIT 3",
+      "typeql": "match\n  $o isa organization, has name $on;\n  $ceo isa person, has name $ceon;\n  $a1 isa article;\n  $a2 isa article;\n  (organization: $o, ceo: $ceo) isa ceo_of;\n  (article: $a1, mentioned: $o) isa mentions;\n  (article: $a2, mentioned: $o) isa mentions;\n  $a1 has article_id $aid1;\n  $a2 has article_id $aid2;\n  $aid1 != $aid2;\nlimit 3;\nfetch { \"organization\": $on, \"ceo\": $ceon };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 197,
+      "question": "Identify the top 3 organizations that have been dissolved and are mentioned in high sentiment articles.",
+      "cypher": "MATCH (o:Organization)-[:MENTIONS]-(a:Article)\nWHERE o.isDissolved = true\nWITH o, avg(a.sentiment) as avgSentiment\nORDER BY avgSentiment DESC\nLIMIT 3\nRETURN o.name as organization, avgSentiment as avgArticleSentiment",
+      "typeql": "match\n  $o isa organization, has name $on;\n  $a isa article, has sentiment $s;\n  (article: $a, mentioned: $o) isa mentions;\n  $o has is_dissolved true;\nsort $s desc;\nlimit 3;\nfetch { \"organization\": $on, \"avgArticleSentiment\": $s };",
+      "checks_failed": [
+        "missing_avg"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses AVG() but TypeQL has no mean()"
+      ]
+    },
+    {
+      "index": 217,
+      "question": "Identify the top 3 organizations that have more than 100 employees and are subsidiaries of 'Accenture'.",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUBSIDIARY*]->(sub:Organization)\nWHERE o.name = 'Accenture' AND sub.nbrEmployees > 100\nRETURN sub.name AS subsidiary, sub.nbrEmployees AS numEmployees\nORDER BY numEmployees DESC\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $sub isa organization;\n  $o has name \"Accenture\";\n  $sub has nbr_employees $sub_nbr_employees;\n  $sub_nbr_employees > 100;\n(parent: $o, subsidiary: $sub) isa subsidiary_of; limit 3;\nfetch { \"subsidiary\": $sub.name, \"numEmployees\": $sub.nbr_employees };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 293,
+      "question": "What are the first 3 countries with organizations that have more than 1000 employees?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country)\nWHERE o.nbrEmployees > 1000\nRETURN c.name AS country, count(o) AS numOrgs\nORDER BY numOrgs DESC\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $c isa country, has country_name $cn;\n  $city isa city;\n  (organization: $o, city: $city) isa located_in;\n  (child: $city, parent: $c) isa location-contains;\n  $o has nbr_employees $ne;\n  $ne > 1000;\nlimit 3;\nfetch { \"country\": $cn };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 366,
+      "question": "List the names of 3 organizations that have at least one female board member.",
+      "cypher": "MATCH (o:Organization)-[:HAS_BOARD_MEMBER]->(p:Person)\nWHERE p.name =~ \".*a\" OR p.name =~ \".*e\"\nWITH o, count(p) AS num_female_board_members\nWHERE num_female_board_members > 0\nRETURN o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization, has name $on;\n  $p isa person;\n  (organization: $o, member: $p) isa board_member_of;\nlimit 3;\nfetch { \"organization\": $on };",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 376,
+      "question": "Which 3 organizations have a CEO who has won international business awards?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nWHERE ceo.summary CONTAINS 'award'\nRETURN o.name AS organization, ceo.name AS ceo\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (organization: $o, ceo: $p) isa ceo_of;\nlimit 3;\nfetch { \"organization\": $o.name, \"ceo\": $p.name };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 384,
+      "question": "Name the first 3 organizations that have been involved in a public scandal according to articles.",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization)\nWHERE a.sentiment < 0\nWITH o, count(a) as negativeMentions\nORDER BY negativeMentions DESC\nLIMIT 3\nRETURN o.name as organization",
+      "typeql": "match\n  $article isa article;\n  $org isa organization;\n  (article: $article, mentioned: $org) isa mentions;\n  $org has revenue $org_revenue;\n  $org_revenue > 500000000;\nlimit 3;\nfetch { \"title\": $article.title, \"article_summary\": $article.article_summary, \"date\": $article.date };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 389,
+      "question": "List the names of the first 3 organizations that have a CEO who is also a significant philanthropist.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(p:Person)\nWHERE p.summary CONTAINS 'philanthropist'\nRETURN o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (organization: $o, ceo: $p) isa ceo_of;\nlimit 3;\nfetch { \"organization\": $o.name, \"ceo\": $p.name };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 399,
+      "question": "Which cities have more than 10 organizations based in them?",
+      "cypher": "MATCH (c:City)<-[:IN_CITY]-(o:Organization)\nWITH c, count(o) AS orgCount\nWHERE orgCount > 10\nRETURN c.name AS city, orgCount",
+      "typeql": "match\n  $o isa organization;\n  $o has is_public true;\n  $city isa city, has city_name \"Seattle\"; (organization: $o, city: $city) isa located_in;\nlimit 3;\nfetch { \"name\": $o.name, \"summary\": $o.summary };",
+      "checks_failed": [
+        "threshold_mismatch",
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 10 but it does not appear in TypeQL",
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 401,
+      "question": "Name persons who are board members of more than three organizations.",
+      "cypher": "MATCH (p:Person)-[:HAS_BOARD_MEMBER]->(o:Organization)\nWITH p, count(o) as num_orgs\nWHERE num_orgs > 3\nRETURN p.name as person_name, num_orgs as number_of_organizations",
+      "typeql": "match\n  $p isa person, has name $pn;\n  $o1 isa organization;\n  $o2 isa organization;\n  $o3 isa organization;\n  $o4 isa organization;\n  (organization: $o1, member: $p) isa board_member_of;\n  (organization: $o2, member: $p) isa board_member_of;\n  (organization: $o3, member: $p) isa board_member_of;\n  (organization: $o4, member: $p) isa board_member_of;\n  $o1 has organization_id $id1;\n  $o2 has organization_id $id2;\n  $o3 has organization_id $id3;\n  $o4 has organization_id $id4;\n  $id1 != $id2;\n  $",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 430,
+      "question": "Name the cities that are mentioned in articles about organizations in the 'Software' industry.",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Software'}),\n      (a)-[:HAS_CHUNK]->(ch:Chunk),\n      (city:City)<-[:IN_CITY]-(o)\nWHERE ch.text CONTAINS city.name\nRETURN DISTINCT city.name",
+      "typeql": "match\n  $a isa article;\n  $o isa organization;\n  $c isa industry_category, has industry_category_name \"Software\";\n  $ch isa chunk;\n  $city isa city;\n  (article: $a, mentioned: $o) isa mentions;\n  (article: $a, chunk: $ch) isa has_chunk;\n  (organization: $o, city: $city) isa located_in;\n  (organization: $o, category: $c) isa in_category;\nfetch { \"city_name\": $city.city_name };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 434,
+      "question": "Name the top 3 organizations by revenue within the 'Financial Services' category.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Financial Services'})\nWHERE o.revenue IS NOT NULL\nRETURN o.name AS organization, o.revenue AS revenue\nORDER BY o.revenue DESC\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $c isa country, has country_name \"United States of America\";\n  $o has is_public true;\n  $o has nbr_employees $o_nbr_employees;\n  $o_nbr_employees > 1000;\n  $city isa city; (organization: $o, city: $city) isa located_in;\n(child: $city, parent: $c) isa location-contains; fetch { \"o\": $o };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_limit",
+        "missing_sort_cypher",
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort",
+        "Question asks for top-3 but TypeQL has no limit 3",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher has LIMIT 3 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 438,
+      "question": "What are the names of organizations that have been competitors for more than 10 years?",
+      "cypher": "MATCH (o1:Organization)-[:HAS_COMPETITOR]->(o2:Organization) WHERE exists { ... duration > 10 years } RETURN o1.name AS org1, o2.name AS org2",
+      "typeql": "match $o1 isa organization; $o2 isa organization; (competitor: $o1, competitor: $o2) isa competes_with; fetch { \"org1\": $o1.name, \"org2\": $o2.name };",
+      "checks_failed": [
+        "threshold_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 10 but it does not appear in TypeQL"
+      ]
+    },
+    {
+      "index": 449,
+      "question": "Name the industry categories for organizations that have been mentioned in articles about environmental issues.",
+      "cypher": "MATCH (article:Article)-[:HAS_CHUNK]->(chunk:Chunk) WHERE toLower(chunk.text) CONTAINS 'environment' ... RETURN DISTINCT category.name",
+      "typeql": "match $article isa article; $chunk isa chunk; (article: $article, chunk: $chunk) isa has_chunk; $org isa organization; $category isa industry_category; (article: $article, mentioned: $org) isa mentions; fetch { \"industry_category_name\": $category.industry_category_name };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 462,
+      "question": "List the organizations that have the most negative sentiment articles mentioning them.",
+      "cypher": "MATCH (o:Organization)<-[:MENTIONS]-(a:Article) WITH o, avg(a.sentiment) AS avgSentiment ORDER BY avgSentiment ASC LIMIT 10 RETURN o.name AS organization, avgSentiment",
+      "typeql": "match\n  $a isa article;\n  $o isa organization;\n  (article: $a, mentioned: $o) isa mentions;\n  $o has revenue $o_revenue;\n  $o_revenue > 1000000000;\nlimit 3;\nfetch { \"article\": $a.title, \"sentiment\": $a.sentiment };",
+      "checks_failed": [
+        "missing_sort_superlative",
+        "missing_sort_cypher",
+        "limit_mismatch",
+        "missing_avg"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question uses superlative \"most negative\" but TypeQL has no sort or max/min",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher LIMIT 10 but TypeQL limit 3",
+        "Cypher uses AVG() but TypeQL has no mean()"
+      ]
+    },
+    {
+      "index": 465,
+      "question": "Which organizations are based in a country other than their CEO's nationality?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person),\n      (o)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(country:Country),\n      (ceo)-[:HAS_PARENT*0..]->(parent:Person)\nWHERE parent.name IS NOT NULL\n  AND NOT EXISTS {\n    (parent)-[:HAS_PARENT*0..]->(:Person)-[:HAS_CHILD*0..]->(ceoNationality:Person)\n    WHERE (ceoNationality)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(country)\n  }\nRETURN o.name AS organization, ceo.name AS ceo, country.name AS country",
+      "typeql": "match\n  $o isa organization;\n  $ceo isa person;\n  $country isa country;\n  $parent isa person;\n  (organization: $o, ceo: $ceo) isa ceo_of;\n  $city isa city; (organization: $o, city: $city) isa located_in;\n(child: $city, parent: $country) isa location-contains; (parent: $ceo, child: $parent) isa parent_of; fetch { \"organization\": $o.name, \"ceo\": $ceo.name, \"country\": $country.country_name };",
+      "checks_failed": [
+        "missing_negation_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses NOT EXISTS/NOT() but TypeQL has no not{} block"
+      ]
+    },
+    {
+      "index": 505,
+      "question": "List the first 3 organizations that have subsidiaries in more than one country.",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(sub:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country) WITH o, count(DISTINCT c) AS numCountries WHERE numCountries > 1 RETURN o.name AS organization, numCountries ORDER BY numCountries DESC LIMIT 3",
+      "typeql": "match $o isa organization; $sub isa organization; $c isa country; (parent: $o, subsidiary: $sub) isa subsidiary_of; $city isa city; (organization: $o, city: $city) isa located_in; (child: $city, parent: $c) isa location-contains; limit 3; fetch { \"organization\": $o.name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "missing_count_distinct"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher uses COUNT(DISTINCT) but TypeQL has no distinct (may be OK if groupby handles it)"
+      ]
+    },
+    {
+      "index": 509,
+      "question": "List the first 3 countries mentioned in articles related to consumer behavior.",
+      "cypher": "MATCH (article:Article)-[:HAS_CHUNK]->(chunk:Chunk) WHERE toLower(article.summary) CONTAINS 'consumer behavior' ... RETURN DISTINCT country.name LIMIT 3",
+      "typeql": "match $article isa article; $chunk isa chunk; (article: $article, chunk: $chunk) isa has_chunk; $country isa country; limit 3; fetch { \"country_name\": $country.country_name };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 515,
+      "question": "Who are the CEOs of the first 3 organizations in the database?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nRETURN o.name AS organization, ceo.name AS ceo\nORDER BY o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (organization: $o, ceo: $p) isa ceo_of;\nlimit 3;\nfetch { \"organization\": $o.name, \"ceo\": $p.name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 517,
+      "question": "Which organizations have more than 100 employees?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.nbrEmployees > 100\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees",
+      "typeql": "match\n  $o isa organization;\n  $o has nbr_employees $o_nbr_employees;\n  $o_nbr_employees < 50;\n  $o has is_dissolved false;\nfetch { \"o\": $o };",
+      "checks_failed": [
+        "threshold_mismatch",
+        "missing_cypher_filter"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100 but it does not appear in TypeQL",
+        "Cypher filters nbremployees > 100 but value 100 not in TypeQL"
+      ]
+    },
+    {
+      "index": 519,
+      "question": "What are the names of the first 3 articles authored by 'James Blackman'?",
+      "cypher": "MATCH (a:Article {author: 'James Blackman'})\nRETURN a.title\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has LIMIT 3 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 530,
+      "question": "Who are the investors of the first 3 organizations in the list?",
+      "cypher": "MATCH (o:Organization)\nWITH o\nORDER BY o.name\nLIMIT 3\nMATCH (o)<-[:HAS_INVESTOR]-(investor)\nRETURN o.name AS organization, investor.name AS investor",
+      "typeql": "match $ceo isa person; $org isa organization; $investedOrg isa organization; (organization: $org, ceo: $ceo) isa ceo_of; (organization: $org, investor: $ceo) isa invested_in; fetch { \"organization\": $org.name, \"ceo\": $ceo.name, \"investedOrganization\": $investedOrg.name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher has LIMIT 3 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 532,
+      "question": "What are the first 3 articles that have a sentiment score above 0.5?",
+      "cypher": "MATCH (a:Article)\nWHERE a.sentiment > 0.5\nRETURN a\nORDER BY a.date DESC\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $c isa city;\n  $country isa country;\n  (organization: $o, city: $c) isa located_in;\n  $o has revenue $o_revenue;\n  $o_revenue > 100000000;\n(child: $c, parent: $country) isa location-contains; fetch { \"organization\": $o.name, \"city\": $c.city_name, \"country\": $country.country_name, \"revenue\": $o.revenue };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher has LIMIT 3 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 546,
+      "question": "Name the first 3 organizations that have been mentioned in an article from 'MrWeb'.",
+      "cypher": "MATCH (article:Article {siteName: 'MrWeb'})-[:MENTIONS]->(org:Organization)\nRETURN org.name\nLIMIT 3",
+      "typeql": "match $o isa organization, has name $n; $a isa article, has sentiment $s; (article: $a, mentioned: $o) isa mentions; reduce $avg_sentiment = mean($s) groupby $o; match $o has name $n; sort $avg_sentiment asc; limit 10; fetch { \"organization\": $n, \"avgSentiment\": $avg_sentiment };",
+      "checks_failed": [
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 3 but TypeQL limit 10"
+      ]
+    },
+    {
+      "index": 573,
+      "question": "Which organizations have a CEO named within the first 5 chunks of an article?",
+      "cypher": "MATCH (article:Article)-[:HAS_CHUNK]->(chunk:Chunk), ... WHERE chunk.text CONTAINS ceo.name AND chunk.text IN [...first 5 chunks]",
+      "typeql": "match $article isa article; $chunk isa chunk; $org isa organization; $ceo isa person; (article: $article, chunk: $chunk) isa has_chunk; (article: $article, mentioned: $org) isa mentions; (organization: $org, ceo: $ceo) isa ceo_of; fetch { \"organization\": $org.name, \"ceo\": $ceo.name };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 574,
+      "question": "List the first 3 organizations that have been competitors for more than 5 years.",
+      "cypher": "MATCH (o1:Organization)-[c:HAS_COMPETITOR]->(o2:Organization) WHERE c.since < date() - duration('P5Y') RETURN o1, o2 LIMIT 3",
+      "typeql": "match $o1 isa organization; $o2 isa organization; (competitor: $o1, competitor: $o2) isa competes_with; limit 3; fetch { \"o1\": $o1, \"o2\": $o2 };",
+      "checks_failed": [
+        "threshold_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 5 but it does not appear in TypeQL"
+      ]
+    },
+    {
+      "index": 600,
+      "question": "Name 3 organizations that are suppliers to 'New Energy Group'.",
+      "cypher": "MATCH (o:Organization {name: 'New Energy Group'})<-[:HAS_SUPPLIER]-(supplier:Organization) RETURN supplier.name LIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $s isa organization;\n  $sub isa organization;\n  $sc isa country;\n  $subc isa country;\n  (customer: $o, supplier: $s) isa supplies;\n  (parent: $o, subsidiary: $sub) isa subsidiary_of;\n  $city isa city; (organization: $o, city: $city) isa located_in;\n(child: $city, parent: $sc) isa location-contains; fetch { \"organization\": $o.name };",
+      "checks_failed": [
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has LIMIT 3 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 601,
+      "question": "Which cities are home to organizations with more than 300 employees?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City)\nWHERE o.nbrEmployees > 300\nRETURN c.name AS city",
+      "typeql": "match\n  $a isa article;\n  $c isa chunk;\n  $o isa organization;\n  $ic isa industry_category, has industry_category_name \"Finance\";\n  $city isa city;\n  (article: $a, chunk: $c) isa has_chunk;\n  (article: $a, mentioned: $o) isa mentions;\n  (organization: $o, city: $city) isa located_in;\n  (organization: $o, category: $ic) isa in_category;\nlimit 3;\nreduce $mentions = count($a);",
+      "checks_failed": [
+        "threshold_mismatch",
+        "missing_cypher_filter"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 300 but it does not appear in TypeQL",
+        "Cypher filters nbremployees > 300 but value 300 not in TypeQL"
+      ]
+    },
+    {
+      "index": 608,
+      "question": "Which organizations have a summary mentioning 'software' and are located in a city with a population summary mentioning 'capital'?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City) WHERE toLower(o.summary) CONTAINS 'software' AND toLower(c.summary) CONTAINS 'capital' RETURN o.name AS organization, c.name AS city",
+      "typeql": "match $o isa organization; $c isa city; (organization: $o, city: $c) isa located_in; fetch { \"organization\": $o.name, \"city\": $c.city_name };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 628,
+      "question": "Which articles have chunks containing the text 'consumer behavior analyses'?",
+      "cypher": "MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk)\nWHERE c.text CONTAINS 'consumer behavior analyses'\nRETURN a",
+      "typeql": "match $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of; limit 3; fetch { \"name\": $o.name };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 669,
+      "question": "Which organizations have a CEO and a motto that includes 'innovation'?",
+      "cypher": "MATCH (o:Organization) WHERE (o)-[:HAS_CEO]->(:Person) AND o.motto IS NOT NULL AND toLower(o.motto) CONTAINS 'innovation' RETURN o",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (organization: $o, ceo: $p) isa ceo_of;\nfetch { \"organization\": $o.name, \"ceo\": $p.name };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 675,
+      "question": "List the organizations that have a public status and a summary mentioning 'software'.",
+      "cypher": "MATCH (o:Organization) WHERE o.isPublic = true AND toLower(o.summary) CONTAINS 'software' RETURN o.name AS organization, o.summary AS summary",
+      "typeql": "match $o isa organization; $o has is_public true; fetch { \"organization\": $o.name, \"summary\": $o.summary };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 686,
+      "question": "List the top 5 articles by positive sentiment.",
+      "cypher": "MATCH (a:Article) WHERE a.sentiment IS NOT NULL RETURN a.title AS title, a.sentiment AS sentiment ORDER BY sentiment DESC LIMIT 5",
+      "typeql": "match $a isa article; $a has sentiment $a_sentiment; limit 5; fetch { \"title\": $a.title, \"sentiment\": $a.sentiment };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 692,
+      "question": "Who are the investors in the top 3 organizations by revenue?",
+      "cypher": "MATCH (o:Organization)\nWITH o\nORDER BY o.revenue DESC\nLIMIT 3\nMATCH (o)<-[:HAS_INVESTOR]-(investor)\nWHERE investor:Person OR investor:Organization\nRETURN o.name AS organization, investor.name AS investor",
+      "typeql": "match\n  $o isa organization;\n  $investor isa person;\n  (organization: $o, investor: $investor) isa invested_in;\nlimit 3;\nfetch { \"investor\": $investor.name, \"organization\": $o.name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 720,
+      "question": "Who are the top 3 investors of 'New Energy Group'?",
+      "cypher": "MATCH (o:Organization {name: 'New Energy Group'})<-[:HAS_INVESTOR]-(investor)\nRETURN investor.name AS investor, investor.summary AS summary\nORDER BY investor.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization, has name \"New Energy Group\";\n  (investor: $investor, organization: $o) isa invested_in;\n  $investor has name $investor_name;\nsort $investor_name desc;\nlimit 3;\nfetch { \"investor\": $investor.name, \"summary\": $investor.summary };",
+      "checks_failed": [
+        "sort_direction_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher sorts ASC but TypeQL sorts DESC"
+      ]
+    },
+    {
+      "index": 724,
+      "question": "Which cities are linked to more than 5 organizations, list the first 3.",
+      "cypher": "MATCH (c:City)<-[:IN_CITY]-(o:Organization)\nWITH c, count(o) AS orgCount\nWHERE orgCount > 5\nRETURN c.name AS city, orgCount\nORDER BY orgCount DESC\nLIMIT 3",
+      "typeql": "match\n  $o1 isa organization;\n  $o2 isa organization;\n  $c isa country;\n  (competitor: $o1, competitor: $o2) isa competes_with;\n  $city isa city; (organization: $o1, city: $city) isa located_in;\n(child: $city, parent: $c) isa location-contains; fetch { \"organization\": $o1.name, \"competitor\": $o2.name, \"country\": $c.country_name };",
+      "checks_failed": [
+        "missing_sort",
+        "threshold_mismatch",
+        "missing_sort_cypher",
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Question mentions threshold 5 but it does not appear in TypeQL",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher has LIMIT 3 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 726,
+      "question": "List the top 5 organizations that are competitors of 'Accenture'.",
+      "cypher": "MATCH (a:Organization {name: 'Accenture'})-[:HAS_COMPETITOR]->(c:Organization) RETURN c.name AS competitor, c.revenue AS revenue ORDER BY revenue DESC LIMIT 5",
+      "typeql": "match $a isa organization, has name \"Accenture\"; $c isa organization; (competitor: $a, competitor: $c) isa competes_with; limit 5; fetch { \"competitor\": $c.name, \"revenue\": $c.revenue };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 739,
+      "question": "Who are the board members of the first 3 organizations in the 'Technology' industry?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Technology'})\nWITH o\nORDER BY o.name\nLIMIT 3\nMATCH (o)-[:HAS_BOARD_MEMBER]->(p:Person)\nRETURN o.name AS organization, collect(p.name) AS board_members",
+      "typeql": "match\n  $o isa organization, has name $on;\n  $c isa industry_category, has industry_category_name \"Technology\";\n  $p isa person, has name $pn;\n  (organization: $o, category: $c) isa in_category;\n  (organization: $o, member: $p) isa board_member_of;\nlimit 3;\nfetch { \"organization\": $on, \"board_member\": $pn };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 743,
+      "question": "What are the top 5 articles with the highest sentiment scores mentioning organizations in 'Seattle'?",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City {name: 'Seattle'}) RETURN a.title AS article, a.sentiment AS sentiment ORDER BY sentiment DESC LIMIT 5",
+      "typeql": "match $a isa article; $o isa organization; $city isa city, has city_name \"Seattle\"; (organization: $o, city: $city) isa located_in; (article: $a, mentioned: $o) isa mentions; limit 5; fetch { \"article\": $a.title, \"sentiment\": $a.sentiment };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 744,
+      "question": "Who are the top 3 parents of 'Julie Spellman Sweet'?",
+      "cypher": "MATCH (p:Person {name: 'Julie Spellman Sweet'})<-[:HAS_CHILD]-(parent:Person) RETURN parent.name LIMIT 3",
+      "typeql": "match $p isa person, has name \"Julie Spellman Sweet\"; $parent isa person; (parent: $p, child: $parent) isa parent_of; limit 3; fetch { \"name\": $parent.name };",
+      "checks_failed": [
+        "missing_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 746,
+      "question": "Which organizations have a motto related to 'security', list the top 3.",
+      "cypher": "MATCH (o:Organization)\nWHERE o.motto CONTAINS 'security'\nRETURN o.name AS organization, o.motto AS motto\nORDER BY o.name\nLIMIT 3",
+      "typeql": "match $a isa article; $a has date $a_date; $a_date > 2021-01-01T00:00:00; sort $a_date desc; limit 3; fetch { \"a\": $a };",
+      "checks_failed": [
+        "sort_direction_mismatch",
+        "missing_contains"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher sorts ASC but TypeQL sorts DESC",
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 747,
+      "question": "List the first 3 countries with organizations that have more than 100 employees.",
+      "cypher": "MATCH (c:Country)<-[:IN_COUNTRY]-(city:City)<-[:IN_CITY]-(o:Organization) WHERE o.nbrEmployees > 100 RETURN c.name AS country, count(o) AS numOrganizations ORDER BY numOrganizations DESC LIMIT 3",
+      "typeql": "match $c isa country; $city isa city; $o isa organization; (child: $city, parent: $c) isa location-contains; $o has nbr_employees $o_nbr_employees; $o_nbr_employees > 100; (organization: $o, city: $city) isa located_in; limit 3; reduce $numOrganizations = count($o);",
+      "checks_failed": [
+        "missing_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 750,
+      "question": "Which organizations in Rome have a 'Software' category, list the top 3.",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(:City {name: 'Rome'})\nWHERE (o)-[:HAS_CATEGORY]->(:IndustryCategory {name: 'Software'})\nRETURN o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $city isa city, has city_name \"Rome\"; (organization: $o, city: $city) isa located_in;\n  $ic isa industry_category, has industry_category_name \"Software\"; (organization: $o, category: $ic) isa in_category;\nlimit 3;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "missing_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 753,
+      "question": "Which organizations have been mentioned in articles with a sentiment greater than 0.7, list the top 3.",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization)\nWHERE a.sentiment > 0.7\nRETURN o.name AS organization, a.title AS article, a.sentiment AS sentiment\nORDER BY sentiment DESC\nLIMIT 3",
+      "typeql": "match\n  $a isa article;\n  $o isa organization;\n  (article: $a, mentioned: $o) isa mentions;\n  $a has sentiment $a_sentiment;\n  $a_sentiment > 0.7;\nlimit 3;\nfetch { \"organization\": $o.name, \"article\": $a.title, \"sentiment\": $a.sentiment };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 756,
+      "question": "Which organizations have 'Apple' as a competitor, list the top 3.",
+      "cypher": "MATCH (o:Organization)-[:HAS_COMPETITOR]->(c:Organization {name: 'Apple'})\nRETURN o.name AS organization\nORDER BY o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $c isa organization, has name \"Apple\";\n  (competitor: $o, competitor: $c) isa competes_with;\n  $o has name $o_name;\nsort $o_name desc;\nlimit 3;\nfetch { \"organization\": $o.name };",
+      "checks_failed": [
+        "sort_direction_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher sorts ASC but TypeQL sorts DESC"
+      ]
+    },
+    {
+      "index": 757,
+      "question": "List the first 3 CEOs of organizations with less than 50 employees.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(p:Person)\nWHERE o.nbrEmployees < 50\nRETURN p.name AS CEO, o.name AS Organization\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (organization: $o, ceo: $p) isa ceo_of;\nlimit 3;\nfetch { \"organization\": $o.name, \"ceo\": $p.name, \"numEmployees\": $o.nbr_employees };",
+      "checks_failed": [
+        "threshold_mismatch",
+        "missing_cypher_filter"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 50 but it does not appear in TypeQL",
+        "Cypher filters nbremployees < 50 but value 50 not in TypeQL"
+      ]
+    },
+    {
+      "index": 760,
+      "question": "Which organizations have a board member named 'Julie Spellman Sweet', list the top 3.",
+      "cypher": "MATCH (p:Person {name: 'Julie Spellman Sweet'})<-[:HAS_BOARD_MEMBER]-(o:Organization)\nRETURN o.name AS organization\nLIMIT 3",
+      "typeql": "match\n  $p isa person, has name \"Julie Spellman Sweet\";\n  $o isa organization;\n  (organization: $o, member: $p) isa board_member_of;\nlimit 3;\nfetch { \"organization\": $o.name };",
+      "checks_failed": [
+        "missing_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 761,
+      "question": "List the top 5 organizations that have an investor named 'Julie Spellman Sweet'.",
+      "cypher": "MATCH (p:Person {name: 'Julie Spellman Sweet'})-[:HAS_INVESTOR]->(o:Organization)\nRETURN o.name AS organization, o.summary AS summary\nLIMIT 5",
+      "typeql": "match\n  $p isa person, has name \"Julie Spellman Sweet\";\n  $o isa organization;\n  (investor: $p, organization: $o) isa invested_in;\nlimit 5;\nfetch { \"organization\": $o.name, \"summary\": $o.summary };",
+      "checks_failed": [
+        "missing_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 772,
+      "question": "What are the top 5 organizations with the highest revenue?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.revenue IS NOT NULL\nRETURN o.name AS organization, o.revenue AS revenue\nORDER BY o.revenue DESC\nLIMIT 5",
+      "typeql": "match $o isa organization; $ceo isa person; $a isa article; (organization: $o, ceo: $ceo) isa ceo_of; fetch { \"organization\": $o.name, \"ceo\": $ceo.name, \"article\": $a.title };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_limit",
+        "missing_sort_cypher",
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no sort",
+        "Question asks for top-5 but TypeQL has no limit 5",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher has LIMIT 5 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 784,
+      "question": "List the organizations that have a sentiment score above 0.8 in their latest article mention.",
+      "cypher": "MATCH (o:Organization)<-[:MENTIONS]-(a:Article)\nWITH o, max(a.date) AS latestDate\nMATCH (o)<-[:MENTIONS]-(article:Article {date: latestDate})\nWHERE article.sentiment > 0.8\nRETURN o.name AS organization, article.title AS latestArticle, article.sentiment AS sentiment",
+      "typeql": "match\n  $o isa organization;\n  $a isa article;\n  (article: $a, mentioned: $o) isa mentions;\n  $article isa article;\n  (article: $article, mentioned: $o) isa mentions;\nfetch { \"organization\": $o.name, \"latestArticle\": $article.title, \"sentiment\": $article.sentiment };",
+      "checks_failed": [
+        "missing_sort_superlative",
+        "missing_cypher_filter"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question uses superlative \"latest\" but TypeQL has no sort or max/min",
+        "Cypher filters sentiment > 0 but value 0 not in TypeQL"
+      ]
+    },
+    {
+      "index": 786,
+      "question": "Which organizations have a motto that includes the word 'technology'?",
+      "cypher": "MATCH (o:Organization) WHERE o.motto IS NOT NULL AND toLower(o.motto) CONTAINS 'technology' RETURN o.name AS organization, o.motto AS motto",
+      "typeql": "match $o isa organization; $o has motto $o_motto; fetch { \"organization\": $o.name, \"motto\": $o.motto };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 787,
+      "question": "List the authors who have mentioned more than three different organizations in their articles.",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization) \nWITH a.author AS author, count(DISTINCT o) AS org_count\nWHERE org_count > 3\nRETURN author",
+      "typeql": "match\n  $a isa article, has author $auth;\n  $o1 isa organization;\n  $o2 isa organization;\n  $o3 isa organization;\n  $o4 isa organization;\n  (article: $a, mentioned: $o1) isa mentions;\n  (article: $a, mentioned: $o2) isa mentions;\n  (article: $a, mentioned: $o3) isa mentions;\n  (article: $a, mentioned: $o4) isa mentions;\n  $o1 has organization_id $id1;\n  $o2 has organization_id $id2;\n  $o3 has organization_id $id3;\n  $o4 has organization_id $id4;\n  $id1 != $id2;\n  $id1 != $id3;\n  $id1 != $id4;\n  ",
+      "checks_failed": [
+        "missing_count",
+        "missing_count_distinct"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count",
+        "Cypher uses COUNT(DISTINCT) but TypeQL has no distinct (may be OK if groupby handles it)"
+      ]
+    },
+    {
+      "index": 792,
+      "question": "Which organizations have more than 10,000 employees and are located in a city that is not the capital of a country?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City)-[:IN_COUNTRY]->(country:Country) WHERE o.nbrEmployees > 10000 AND NOT EXISTS {(c)<-[:CAPITAL_OF]-(country)} RETURN o.name AS organization, c.name AS city, country.name AS country",
+      "typeql": "match $o isa organization; $c isa city; $country isa country; (organization: $o, city: $c) isa located_in; $o has nbr_employees $o_nbr_employees; $o_nbr_employees > 10000; (child: $c, parent: $country) isa location-contains; fetch { \"organization\": $o.name, \"city\": $c.city_name, \"country\": $country.country_name };",
+      "checks_failed": [
+        "missing_negation_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses NOT EXISTS/NOT() but TypeQL has no not{} block"
+      ]
+    },
+    {
+      "index": 795,
+      "question": "What are the names of the top 5 organizations in terms of number of employees?",
+      "cypher": "MATCH (o:Organization)\nWHERE o.nbrEmployees IS NOT NULL\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees\nORDER BY o.nbrEmployees DESC\nLIMIT 5",
+      "typeql": "match\n  $c isa country;\n  $city isa city;\n  $o isa organization;\n  (child: $city, parent: $c) isa location-contains;\n  $o has is_public $o_is_public;\n  $o has is_public true;\n  (organization: $o, city: $city) isa located_in;\nreduce $numCities = count($city) groupby $c;\nsort $numCities desc;\nlimit 10;\nfetch { \"country\": $c.country_name, \"numCities\": $numCities };",
+      "checks_failed": [
+        "missing_limit",
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no limit 5",
+        "Cypher LIMIT 5 but TypeQL limit 10"
+      ]
+    },
+    {
+      "index": 800,
+      "question": "Which organizations have a summary that mentions the word 'software'?",
+      "cypher": "MATCH (o:Organization) WHERE o.summary IS NOT NULL AND toLower(o.summary) CONTAINS 'software' RETURN o",
+      "typeql": "match $o isa organization; $o has summary $o_summary; fetch { \"o\": $o };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 811,
+      "question": "What are the challenges faced by organizations headquartered in non-capital cities?",
+      "cypher": "MATCH (o:Organization)-[:IN_CITY]->(c:City)\nWHERE c.name <> c.summary AND c.summary CONTAINS \"capital\"\nWITH o, c\nOPTIONAL MATCH (o)-[:HAS_CATEGORY]->(cat:IndustryCategory)\nOPTIONAL MATCH (o)<-[:MENTIONS]-(a:Article)\nRETURN o.name AS organization, o.summary AS org_summary, c.name AS city, \n       c.summary AS city_summary, cat.name AS industry, \n       a.title AS article_title, a.summary AS article_summary\nORDER BY o.name",
+      "typeql": "match\n  $o isa organization;\n  $c isa city;\n  (organization: $o, city: $c) isa located_in;\n  $o has name $o_name;\n  $ic isa industry_category; (organization: $o, category: $ic) isa in_category;\nsort $o_name asc;\nfetch { \"organization\": $o.name, \"org_summary\": $o.summary, \"city\": $c.city_name };",
+      "checks_failed": [
+        "missing_optional",
+        "missing_contains"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses OPTIONAL MATCH but TypeQL has no try{} or equivalent",
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 866,
+      "question": "What are the names of the people who are board members of at least two different organizations?",
+      "cypher": "MATCH (p:Person)-[:HAS_BOARD_MEMBER]->(o:Organization)\nWITH p, count(o) as num_orgs\nWHERE num_orgs >= 2\nRETURN p.name",
+      "typeql": "match\n  $p isa person, has name $pn;\n  $o1 isa organization;\n  $o2 isa organization;\n  (organization: $o1, member: $p) isa board_member_of;\n  (organization: $o2, member: $p) isa board_member_of;\n  $o1 has organization_id $id1;\n  $o2 has organization_id $id2;\n  $id1 != $id2;\nfetch { \"name\": $pn };",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 874,
+      "question": "Identify the top 3 organizations that have been dissolved but still have a CEO listed.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(p:Person)\nWHERE o.isDissolved = true\nRETURN o.name AS organization, p.name AS ceo\nORDER BY o.name\nLIMIT 3",
+      "typeql": "match\n  $o isa organization;\n  $p isa person;\n  (organization: $o, ceo: $p) isa ceo_of;\n  $o has is_dissolved true;\nlimit 3;\nfetch { \"organization\": $o.name, \"ceo\": $p.name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 875,
+      "question": "List the first 5 organizations with the most number of employees that have a subsidiary.",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(:Organization)\nWHERE o.nbrEmployees IS NOT NULL\nRETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees\nORDER BY o.nbrEmployees DESC\nLIMIT 5",
+      "typeql": "match $o isa organization; $sub isa organization; $city isa city; (parent: $o, subsidiary: $sub) isa subsidiary_of; (organization: $o, city: $city) isa located_in; fetch { \"organization\": $o.name, \"subsidiary\": $sub.name, \"city\": $city.city_name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_superlative",
+        "missing_sort_cypher",
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-5 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Question uses superlative \"most number\" but TypeQL has no sort or max/min",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher has LIMIT 5 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 881,
+      "question": "List the first 5 organizations with a revenue greater than 50 million that have a competitor.",
+      "cypher": "MATCH (o:Organization)\nWHERE o.revenue > 5e7 AND EXISTS {\n  (o)-[:HAS_COMPETITOR]->(:Organization)\n}\nRETURN o.name AS organization, o.revenue AS revenue\nLIMIT 5",
+      "typeql": "match\n  $o1 isa organization;\n  $o2 isa organization;\n  (competitor: $o1, competitor: $o2) isa competes_with;\nlimit 5;\nfetch { \"org1\": $o1.name, \"org2\": $o2.name };",
+      "checks_failed": [
+        "threshold_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 50000000 but it does not appear in TypeQL"
+      ]
+    },
+    {
+      "index": 887,
+      "question": "What are the names of the organizations that have a supplier with a revenue less than 5 million?",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUPPLIER]->(s:Organization)\nWHERE s.revenue < 5e6\nRETURN o.name",
+      "typeql": "match\n  $o isa organization;\n  $s isa organization;\n  (customer: $o, supplier: $s) isa supplies;\n  $s has revenue $s_revenue;\n  $s_revenue < 5;\nfetch { \"name\": $o.name };",
+      "checks_failed": [
+        "threshold_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 5000000 but it does not appear in TypeQL"
+      ]
+    },
+    {
+      "index": 890,
+      "question": "Which organizations have a CEO with the name 'Julie Spellman Sweet' and a revenue greater than 100 million?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'})\nWHERE o.revenue > 1E8\nRETURN o",
+      "typeql": "match $o isa organization; $city isa city, has city_name \"Seattle\"; (organization: $o, city: $city) isa located_in; $p isa person, has name \"Julie Spellman Sweet\"; (organization: $o, ceo: $p) isa ceo_of; fetch { \"name\": $o.name };",
+      "checks_failed": [
+        "threshold_mismatch",
+        "missing_cypher_filter"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 100000000 but it does not appear in TypeQL",
+        "Cypher filters revenue > 1 but value 1 not in TypeQL"
+      ]
+    },
+    {
+      "index": 893,
+      "question": "What are the names of the organizations that have a CEO with a summary mentioning 'Accenture'?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(p:Person)\nWHERE p.summary CONTAINS 'Accenture'\nRETURN o.name",
+      "typeql": "match\n  $o isa organization;\n  $o has name \"Accenture\";\n  $p isa person;\n  (organization: $o, ceo: $p) isa ceo_of;\nfetch { \"organization\": $o.name, \"ceo\": $p.name, \"summary\": $o.summary };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 894,
+      "question": "Find the top 3 cities mentioned in articles with the highest sentiment scores.",
+      "cypher": "MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk), (a)-[:MENTIONS]->(:Organization)-[:IN_CITY]->(city:City)\nWITH city, max(a.sentiment) AS maxSentiment\nORDER BY maxSentiment DESC\nLIMIT 3\nRETURN city.name AS cityName, maxSentiment",
+      "typeql": "match\n  $a isa article;\n  $c isa chunk;\n  $city isa city;\n  (article: $a, chunk: $c) isa has_chunk;\nlimit 3;\nfetch { \"cityName\": $city.city_name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 907,
+      "question": "Find the top 3 articles with the lowest sentiment scores mentioning organizations based in Chicago.",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City {name: 'Chicago'})\nWHERE a.sentiment IS NOT NULL\nRETURN a.title AS article, a.sentiment AS sentiment\nORDER BY sentiment\nLIMIT 3",
+      "typeql": "match\n  $a isa article;\n  $o isa organization;\n  (article: $a, mentioned: $o) isa mentions;\n  $a has sentiment $a_sentiment;\n  $city isa city, has city_name \"Chicago\"; (organization: $o, city: $city) isa located_in;\nlimit 3;\nfetch { \"article\": $a.title, \"sentiment\": $a.sentiment };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 914,
+      "question": "List the first 5 organizations that are public and have a CEO with a summary mentioning 'Accenture'.",
+      "cypher": "MATCH (o:Organization {isPublic: true})-[:HAS_CEO]->(ceo:Person)\nWHERE ceo.summary CONTAINS 'Accenture'\nRETURN o.name AS organization, ceo.name AS ceo\nLIMIT 5",
+      "typeql": "match\n  $o isa organization;\n  $o has name \"Accenture\";\n  $p isa person;\n  (organization: $o, ceo: $p) isa ceo_of;\n  $o has is_public true;\nlimit 5;\nfetch { \"organization\": $o.name, \"ceo\": $p.name, \"summary\": $o.summary };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 926,
+      "question": "Identify the top 3 organizations that have a subsidiary with the largest number of employees.",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(sub:Organization)\nWHERE sub.nbrEmployees IS NOT NULL\nWITH o, max(sub.nbrEmployees) AS maxEmployees\nORDER BY maxEmployees DESC\nLIMIT 3\nRETURN o.name AS organization, maxEmployees",
+      "typeql": "match\n  $o isa organization;\n  $sub isa organization;\n  (parent: $o, subsidiary: $sub) isa subsidiary_of;\n  $sub has nbr_employees $sub_nbr_employees;\nlimit 3;\nfetch { \"organization\": $o.name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 929,
+      "question": "List the first 5 organizations that have a CEO with a name mentioned in at least two different articles and a revenue greater than 50 million.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nWHERE o.revenue > 5e7\nWITH o, ceo\nMATCH (article1:Article)-[:MENTIONS]->(ceo)\nWITH o, ceo, count(article1) AS mentionCount\nWHERE mentionCount >= 2\nRETURN o.name AS organization, ceo.name AS ceo\nLIMIT 5",
+      "typeql": "match\n  $o isa organization, has name $on;\n  $ceo isa person, has name $ceon;\n  $a1 isa article;\n  $a2 isa article;\n  (organization: $o, ceo: $ceo) isa ceo_of;\n  (article: $a1, mentioned: $o) isa mentions;\n  (article: $a2, mentioned: $o) isa mentions;\n  $a1 has article_id $aid1;\n  $a2 has article_id $aid2;\n  $aid1 != $aid2;\n  $o has revenue $r;\n  $r > 50000000;\nlimit 5;\nfetch { \"organization\": $on, \"ceo\": $ceon };",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 930,
+      "question": "Which organizations have a CEO named 'Julie Spellman Sweet' and a summary mentioning 'Accenture'?",
+      "cypher": "MATCH (o:Organization)\nWHERE (o)-[:HAS_CEO]->(:Person {name: 'Julie Spellman Sweet'})\n  AND o.summary CONTAINS 'Accenture'\nRETURN o",
+      "typeql": "match\n  $p isa person, has name \"Julie Spellman Sweet\";\n  $o has name \"Accenture\";\n  $o isa organization;\n  (organization: $o, ceo: $p) isa ceo_of;\nfetch { \"organization\": $o.name, \"ceo\": $p.name, \"summary\": $o.summary };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 932,
+      "question": "List the first 5 organizations that have a CEO with a name mentioned in more than one article and a revenue greater than 100 million.",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)\nWHERE o.revenue > 1E8\nWITH o, ceo\nMATCH (article:Article)-[:MENTIONS]->(o)\nWHERE article.title CONTAINS ceo.name\nWITH o, ceo, count(article) AS mentionCount\nWHERE mentionCount > 1\nRETURN o.name AS organization, ceo.name AS ceo\nLIMIT 5",
+      "typeql": "match\n  $o isa organization, has name $on;\n  $ceo isa person, has name $ceon;\n  $a1 isa article;\n  $a2 isa article;\n  (organization: $o, ceo: $ceo) isa ceo_of;\n  (article: $a1, mentioned: $o) isa mentions;\n  (article: $a2, mentioned: $o) isa mentions;\n  $a1 has article_id $aid1;\n  $a2 has article_id $aid2;\n  $aid1 != $aid2;\n  $o has revenue $r;\n  $r > 100000000;\nlimit 5;\nfetch { \"organization\": $on, \"ceo\": $ceon };",
+      "checks_failed": [
+        "missing_count",
+        "missing_contains"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count",
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 452,
+      "question": "Which organizations have CEOs who have been in their position for less than 3 years?",
+      "cypher": "MATCH (o:Organization)-[:HAS_CEO]->(p:Person)\nWHERE p.startDate IS NOT NULL AND duration.between(p.startDate, date()).years < 3\nRETURN o.name AS organization, p.name AS ceo",
+      "typeql": "match\n$o isa organization;\n$p isa person;\n$rel isa ceo_of (organization: $o, ceo: $p);\n$rel has start-date $sd;\n$sd > 2023-01-22T00:00:00;\nfetch { \"organization\": $o.name, \"ceo\": $p.name };",
+      "checks_failed": [
+        "threshold_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 3 but it does not appear in TypeQL"
+      ]
+    },
+    {
+      "index": 9,
+      "question": "List the top 3 industries mentioned in articles about 'Accenture'.",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(:Organization {name: 'Accenture'})\nMATCH (a)-[:HAS_CHUNK]->(c:Chunk)\nMATCH (o:Organization)-[:HAS_CATEGORY]->(ic:IndustryCategory)\nWHERE c.text CONTAINS o.name\nRETURN ic.name AS industry, count(*) AS mentions\nORDER BY mentions DESC\nLIMIT 3",
+      "typeql": "match\n  $accenture isa organization, has name \"Accenture\";\n  $a isa article;\n  mentions (article: $a, mentioned: $accenture);\n  $other_org isa organization;\n  mentions (article: $a, mentioned: $other_org);\n  in_category (organization: $other_org, category: $ic);\n  $ic has industry_category_name $industry;\nreduce $mentions = count groupby $industry;\nsort $mentions desc;\nlimit 3;\nfetch { \"industry\": $industry };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 323,
+      "question": "List the top 5 organizations that have a subsidiary in the same city where they are headquartered.",
+      "cypher": "MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(s:Organization), \n      (o)-[:IN_CITY]->(c:City)<-[:IN_CITY]-(s)\nRETURN o.name AS organization, c.name AS city\nLIMIT 5",
+      "typeql": "match\n  $o isa organization;\n  $s isa organization;\n  $c isa city;\n  (parent: $o, subsidiary: $s) isa subsidiary_of;\n  (organization: $o, city: $c) isa located_in;\n  (organization: $s, city: $c) isa located_in;\nlimit 5;\nfetch { \"organization\": $o.name, \"city\": $c.city_name };",
+      "checks_failed": [
+        "missing_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 332,
+      "question": "Name the top 3 articles that discuss organizations with a history of more than 50 years.",
+      "cypher": "MATCH (a:Article)-[:MENTIONS]->(o:Organization)\nWHERE date(o.foundingDate) < date() - duration('P50Y')\nWITH a, o\nORDER BY a.date DESC\nLIMIT 3\nRETURN a.title AS article, collect(o.name) AS organizations",
+      "typeql": "match\n  $a isa article;\n  $o isa organization, has founding-date $fd;\n  $fd < 1976-01-22;\n  mentions (article: $a, mentioned: $o);\n  $a has date $a_date;\nsort $a_date desc;\nlimit 3;\nfetch { \"article\": $a.title };",
+      "checks_failed": [
+        "threshold_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 50 but it does not appear in TypeQL"
+      ]
+    }
+  ],
+  "categories": {
+    "missing_sort": [
+      27,
+      133,
+      153,
+      165,
+      190,
+      217,
+      293,
+      384,
+      434,
+      505,
+      515,
+      530,
+      532,
+      686,
+      692,
+      724,
+      726,
+      739,
+      743,
+      744,
+      747,
+      750,
+      753,
+      760,
+      761,
+      772,
+      874,
+      875,
+      894,
+      907,
+      926,
+      323
+    ],
+    "missing_sort_cypher": [
+      27,
+      133,
+      153,
+      165,
+      190,
+      217,
+      293,
+      384,
+      434,
+      462,
+      505,
+      515,
+      530,
+      532,
+      686,
+      692,
+      724,
+      726,
+      739,
+      743,
+      753,
+      772,
+      874,
+      875,
+      894,
+      907,
+      926
+    ],
+    "missing_count": [
+      27,
+      190,
+      366,
+      384,
+      399,
+      401,
+      787,
+      866,
+      929,
+      932
+    ],
+    "sort_direction_mismatch": [
+      47,
+      720,
+      746,
+      756
+    ],
+    "missing_cypher_filter": [
+      75,
+      517,
+      601,
+      757,
+      784,
+      890
+    ],
+    "threshold_mismatch": [
+      90,
+      399,
+      438,
+      517,
+      574,
+      601,
+      724,
+      757,
+      881,
+      887,
+      890,
+      452,
+      332
+    ],
+    "missing_sort_superlative": [
+      107,
+      462,
+      784,
+      875
+    ],
+    "limit_mismatch": [
+      116,
+      462,
+      546,
+      795
+    ],
+    "missing_avg": [
+      197,
+      462
+    ],
+    "missing_contains": [
+      376,
+      389,
+      430,
+      449,
+      509,
+      573,
+      608,
+      628,
+      669,
+      675,
+      746,
+      786,
+      800,
+      811,
+      893,
+      914,
+      930,
+      932,
+      9
+    ],
+    "missing_limit": [
+      434,
+      434,
+      519,
+      530,
+      532,
+      600,
+      724,
+      772,
+      772,
+      795,
+      875
+    ],
+    "missing_negation_cypher": [
+      465,
+      792
+    ],
+    "missing_count_distinct": [
+      505,
+      787
+    ],
+    "missing_optional": [
+      811
+    ]
+  }
+}

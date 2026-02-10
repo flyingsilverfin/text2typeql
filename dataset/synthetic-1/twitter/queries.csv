@@ -732,18 +732,9 @@ RETURN t.text AS tweet,
 ORDER BY totalInteractions DESC
 LIMIT 5","match
 $tweet isa tweet;
-$rel isa $t;
-{
-  $t label mentions;
-  $rel links (source_tweet: $tweet);
-} or {
-  $t label retweets;
-  $rel links (original_tweet: $tweet);
-} or {
-  $t label reply_to;
-  $rel links (original_tweet: $tweet);
-};
-reduce $count = count groupby $tweet;
+$rel isa $t ($tweet);
+{ $t label mentions; } or { $t label retweets; } or { $t label reply_to; };
+reduce $count = count($rel) groupby $tweet;
 sort $count desc;
 limit 5;
 fetch {
@@ -786,12 +777,12 @@ fetch { ""user"": $u.screen_name, ""similarity"": $sc };"
 OPTIONAL MATCH (t)-[:RETWEETS]->(r:Tweet)
 RETURN t, t.favorites + count(r) AS score
 ORDER BY score DESC
-LIMIT 3","match
-$tweet isa tweet;
-retweets (original_tweet: $tweet);
-reduce $retweets = count groupby $tweet;
+LIMIT 3","with fun retweet_count($tw: tweet) -> integer:
+  match retweets (original_tweet: $tw);
+  return count;
 match
-$tweet has favorites $favorites;
+$tweet isa tweet, has favorites $favorites;
+let $retweets = retweet_count($tweet);
 let $total = $favorites + $retweets;
 sort $total desc;
 limit 3;
@@ -1467,11 +1458,16 @@ LIMIT 1
 MATCH (t:Tweet)-[:MENTIONS]->(u) 
 RETURN t.text AS tweet_text
 ORDER BY t.favorites DESC
-LIMIT 5","match
+LIMIT 5","with fun max_followers() -> integer:
+  match $u isa user, has followers $f;
+  return max($f);
+match
 $u isa user, has followers $f;
-$t isa tweet, has favorites $fav;
+$f == max_followers();
+$t isa tweet;
 mentions (source_tweet: $t, mentioned_user: $u);
-sort $f desc;
+$t has favorites $fav;
+sort $fav desc;
 limit 5;
 fetch { ""tweet_text"": $t.text };"
 159,Who are the top 3 users that have interacted the most with 'Neo4j'?,"MATCH (me:Me {screen_name: 'neo4j'})<-[i:INTERACTS_WITH]-(u:User)

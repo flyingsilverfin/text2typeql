@@ -2927,7 +2927,8 @@ WITH a, count(DISTINCT g) AS numGenres
 WHERE numGenres = 2
 RETURN a.name, a.tmdbId
 ORDER BY a.name
-LIMIT 3","match $a isa person, has name $n, has tmdb_id $t; acted_in (actor: $a, film: $m1); acted_in (actor: $a, film: $m2); in_genre (film: $m1, genre: $g1); in_genre (film: $m2, genre: $g2); $g1 has name ""Action""; $g2 has name ""Romance""; limit 3; fetch { ""name"": $n, ""tmdb_id"": $t };"
+LIMIT 3","match $a isa person, has name $n, has tmdb_id $t; acted_in (actor: $a, film: $m1); acted_in (actor: $a, film: $m2); in_genre (film: $m1, genre: $g1); in_genre (film: $m2, genre: $g2); $g1 has name ""Action""; $g2 has name ""Romance""; sort $n asc;
+limit 3; fetch { ""name"": $n, ""tmdb_id"": $t };"
 415,What are the first 3 movies released in 'January'?,"MATCH (m:Movie)
 WHERE m.released STARTS WITH 'January'
 RETURN m.title, m.released
@@ -5573,6 +5574,8 @@ $p isa person, has born $b;
 acted_in (actor: $p, film: $m);
 let $threshold = $y - 50;
 $b < $threshold;
+$m has released $rel;
+sort $rel asc;
 limit 3;
 fetch { ""title"": $m.title, ""actor"": $p.name };"
 42,Show the top 5 highest IMDb rated movies directed by female directors.,"MATCH (m:Movie)<-[:DIRECTED]-(d:Person)
@@ -5682,6 +5685,7 @@ LIMIT 3","match
 $m isa movie, has imdb_rating $r;
 $r > 7.0;
 not { $m has languages ""English""; };
+sort $r desc;
 limit 3;
 fetch { ""title"": $m.title, ""rating"": $r };"
 28,List the first 5 movies that have been rated by users from more than 10 different countries.,"MATCH (m:Movie)<-[r:RATED]-(u:User)

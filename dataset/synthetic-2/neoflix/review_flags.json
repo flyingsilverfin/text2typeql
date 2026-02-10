@@ -1,0 +1,124 @@
+{
+  "database": "neoflix",
+  "source": "synthetic-2",
+  "total_queries": 914,
+  "flagged": 7,
+  "flags": [
+    {
+      "index": 125,
+      "question": "Show the top 5 oldest movies in the collection with the highest revenue.",
+      "cypher": "MATCH (m:Movie)-[:IN_COLLECTION]->(c:Collection)\nWITH m, c\nORDER BY m.release_date ASC\nLIMIT 5\nRETURN m.title AS MovieTitle, m.release_date AS ReleaseDate, m.revenue AS Revenue\nORDER BY m.revenue DESC\nLIMIT 5",
+      "typeql": "match\n$m isa movie, has title $t, has release_date $rd, has revenue $rev;\nin_collection (media: $m, collection: $c);\nsort $rd asc;\nlimit 5;\nfetch {\n  \"MovieTitle\": $t,\n  \"ReleaseDate\": $rd,\n  \"Revenue\": $rev\n};",
+      "checks_failed": [
+        "sort_direction_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher sorts DESC but TypeQL sorts ASC (default)"
+      ]
+    },
+    {
+      "index": 211,
+      "question": "Who are the first 3 actors to have roles in movies with at least five different production companies?",
+      "cypher": "MATCH (p:Person)-[:CAST_FOR]->(m:Movie)-[:PRODUCED_BY]->(pc:ProductionCompany)\nWITH p, COUNT(DISTINCT pc) AS productionCompanyCount\nWHERE productionCompanyCount >= 5\nMATCH (p)-[:CAST_FOR]->(m2:Movie)\nWITH p, m2\nORDER BY m2.release_date ASC\nWITH p, COLLECT(DISTINCT m2)[..3] AS firstThreeMovies\nRETURN p.name AS actor, firstThreeMovies\nLIMIT 3",
+      "typeql": "match\n$p isa person, has person_name $name;\n$m isa movie;\ncast_for (actor: $p, film: $m);\nproduced_by (media: $m, producer: $pc);\nselect $p, $name, $pc;\ndistinct;\nreduce $pc_count = count($pc) groupby $p, $name;\nmatch $pc_count >= 5;\nlimit 3;\nfetch { \"actor\": $name };",
+      "checks_failed": [
+        "missing_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 482,
+      "question": "What are the jobs of the first 3 crew members for the movie with the highest budget?",
+      "cypher": "MATCH (m:Movie)\nWITH m\nORDER BY m.budget DESC\nLIMIT 1\nMATCH (p:Person)-[c:CREW_FOR]->(m)\nRETURN p.name AS crew_member, c.job AS job\nORDER BY c.credit_id\nLIMIT 3",
+      "typeql": "with fun max_budget() -> integer:\n  match $m isa movie, has budget $b;\n  return max($b);\nmatch\n  $m isa movie, has budget $b;\n  $b == max_budget();\n  $rel isa crew_for (crew_member: $p, film: $m), has credit_id $cid, has job $j;\n  $p has person_name $name;\nsort $cid;\nlimit 3;\nfetch { \"crew_member\": $name, \"job\": $j };",
+      "checks_failed": [
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 1 but TypeQL limit 3"
+      ]
+    },
+    {
+      "index": 611,
+      "question": "List the top 5 highest rated movies by users.",
+      "cypher": "MATCH (u:User)-[r:RATED]->(m:Movie)\nWITH m, AVG(r.rating) AS avgRating, COUNT(r) AS ratingCount\nWHERE ratingCount > 0\nRETURN m.title AS title, avgRating\nORDER BY avgRating DESC\nLIMIT 5",
+      "typeql": "match\n$u isa user;\n$m isa movie;\n$r isa rated (reviewer: $u, rated_media: $m);\n$r has rating $rating;\nreduce $avg_rating = mean($rating) groupby $m;\nsort $avg_rating desc;\nlimit 5;\nfetch { \"title\": $m.title, \"avgRating\": $avg_rating };",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 750,
+      "question": "Which 3 movies have the longest gap between their release date and the current date?",
+      "cypher": "MATCH (m:Movie)\nWITH m, duration.inDays(date(m.release_date), date()) AS days_since_release\nRETURN m.title, m.release_date, days_since_release\nORDER BY days_since_release DESC\nLIMIT 3",
+      "typeql": "match\n$m isa movie, has release_date $rd, has title $t;\nsort $rd asc;\nlimit 3;\nfetch {\n  \"title\": $t,\n  \"release_date\": $rd\n};",
+      "checks_failed": [
+        "sort_direction_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher sorts DESC but TypeQL sorts ASC (default)"
+      ]
+    },
+    {
+      "index": 809,
+      "question": "Who are the first 3 actors with roles in both movies and adult films?",
+      "cypher": "MATCH (p:Person)-[:CAST_FOR]->(m:Movie)\nMATCH (p)-[:CAST_FOR]->(a:Adult)\nWITH p, COUNT(DISTINCT m) AS movieCount, COUNT(DISTINCT a) AS adultCount\nWHERE movieCount > 0 AND adultCount > 0\nRETURN p.name AS actorName\nORDER BY p.name\nLIMIT 3",
+      "typeql": "match\n$p isa person, has person_name $name;\ncast_for (actor: $p, film: $m);\n$m isa movie;\ncast_for (actor: $p, film: $a);\n$a isa adult_video;\nsort $name;\nlimit 3;\nfetch {\n  \"actorName\": $name\n};",
+      "checks_failed": [
+        "missing_count",
+        "missing_count_distinct"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count",
+        "Cypher uses COUNT(DISTINCT) but TypeQL has no distinct (may be OK if groupby handles it)"
+      ]
+    },
+    {
+      "index": 814,
+      "question": "Who are the first 3 actors to star in movies from both the horror and comedy genres?",
+      "cypher": "MATCH (horror:Genre {name: 'Horror'})<-[:IN_GENRE]-(horrorMovie:Movie)<-[:CAST_FOR]-(actor:Person)-[:CAST_FOR]->(comedyMovie:Movie)-[:IN_GENRE]->(comedy:Genre {name: 'Comedy'})\nWITH actor, COUNT(DISTINCT horrorMovie) AS horrorCount, COUNT(DISTINCT comedyMovie) AS comedyCount\nWHERE horrorCount > 0 AND comedyCount > 0\nRETURN actor.name AS actorName\nORDER BY actorName\nLIMIT 3",
+      "typeql": "match\n$actor isa person, has person_name $name;\n$horror_movie isa movie;\n$comedy_movie isa movie;\n$horror isa genre, has genre_name \"Horror\";\n$comedy isa genre, has genre_name \"Comedy\";\ncast_for (actor: $actor, film: $horror_movie);\nin_genre (media: $horror_movie, genre: $horror);\ncast_for (actor: $actor, film: $comedy_movie);\nin_genre (media: $comedy_movie, genre: $comedy);\nsort $name asc;\nlimit 3;\nfetch {\n  \"actorName\": $name\n};",
+      "checks_failed": [
+        "missing_count",
+        "missing_count_distinct"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count",
+        "Cypher uses COUNT(DISTINCT) but TypeQL has no distinct (may be OK if groupby handles it)"
+      ]
+    }
+  ],
+  "categories": {
+    "sort_direction_mismatch": [
+      125,
+      750
+    ],
+    "missing_sort": [
+      211
+    ],
+    "limit_mismatch": [
+      482
+    ],
+    "missing_count": [
+      611,
+      809,
+      814
+    ],
+    "missing_count_distinct": [
+      809,
+      814
+    ]
+  }
+}

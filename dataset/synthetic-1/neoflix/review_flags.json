@@ -1,0 +1,381 @@
+{
+  "database": "neoflix",
+  "source": "synthetic-1",
+  "total_queries": 910,
+  "flagged": 19,
+  "flags": [
+    {
+      "index": 151,
+      "question": "List the first 5 countries that have produced movies with an average vote above 7.0.",
+      "cypher": "MATCH (c:Country)<-[:PRODUCED_IN_COUNTRY]-(m:Movie)\nWHERE m.average_vote > 7.0\nRETURN c.name AS country, avg(m.average_vote) AS avg_vote\nORDER BY avg_vote DESC\nLIMIT 5",
+      "typeql": "match\n  $c isa country, has country_name $cn;\n  $m isa movie;\n  (media: $m, country: $c) isa produced_in_country;\n  $m has average_vote $av;\n  $av > 7.0;\nlimit 50;\nfetch { \"country\": $cn };",
+      "checks_failed": [
+        "missing_mean",
+        "missing_sort",
+        "missing_sort_cypher",
+        "limit_mismatch",
+        "missing_avg"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for average, Cypher uses avg(), but TypeQL has no mean()",
+        "Question asks for first-5 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher LIMIT 5 but TypeQL limit 50",
+        "Cypher uses AVG() but TypeQL has no mean()"
+      ]
+    },
+    {
+      "index": 160,
+      "question": "What are the first 3 countries with the most movies produced in the genre 'Drama'?",
+      "cypher": "MATCH (c:Country)<-[:PRODUCED_IN_COUNTRY]-(m:Movie)-[:IN_GENRE]->(:Genre {name: 'Drama'})\nRETURN c.name AS country, count(m) AS num_movies\nORDER BY num_movies DESC\nLIMIT 3",
+      "typeql": "match\n  $g isa genre, has genre_name $gn;\n  $m isa movie;\n  (media: $m, genre: $g) isa in_genre;\nlimit 30;\nfetch { \"genre\": $gn };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_superlative",
+        "missing_sort_cypher",
+        "limit_mismatch",
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Question uses superlative \"most movies\" but TypeQL has no sort or max/min",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher LIMIT 3 but TypeQL limit 30",
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 163,
+      "question": "What are the top 5 most popular genres in adult films?",
+      "cypher": "MATCH (g:Genre)<-[:IN_GENRE]-(a:Adult)\nRETURN g.name AS genre, count(*) AS count\nORDER BY count DESC\nLIMIT 5",
+      "typeql": "match\n  $g isa genre, has genre_name $gn;\n  $m isa adult_video;\n  (media: $m, genre: $g) isa in_genre;\nlimit 50;\nfetch { \"genre\": $gn };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "limit_mismatch",
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher LIMIT 5 but TypeQL limit 50",
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 164,
+      "question": "Which adult films have been produced by companies not based in the USA?",
+      "cypher": "MATCH (a:Adult)-[:PRODUCED_BY]->(c:ProductionCompany)\nWHERE NOT EXISTS { (c)-[:PRODUCED_IN_COUNTRY]->(:Country {name: 'United States of America'}) }\nRETURN a.title AS `Adult Film`, c.name AS `Production Company`",
+      "typeql": "match\n  $a isa adult_video;\n  $c isa production_company;\n  $rel0 isa produced_by (media: $a, producer: $c);\n  $a has title $title_a;\n  $c has production_company_name $production_company_name_c;\nfetch {\n  \"title\": $title_a, \"name\": $production_company_name_c\n};",
+      "checks_failed": [
+        "missing_negation_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses NOT EXISTS/NOT() but TypeQL has no not{} block"
+      ]
+    },
+    {
+      "index": 168,
+      "question": "What are the first 3 videos that have been rated higher than 8.0?",
+      "cypher": "MATCH (v:Video)<-[r:RATED]-(u:User)\nWHERE r.rating > 8.0\nRETURN v.title, r.rating\nORDER BY r.rating DESC\nLIMIT 3",
+      "typeql": "match\n  $m isa video;\n  $m has title $title;\nlimit 3;\nfetch { \"title\": $title };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_cypher_filter",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher filters rating > 8 but value 8 not in TypeQL",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 171,
+      "question": "What are the top 3 most budget-efficient adult films (highest revenue to budget ratio)?",
+      "cypher": "MATCH (a:Adult)\nWHERE a.budget IS NOT NULL AND a.revenue IS NOT NULL\nRETURN a.title, a.revenue / a.budget AS efficiency\nORDER BY efficiency DESC\nLIMIT 3",
+      "typeql": "match $a isa adult_video; $a has budget $budget; $a has revenue $revenue; $a has title $title; limit 3; fetch { \"title\": $title, \"revenue\": $revenue, \"efficiency\": $budget };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 178,
+      "question": "What are the first 5 movies rated by user with ID 1?",
+      "cypher": "MATCH (u:User {id: 1})-[r:RATED]->(m:Movie)\nRETURN m.title, r.rating\nORDER BY r.timestamp\nLIMIT 5",
+      "typeql": "match $u isa user, has user_id 1; $m isa movie; $r isa rated (reviewer: $u, rated_media: $m), has rating $rating; $m has title $title_m; limit 5; fetch { \"title\": $title_m, \"rating\": $rating };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-5 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 188,
+      "question": "Which 3 movies have the most keywords associated?",
+      "cypher": "MATCH (m:Movie)-[:HAS_KEYWORD]->(k:Keyword)\nRETURN m.title AS movie, count(k) AS keywordCount\nORDER BY keywordCount DESC\nLIMIT 3",
+      "typeql": "match\n  $k isa keyword, has keyword_name $kn;\n  $m isa movie;\n  (media: $m, keyword: $k) isa has_keyword;\nlimit 30;\nfetch { \"keyword\": $kn };",
+      "checks_failed": [
+        "missing_sort_superlative",
+        "missing_sort_cypher",
+        "limit_mismatch",
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question uses superlative \"most keywords\" but TypeQL has no sort or max/min",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher LIMIT 3 but TypeQL limit 30",
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 195,
+      "question": "What are the top 5 movies with a tagline containing the word 'adventure'?",
+      "cypher": "MATCH (m:Movie)\nWHERE toLower(m.tagline) CONTAINS 'adventure'\nRETURN m.title, m.tagline\nORDER BY m.popularity DESC\nLIMIT 5",
+      "typeql": "match $m isa movie; $m has tagline $tagline; $m has title $title; $m has popularity $popularity; sort $popularity desc; limit 5; fetch { \"title\": $title, \"tagline\": $tagline };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 200,
+      "question": "Which 5 movies have the most poster path variations?",
+      "cypher": "MATCH (m:Movie)\nWHERE m.poster_path IS NOT NULL\nRETURN m.title, count(m.poster_path) AS poster_variations\nORDER BY poster_variations DESC\nLIMIT 5",
+      "typeql": "match\n  $m isa movie;\n  $m has poster_path $poster_path;\n  $m has title $title;\nlimit 5;\nfetch {\n  \"title\": $title, \"poster_path\": $poster_path\n};",
+      "checks_failed": [
+        "missing_sort_superlative",
+        "missing_sort_cypher",
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question uses superlative \"most poster\" but TypeQL has no sort or max/min",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 276,
+      "question": "What are the first 3 languages spoken in movies with a budget over $50 million?",
+      "cypher": "MATCH (m:Movie)-[:SPOKEN_IN_LANGUAGE]->(l:Language)\nWHERE m.budget > 50000000\nRETURN l.name AS language\nORDER BY language\nLIMIT 3",
+      "typeql": "match $m isa movie; $l isa language; $rel0 isa spoken_in_language (media: $m, language: $l); $m has budget $budget_m; $l has language_name $language_name_l; $budget_m > 50000000; limit 3; fetch { \"language\": $language_name_l };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 601,
+      "question": "Which 3 collections include videos with an average vote above 7?",
+      "cypher": "MATCH (c:Collection)<-[:IN_COLLECTION]-(v:Video)\nWHERE v.average_vote > 7\nRETURN c.name AS collection, avg(v.average_vote) AS avg_vote\nORDER BY avg_vote DESC\nLIMIT 3",
+      "typeql": "match\n  $c isa collection, has collection_name $cn;\n  $m isa video;\n  (media: $m, collection: $c) isa in_collection;\n  $m has average_vote $av;\n  $av > 7;\nlimit 30;\nfetch { \"collection\": $cn };",
+      "checks_failed": [
+        "missing_mean",
+        "missing_sort_cypher",
+        "limit_mismatch",
+        "missing_avg"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for average, Cypher uses avg(), but TypeQL has no mean()",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher LIMIT 3 but TypeQL limit 30",
+        "Cypher uses AVG() but TypeQL has no mean()"
+      ]
+    },
+    {
+      "index": 664,
+      "question": "What are the top 5 most popular packages based on duration?",
+      "cypher": "MATCH (p:Package)\nRETURN p.name AS package, p.duration AS duration\nORDER BY duration DESC\nLIMIT 5",
+      "typeql": "match\n  $p isa package;\n  $p has package_name $package_name;\n  $p has package_duration $package_duration;\nlimit 5;\nfetch {\n  \"package\": $package_name, \"duration\": $package_duration\n};",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 0,
+      "question": "Which movies were released in 1995?",
+      "cypher": "MATCH (m:Movie)\nWHERE m.release_date STARTS WITH '1995'\nRETURN m.title, m.release_date",
+      "typeql": "match $m isa movie, has release_date $release_date, has title $title; $release_date >= 1995-01-01T00:00:00; $release_date < 1996-01-01T00:00:00; fetch { \"title\": $title, \"release_date\": $release_date };",
+      "checks_failed": [
+        "missing_starts_with"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses STARTS WITH but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 147,
+      "question": "What are the jobs of the first 3 crew members for the movie with the highest budget?",
+      "cypher": "MATCH (m:Movie)<-[r:CREW_FOR]-(p:Person)\nWITH m, r, p\nORDER BY m.budget DESC\nLIMIT 1\nWITH m, collect({job: r.job, person: p}) AS crew\nRETURN m.title AS movie, crew[0..2] AS crew_jobs",
+      "typeql": "match\n  $m isa movie, has budget $budget, has title $title;\n  $r isa crew_for (film: $m, crew_member: $p), has job $job;\nsort $budget desc;\nlimit 3;\nfetch {\n  \"movie\": $title,\n  \"job\": $job\n};",
+      "checks_failed": [
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 1 but TypeQL limit 3"
+      ]
+    },
+    {
+      "index": 331,
+      "question": "List the top 5 genres that have been accessed by the package named 'Platinum'.",
+      "cypher": "MATCH (p:Package {name: 'Platinum'})-[:PROVIDES_ACCESS_TO]->(g:Genre)\nRETURN g.name AS genre, count(*) AS accessCount\nORDER BY accessCount DESC\nLIMIT 5",
+      "typeql": "match\n  $p isa package, has package_name \"Platinum\";\n  $g isa genre, has genre_name $gn;\n  provides_access_to (package: $p, genre: $g);\nlimit 5;\nfetch { \"genre\": $gn };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 512,
+      "question": "List the top 3 highest-grossing movies of 1995.",
+      "cypher": "MATCH (m:Movie)\nWHERE m.release_date STARTS WITH '1995' AND m.revenue IS NOT NULL\nRETURN m.title, m.revenue\nORDER BY m.revenue DESC\nLIMIT 3",
+      "typeql": "match\n$m isa movie;\n$m has release_date $release_date;\n$release_date >= 1995-01-01T00:00:00;\n$release_date < 1996-01-01T00:00:00;\n$m has title $title;\n$m has revenue $revenue;\nsort $revenue desc;\nlimit 3;\nfetch { \"title\": $title, \"revenue\": $revenue };",
+      "checks_failed": [
+        "missing_starts_with"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses STARTS WITH but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 733,
+      "question": "Which 3 movies have the longest gap between their release date and the current date?",
+      "cypher": "MATCH (m:Movie)\nWHERE m.release_date IS NOT NULL\nRETURN m.title, m.release_date, duration.between(date(m.release_date), date()).days AS days_since_release\nORDER BY days_since_release DESC\nLIMIT 3",
+      "typeql": "match\n  $m isa movie;\n  $m has release_date $release_date;\n  $m has title $title;\nsort $release_date asc;\nlimit 3;\nfetch {\n  \"title\": $title, \"release_date\": $release_date\n};",
+      "checks_failed": [
+        "sort_direction_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher sorts DESC but TypeQL sorts ASC (default)"
+      ]
+    },
+    {
+      "index": 855,
+      "question": "Who are the first 3 directors to have made both adult films and videos?",
+      "cypher": "MATCH (p:Person)-[:CREW_FOR]->(a:Adult), (p)-[:CREW_FOR]->(v:Video)\nWHERE a.id IS NOT NULL AND v.id IS NOT NULL\nWITH p, count(DISTINCT a) AS numAdult, count(DISTINCT v) AS numVideo\nWHERE numAdult > 0 AND numVideo > 0\nRETURN p.name\nLIMIT 3",
+      "typeql": "match\n$p isa person;\n$a isa adult_video;\n$r1 isa crew_for (crew_member: $p, film: $a), has job \"Director\";\n$v isa video;\nnot { $v isa adult_video; };\n$r2 isa crew_for (crew_member: $p, film: $v), has job \"Director\";\nselect $p;\ndistinct;\nlimit 3;\nfetch { \"name\": $p.person_name };",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    }
+  ],
+  "categories": {
+    "missing_mean": [
+      151,
+      601
+    ],
+    "missing_sort": [
+      151,
+      160,
+      163,
+      168,
+      171,
+      178,
+      276,
+      664,
+      331
+    ],
+    "missing_sort_cypher": [
+      151,
+      160,
+      163,
+      168,
+      171,
+      178,
+      188,
+      200,
+      276,
+      601,
+      664,
+      331
+    ],
+    "limit_mismatch": [
+      151,
+      160,
+      163,
+      188,
+      601,
+      147
+    ],
+    "missing_avg": [
+      151,
+      601
+    ],
+    "missing_sort_superlative": [
+      160,
+      188,
+      200
+    ],
+    "missing_count": [
+      160,
+      163,
+      188,
+      200,
+      331,
+      855
+    ],
+    "missing_negation_cypher": [
+      164
+    ],
+    "missing_cypher_filter": [
+      168
+    ],
+    "missing_contains": [
+      195
+    ],
+    "missing_starts_with": [
+      0,
+      512
+    ],
+    "sort_direction_mismatch": [
+      733
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "database": "fincen",
+  "source": "synthetic-2",
+  "total_queries": 584,
+  "flagged": 1,
+  "flags": [
+    {
+      "index": 80,
+      "question": "What are the first 3 entities that have filed transactions where the originator bank is located in 'Angola'?",
+      "cypher": "MATCH (c:Country {name: 'Angola'})<-[:COUNTRY]-(e:Entity)-[:FILED]->(f:Filing {originator_bank_country: 'Angola'})\\nRETURN e.name AS entity_name\\nORDER BY f.begin\\nLIMIT 3",
+      "typeql": "match\\n$c isa country, has name \"Angola\";\\n$e isa fincen_entity;\\nentity_country (fincen_entity: $e, country: $c);\\n$f isa filing, has originator_bank_country \"Angola\";\\nfiled (filer: $e, filing: $f);\\n$f has begin_date $bd;\\nsort $bd asc;\\nlimit 3;\\nfetch {\\n  \"entity_name\": $e.name\\n};",
+      "checks_failed": [
+        "invalid_relation",
+        "invalid_relation"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL references relation \"nentity_country\" which is not in schema",
+        "TypeQL references relation \"nfiled\" which is not in schema"
+      ]
+    }
+  ],
+  "categories": {
+    "invalid_relation": [
+      80,
+      80
+    ]
+  }
+}

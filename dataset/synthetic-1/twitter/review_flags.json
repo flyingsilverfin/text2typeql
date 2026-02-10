@@ -1,0 +1,128 @@
+{
+  "database": "twitter",
+  "source": "synthetic-1",
+  "total_queries": 491,
+  "flagged": 7,
+  "flags": [
+    {
+      "index": 81,
+      "question": "List the top 5 tweets by the total interaction (mentions, retweets, replies).",
+      "cypher": "MATCH (t:Tweet)\nOPTIONAL MATCH (t)<-[:MENTIONS]-(mention)\nOPTIONAL MATCH (t)<-[:RETWEETS]-(retweet) \nOPTIONAL MATCH (t)<-[:REPLY_TO]-(reply)\nRETURN t.text AS tweet, \n       count(mention) AS mentions,\n       count(retweet) AS retweets, \n       count(reply) AS replies,\n       (count(mention) + count(retweet) + count(reply)) AS totalInteractions\nORDER BY totalInteractions DESC\nLIMIT 5",
+      "typeql": "match\n$tweet isa tweet;\n$rel isa $t;\n{\n  $t label mentions;\n  $rel links (source_tweet: $tweet);\n} or {\n  $t label retweets;\n  $rel links (original_tweet: $tweet);\n} or {\n  $t label reply_to;\n  $rel links (original_tweet: $tweet);\n};\nreduce $count = count groupby $tweet;\nsort $count desc;\nlimit 5;\nfetch {\n  \"tweet\": $tweet.text,\n  \"count\": $count\n};",
+      "checks_failed": [
+        "invalid_relation"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL references relation \"links\" which is not in schema"
+      ]
+    },
+    {
+      "index": 85,
+      "question": "Which 3 tweets have the highest aggregation of favorites and retweets?",
+      "cypher": "MATCH (t:Tweet)\nOPTIONAL MATCH (t)-[:RETWEETS]->(r:Tweet)\nRETURN t, t.favorites + count(r) AS score\nORDER BY score DESC\nLIMIT 3",
+      "typeql": "match\n$tweet isa tweet;\nretweets (original_tweet: $tweet);\nreduce $retweets = count groupby $tweet;\nmatch\n$tweet has favorites $favorites;\nlet $total = $favorites + $retweets;\nsort $total desc;\nlimit 3;\nfetch {\n  \"tweet\": $tweet.text,\n  \"total\": $total\n};",
+      "checks_failed": [
+        "missing_optional"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses OPTIONAL MATCH but TypeQL has no try{} or equivalent"
+      ]
+    },
+    {
+      "index": 158,
+      "question": "List the top 5 tweets which mention the user with the highest followers.",
+      "cypher": "MATCH (u:User)-[:MENTIONS]-(t:Tweet)\nWHERE u.followers IS NOT NULL\nWITH u, t\nORDER BY u.followers DESC\nLIMIT 1\nMATCH (t:Tweet)-[:MENTIONS]->(u) \nRETURN t.text AS tweet_text\nORDER BY t.favorites DESC\nLIMIT 5",
+      "typeql": "match\n$u isa user, has followers $f;\n$t isa tweet, has favorites $fav;\nmentions (source_tweet: $t, mentioned_user: $u);\nsort $f desc;\nlimit 5;\nfetch { \"tweet_text\": $t.text };",
+      "checks_failed": [
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 1 but TypeQL limit 5"
+      ]
+    },
+    {
+      "index": 296,
+      "question": "List the top 5 users who have a similar betweenness to 'Neo4j'.",
+      "cypher": "MATCH (me:Me {name: 'Neo4j'}), (u:User)\nWHERE u.betweenness IS NOT NULL\nWITH me, u\nORDER BY abs(me.betweenness - u.betweenness) \nLIMIT 5\nRETURN u.name AS user, u.betweenness AS betweenness",
+      "typeql": "match\n$neo4j isa me, has name \"Neo4j\", has betweenness $neo4j_betweenness;\n$user isa user, has betweenness $betweenness;\nnot { $neo4j is $user; };\nlet $difference = abs($betweenness - $neo4j_betweenness);\nsort $difference asc;\nlimit 5;\nfetch {\n  \"user\": $user.name\n};",
+      "checks_failed": [
+        "similarity_betweenness_confusion"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question about similarity uses betweenness instead of score"
+      ]
+    },
+    {
+      "index": 77,
+      "question": "List the first 3 tweets that mention the user with the highest betweenness.",
+      "cypher": "MATCH (u:User)-[:MENTIONS]-(t:Tweet)\nWHERE u.betweenness IS NOT NULL\nWITH u, t\nORDER BY u.betweenness DESC\nLIMIT 1\nMATCH (t2:Tweet)-[:MENTIONS]->(u) \nRETURN t2.text\nLIMIT 3",
+      "typeql": "with fun max_betweenness() -> double:\n  match $u isa user, has betweenness $b;\n  return max($b);\nmatch\n$u isa user, has betweenness $b;\n$b == max_betweenness();\n$t isa tweet;\nmentions (source_tweet: $t, mentioned_user: $u);\nlimit 3;\nfetch { \"text\": $t.text };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher LIMIT 1 but TypeQL limit 3"
+      ]
+    },
+    {
+      "index": 138,
+      "question": "Find the top 3 tweets that mention 'neo4j' and are tagged with 'education'.",
+      "cypher": "MATCH (t:Tweet)-[:TAGS]->(:Hashtag {name: 'education'})\nWHERE t.text CONTAINS 'neo4j'\nRETURN t\nORDER BY t.favorites DESC\nLIMIT 3",
+      "typeql": "match\n$t isa tweet, has favorites $f;\n$h isa hashtag, has hashtag_name \"education\";\ntags (tagged_tweet: $t, tag: $h);\n$u isa user, has screen_name \"neo4j\";\nmentions (source_tweet: $t, mentioned_user: $u);\nsort $f desc;\nlimit 3;\nfetch { \"text\": $t.text, \"tweet_id\": $t.tweet_id, \"created_at\": $t.created_at };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    },
+    {
+      "index": 305,
+      "question": "Show the first 3 tweets mentioning 'Neo4j' that have been retweeted by 'Me'.",
+      "cypher": "MATCH (me:Me)-[:POSTS]->(tweet:Tweet)-[:RETWEETS]->(retweetedTweet:Tweet)\nWHERE retweetedTweet.text CONTAINS 'Neo4j'\nRETURN retweetedTweet.text AS tweet_text\nLIMIT 3",
+      "typeql": "match\n  $me isa me;\n  posts (author: $me, content: $tweet);\n  retweets (retweeting_tweet: $tweet, original_tweet: $retweetedTweet);\n  mentions (source_tweet: $retweetedTweet, mentioned_user: $neo4j);\n  $neo4j has screen_name \"Neo4j\";\n  $retweetedTweet has text $text;\nlimit 3;\nfetch { \"tweet_text\": $text };",
+      "checks_failed": [
+        "missing_contains"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Cypher uses CONTAINS but TypeQL has no like pattern"
+      ]
+    }
+  ],
+  "categories": {
+    "invalid_relation": [
+      81
+    ],
+    "missing_optional": [
+      85
+    ],
+    "limit_mismatch": [
+      158,
+      77
+    ],
+    "similarity_betweenness_confusion": [
+      296
+    ],
+    "missing_sort": [
+      77
+    ],
+    "missing_sort_cypher": [
+      77
+    ],
+    "missing_contains": [
+      138,
+      305
+    ]
+  }
+}

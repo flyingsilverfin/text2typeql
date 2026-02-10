@@ -1,0 +1,571 @@
+{
+  "database": "twitch",
+  "source": "synthetic-1",
+  "total_queries": 554,
+  "flagged": 32,
+  "flags": [
+    {
+      "index": 10,
+      "question": "Which game is the most commonly played among the top 5 streams by follower count?",
+      "cypher": "MATCH (s:Stream)-[:PLAYS]->(g:Game)\nWITH g, s\nORDER BY s.followers DESC\nLIMIT 5\nRETURN g.name AS game, count(*) AS count\nORDER BY count DESC\nLIMIT 1",
+      "typeql": "match\n  $s isa stream, has followers $f;\n  game_play (streaming_channel: $s, played_game: $g);\n  $g has name $gn;\nsort $f desc;\nlimit 5;\nfetch { \"game\": $gn };",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 13,
+      "question": "Who are the top 3 moderators for the stream with the highest follower count?",
+      "cypher": "MATCH (s:Stream)\nWITH s\nORDER BY s.followers DESC\nLIMIT 1\nMATCH (s)-[:MODERATOR]->(m:User)\nRETURN m.name AS moderator, m.followers AS follower_count\nORDER BY follower_count DESC\nLIMIT 3",
+      "typeql": "match\n  $s isa stream, has followers $f;\n  moderation (moderated_channel: $s, moderating_user: $m);\n  $m has name $mn;\nsort $f desc;\nlimit 3;\nfetch { \"moderator\": $mn };",
+      "checks_failed": [
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 1 but TypeQL limit 3"
+      ]
+    },
+    {
+      "index": 27,
+      "question": "Who are the top 3 users who chatter in the stream with the highest total view count?",
+      "cypher": "MATCH (s:Stream)\nWITH s\nORDER BY s.total_view_count DESC\nLIMIT 1\nMATCH (u:User)-[:CHATTER]->(s)\nRETURN u.name AS user, s.name AS stream\nORDER BY s.total_view_count DESC\nLIMIT 3",
+      "typeql": "match\n  $s isa stream, has name $sn, has total_view_count $tvc;\n  chat_activity (channel_with_chatters: $s, chatting_user: $u);\n  $u has name $un;\nsort $tvc desc;\nlimit 3;\nfetch { \"user\": $un, \"stream\": $sn };",
+      "checks_failed": [
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 1 but TypeQL limit 3"
+      ]
+    },
+    {
+      "index": 48,
+      "question": "Who are the top 3 moderators in the stream with the lowest follower count?",
+      "cypher": "MATCH (s:Stream)<-[:MODERATOR]-(m:User)\nWITH s, m\nORDER BY s.followers ASC, count{(m)-[:MODERATOR]->(s)} DESC\nLIMIT 1\nWITH s\nMATCH (s)<-[:MODERATOR]-(moderator:User)\nRETURN moderator.name AS moderator, moderator.followers AS followers\nORDER BY followers DESC\nLIMIT 3",
+      "typeql": "match\n  $s isa stream, has followers $f;\n  moderation (moderated_channel: $s, moderating_user: $m);\n  $m has name $mn;\nsort $f asc;\nlimit 3;\nfetch { \"moderator\": $mn };",
+      "checks_failed": [
+        "sort_direction_mismatch",
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher sorts DESC but TypeQL sorts ASC (default)",
+        "Cypher LIMIT 1 but TypeQL limit 3"
+      ]
+    },
+    {
+      "index": 95,
+      "question": "Find the 3 streams that play the least common games based on follower count.",
+      "cypher": "MATCH (s:Stream)-[:PLAYS]->(g:Game)\nWITH g, count(s) AS streamCount, max(s.followers) AS maxFollowers\nORDER BY streamCount ASC\nLIMIT 3\nMATCH (s:Stream)-[:PLAYS]->(g)\nRETURN s.name AS streamName, s.followers, g.name AS gameName\nORDER BY s.followers DESC",
+      "typeql": "match\n  $s isa stream, has name $sn, has followers $f;\n  game_play (streaming_channel: $s, played_game: $g);\n  $g has name $gn;\nreduce $streamCount = count($s) groupby $gn;\nsort $streamCount asc;\nlimit 3;",
+      "checks_failed": [
+        "sort_direction_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher sorts DESC but TypeQL sorts ASC (default)"
+      ]
+    },
+    {
+      "index": 181,
+      "question": "Which 3 streams have the least followers but are associated with a game with more than 100,000 total views?",
+      "cypher": "MATCH (s:Stream)-[:PLAYS]->(g:Game)\nWHERE g.name IS NOT NULL\nWITH s, sum(s.total_view_count) AS game_views\nWHERE game_views > 100000\nRETURN s.name AS stream_name, s.followers AS follower_count\nORDER BY follower_count\nLIMIT 3",
+      "typeql": "match\n  $s isa stream, has name $sn, has followers $f, has total_view_count $tvc;\n  game_play (streaming_channel: $s, played_game: $g);\n  $tvc > 100000;\nsort $f asc;\nlimit 3;\nfetch { \"stream_name\": $sn, \"follower_count\": $f };",
+      "checks_failed": [
+        "missing_sum_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses SUM() but TypeQL has no sum()"
+      ]
+    },
+    {
+      "index": 240,
+      "question": "Identify the first 3 users who are moderators for streams with a total view count exceeding 500,000.",
+      "cypher": "MATCH (u:User)-[:MODERATOR]->(s:Stream)\nWHERE s.total_view_count > 500000\nRETURN u.name, u.id\nORDER BY u.createdAt\nLIMIT 3",
+      "typeql": "match\n  $s isa stream, has total_view_count $tvc;\n  $tvc > 500000;\n  moderation (moderated_channel: $s, moderating_user: $u);\n  $u has name $un;\nlimit 3;\nfetch { \"name\": $un };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 259,
+      "question": "Who are the first 5 moderators for the stream with the highest total view count?",
+      "cypher": "MATCH (s:Stream)\nWITH s\nORDER BY s.total_view_count DESC\nLIMIT 1\nMATCH (s)-[:MODERATOR]->(m:User)\nRETURN m.name AS moderator\nLIMIT 5",
+      "typeql": "match\n  $s isa stream, has total_view_count $tvc;\n  moderation (moderated_channel: $s, moderating_user: $m);\n  $m has name $mn;\nsort $tvc desc;\nlimit 5;\nfetch { \"moderator\": $mn };",
+      "checks_failed": [
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 1 but TypeQL limit 5"
+      ]
+    },
+    {
+      "index": 268,
+      "question": "Which 3 teams were created most recently and have at least one stream associated with them?",
+      "cypher": "MATCH (t:Team)<-[:HAS_TEAM]-(s:Stream)\nWITH t, count(s) AS stream_count\nWHERE stream_count > 0\nRETURN t.name AS team_name, t.createdAt AS created_at\nORDER BY t.createdAt DESC\nLIMIT 3",
+      "typeql": "match\n  $t isa team, has name $tn, has created_at $ca;\n  team_membership (member_stream: $s, organization: $t);\nsort $ca desc;\nlimit 3;\nfetch { \"team_name\": $tn, \"created_at\": $ca };",
+      "checks_failed": [
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 269,
+      "question": "What are the first 3 streams that have been played continuously since their creation date without changing the game?",
+      "cypher": "MATCH (s:Stream)-[:PLAYS]->(g:Game)\nWITH s, g, s.createdAt AS createdAt\nORDER BY createdAt\nWITH s, g, createdAt, count(DISTINCT g) AS numGames\nWHERE numGames = 1\nRETURN s.name AS streamName, g.name AS gameName, createdAt\nORDER BY createdAt\nLIMIT 3",
+      "typeql": "match\n  $s isa stream, has name $sn, has created_at $ca;\n  game_play (streaming_channel: $s, played_game: $g);\n  $g has name $gn;\nsort $ca asc;\nlimit 3;\nfetch { \"streamName\": $sn, \"gameName\": $gn, \"createdAt\": $ca };",
+      "checks_failed": [
+        "missing_count",
+        "missing_count_distinct"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count",
+        "Cypher uses COUNT(DISTINCT) but TypeQL has no distinct (may be OK if groupby handles it)"
+      ]
+    },
+    {
+      "index": 271,
+      "question": "Name the top 3 users who are VIPs in the stream with the most followers.",
+      "cypher": "MATCH (s:Stream)-[:VIP]->(u:User)\nWITH s, u\nORDER BY s.followers DESC\nLIMIT 1\nRETURN u.name AS user\nORDER BY s.followers DESC\nLIMIT 3",
+      "typeql": "match\n  $s isa stream, has followers $f;\n  vip_status (channel_with_vips: $s, vip_user: $u);\n  $u has name $un;\nsort $f desc;\nlimit 3;\nfetch { \"user\": $un };",
+      "checks_failed": [
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 1 but TypeQL limit 3"
+      ]
+    },
+    {
+      "index": 277,
+      "question": "List the first 5 streams that have changed their primary game at least once.",
+      "cypher": "MATCH (s:Stream)-[:PLAYS]->(g:Game)\nWITH s, count(distinct g) AS num_games\nWHERE num_games > 1\nRETURN s.name AS stream_name, s.url AS stream_url\nORDER BY s.createdAt\nLIMIT 5",
+      "typeql": "match\n  $s isa stream, has name $sn, has url $su, has created_at $ca;\n  game_play (streaming_channel: $s, played_game: $g1);\n  game_play (streaming_channel: $s, played_game: $g2);\n  not { $g1 is $g2; };\nsort $ca asc;\nlimit 5;\nfetch { \"stream_name\": $sn, \"stream_url\": $su };",
+      "checks_failed": [
+        "missing_count",
+        "missing_count_distinct"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher uses COUNT() but TypeQL has no count",
+        "Cypher uses COUNT(DISTINCT) but TypeQL has no distinct (may be OK if groupby handles it)"
+      ]
+    },
+    {
+      "index": 292,
+      "question": "Who are the first 5 chatters in the stream with the highest follower count?",
+      "cypher": "MATCH (s:Stream)\nWITH s\nORDER BY s.followers DESC\nLIMIT 1\nMATCH (s)<-[:CHATTER]-(chatter:User)\nRETURN chatter.name\nLIMIT 5",
+      "typeql": "match\n  $s isa stream, has followers $f;\n  chat_activity (channel_with_chatters: $s, chatting_user: $chatter);\n  $chatter has name $cn;\nsort $f desc;\nlimit 5;\nfetch { \"name\": $cn };",
+      "checks_failed": [
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 1 but TypeQL limit 5"
+      ]
+    },
+    {
+      "index": 301,
+      "question": "List the first 5 games with streams that have been active for over 10 years.",
+      "cypher": "MATCH (g:Game)<-[:PLAYS]-(s:Stream)\nWHERE s.createdAt < datetime() - duration('P10Y')\nRETURN g.name AS game, count(s) AS num_streams\nORDER BY num_streams DESC\nLIMIT 5",
+      "typeql": "match\n  $g isa game, has name $gn;\n  game_play (streaming_channel: $s, played_game: $g);\n  $s has created_at $ca;\n  $ca < 2011-01-01T00:00:00;\nlimit 5;\nfetch { \"game\": $gn };",
+      "checks_failed": [
+        "missing_sort",
+        "threshold_mismatch",
+        "missing_sort_cypher",
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-5 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Question mentions threshold 10 but it does not appear in TypeQL",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 303,
+      "question": "Which are the first 5 streams that have more than one language associated with them?",
+      "cypher": "MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)\nWITH s, count(l) as languageCount\nWHERE languageCount > 1\nRETURN s.name as streamName, s.url as streamUrl, languageCount\nORDER BY languageCount DESC\nLIMIT 5",
+      "typeql": "match\n  $s isa stream, has name $sn, has url $su;\n  language_usage (channel: $s, used_language: $l1);\n  language_usage (channel: $s, used_language: $l2);\n  not { $l1 is $l2; };\nlimit 5;\nfetch { \"streamName\": $sn, \"streamUrl\": $su };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-5 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 312,
+      "question": "What are the top 3 streams that have changed their language at least once?",
+      "cypher": "MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)\nWITH s, count(l) as languageCount\nWHERE languageCount > 1\nRETURN s.name as streamName, s.url as streamUrl, languageCount\nORDER BY languageCount DESC\nLIMIT 3",
+      "typeql": "match\n  $s isa stream, has name $sn, has url $su;\n  language_usage (channel: $s, used_language: $l1);\n  language_usage (channel: $s, used_language: $l2);\n  not { $l1 is $l2; };\nlimit 3;\nfetch { \"streamName\": $sn, \"streamUrl\": $su };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "missing_count"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher uses COUNT() but TypeQL has no count"
+      ]
+    },
+    {
+      "index": 325,
+      "question": "Who are the first 5 moderators in streams that play 'VALORANT'?",
+      "cypher": "MATCH (s:Stream)-[:PLAYS]->(:Game {name: 'VALORANT'})\nMATCH (s)-[:MODERATOR]->(m:User)\nRETURN m.name AS moderator\nORDER BY m.name\nLIMIT 5",
+      "typeql": "match\n  $g isa game, has name \"VALORANT\";\n  game_play (streaming_channel: $s, played_game: $g);\n  moderation (moderated_channel: $s, moderating_user: $m);\n  $m has name $mn;\nlimit 5;\nfetch { \"moderator\": $mn };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-5 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 336,
+      "question": "Who are the first 5 users who have moderated streams with descriptions mentioning 'professional'?",
+      "cypher": "MATCH (u:User)-[:MODERATOR]->(s:Stream)\nWHERE s.description CONTAINS 'professional'\nRETURN u.name AS user, s.name AS stream\nORDER BY u.createdAt\nLIMIT 5",
+      "typeql": "match\n  $s isa stream, has name $sn, has description $d;\n  $d like \"%professional%\";\n  moderation (moderated_channel: $s, moderating_user: $u);\n  $u has name $un;\nlimit 5;\nfetch { \"user\": $un, \"stream\": $sn };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-5 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 445,
+      "question": "Find streams that have at least 3 languages associated with them.",
+      "cypher": "MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)\nWITH s, count(l) AS languageCount\nWHERE languageCount >= 3\nRETURN s",
+      "typeql": "match\n  $s isa stream, has name $sn, has url $u, has followers $f, has total_view_count $tvc;\n  language_usage (channel: $s, used_language: $l1);\n  language_usage (channel: $s, used_language: $l2);\n  language_usage (channel: $s, used_language: $l3);\n  not { $l1 is $l2; };\n  not { $l1 is $l3; };\n  not { $l2 is $l3; };\nfetch { \"name\": $sn, \"url\": $u, \"followers\": $f, \"total_view_count\": $tvc };",
+      "checks_failed": [
+        "threshold_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 3 but it does not appear in TypeQL"
+      ]
+    },
+    {
+      "index": 446,
+      "question": "Which users are chatters in more than 3 different streams? List the top 5.",
+      "cypher": "MATCH (u:User)-[:CHATTER]->(s:Stream)\nWITH u, count(distinct s) as num_streams\nWHERE num_streams > 3\nRETURN u.name, num_streams\nORDER BY num_streams DESC\nLIMIT 5",
+      "typeql": "match\n  $u isa user, has name $un;\n  chat_activity (channel_with_chatters: $s1, chatting_user: $u);\n  chat_activity (channel_with_chatters: $s2, chatting_user: $u);\n  chat_activity (channel_with_chatters: $s3, chatting_user: $u);\n  chat_activity (channel_with_chatters: $s4, chatting_user: $u);\n  not { $s1 is $s2; };\n  not { $s1 is $s3; };\n  not { $s1 is $s4; };\n  not { $s2 is $s3; };\n  not { $s2 is $s4; };\n  not { $s3 is $s4; };\nreduce $num_streams = count($s1) groupby $un;\nsort $num_streams des",
+      "checks_failed": [
+        "threshold_mismatch",
+        "missing_count_distinct"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 3 but it does not appear in TypeQL",
+        "Cypher uses COUNT(DISTINCT) but TypeQL has no distinct (may be OK if groupby handles it)"
+      ]
+    },
+    {
+      "index": 455,
+      "question": "Show the streams that have more than 2 languages associated with them.",
+      "cypher": "MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)\nWITH s, count(l) as languageCount\nWHERE languageCount > 2\nRETURN s",
+      "typeql": "match\n  $s isa stream, has name $sn, has url $u, has followers $f, has total_view_count $tvc;\n  language_usage (channel: $s, used_language: $l1);\n  language_usage (channel: $s, used_language: $l2);\n  language_usage (channel: $s, used_language: $l3);\n  not { $l1 is $l2; };\n  not { $l1 is $l3; };\n  not { $l2 is $l3; };\nfetch { \"name\": $sn, \"url\": $u, \"followers\": $f, \"total_view_count\": $tvc };",
+      "checks_failed": [
+        "threshold_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 2 but it does not appear in TypeQL"
+      ]
+    },
+    {
+      "index": 477,
+      "question": "Identify the streams with more than 3 VIP users.",
+      "cypher": "MATCH (s:Stream)\nWHERE size([(s)<-[:VIP]-(:User) | 1]) > 3\nRETURN s",
+      "typeql": "match\n  $s isa stream, has name $sn, has url $u, has followers $f, has total_view_count $tvc;\n  vip_status (channel_with_vips: $s, vip_user: $u1);\n  vip_status (channel_with_vips: $s, vip_user: $u2);\n  vip_status (channel_with_vips: $s, vip_user: $u3);\n  vip_status (channel_with_vips: $s, vip_user: $u4);\n  not { $u1 is $u2; };\n  not { $u1 is $u3; };\n  not { $u1 is $u4; };\n  not { $u2 is $u3; };\n  not { $u2 is $u4; };\n  not { $u3 is $u4; };\nfetch { \"name\": $sn, \"url\": $u, \"followers\": $f, \"total_",
+      "checks_failed": [
+        "threshold_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question mentions threshold 3 but it does not appear in TypeQL"
+      ]
+    },
+    {
+      "index": 356,
+      "question": "Which users are VIPs for the stream with the highest follower count?",
+      "cypher": "MATCH (s:Stream)\nWITH s\nORDER BY s.followers DESC\nLIMIT 1\nMATCH (s)<-[:VIP]-(u:User)\nRETURN u.name AS user, s.name AS stream",
+      "typeql": "with fun max_followers() -> integer:\n  match $s isa stream, has followers $f;\n  return max($f);\nmatch\n  $s isa stream, has name $sn, has followers $f;\n  let $max = max_followers();\n  $f == $max;\n  vip_status (channel_with_vips: $s, vip_user: $u);\n  $u has name $un;\nfetch { \"user\": $un, \"stream\": $sn };",
+      "checks_failed": [
+        "missing_sort_cypher",
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher has LIMIT 1 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 438,
+      "question": "Which users are VIPs for the stream with the highest follower count?",
+      "cypher": "MATCH (s:Stream)\nWITH s\nORDER BY s.followers DESC\nLIMIT 1\nMATCH (s)<-[:VIP]-(u:User)\nRETURN u.name AS user, s.name AS stream",
+      "typeql": "with fun max_followers() -> integer:\n  match $s isa stream, has followers $f;\n  return max($f);\n\nmatch\n$s isa stream, has followers $f;\nlet $max = max_followers();\n$f == $max;\nvip_status (channel_with_vips: $s, vip_user: $u);\nfetch { \"user\": $u.name, \"stream\": $s.name };",
+      "checks_failed": [
+        "missing_sort_cypher",
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher has LIMIT 1 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 535,
+      "question": "Name the top 3 users who are moderators in the stream with the highest follower count.",
+      "cypher": "MATCH (s:Stream)\nWITH s\nORDER BY s.followers DESC\nLIMIT 1\nMATCH (s)<-[:MODERATOR]-(u:User)\nRETURN u.name\nORDER BY u.followers DESC\nLIMIT 3",
+      "typeql": "with fun max_followers() -> integer:\n  match $s isa stream, has followers $f;\n  return max($f);\n\nmatch\n$s isa stream, has followers $f;\nlet $max = max_followers();\n$f == $max;\nmoderation (moderated_channel: $s, moderating_user: $u);\nlimit 3;\nfetch { \"user\": $u.name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort",
+        "Cypher has final ORDER BY but TypeQL has no sort",
+        "Cypher LIMIT 1 but TypeQL limit 3"
+      ]
+    },
+    {
+      "index": 314,
+      "question": "Who are the first 3 moderators for the oldest stream?",
+      "cypher": "MATCH (s:Stream)<-[:MODERATOR]-(m:User)\nWITH s, m\nORDER BY s.createdAt\nLIMIT 1\nRETURN s.name AS stream, collect(m.name)[..3] AS moderators",
+      "typeql": "with fun oldest_stream_date() -> datetime:\n  match $s isa stream, has created_at $d;\n  return min($d);\n\nmatch\n$s isa stream, has created_at $d;\nlet $oldest = oldest_stream_date();\n$d == $oldest;\nmoderation (moderated_channel: $s, moderating_user: $m);\nlimit 3;\nfetch { \"stream\": $s.name, \"moderator\": $m.name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher LIMIT 1 but TypeQL limit 3"
+      ]
+    },
+    {
+      "index": 331,
+      "question": "Who are the first 3 VIPs in streams with the most languages spoken?",
+      "cypher": "MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language)\nWITH s, count(l) AS languageCount\nORDER BY languageCount DESC\nLIMIT 1\nMATCH (s)-[:VIP]->(vip:User)\nRETURN vip.name\nLIMIT 3",
+      "typeql": "with fun language_count($s: stream) -> integer:\n  match language_usage (channel: $s, used_language: $l);\n  return count;\n\nwith fun max_language_count() -> integer:\n  match $s isa stream;\n  let $c = language_count($s);\n  return max($c);\n\nmatch\n$s isa stream;\nlet $lc = language_count($s);\nlet $max_lc = max_language_count();\n$lc == $max_lc;\nvip_status (channel_with_vips: $s, vip_user: $vip);\nlimit 3;\nfetch { \"vip\": $vip.name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher LIMIT 1 but TypeQL limit 3"
+      ]
+    },
+    {
+      "index": 265,
+      "question": "Which game has the fewest streams playing it, listing the first 3 streams?",
+      "cypher": "MATCH (g:Game)<-[:PLAYS]-(s:Stream)\nWITH g, count(s) AS streamCount\nORDER BY streamCount\nLIMIT 1\nMATCH (g)<-[:PLAYS]-(s:Stream)\nRETURN g.name AS game, s.name AS stream\nLIMIT 3",
+      "typeql": "with fun stream_count($g: game) -> integer:\n  match game_play (streaming_channel: $s, played_game: $g);\n  return count;\n\nwith fun min_stream_count() -> integer:\n  match $g isa game;\n  let $c = stream_count($g);\n  $c > 0;\n  return min($c);\n\nmatch\n$g isa game;\nlet $count = stream_count($g);\nlet $min = min_stream_count();\n$count == $min;\ngame_play (streaming_channel: $s, played_game: $g);\nlimit 3;\nfetch { \"game\": $g.name, \"stream\": $s.name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher LIMIT 1 but TypeQL limit 3"
+      ]
+    },
+    {
+      "index": 291,
+      "question": "Which game is streamed by the most teams and list the first 3 teams?",
+      "cypher": "MATCH (g:Game)<-[:PLAYS]-(s:Stream)<-[:HAS_TEAM]-(t:Team)\nWITH g, count(distinct t) as teamCount, collect(t.name) as teams\nORDER BY teamCount DESC\nLIMIT 1\nRETURN g.name as game, teamCount, teams[..3] as topTeams",
+      "typeql": "with fun team_count($g: game) -> integer:\n  match\n  game_play (streaming_channel: $s, played_game: $g);\n  team_membership (member_stream: $s, organization: $t);\n  return count;\n\nwith fun max_team_count() -> integer:\n  match $g isa game;\n  let $c = team_count($g);\n  return max($c);\n\nmatch\n$g isa game;\nlet $tc = team_count($g);\nlet $max = max_team_count();\n$tc == $max;\ngame_play (streaming_channel: $s, played_game: $g);\nteam_membership (member_stream: $s, organization: $t);\nlimit 3;\nfetch { \"game\"",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "limit_mismatch",
+        "missing_count_distinct"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher LIMIT 1 but TypeQL limit 3",
+        "Cypher uses COUNT(DISTINCT) but TypeQL has no distinct (may be OK if groupby handles it)"
+      ]
+    },
+    {
+      "index": 300,
+      "question": "What are the first 3 streams that are part of a team with the most streams?",
+      "cypher": "MATCH (s:Stream)-[:HAS_TEAM]->(t:Team)\nWITH t, count(s) AS streamCount\nORDER BY streamCount DESC\nLIMIT 1\nMATCH (s:Stream)-[:HAS_TEAM]->(t)\nRETURN s.name AS streamName\nLIMIT 3",
+      "typeql": "with fun team_stream_count($t: team) -> integer:\n  match team_membership (member_stream: $s, organization: $t);\n  return count;\n\nwith fun max_team_stream_count() -> integer:\n  match $t isa team;\n  let $c = team_stream_count($t);\n  return max($c);\n\nmatch\n$t isa team;\nlet $sc = team_stream_count($t);\nlet $max = max_team_stream_count();\n$sc == $max;\nteam_membership (member_stream: $s, organization: $t);\nlimit 3;\nfetch { \"stream\": $s.name };",
+      "checks_failed": [
+        "missing_sort",
+        "missing_sort_cypher",
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for first-3 and Cypher has ORDER BY, but TypeQL has no sort",
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher LIMIT 1 but TypeQL limit 3"
+      ]
+    },
+    {
+      "index": 473,
+      "question": "Which streams are part of a team with the most streams associated?",
+      "cypher": "MATCH (t:Team)<-[:HAS_TEAM]-(s:Stream)\nWITH t, count(s) AS stream_count\nORDER BY stream_count DESC\nLIMIT 1\nMATCH (t)<-[:HAS_TEAM]-(stream:Stream)\nRETURN stream",
+      "typeql": "with fun team_stream_count($t: team) -> integer:\n  match team_membership (member_stream: $s, organization: $t);\n  return count;\n\nwith fun max_team_stream_count() -> integer:\n  match $t isa team;\n  let $c = team_stream_count($t);\n  return max($c);\n\nmatch\n$t isa team;\nlet $sc = team_stream_count($t);\nlet $max = max_team_stream_count();\n$sc == $max;\nteam_membership (member_stream: $s, organization: $t);\nfetch { \"stream\": $s.name };",
+      "checks_failed": [
+        "missing_sort_cypher",
+        "missing_limit"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher has ORDER BY (before final RETURN) but TypeQL has no sort",
+        "Cypher has LIMIT 1 but TypeQL has no limit"
+      ]
+    },
+    {
+      "index": 491,
+      "question": "List the top 5 streams that are part of the team with the newest creation date.",
+      "cypher": "MATCH (s:Stream)-[:HAS_TEAM]->(t:Team)\nWITH t\nORDER BY t.createdAt DESC\nLIMIT 1\nMATCH (s:Stream)-[:HAS_TEAM]->(t)\nRETURN s.name AS stream, s.total_view_count AS views\nORDER BY views DESC\nLIMIT 5",
+      "typeql": "with fun newest_team_date() -> datetime:\n  match $t isa team, has created_at $d;\n  return max($d);\n\nmatch\n$t isa team, has created_at $d;\nlet $newest = newest_team_date();\n$d == $newest;\nteam_membership (member_stream: $s, organization: $t);\n$s has total_view_count $v;\nsort $v desc;\nlimit 5;\nfetch { \"stream\": $s.name, \"views\": $v };",
+      "checks_failed": [
+        "limit_mismatch",
+        "non_temporal_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 1 but TypeQL limit 5",
+        "Question asks for \"most recent\" but sort may not use temporal field: $v desc"
+      ]
+    }
+  ],
+  "categories": {
+    "missing_count": [
+      10,
+      268,
+      269,
+      277,
+      301,
+      303,
+      312
+    ],
+    "limit_mismatch": [
+      13,
+      27,
+      48,
+      259,
+      271,
+      292,
+      535,
+      314,
+      331,
+      265,
+      291,
+      300,
+      491
+    ],
+    "sort_direction_mismatch": [
+      48,
+      95
+    ],
+    "missing_sum_cypher": [
+      181
+    ],
+    "missing_sort": [
+      240,
+      301,
+      303,
+      312,
+      325,
+      336,
+      535,
+      314,
+      331,
+      265,
+      291,
+      300
+    ],
+    "missing_sort_cypher": [
+      240,
+      301,
+      303,
+      312,
+      325,
+      336,
+      356,
+      438,
+      535,
+      314,
+      331,
+      265,
+      291,
+      300,
+      473
+    ],
+    "missing_count_distinct": [
+      269,
+      277,
+      446,
+      291
+    ],
+    "threshold_mismatch": [
+      301,
+      445,
+      446,
+      455,
+      477
+    ],
+    "missing_limit": [
+      356,
+      438,
+      473
+    ],
+    "non_temporal_sort": [
+      491
+    ]
+  }
+}

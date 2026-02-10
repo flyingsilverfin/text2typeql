@@ -1,0 +1,126 @@
+{
+  "database": "gameofthrones",
+  "source": "synthetic-2",
+  "total_queries": 384,
+  "flagged": 8,
+  "flags": [
+    {
+      "index": 103,
+      "question": "Identify the top 3 characters based on the sum of their centrality values across all books.",
+      "cypher": "MATCH (c:Character)\nWITH c, \n     c.centrality + c.book1BetweennessCentrality + c.book1PageRank + c.book45PageRank AS totalCentrality\nRETURN c.name AS characterName, totalCentrality\nORDER BY totalCentrality DESC\nLIMIT 3",
+      "typeql": "match\n$c isa character, has name $name;\n$c has centrality $cent;\n$c has book1_betweenness_centrality $b1bc;\n$c has book1_page_rank $b1pr;\n$c has book45_page_rank $b45pr;\nlet $total = $cent + $b1bc + $b1pr + $b45pr;\nsort $total desc;\nlimit 3;\nfetch {\n  \"characterName\": $name,\n  \"totalCentrality\": $total\n};",
+      "checks_failed": [
+        "missing_sum"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for total/sum but TypeQL has no sum()"
+      ]
+    },
+    {
+      "index": 125,
+      "question": "Name the top 3 characters based on the sum of their book1PageRank and book45PageRank.",
+      "cypher": "MATCH (c:Character)\nWITH c, (c.book1PageRank + c.book45PageRank) AS totalPageRank\nRETURN c.name AS characterName, totalPageRank\nORDER BY totalPageRank DESC\nLIMIT 3",
+      "typeql": "match\n$c isa character, has book1_page_rank $b1, has book45_page_rank $b45, has name $name;\nlet $total = $b1 + $b45;\nsort $total desc;\nlimit 3;\nfetch {\n  \"characterName\": $name,\n  \"totalPageRank\": $total\n};",
+      "checks_failed": [
+        "missing_sum"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for total/sum but TypeQL has no sum()"
+      ]
+    },
+    {
+      "index": 134,
+      "question": "Which characters have the highest sum of pagerank values across all books? Limit to top 5.",
+      "cypher": "MATCH (c:Character)\nWITH c, \n     c.book1PageRank + c.book45PageRank + c.pagerank AS totalPageRank\nORDER BY totalPageRank DESC\nLIMIT 5\nRETURN c.name AS characterName, totalPageRank",
+      "typeql": "match\n$c isa character, has book1_page_rank $b1, has book45_page_rank $b45, has pagerank $pr;\nlet $total = $b1 + $b45 + $pr;\nsort $total desc;\nlimit 5;\nfetch {\n  \"characterName\": $c.name,\n  \"totalPageRank\": $total\n};",
+      "checks_failed": [
+        "missing_sum"
+      ],
+      "confidence": "medium",
+      "details": [
+        "Question asks for total/sum but TypeQL has no sum()"
+      ]
+    },
+    {
+      "index": 140,
+      "question": "List the characters who have a centrality value of exactly 0.8. Limit to top 5.",
+      "cypher": "MATCH (c:Character)\nWHERE c.centrality = 0.8\nRETURN c.name\nLIMIT 5",
+      "typeql": "match\n$c isa character, has centrality 0.8;\nlimit 5;\nfetch {\n  \"name\": $c.name\n};",
+      "checks_failed": [
+        "missing_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 199,
+      "question": "Display characters with a 'community' of 504 and list top 3.",
+      "cypher": "MATCH (c:Character)\nWHERE c.community = 504\nRETURN c.name, c.community\nLIMIT 3",
+      "typeql": "match\n$c isa character, has community 504;\nlimit 3;\nfetch {\n  \"name\": $c.name,\n  \"community\": $c.community\n};",
+      "checks_failed": [
+        "missing_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 224,
+      "question": "Display characters with a 'community' of 735 and list top 3.",
+      "cypher": "MATCH (c:Character)\nWHERE c.community = 735\nRETURN c.name, c.community\nLIMIT 3",
+      "typeql": "match\n$c isa character, has community 735;\nlimit 3;\nfetch {\n  \"name\": $c.name,\n  \"community\": $c.community\n};",
+      "checks_failed": [
+        "missing_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 274,
+      "question": "Display characters with a 'community' of 642 and list top 3.",
+      "cypher": "MATCH (c:Character)\nWHERE c.community = 642\nRETURN c.name, c.community\nLIMIT 3",
+      "typeql": "match\n$c isa character, has community $comm, has name $n;\n$comm == 642;\nlimit 3;\nfetch {\n  \"name\": $n,\n  \"community\": $comm\n};",
+      "checks_failed": [
+        "missing_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-3 but TypeQL has no sort"
+      ]
+    },
+    {
+      "index": 282,
+      "question": "Which characters are part of community 579? Provide top 5 results.",
+      "cypher": "MATCH (c:Character)\nWHERE c.community = 579\nRETURN c.name\nLIMIT 5",
+      "typeql": "match\n$c isa character, has community 579;\nlimit 5;\nfetch {\n  \"name\": $c.name\n};",
+      "checks_failed": [
+        "missing_sort"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks for top-5 but TypeQL has no sort"
+      ]
+    }
+  ],
+  "categories": {
+    "missing_sum": [
+      103,
+      125,
+      134
+    ],
+    "missing_sort": [
+      140,
+      199,
+      224,
+      274,
+      282
+    ]
+  }
+}

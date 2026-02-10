@@ -2514,11 +2514,14 @@ OPTIONAL MATCH (b)<-[:REVIEWS]-(r:Review)
 WITH b, AVG(r.stars) AS avgRating
 ORDER BY avgRating DESC
 LIMIT 5
-RETURN b.name","match
+RETURN b.name","with fun avg_rating($biz: business) -> double:
+  match
+    reviews (reviewed_business: $biz, review: $r);
+    $r has stars $s;
+  return mean($s);
+match
 $b isa business, has city ""Missoula"", has name $n;
-reviews (reviewed_business: $b, review: $r);
-$r has stars $s;
-reduce $avg = mean($s) groupby $b, $n;
+let $avg = avg_rating($b);
 sort $avg desc;
 limit 5;
 fetch { ""name"": $n };"

@@ -2517,12 +2517,13 @@ fetch { ""c_name"": $c.name };"
 RETURN c.name AS character, sum(i.weight) AS total_weight
 ORDER BY total_weight DESC
 LIMIT 5","match
-  $c isa character, has name $cn;
+  $c isa character;
   $other isa character;
-  $rel isa interacts45 (character1: $c, character2: $other), has weight $w;
-sort $w desc;
+  $rel isa interacts45 ($c, $other), has weight $w;
+reduce $total_weight = sum($w) groupby $c;
+sort $total_weight desc;
 limit 5;
-fetch { ""character"": $cn };"
+fetch { ""character"": $c.name, ""total_weight"": $total_weight };"
 330,What are the names of the top 5 characters with the highest book1PageRank?,"MATCH (c:Character)
 RETURN c.name AS character, c.book1PageRank AS pageRank
 ORDER BY pageRank DESC
@@ -2597,12 +2598,13 @@ fetch { ""c_name"": $c.name };"
 RETURN c.name AS character, sum(i.weight) AS total_weight
 ORDER BY total_weight DESC
 LIMIT 5","match
-  $c isa character, has name $cn;
+  $c isa character;
   $other isa character;
-  $rel isa interacts (character1: $c, character2: $other), has weight $w;
-sort $w desc;
+  $rel isa interacts ($c, $other), has weight $w;
+reduce $total_weight = sum($w) groupby $c;
+sort $total_weight desc;
 limit 5;
-fetch { ""character"": $cn };"
+fetch { ""character"": $c.name, ""total_weight"": $total_weight };"
 340,Which characters interact in book 1 with a weight greater than 100?,"MATCH (c1:Character)-[i:INTERACTS1]->(c2:Character)
 WHERE i.weight > 100
 RETURN c1.name AS character1, c2.name AS character2, i.weight AS weight","match
@@ -2705,12 +2707,13 @@ fetch { ""c_name"": $c.name };"
 RETURN c.name AS character, sum(i.weight) AS total_weight
 ORDER BY total_weight DESC
 LIMIT 5","match
-  $c isa character, has name $cn;
+  $c isa character;
   $other isa character;
-  $rel isa interacts45 (character1: $c, character2: $other), has weight $w;
-sort $w desc;
+  $rel isa interacts45 ($c, $other), has weight $w;
+reduce $total_weight = sum($w) groupby $c;
+sort $total_weight desc;
 limit 5;
-fetch { ""character"": $cn };"
+fetch { ""character"": $c.name, ""total_weight"": $total_weight };"
 356,List 3 characters with a book1PageRank less than 1 but an INTERACTS weight greater than 150.,"MATCH (c:Character)
 WHERE c.book1PageRank < 1 AND EXISTS {
   (c)-[i:INTERACTS]->(:Character)

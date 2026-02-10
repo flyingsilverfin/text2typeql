@@ -333,7 +333,7 @@ LIMIT 3","match
   $o has motto $o_motto;
   $o has name $o_name;
   $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in;
-sort $o_name desc;
+sort $o_name asc;
 limit 3;
 fetch { ""organization"": $o.name, ""motto"": $o.motto };"
 48,What articles published in 2022 mention organizations based in Rome?,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City {name: 'Rome'})
@@ -856,6 +856,8 @@ LIMIT 5","match
   $a isa organization, has name ""Accenture"";
   $c isa organization;
   (competitor: $a, competitor: $c) isa competes_with;
+$c has revenue $rev;
+sort $rev desc;
 limit 5;
 fetch { ""competitor"": $c.name, ""revenue"": $c.revenue };"
 134,What are the names of the first 3 people who are investors in organizations based in 'Seattle'?,"MATCH (p:Person)-[:HAS_INVESTOR]->(o:Organization)-[:IN_CITY]->(:City {name: 'Seattle'})
@@ -1001,7 +1003,9 @@ LIMIT 3","match
   $sub isa organization;
   $ceo isa person;
   (organization: $sub, ceo: $ceo) isa ceo_of;
-(parent: $accenture, subsidiary: $sub) isa subsidiary_of; limit 3;
+(parent: $accenture, subsidiary: $sub) isa subsidiary_of; $ceo has name $ceon;
+sort $ceon asc;
+limit 3;
 fetch { ""ceoName"": $ceo.name };"
 156,Find the first 3 organizations that have a public status and are in the 'Technology' industry category.,"MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory {name: 'Technology'})
 WHERE o.isPublic = true
@@ -1457,12 +1461,12 @@ WHERE o.name = 'Accenture' AND sub.nbrEmployees > 100
 RETURN sub.name AS subsidiary, sub.nbrEmployees AS numEmployees
 ORDER BY numEmployees DESC
 LIMIT 3","match
-  $o isa organization;
-  $sub isa organization;
-  $o has name ""Accenture"";
-  $sub has nbr_employees $sub_nbr_employees;
+  $o isa organization, has name ""Accenture"";
+  $sub isa organization, has nbr_employees $sub_nbr_employees;
   $sub_nbr_employees > 100;
-(parent: $o, subsidiary: $sub) isa subsidiary_of; limit 3;
+  (parent: $o, subsidiary: $sub) isa subsidiary_of;
+sort $sub_nbr_employees desc;
+limit 3;
 fetch { ""subsidiary"": $sub.name, ""numEmployees"": $sub.nbr_employees };"
 218,Who are the first 3 board members of organizations with a CEO named 'Julie Spellman Sweet' and a revenue above 500 million?,"MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person {name: 'Julie Spellman Sweet'})
 WHERE o.revenue > 5e8
@@ -2444,7 +2448,8 @@ WHERE ceo.summary CONTAINS 'award'
 RETURN o.name AS organization, ceo.name AS ceo
 LIMIT 3","match
   $o isa organization;
-  $p isa person;
+  $p isa person, has summary $ps;
+  $ps like "".*award.*"";
   (organization: $o, ceo: $p) isa ceo_of;
 limit 3;
 fetch { ""organization"": $o.name, ""ceo"": $p.name };"
@@ -2531,13 +2536,14 @@ WITH o, count(a) as negativeMentions
 ORDER BY negativeMentions DESC
 LIMIT 3
 RETURN o.name as organization","match
-  $article isa article;
-  $org isa organization;
-  (article: $article, mentioned: $org) isa mentions;
-  $org has revenue $org_revenue;
-  $org_revenue > 500000000;
+  $o isa organization;
+  $a isa article, has sentiment $s;
+  $s < 0;
+  mentions (article: $a, mentioned: $o);
+reduce $neg_count = count($a) groupby $o;
+sort $neg_count desc;
 limit 3;
-fetch { ""title"": $article.title, ""article_summary"": $article.article_summary, ""date"": $article.date };"
+fetch { ""organization"": $o.name, ""negative_mentions"": $neg_count };"
 386,List the names of the first 3 organizations that have a significant influence in the media industry.,"MATCH (o:Organization)-[:HAS_CATEGORY]->(c:IndustryCategory)
 WHERE c.name CONTAINS 'Media'
 RETURN o.name
@@ -2569,7 +2575,8 @@ WHERE p.summary CONTAINS 'philanthropist'
 RETURN o.name
 LIMIT 3","match
   $o isa organization;
-  $p isa person;
+  $p isa person, has summary $ps;
+  $ps like "".*philanthropist.*"";
   (organization: $o, ceo: $p) isa ceo_of;
 limit 3;
 fetch { ""organization"": $o.name, ""ceo"": $p.name };"
@@ -2620,11 +2627,12 @@ fetch { ""o"": $o };"
 WITH c, count(o) AS orgCount
 WHERE orgCount > 10
 RETURN c.name AS city, orgCount","match
+  $c isa city;
   $o isa organization;
-  $o has is_public true;
-  $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in;
-limit 3;
-fetch { ""name"": $o.name, ""summary"": $o.summary };"
+  located_in (organization: $o, city: $c);
+reduce $count = count($o) groupby $c;
+match $count > 10;
+fetch { ""city"": $c.city_name, ""org_count"": $count };"
 400,List all organizations that have subsidiaries.,"MATCH (o:Organization)
 WHERE EXISTS {
   (o)-[:HAS_SUBSIDIARY]->(:Organization)
@@ -2773,13 +2781,12 @@ WHERE o.revenue IS NOT NULL
 RETURN o.name AS organization, o.revenue AS revenue
 ORDER BY o.revenue DESC
 LIMIT 3","match
-  $o isa organization;
-  $c isa country, has country_name ""United States of America"";
-  $o has is_public true;
-  $o has nbr_employees $o_nbr_employees;
-  $o_nbr_employees > 1000;
-  $city isa city; (organization: $o, city: $city) isa located_in;
-(child: $city, parent: $c) isa location-contains; fetch { ""o"": $o };"
+  $o isa organization, has revenue $r;
+  $ic isa industry_category, has industry_category_name ""Financial Services"";
+  in_category (organization: $o, category: $ic);
+sort $r desc;
+limit 3;
+fetch { ""organization"": $o.name, ""revenue"": $r };"
 436,Which organizations have a CEO who has written an article?,"MATCH (o:Organization)-[:HAS_CEO]->(ceo:Person)<-[:AUTHOR]-(a:Article) RETURN o.name AS organization, ceo.name AS ceo, a.title AS article","match $o isa organization; $ceo isa person; $a isa article; (organization: $o, ceo: $ceo) isa ceo_of; fetch { ""organization"": $o.name, ""ceo"": $ceo.name, ""article"": $a.title };"
 437,Identify the organizations where 'Julie Spellman Sweet' is a board member.,"MATCH (p:Person {name: 'Julie Spellman Sweet'})<-[:HAS_BOARD_MEMBER]-(o:Organization)
 RETURN o.name AS organization","match
@@ -2898,13 +2905,13 @@ sort $o_revenue desc;
 limit 3;
 fetch { ""organization"": $o.name, ""revenue"": $o.revenue };"
 462,List the organizations that have the most negative sentiment articles mentioning them.,"MATCH (o:Organization)<-[:MENTIONS]-(a:Article) WITH o, avg(a.sentiment) AS avgSentiment ORDER BY avgSentiment ASC LIMIT 10 RETURN o.name AS organization, avgSentiment","match
-  $a isa article;
   $o isa organization;
-  (article: $a, mentioned: $o) isa mentions;
-  $o has revenue $o_revenue;
-  $o_revenue > 1000000000;
-limit 3;
-fetch { ""article"": $a.title, ""sentiment"": $a.sentiment };"
+  $a isa article, has sentiment $s;
+  mentions (article: $a, mentioned: $o);
+reduce $avg_sentiment = mean($s) groupby $o;
+sort $avg_sentiment asc;
+limit 10;
+fetch { ""organization"": $o.name, ""avg_sentiment"": $avg_sentiment };"
 463,Identify the organizations that have been mentioned in articles about innovation.,"MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk)
 WHERE c.text CONTAINS 'innovation'
 WITH a
@@ -3117,6 +3124,8 @@ LIMIT 3","match
   $o isa organization;
   $p isa person;
   (organization: $o, ceo: $p) isa ceo_of;
+$o has name $on;
+sort $on asc;
 limit 3;
 fetch { ""organization"": $o.name, ""ceo"": $p.name };"
 516,What are the first 3 cities located in the United States of America?,"MATCH (c:City)-[:IN_COUNTRY]->(co:Country {name: 'United States of America'})
@@ -3130,11 +3139,9 @@ fetch { ""city"": $c.city_name };"
 517,Which organizations have more than 100 employees?,"MATCH (o:Organization)
 WHERE o.nbrEmployees > 100
 RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees","match
-  $o isa organization;
-  $o has nbr_employees $o_nbr_employees;
-  $o_nbr_employees < 50;
-  $o has is_dissolved false;
-fetch { ""o"": $o };"
+  $o isa organization, has nbr_employees $ne;
+  $ne > 100;
+fetch { ""organization"": $o.name };"
 518,List the first 5 industry categories mentioned in the database.,"MATCH (c:IndustryCategory)
 RETURN c.name
 LIMIT 5","match
@@ -3144,8 +3151,9 @@ fetch { ""industry_category_name"": $c.industry_category_name };"
 519,What are the names of the first 3 articles authored by 'James Blackman'?,"MATCH (a:Article {author: 'James Blackman'})
 RETURN a.title
 LIMIT 3","match
-  $o isa organization;
-fetch { ""name"": $o.name };"
+  $a isa article, has author ""James Blackman"", has title $title;
+limit 3;
+fetch { ""title"": $title };"
 521,Who are the board members of 'New Energy Group'?,"MATCH (o:Organization {name: 'New Energy Group'})-[:HAS_BOARD_MEMBER]->(p:Person)
 RETURN p.name AS boardMember","match
   $o isa organization, has name ""New Energy Group"";
@@ -3187,7 +3195,13 @@ WITH o
 ORDER BY o.name
 LIMIT 3
 MATCH (o)<-[:HAS_INVESTOR]-(investor)
-RETURN o.name AS organization, investor.name AS investor","match $ceo isa person; $org isa organization; $investedOrg isa organization; (organization: $org, ceo: $ceo) isa ceo_of; (organization: $org, investor: $ceo) isa invested_in; fetch { ""organization"": $org.name, ""ceo"": $ceo.name, ""investedOrganization"": $investedOrg.name };"
+RETURN o.name AS organization, investor.name AS investor","match
+  $o isa organization, has name $on;
+  $inv isa person;
+  invested_in (organization: $o, investor: $inv);
+sort $on asc;
+limit 3;
+fetch { ""organization"": $on, ""investor"": $inv.name };"
 531,Which organizations are competitors of 'Deja vu Security'?,"MATCH (o:Organization {name: 'Deja vu Security'})-[:HAS_COMPETITOR]->(competitor:Organization)
 RETURN competitor.name AS CompetitorName, competitor.summary AS CompetitorSummary","match
   $o isa organization, has name ""Deja vu Security"";
@@ -3199,13 +3213,11 @@ WHERE a.sentiment > 0.5
 RETURN a
 ORDER BY a.date DESC
 LIMIT 3","match
-  $o isa organization;
-  $c isa city;
-  $country isa country;
-  (organization: $o, city: $c) isa located_in;
-  $o has revenue $o_revenue;
-  $o_revenue > 100000000;
-(child: $c, parent: $country) isa location-contains; fetch { ""organization"": $o.name, ""city"": $c.city_name, ""country"": $country.country_name, ""revenue"": $o.revenue };"
+  $a isa article, has sentiment $s, has title $title;
+  $s > 0.5;
+sort $s desc;
+limit 3;
+fetch { ""title"": $title, ""sentiment"": $s };"
 533,List the first 3 countries mentioned in the database.,"MATCH (c:Country)
 RETURN c.name
 LIMIT 3","match
@@ -3276,7 +3288,12 @@ fetch { ""organization"": $o.name };"
 545,Which organizations have subsidiaries within the same city?,"MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(sub:Organization), (o)-[:IN_CITY]->(c:City)<-[:IN_CITY]-(sub) RETURN o.name AS organization, sub.name AS subsidiary, c.name AS city","match $o isa organization; $sub isa organization; $c isa city; (parent: $o, subsidiary: $sub) isa subsidiary_of; (organization: $o, city: $c) isa located_in; fetch { ""organization"": $o.name, ""subsidiary"": $sub.name, ""city"": $c.city_name };"
 546,Name the first 3 organizations that have been mentioned in an article from 'MrWeb'.,"MATCH (article:Article {siteName: 'MrWeb'})-[:MENTIONS]->(org:Organization)
 RETURN org.name
-LIMIT 3","match $o isa organization, has name $n; $a isa article, has sentiment $s; (article: $a, mentioned: $o) isa mentions; reduce $avg_sentiment = mean($s) groupby $o; match $o has name $n; sort $avg_sentiment asc; limit 10; fetch { ""organization"": $n, ""avgSentiment"": $avg_sentiment };"
+LIMIT 3","match
+  $a isa article, has site_name ""MrWeb"";
+  $o isa organization;
+  mentions (article: $a, mentioned: $o);
+limit 3;
+fetch { ""organization"": $o.name };"
 547,What are the names of the first 3 CEOs who work at organizations with a revenue greater than 10 million?,"MATCH (p:Person)<-[:HAS_CEO]-(o:Organization)
 WHERE o.revenue > 10000000
 RETURN p.name
@@ -3564,29 +3581,19 @@ limit 5;
 fetch { ""organization"": $o.name, ""ceo"": $p.name };"
 596,What are the first 3 organizations that have a category and a CEO named 'Julie Spellman Sweet'?,MATCH (o:Organization)-[:HAS_CATEGORY]->(:IndustryCategory) MATCH (o)-[:HAS_CEO]->(ceo:Person {name: 'Julie Spellman Sweet'}) RETURN o.name AS organization LIMIT 3,"match $o isa organization; $ceo isa person, has name ""Julie Spellman Sweet""; (organization: $o, ceo: $ceo) isa ceo_of; $ic isa industry_category; (organization: $o, category: $ic) isa in_category; limit 3; fetch { ""organization"": $o.name };"
 600,Name 3 organizations that are suppliers to 'New Energy Group'.,MATCH (o:Organization {name: 'New Energy Group'})<-[:HAS_SUPPLIER]-(supplier:Organization) RETURN supplier.name LIMIT 3,"match
-  $o isa organization;
+  $o isa organization, has name ""New Energy Group"";
   $s isa organization;
-  $sub isa organization;
-  $sc isa country;
-  $subc isa country;
-  (customer: $o, supplier: $s) isa supplies;
-  (parent: $o, subsidiary: $sub) isa subsidiary_of;
-  $city isa city; (organization: $o, city: $city) isa located_in;
-(child: $city, parent: $sc) isa location-contains; fetch { ""organization"": $o.name };"
+  supplies (customer: $o, supplier: $s);
+limit 3;
+fetch { ""supplier"": $s.name };"
 601,Which cities are home to organizations with more than 300 employees?,"MATCH (o:Organization)-[:IN_CITY]->(c:City)
 WHERE o.nbrEmployees > 300
 RETURN c.name AS city","match
-  $a isa article;
-  $c isa chunk;
-  $o isa organization;
-  $ic isa industry_category, has industry_category_name ""Finance"";
-  $city isa city;
-  (article: $a, chunk: $c) isa has_chunk;
-  (article: $a, mentioned: $o) isa mentions;
-  (organization: $o, city: $city) isa located_in;
-  (organization: $o, category: $ic) isa in_category;
-limit 3;
-reduce $mentions = count($a);"
+  $o isa organization, has nbr_employees $ne;
+  $ne > 300;
+  $c isa city;
+  located_in (organization: $o, city: $c);
+fetch { ""city"": $c.city_name };"
 602,Identify the top 5 articles with a positive sentiment greater than 0.8.,"MATCH (a:Article)
 WHERE a.sentiment > 0.8
 RETURN a.title, a.sentiment, a.siteName, a.date
@@ -3626,7 +3633,12 @@ RETURN o.name AS organization, p.name AS board_member","match
   $o has revenue $o_revenue;
   $o_revenue > 50000000;
 fetch { ""organization"": $o.name, ""board_member"": $p.name };"
-608,Which organizations have a summary mentioning 'software' and are located in a city with a population summary mentioning 'capital'?,"MATCH (o:Organization)-[:IN_CITY]->(c:City) WHERE toLower(o.summary) CONTAINS 'software' AND toLower(c.summary) CONTAINS 'capital' RETURN o.name AS organization, c.name AS city","match $o isa organization; $c isa city; (organization: $o, city: $c) isa located_in; fetch { ""organization"": $o.name, ""city"": $c.city_name };"
+608,Which organizations have a summary mentioning 'software' and are located in a city with a population summary mentioning 'capital'?,"MATCH (o:Organization)-[:IN_CITY]->(c:City) WHERE toLower(o.summary) CONTAINS 'software' AND toLower(c.summary) CONTAINS 'capital' RETURN o.name AS organization, c.name AS city","match
+  $o isa organization, has summary $os;
+  $os like "".*software.*"";
+  $c isa city;
+  (organization: $o, city: $c) isa located_in;
+fetch { ""organization"": $o.name, ""city"": $c.city_name };"
 609,Who are the children of 'Julie Spellman Sweet' listed in the database?,MATCH (p:Person {name: 'Julie Spellman Sweet'})-[:HAS_CHILD]->(child:Person) RETURN child.name AS child,"match $p isa person, has name ""Julie Spellman Sweet""; $child isa person; (parent: $p, child: $child) isa parent_of; fetch { ""child"": $child.name };"
 611,Identify articles mentioning organizations based in 'Rome'.,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City {name: 'Rome'}) RETURN a.title AS article, o.name AS organization","match $a isa article; $o isa organization; $city isa city, has city_name ""Rome""; (organization: $o, city: $city) isa located_in; (article: $a, mentioned: $o) isa mentions; fetch { ""article"": $a.title, ""organization"": $o.name };"
 613,Name 3 people who are board members for organizations with a motto.,"MATCH (p:Person)<-[:HAS_BOARD_MEMBER]-(o:Organization)
@@ -3709,7 +3721,12 @@ fetch { ""organization"": $o.name, ""competitor"": $c.name };"
 627,List 3 organizations that have their headquarters in a city that is also a capital.,"MATCH (o:Organization)-[:IN_CITY]->(c:City)-[:IN_COUNTRY]->(country:Country) WHERE c.name = country.name RETURN o.name AS organization, c.name AS city LIMIT 3","match $o isa organization; $c isa city; $country isa country; (organization: $o, city: $c) isa located_in; (child: $c, parent: $country) isa location-contains; limit 3; fetch { ""organization"": $o.name, ""city"": $c.city_name };"
 628,Which articles have chunks containing the text 'consumer behavior analyses'?,"MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk)
 WHERE c.text CONTAINS 'consumer behavior analyses'
-RETURN a","match $o isa organization; $subsidiary isa organization; (parent: $o, subsidiary: $subsidiary) isa subsidiary_of; limit 3; fetch { ""name"": $o.name };"
+RETURN a","match
+  $a isa article;
+  $c isa chunk, has text $t;
+  $t like "".*consumer behavior analyses.*"";
+  has_chunk (article: $a, chunk: $c);
+fetch { ""article"": $a.title };"
 629,Identify the organizations that have been mentioned in articles published after 2021-01-01.,"MATCH (a:Article)-[:MENTIONS]->(o:Organization) WHERE a.date > date(""2021-01-01"") RETURN DISTINCT o","match $a isa article, has date $a_date; $o isa organization; (article: $a, mentioned: $o) isa mentions; $a_date > 2021-01-01T00:00:00; fetch { ""o"": $o };"
 630,What are the summaries of organizations that have a CEO named 'Julie Spellman Sweet'?,"MATCH (p:Person {name: 'Julie Spellman Sweet'})<-[:HAS_CEO]-(o:Organization)
 RETURN o.summary","match
@@ -3892,6 +3909,7 @@ fetch { ""o"": $o };"
   $o isa organization;
   $p isa person;
   (organization: $o, ceo: $p) isa ceo_of;
+$o has motto $m; $m like "".*innovation.*"";
 fetch { ""organization"": $o.name, ""ceo"": $p.name };"
 671,List the children of CEOs who are mentioned as investors in the database.,"MATCH (ceo:Person)<-[:HAS_CEO]-(company:Organization)
 MATCH (child:Person)<-[:HAS_CHILD]-(ceo)
@@ -3914,7 +3932,8 @@ RETURN o","match
   $o has revenue $o_revenue;
   $o_revenue > 50000000;
 fetch { ""o"": $o };"
-675,List the organizations that have a public status and a summary mentioning 'software'.,"MATCH (o:Organization) WHERE o.isPublic = true AND toLower(o.summary) CONTAINS 'software' RETURN o.name AS organization, o.summary AS summary","match $o isa organization; $o has is_public true; fetch { ""organization"": $o.name, ""summary"": $o.summary };"
+675,List the organizations that have a public status and a summary mentioning 'software'.,"MATCH (o:Organization) WHERE o.isPublic = true AND toLower(o.summary) CONTAINS 'software' RETURN o.name AS organization, o.summary AS summary","match $o isa organization; $o has is_public true; $o has summary $os; $os like "".*software.*"";
+fetch { ""organization"": $o.name, ""summary"": $o.summary };"
 679,Which 3 cities have organizations that are not dissolved?,MATCH (c:City)<-[:IN_CITY]-(o:Organization) WHERE o.isDissolved IS NOT NULL AND NOT o.isDissolved RETURN c.name AS city LIMIT 3,"match $c isa city; $o isa organization; (organization: $o, city: $c) isa located_in; $o has is_dissolved false; limit 3; fetch { ""city"": $c.city_name };"
 680,List the top 3 organizations with the most employees.,"MATCH (o:Organization)
 WHERE o.nbrEmployees IS NOT NULL
@@ -3952,7 +3971,11 @@ LIMIT 3","match
   (organization: $o, ceo: $p) isa ceo_of;
 limit 3;
 fetch { ""organization"": $o.name };"
-686,List the top 5 articles by positive sentiment.,"MATCH (a:Article) WHERE a.sentiment IS NOT NULL RETURN a.title AS title, a.sentiment AS sentiment ORDER BY sentiment DESC LIMIT 5","match $a isa article; $a has sentiment $a_sentiment; limit 5; fetch { ""title"": $a.title, ""sentiment"": $a.sentiment };"
+686,List the top 5 articles by positive sentiment.,"MATCH (a:Article) WHERE a.sentiment IS NOT NULL RETURN a.title AS title, a.sentiment AS sentiment ORDER BY sentiment DESC LIMIT 5","match
+  $a isa article, has sentiment $a_sentiment;
+sort $a_sentiment desc;
+limit 5;
+fetch { ""title"": $a.title, ""sentiment"": $a.sentiment };"
 687,Who are the board members of the top 3 organizations by revenue?,"MATCH (o:Organization)
 WITH o
 ORDER BY o.revenue DESC
@@ -4000,6 +4023,8 @@ RETURN o.name AS organization, investor.name AS investor","match
   $o isa organization;
   $investor isa person;
   (organization: $o, investor: $investor) isa invested_in;
+$o has revenue $r;
+sort $r desc;
 limit 3;
 fetch { ""investor"": $investor.name, ""organization"": $o.name };"
 694,Name 3 organizations that are listed as dissolved.,"MATCH (o:Organization)
@@ -4164,7 +4189,7 @@ LIMIT 3","match
   $o isa organization, has name ""New Energy Group"";
   (investor: $investor, organization: $o) isa invested_in;
   $investor has name $investor_name;
-sort $investor_name desc;
+sort $investor_name asc;
 limit 3;
 fetch { ""investor"": $investor.name, ""summary"": $investor.summary };"
 722,"Which organizations have more than 2 competitors, list the top 3.","MATCH (o:Organization)-[:HAS_COMPETITOR]->(c:Organization)
@@ -4200,13 +4225,17 @@ WHERE orgCount > 5
 RETURN c.name AS city, orgCount
 ORDER BY orgCount DESC
 LIMIT 3","match
-  $o1 isa organization;
-  $o2 isa organization;
-  $c isa country;
-  (competitor: $o1, competitor: $o2) isa competes_with;
-  $city isa city; (organization: $o1, city: $city) isa located_in;
-(child: $city, parent: $c) isa location-contains; fetch { ""organization"": $o1.name, ""competitor"": $o2.name, ""country"": $c.country_name };"
-726,List the top 5 organizations that are competitors of 'Accenture'.,"MATCH (a:Organization {name: 'Accenture'})-[:HAS_COMPETITOR]->(c:Organization) RETURN c.name AS competitor, c.revenue AS revenue ORDER BY revenue DESC LIMIT 5","match $a isa organization, has name ""Accenture""; $c isa organization; (competitor: $a, competitor: $c) isa competes_with; limit 5; fetch { ""competitor"": $c.name, ""revenue"": $c.revenue };"
+  $c isa city;
+  $o isa organization;
+  located_in (organization: $o, city: $c);
+reduce $count = count($o) groupby $c;
+match $count > 5;
+sort $count desc;
+limit 3;
+fetch { ""city"": $c.city_name, ""org_count"": $count };"
+726,List the top 5 organizations that are competitors of 'Accenture'.,"MATCH (a:Organization {name: 'Accenture'})-[:HAS_COMPETITOR]->(c:Organization) RETURN c.name AS competitor, c.revenue AS revenue ORDER BY revenue DESC LIMIT 5","match $a isa organization, has name ""Accenture""; $c isa organization; (competitor: $a, competitor: $c) isa competes_with; $c has revenue $rev;
+sort $rev desc;
+limit 5; fetch { ""competitor"": $c.name, ""revenue"": $c.revenue };"
 727,What are the first 3 industries mentioned in articles with a positive sentiment over 0.8?,"MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk), (a)-[:MENTIONS]->(o:Organization)-[:HAS_CATEGORY]->(i:IndustryCategory) WHERE a.sentiment > 0.8 RETURN DISTINCT i.name LIMIT 3","match $a isa article; $c isa chunk; $o isa organization; $i isa industry_category; (article: $a, chunk: $c) isa has_chunk; (article: $a, mentioned: $o) isa mentions; $a has sentiment $a_sentiment; $a_sentiment > 0.8; (organization: $o, category: $i) isa in_category; limit 3; fetch { ""industry_category_name"": $i.industry_category_name };"
 728,List the top 5 countries by number of cities mentioned in the database.,"MATCH (c:Country)<-[:IN_COUNTRY]-(city:City)
 WITH c, count(city) AS cityCount
@@ -4272,6 +4301,7 @@ RETURN o.name AS organization, collect(p.name) AS board_members","match
   $p isa person, has name $pn;
   (organization: $o, category: $c) isa in_category;
   (organization: $o, member: $p) isa board_member_of;
+sort $on asc;
 limit 3;
 fetch { ""organization"": $on, ""board_member"": $pn };"
 741,Which organizations have a CEO named 'Julie Spellman Sweet'?,"MATCH (o:Organization)-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'})
@@ -4280,13 +4310,20 @@ RETURN o","match
   $p isa person, has name ""Julie Spellman Sweet"";
   (organization: $o, ceo: $p) isa ceo_of;
 fetch { ""o"": $o };"
-743,What are the top 5 articles with the highest sentiment scores mentioning organizations in 'Seattle'?,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City {name: 'Seattle'}) RETURN a.title AS article, a.sentiment AS sentiment ORDER BY sentiment DESC LIMIT 5","match $a isa article; $o isa organization; $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in; (article: $a, mentioned: $o) isa mentions; limit 5; fetch { ""article"": $a.title, ""sentiment"": $a.sentiment };"
+743,What are the top 5 articles with the highest sentiment scores mentioning organizations in 'Seattle'?,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(:City {name: 'Seattle'}) RETURN a.title AS article, a.sentiment AS sentiment ORDER BY sentiment DESC LIMIT 5","match $a isa article; $o isa organization; $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in; (article: $a, mentioned: $o) isa mentions; $a has sentiment $s;
+sort $s desc;
+limit 5; fetch { ""article"": $a.title, ""sentiment"": $a.sentiment };"
 744,Who are the top 3 parents of 'Julie Spellman Sweet'?,MATCH (p:Person {name: 'Julie Spellman Sweet'})<-[:HAS_CHILD]-(parent:Person) RETURN parent.name LIMIT 3,"match $p isa person, has name ""Julie Spellman Sweet""; $parent isa person; (parent: $p, child: $parent) isa parent_of; limit 3; fetch { ""name"": $parent.name };"
 746,"Which organizations have a motto related to 'security', list the top 3.","MATCH (o:Organization)
 WHERE o.motto CONTAINS 'security'
 RETURN o.name AS organization, o.motto AS motto
 ORDER BY o.name
-LIMIT 3","match $a isa article; $a has date $a_date; $a_date > 2021-01-01T00:00:00; sort $a_date desc; limit 3; fetch { ""a"": $a };"
+LIMIT 3","match
+  $o isa organization, has motto $m, has name $on;
+  $m like "".*security.*"";
+sort $on asc;
+limit 3;
+fetch { ""organization"": $on, ""motto"": $m };"
 747,List the first 3 countries with organizations that have more than 100 employees.,"MATCH (c:Country)<-[:IN_COUNTRY]-(city:City)<-[:IN_CITY]-(o:Organization) WHERE o.nbrEmployees > 100 RETURN c.name AS country, count(o) AS numOrganizations ORDER BY numOrganizations DESC LIMIT 3","match $c isa country; $city isa city; $o isa organization; (child: $city, parent: $c) isa location-contains; $o has nbr_employees $o_nbr_employees; $o_nbr_employees > 100; (organization: $o, city: $city) isa located_in; limit 3; reduce $numOrganizations = count($o);"
 748,What are the top 3 articles mentioning 'New Energy Group'?,"MATCH (a:Article)-[:MENTIONS]->(o:Organization {name: 'New Energy Group'})
 RETURN a.title AS title, a.siteName AS siteName, a.date AS date
@@ -4445,7 +4482,11 @@ fetch { ""supplier"": $supplier };"
 WHERE o.revenue IS NOT NULL
 RETURN o.name AS organization, o.revenue AS revenue
 ORDER BY o.revenue DESC
-LIMIT 5","match $o isa organization; $ceo isa person; $a isa article; (organization: $o, ceo: $ceo) isa ceo_of; fetch { ""organization"": $o.name, ""ceo"": $ceo.name, ""article"": $a.title };"
+LIMIT 5","match
+  $o isa organization, has revenue $r;
+sort $r desc;
+limit 5;
+fetch { ""organization"": $o.name, ""revenue"": $r };"
 773,Which industry categories does New Energy Group belong to?,"MATCH (o:Organization {name: 'New Energy Group'})-[:HAS_CATEGORY]->(c:IndustryCategory)
 RETURN c.name","match
   $o isa organization, has name ""New Energy Group"";
@@ -4491,13 +4532,18 @@ fetch { ""subsidiary"": $subsidiary.name };"
 WITH o, max(a.date) AS latestDate
 MATCH (o)<-[:MENTIONS]-(article:Article {date: latestDate})
 WHERE article.sentiment > 0.8
-RETURN o.name AS organization, article.title AS latestArticle, article.sentiment AS sentiment","match
+RETURN o.name AS organization, article.title AS latestArticle, article.sentiment AS sentiment","with fun latest_article_date($org: organization) -> datetime:
+  match
+    $a isa article, has date $d;
+    mentions (article: $a, mentioned: $org);
+  return max($d);
+match
   $o isa organization;
-  $a isa article;
-  (article: $a, mentioned: $o) isa mentions;
-  $article isa article;
-  (article: $article, mentioned: $o) isa mentions;
-fetch { ""organization"": $o.name, ""latestArticle"": $article.title, ""sentiment"": $article.sentiment };"
+  $a isa article, has date $d, has sentiment $s;
+  mentions (article: $a, mentioned: $o);
+  $d == latest_article_date($o);
+  $s > 0.8;
+fetch { ""organization"": $o.name, ""latestArticle"": $a.title, ""sentiment"": $s };"
 785,What is the summary of the city where New Energy Group is located?,"MATCH (o:Organization {name: 'New Energy Group'})-[:IN_CITY]->(c:City)
 RETURN c.summary","match
   $o isa organization, has name ""New Energy Group"";
@@ -4561,17 +4607,10 @@ WHERE o.nbrEmployees IS NOT NULL
 RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees
 ORDER BY o.nbrEmployees DESC
 LIMIT 5","match
-  $c isa country;
-  $city isa city;
-  $o isa organization;
-  (child: $city, parent: $c) isa location-contains;
-  $o has is_public $o_is_public;
-  $o has is_public true;
-  (organization: $o, city: $city) isa located_in;
-reduce $numCities = count($city) groupby $c;
-sort $numCities desc;
-limit 10;
-fetch { ""country"": $c.country_name, ""numCities"": $numCities };"
+  $o isa organization, has nbr_employees $ne;
+sort $ne desc;
+limit 5;
+fetch { ""organization"": $o.name, ""nbr_employees"": $ne };"
 796,Which organizations are mentioned in articles about cybersecurity?,"MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk), (a)-[:MENTIONS]->(o:Organization)
 WHERE c.text CONTAINS 'cybersecurity'
 RETURN DISTINCT o.name AS organization","match
@@ -4643,10 +4682,9 @@ RETURN o.name AS organization, o.summary AS org_summary, c.name AS city,
 ORDER BY o.name","match
   $o isa organization;
   $c isa city;
-  (organization: $o, city: $c) isa located_in;
-  $o has name $o_name;
-  $ic isa industry_category; (organization: $o, category: $ic) isa in_category;
-sort $o_name asc;
+  located_in (organization: $o, city: $c);
+try { $ic isa industry_category; in_category (organization: $o, category: $ic); };
+try { $a isa article; mentions (article: $a, mentioned: $o); };
 fetch { ""organization"": $o.name, ""org_summary"": $o.summary, ""city"": $c.city_name };"
 812,List the countries where organizations with a revenue less than $10 million are located.,MATCH (o:Organization)-[:IN_CITY]->(:City)-[:IN_COUNTRY]->(c:Country) WHERE o.revenue < 10000000 RETURN DISTINCT c.name,"match
   $o isa organization;
@@ -5058,7 +5096,13 @@ fetch { ""organization"": $o.name, ""ceo"": $p.name };"
 WHERE o.nbrEmployees IS NOT NULL
 RETURN o.name AS organization, o.nbrEmployees AS numberOfEmployees
 ORDER BY o.nbrEmployees DESC
-LIMIT 5","match $o isa organization; $sub isa organization; $city isa city; (parent: $o, subsidiary: $sub) isa subsidiary_of; (organization: $o, city: $city) isa located_in; fetch { ""organization"": $o.name, ""subsidiary"": $sub.name, ""city"": $city.city_name };"
+LIMIT 5","match
+  $o isa organization, has nbr_employees $ne;
+  $sub isa organization;
+  subsidiary_of (parent: $o, subsidiary: $sub);
+sort $ne desc;
+limit 5;
+fetch { ""organization"": $o.name, ""nbr_employees"": $ne };"
 876,What are the names of the organizations that have a subsidiary named 'Accenture'?,"MATCH (parent:Organization)-[:HAS_SUBSIDIARY]->(sub:Organization {name: 'Accenture'})
 RETURN parent.name","match
   $parent isa organization;
@@ -5142,7 +5186,7 @@ RETURN o.name","match
   $s isa organization;
   (customer: $o, supplier: $s) isa supplies;
   $s has revenue $s_revenue;
-  $s_revenue < 5;
+  $s_revenue < 5000000;
 fetch { ""name"": $o.name };"
 888,Find the top 3 organizations that are public and have been mentioned in the most articles.,"MATCH (o:Organization)<-[:MENTIONS]-(a:Article)
 WHERE o.isPublic IS NOT NULL AND o.isPublic = true
@@ -5169,7 +5213,12 @@ LIMIT 5","match
 fetch { ""parent"": $p.name, ""child"": $child.name, ""organization"": $o.name };"
 890,Which organizations have a CEO with the name 'Julie Spellman Sweet' and a revenue greater than 100 million?,"MATCH (o:Organization)-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'})
 WHERE o.revenue > 1E8
-RETURN o","match $o isa organization; $city isa city, has city_name ""Seattle""; (organization: $o, city: $city) isa located_in; $p isa person, has name ""Julie Spellman Sweet""; (organization: $o, ceo: $p) isa ceo_of; fetch { ""name"": $o.name };"
+RETURN o","match
+  $o isa organization, has revenue $r;
+  $r > 100000000;
+  $p isa person, has name ""Julie Spellman Sweet"";
+  ceo_of (organization: $o, ceo: $p);
+fetch { ""organization"": $o.name, ""revenue"": $r };"
 892,List the first 5 organizations that have a subsidiary with a summary mentioning 'Dublin'.,"MATCH (o:Organization)-[:HAS_SUBSIDIARY]->(s:Organization)
 WHERE s.summary CONTAINS 'Dublin'
 RETURN o.name AS organization, s.name AS subsidiary
@@ -5185,10 +5234,10 @@ fetch { ""organization"": $o.name, ""subsidiary"": $s.name };"
 WHERE p.summary CONTAINS 'Accenture'
 RETURN o.name","match
   $o isa organization;
-  $o has name ""Accenture"";
-  $p isa person;
+  $p isa person, has summary $ps;
+  $ps like "".*Accenture.*"";
   (organization: $o, ceo: $p) isa ceo_of;
-fetch { ""organization"": $o.name, ""ceo"": $p.name, ""summary"": $o.summary };"
+fetch { ""organization"": $o.name, ""ceo"": $p.name, ""summary"": $p.summary };"
 894,Find the top 3 cities mentioned in articles with the highest sentiment scores.,"MATCH (a:Article)-[:HAS_CHUNK]->(c:Chunk), (a)-[:MENTIONS]->(:Organization)-[:IN_CITY]->(city:City)
 WITH city, max(a.sentiment) AS maxSentiment
 ORDER BY maxSentiment DESC
@@ -5285,11 +5334,12 @@ WHERE a.sentiment IS NOT NULL
 RETURN a.title AS article, a.sentiment AS sentiment
 ORDER BY sentiment
 LIMIT 3","match
-  $a isa article;
+  $a isa article, has sentiment $a_sentiment;
   $o isa organization;
   (article: $a, mentioned: $o) isa mentions;
-  $a has sentiment $a_sentiment;
-  $city isa city, has city_name ""Chicago""; (organization: $o, city: $city) isa located_in;
+  $city isa city, has city_name ""Chicago"";
+  (organization: $o, city: $city) isa located_in;
+sort $a_sentiment asc;
 limit 3;
 fetch { ""article"": $a.title, ""sentiment"": $a.sentiment };"
 908,List the first 5 organizations that have a revenue greater than 10 million and are headquartered in a city named 'Seattle'.,"MATCH (o:Organization)-[:IN_CITY]->(c:City {name: 'Seattle'})
@@ -5359,12 +5409,12 @@ WHERE ceo.summary CONTAINS 'Accenture'
 RETURN o.name AS organization, ceo.name AS ceo
 LIMIT 5","match
   $o isa organization;
-  $o has name ""Accenture"";
-  $p isa person;
+  $p isa person, has summary $ps;
+  $ps like "".*Accenture.*"";
   (organization: $o, ceo: $p) isa ceo_of;
   $o has is_public true;
 limit 5;
-fetch { ""organization"": $o.name, ""ceo"": $p.name, ""summary"": $o.summary };"
+fetch { ""organization"": $o.name, ""ceo"": $p.name, ""summary"": $p.summary };"
 915,Which organizations have a CEO named 'Julie Spellman Sweet' and are headquartered in 'Seattle'?,"MATCH (o:Organization)-[:HAS_CEO]->(p:Person {name: 'Julie Spellman Sweet'})
 WHERE (o)-[:IN_CITY]->(:City {name: 'Seattle'})
 RETURN o","match
@@ -5459,9 +5509,9 @@ ORDER BY maxEmployees DESC
 LIMIT 3
 RETURN o.name AS organization, maxEmployees","match
   $o isa organization;
-  $sub isa organization;
+  $sub isa organization, has nbr_employees $sub_nbr_employees;
   (parent: $o, subsidiary: $sub) isa subsidiary_of;
-  $sub has nbr_employees $sub_nbr_employees;
+sort $sub_nbr_employees desc;
 limit 3;
 fetch { ""organization"": $o.name };"
 927,What are the names of the organizations that have a CEO with a summary mentioning 'Accenture' and a revenue greater than 100 million?,"MATCH (o:Organization)-[:HAS_CEO]->(p:Person)
@@ -5514,7 +5564,7 @@ WHERE (o)-[:HAS_CEO]->(:Person {name: 'Julie Spellman Sweet'})
   AND o.summary CONTAINS 'Accenture'
 RETURN o","match
   $p isa person, has name ""Julie Spellman Sweet"";
-  $o has name ""Accenture"";
+  $o has summary $os; $os like "".*Accenture.*"";
   $o isa organization;
   (organization: $o, ceo: $p) isa ceo_of;
 fetch { ""organization"": $o.name, ""ceo"": $p.name, ""summary"": $o.summary };"

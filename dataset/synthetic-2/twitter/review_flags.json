@@ -1,0 +1,102 @@
+{
+  "database": "twitter",
+  "source": "synthetic-2",
+  "total_queries": 500,
+  "flagged": 6,
+  "flags": [
+    {
+      "index": 163,
+      "question": "List the top 5 users who have a similar betweenness to 'Neo4j'.",
+      "cypher": "MATCH (me:Me {screen_name: 'neo4j'})-[:SIMILAR_TO]-(user:User)\nRETURN user.screen_name, user.betweenness\nORDER BY abs(user.betweenness - me.betweenness) ASC\nLIMIT 5",
+      "typeql": "match\n$me isa me, has screen_name \"neo4j\", has betweenness $mb;\nsimilar_to ($me, $user);\n$user isa user, has betweenness $ub;\nlet $diff = abs($ub - $mb);\nsort $diff asc;\nlimit 5;\nfetch {\n  \"screen_name\": $user.screen_name,\n  \"betweenness\": $ub\n};",
+      "checks_failed": [
+        "similarity_betweenness_confusion"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question about similarity uses betweenness instead of score"
+      ]
+    },
+    {
+      "index": 262,
+      "question": "List the top 5 tweets which mention the user with the highest followers.",
+      "cypher": "// Step 1: Find the user with the highest number of followers\nMATCH (u:User)\nWITH u\nORDER BY u.followers DESC\nLIMIT 1\n\n// Step 2: Find the top 5 tweets that mention this user\nMATCH (t:Tweet)-[:MENTIONS]->(u)\nRETURN t\nORDER BY t.favorites DESC\nLIMIT 5",
+      "typeql": "match\n$u isa user, has followers $f;\nreduce $max_f = max($f);\nmatch\n$u2 isa user, has followers $f2;\n$f2 == $max_f;\n$t isa tweet, has favorites $fav;\nmentions (source_tweet: $t, mentioned_user: $u2);\nsort $fav desc;\nlimit 5;\nfetch {\n  \"tweet\": $t.text,\n  \"favorites\": $t.favorites\n};",
+      "checks_failed": [
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 1 but TypeQL limit 5"
+      ]
+    },
+    {
+      "index": 333,
+      "question": "Identify the top 5 users with the most similar profiles to 'Neo4j' based on betweenness and following.",
+      "cypher": "MATCH (me:Me {screen_name: 'neo4j'})-[:SIMILAR_TO]-(user:User)\nRETURN user.screen_name, user.betweenness, user.following, me.betweenness, me.following, \n       (abs(user.betweenness - me.betweenness) + abs(user.following - me.following)) AS similarity_score\nORDER BY similarity_score ASC\nLIMIT 5",
+      "typeql": "match\n$me isa me, has screen_name \"neo4j\";\nsimilar_to ($me, $user);\n$user has betweenness $ub, has following $uf;\n$me has betweenness $mb, has following $mf;\nlet $similarity_score = abs($ub - $mb) + abs($uf - $mf);\nsort $similarity_score asc;\nlimit 5;\nfetch {\n  \"screen_name\": $user.screen_name,\n  \"user_betweenness\": $ub,\n  \"user_following\": $uf,\n  \"me_betweenness\": $mb,\n  \"me_following\": $mf,\n  \"similarity_score\": $similarity_score\n};",
+      "checks_failed": [
+        "similarity_betweenness_confusion"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question about similarity uses betweenness instead of score"
+      ]
+    },
+    {
+      "index": 336,
+      "question": "List the top 5 tweets by the total interaction (mentions, retweets, replies).",
+      "cypher": "MATCH (t:Tweet)\nOPTIONAL MATCH (t)-[:MENTIONS]->(u:User)\nWITH t, count(u) AS mentionsCount\nOPTIONAL MATCH (t)-[:RETWEETS]->(rt:Tweet)\nWITH t, mentionsCount, count(rt) AS retweetsCount\nOPTIONAL MATCH (t)-[:REPLY_TO]->(r:Tweet)\nWITH t, mentionsCount, retweetsCount, count(r) AS repliesCount\nRETURN t.id_str AS tweetId, t.text AS tweetText, (mentionsCount + retweetsCount + repliesCount) AS totalInteractions\nORDER BY totalInteractions DESC\nLIMIT 5",
+      "typeql": "match\n$tweet isa tweet;\n$rel isa $t;\n{\n  $t label mentions;\n  $rel links (source_tweet: $tweet);\n} or {\n  $t label retweets;\n  $rel links (retweeting_tweet: $tweet);\n} or {\n  $t label reply_to;\n  $rel links (replying_tweet: $tweet);\n};\nreduce $count = count groupby $tweet;\nsort $count desc;\nlimit 5;\nfetch {\n  \"tweet_id\": $tweet.id_str,\n  \"tweet_text\": $tweet.text,\n  \"total_interactions\": $count\n};",
+      "checks_failed": [
+        "invalid_relation"
+      ],
+      "confidence": "high",
+      "details": [
+        "TypeQL references relation \"links\" which is not in schema"
+      ]
+    },
+    {
+      "index": 340,
+      "question": "List the first 3 tweets that mention the user with the highest betweenness.",
+      "cypher": "// Step 1: Find the user with the highest betweenness\nMATCH (u:User)\nWITH u\nORDER BY u.betweenness DESC\nLIMIT 1\n\n// Step 2: Find the first 3 tweets that mention this user\nMATCH (t:Tweet)-[:MENTIONS]->(u)\nRETURN t\nORDER BY t.created_at ASC\nLIMIT 3",
+      "typeql": "with fun max_betweenness() -> double:\n  match $u isa user, has betweenness $b;\n  return max($b);\nmatch\n  $u isa user, has betweenness $b;\n  let $max_b = max_betweenness();\n  $b == $max_b;\n  mentions (source_tweet: $t, mentioned_user: $u);\n  $t has created_at $ca;\nsort $ca asc;\nlimit 3;\nfetch { \"tweet_id\": $t.tweet_id, \"text\": $t.text, \"created_at\": $t.created_at };",
+      "checks_failed": [
+        "limit_mismatch"
+      ],
+      "confidence": "high",
+      "details": [
+        "Cypher LIMIT 1 but TypeQL limit 3"
+      ]
+    },
+    {
+      "index": 425,
+      "question": "What are the urls for the top 3 links contained in the most retweeted tweets?",
+      "cypher": "MATCH (t:Tweet)-[:CONTAINS]->(l:Link)\nWITH t, l\nORDER BY t.favorites DESC\nLIMIT 3\nRETURN l.url",
+      "typeql": "match\n$t isa tweet, has favorites $f;\n$l isa link;\ncontains (containing_tweet: $t, contained_link: $l);\nsort $f desc;\nlimit 3;\nfetch {\n  \"url\": $l.link_url\n};",
+      "checks_failed": [
+        "retweet_favorites_confusion"
+      ],
+      "confidence": "high",
+      "details": [
+        "Question asks about retweets but TypeQL checks favorites (likely Cypher error)"
+      ]
+    }
+  ],
+  "categories": {
+    "similarity_betweenness_confusion": [
+      163,
+      333
+    ],
+    "limit_mismatch": [
+      262,
+      340
+    ],
+    "invalid_relation": [
+      336
+    ],
+    "retweet_favorites_confusion": [
+      425
+    ]
+  }
+}

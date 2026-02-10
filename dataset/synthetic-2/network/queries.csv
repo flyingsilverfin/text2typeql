@@ -1943,8 +1943,10 @@ RETURN v.name AS version,
   $v isa version, has name ""7.1"";
   has_version (versioned_software: $s, release_version: $v);
   $s isa software;
+try {
   depends_on (dependent: $s, dependency: $dep);
   $dep has name $dep_name;
+};
 fetch {
   ""version"": $v.name,
   ""dependency"": $dep_name

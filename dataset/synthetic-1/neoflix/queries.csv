@@ -1169,8 +1169,10 @@ LIMIT 5","match
   (media: $m, country: $c) isa produced_in_country;
   $m has average_vote $av;
   $av > 7.0;
-limit 50;
-fetch { ""country"": $cn };"
+reduce $avg = mean($av) groupby $c, $cn;
+sort $avg desc;
+limit 5;
+fetch { ""country"": $cn, ""avg_vote"": $avg };"
 152,Which production companies have produced movies that are part of a collection?,"MATCH (c:Collection)<-[:IN_COLLECTION]-(m:Movie)<-[:PRODUCED_BY]-(p:ProductionCompany)
 RETURN DISTINCT p.name AS ProductionCompany","match $c isa collection; $m isa movie; $p isa production_company; $rel0 isa in_collection (collection: $c, media: $m); $p has production_company_name $production_company_name_p; fetch { ""ProductionCompany"": $production_company_name_p, ""name"": $production_company_name_p };"
 153,What are the first 3 movies in the 'Toy Story Collection' based on release date?,"MATCH (m:Movie)-[:IN_COLLECTION]->(c:Collection {name: 'Toy Story Collection'})
@@ -1249,11 +1251,15 @@ fetch {
 RETURN c.name AS country, count(m) AS num_movies
 ORDER BY num_movies DESC
 LIMIT 3","match
-  $g isa genre, has genre_name $gn;
+  $c isa country;
   $m isa movie;
-  (media: $m, genre: $g) isa in_genre;
-limit 30;
-fetch { ""genre"": $gn };"
+  $g isa genre, has genre_name ""Drama"";
+  produced_in_country (media: $m, country: $c);
+  in_genre (media: $m, genre: $g);
+reduce $count = count($m) groupby $c;
+sort $count desc;
+limit 3;
+fetch { ""country"": $c.country_name, ""num_movies"": $count };"
 161,Which videos have a budget less than 100000?,"MATCH (v:Video)
 WHERE v.budget < 100000
 RETURN v.title, v.budget","match
@@ -1281,19 +1287,21 @@ LIMIT 5","match
   $g isa genre, has genre_name $gn;
   $m isa adult_video;
   (media: $m, genre: $g) isa in_genre;
-limit 50;
-fetch { ""genre"": $gn };"
+reduce $count = count groupby $g, $gn;
+sort $count desc;
+limit 5;
+fetch { ""genre"": $gn, ""count"": $count };"
 164,Which adult films have been produced by companies not based in the USA?,"MATCH (a:Adult)-[:PRODUCED_BY]->(c:ProductionCompany)
 WHERE NOT EXISTS { (c)-[:PRODUCED_IN_COUNTRY]->(:Country {name: 'United States of America'}) }
 RETURN a.title AS `Adult Film`, c.name AS `Production Company`","match
-  $a isa adult_video;
-  $c isa production_company;
-  $rel0 isa produced_by (media: $a, producer: $c);
-  $a has title $title_a;
-  $c has production_company_name $production_company_name_c;
-fetch {
-  ""title"": $title_a, ""name"": $production_company_name_c
-};"
+  $a isa adult_video, has title $title;
+  $c isa production_company, has production_company_name $pcn;
+  produced_by (media: $a, producer: $c);
+  not {
+    $usa isa country, has country_name ""United States of America"";
+    produced_in_country (media: $a, country: $usa);
+  };
+fetch { ""adult_film"": $title, ""production_company"": $pcn };"
 165,List the first 3 adult films sorted by runtime in descending order.,"MATCH (a:Adult)
 WHERE a.runtime IS NOT NULL
 RETURN a.title, a.runtime
@@ -1334,10 +1342,12 @@ WHERE r.rating > 8.0
 RETURN v.title, r.rating
 ORDER BY r.rating DESC
 LIMIT 3","match
-  $m isa video;
-  $m has title $title;
+  $v isa video, has title $title;
+  $r isa rated (reviewer: $u, rated_media: $v), has rating $rating;
+  $rating > 8.0;
+sort $rating desc;
 limit 3;
-fetch { ""title"": $title };"
+fetch { ""title"": $title, ""rating"": $rating };"
 169,List the top 5 longest running adult films.,"MATCH (a:Adult)
 WHERE a.runtime IS NOT NULL
 RETURN a.title, a.runtime
@@ -1364,7 +1374,12 @@ fetch {
 WHERE a.budget IS NOT NULL AND a.revenue IS NOT NULL
 RETURN a.title, a.revenue / a.budget AS efficiency
 ORDER BY efficiency DESC
-LIMIT 3","match $a isa adult_video; $a has budget $budget; $a has revenue $revenue; $a has title $title; limit 3; fetch { ""title"": $title, ""revenue"": $revenue, ""efficiency"": $budget };"
+LIMIT 3","match
+  $a isa adult_video, has budget $budget, has revenue $revenue, has title $title;
+let $efficiency = $revenue / $budget;
+sort $efficiency desc;
+limit 3;
+fetch { ""title"": $title, ""efficiency"": $efficiency };"
 172,Which adult films have been released with the status 'In Production'?,"MATCH (a:Adult)
 WHERE a.status = 'In Production'
 RETURN a.title","match
@@ -1547,11 +1562,13 @@ fetch {
 RETURN m.title AS movie, count(k) AS keywordCount
 ORDER BY keywordCount DESC
 LIMIT 3","match
-  $k isa keyword, has keyword_name $kn;
   $m isa movie;
-  (media: $m, keyword: $k) isa has_keyword;
-limit 30;
-fetch { ""keyword"": $kn };"
+  $k isa keyword;
+  has_keyword (media: $m, keyword: $k);
+reduce $kw_count = count($k) groupby $m;
+sort $kw_count desc;
+limit 3;
+fetch { ""movie"": $m.title, ""keyword_count"": $kw_count };"
 189,Show the top 3 movies that were produced in multiple countries.,"MATCH (m:Movie)-[:PRODUCED_IN_COUNTRY]->(c:Country)
 WITH m, count(c) AS numCountries
 WHERE numCountries > 1
@@ -1621,7 +1638,7 @@ fetch {
 WHERE toLower(m.tagline) CONTAINS 'adventure'
 RETURN m.title, m.tagline
 ORDER BY m.popularity DESC
-LIMIT 5","match $m isa movie; $m has tagline $tagline; $m has title $title; $m has popularity $popularity; sort $popularity desc; limit 5; fetch { ""title"": $title, ""tagline"": $tagline };"
+LIMIT 5","match $m isa movie; $m has tagline $tagline; $tagline like "".*[Aa]dventure.*""; $m has title $title; $m has popularity $popularity; sort $popularity desc; limit 5; fetch { ""title"": $title, ""tagline"": $tagline };"
 196,Which 3 movies have the shortest runtime?,"MATCH (m:Movie)
 WHERE m.runtime IS NOT NULL
 RETURN m.title, m.runtime
@@ -2159,7 +2176,8 @@ fetch {
 WHERE m.budget > 50000000
 RETURN l.name AS language
 ORDER BY language
-LIMIT 3","match $m isa movie; $l isa language; $rel0 isa spoken_in_language (media: $m, language: $l); $m has budget $budget_m; $l has language_name $language_name_l; $budget_m > 50000000; limit 3; fetch { ""language"": $language_name_l };"
+LIMIT 3","match $m isa movie; $l isa language; $rel0 isa spoken_in_language (media: $m, language: $l); $m has budget $budget_m; $l has language_name $language_name_l; $budget_m > 50000000; sort $language_name_l asc;
+limit 3; fetch { ""language"": $language_name_l };"
 278,Name the top 5 movies with 'Animated' as a keyword.,"MATCH (m:Movie)-[:HAS_KEYWORD]->(k:Keyword {name: 'Animated'})
 RETURN m.title
 ORDER BY m.popularity DESC
@@ -4343,8 +4361,10 @@ LIMIT 3","match
   (media: $m, collection: $c) isa in_collection;
   $m has average_vote $av;
   $av > 7;
-limit 30;
-fetch { ""collection"": $cn };"
+reduce $avg = mean($av) groupby $c, $cn;
+sort $avg desc;
+limit 3;
+fetch { ""collection"": $cn, ""avg_vote"": $avg };"
 603,List the first 3 packages that offer access to the 'Animation' genre.,"MATCH (p:Package)-[:PROVIDES_ACCESS_TO]->(g:Genre {name: 'Animation'})
 RETURN p.name AS package
 LIMIT 3","match
@@ -4621,6 +4641,7 @@ LIMIT 5","match
   $p isa package;
   $p has package_name $package_name;
   $p has package_duration $package_duration;
+sort $package_duration desc;
 limit 5;
 fetch {
   ""package"": $package_name, ""duration"": $package_duration
@@ -6033,15 +6054,15 @@ WITH m, r, p
 ORDER BY m.budget DESC
 LIMIT 1
 WITH m, collect({job: r.job, person: p}) AS crew
-RETURN m.title AS movie, crew[0..2] AS crew_jobs","match
-  $m isa movie, has budget $budget, has title $title;
+RETURN m.title AS movie, crew[0..2] AS crew_jobs","with fun max_budget() -> integer:
+  match $m isa movie, has budget $b;
+  return max($b);
+match
+  $m isa movie, has budget $b, has title $title;
+  $b == max_budget();
   $r isa crew_for (film: $m, crew_member: $p), has job $job;
-sort $budget desc;
 limit 3;
-fetch {
-  ""movie"": $title,
-  ""job"": $job
-};"
+fetch { ""movie"": $title, ""job"": $job };"
 148,Which movies have been translated into more than three languages?,"MATCH (m:Movie)-[:SPOKEN_IN_LANGUAGE]->(l:Language)
 WITH m, count(l) AS languageCount
 WHERE languageCount > 3
