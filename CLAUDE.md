@@ -131,6 +131,12 @@ limit 5;
 ### Advanced Features
 
 ```typeql
+# String length (TypeDB 3.8+)
+let $len = len($name);
+
+# String concatenation (TypeDB 3.8+)
+let $display = $name + " (" + $city + ")";
+
 # Custom functions - reusable query logic
 with fun follower_count($user: user) -> integer:
   match follows (followed: $user);
@@ -205,6 +211,8 @@ reduce $count = count($rel) groupby $comm;  # Works - $rel bound outside disjunc
 | `WITH x, count(y) WHERE c > N` | `reduce $c = count groupby $x; match $c > N;` |
 | `count(DISTINCT x) GROUP BY y` | `select $x, $y; distinct; reduce $c = count groupby $y;` |
 | `ORDER BY a / b` | `let $ratio = $a / $b; sort $ratio;` |
+| `size(n.prop)` (string) | `let $len = len($prop); $len > N;` |
+| `a.prop + ' text'` | `let $s = $prop + " text";` |
 
 ## Database Names
 
@@ -337,7 +345,7 @@ pipeline/docs/
 | gameofthrones | 392 | 381 | 11 |
 | **Total** | **4776** | **4728** | **48** |
 
-### synthetic-2 (gpt4o) -- 12/15 databases complete
+### synthetic-2 (gpt4o) -- fully converted
 
 | Database | Valid Queries | Converted | Failed |
 |----------|-------------|-----------|--------|
@@ -352,8 +360,8 @@ pipeline/docs/
 | network | 625 | 613 | 12 |
 | northwind | 807 | 780 | 27 |
 | offshoreleaks | 507 | 493 | 14 |
+| recommendations | 775 | 712 | 63 |
 | stackoverflow2 | 307 | 298 | 9 |
-| recommendations | 775 | 0 | 0 |
-| twitch | 576 | 0 | 0 |
-| twitter | 502 | 0 | 0 |
-| **Total** | **9267** | **7240** | **174** |
+| twitch | 576 | 563 | 13 |
+| twitter | 502 | 500 | 2 |
+| **Total** | **9267** | **9015** | **252** |

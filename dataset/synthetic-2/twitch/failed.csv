@@ -1,0 +1,65 @@
+original_index,question,cypher,error
+77,List the first 5 streams that have been in the same language and game for over 5 years.,"MATCH (s:Stream)-[:PLAYS]->(g:Game), (s)-[:HAS_LANGUAGE]->(l:Language)
+WHERE datetime() - s.createdAt > duration({years: 5})
+WITH s, g, l
+ORDER BY s.createdAt
+LIMIT 5
+RETURN s.name AS stream_name, g.name AS game_name, l.name AS language_name, s.createdAt AS stream_created_at",Unsupported feature: date arithmetic (datetime() - createdAt > duration) is not supported in TypeQL
+92,Which are the first 5 streams that have a language and a game both starting with the same letter?,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language), (s)-[:PLAYS]->(g:Game)
+WHERE l.name STARTS WITH g.name[0]
+RETURN s.name AS stream_name, l.name AS language_name, g.name AS game_name
+ORDER BY s.createdAt
+LIMIT 5",Unsupported: string indexing (g.name[0]) to extract first character. TypeQL has no substring/character extraction functions.
+120,Which 3 streams had the most chatters in the past month?,"MATCH (s:Stream)<-[:CHATTER]-(u:User)
+WHERE s.createdAt >= datetime() - duration('P1M')
+WITH s, COUNT(u) AS chatterCount
+ORDER BY chatterCount DESC
+LIMIT 3
+RETURN s.name AS streamName, chatterCount",Unsupported: date arithmetic (datetime() - duration) has no TypeQL equivalent
+121,List the top 3 games played by streams with a description length over 50 characters.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
+WHERE size(s.description) > 50
+RETURN g.name, count(s) AS stream_count
+ORDER BY stream_count DESC
+LIMIT 3",Unsupported: size() string length function has no TypeQL equivalent
+131,Which are the first 3 streams that have had a VIP relationship with the same user for over 3 years?,"MATCH (u:User)-[r:VIP]->(s:Stream)
+WHERE duration.inSeconds(r.since, datetime()).years > 3
+RETURN s.name AS stream_name, r.since AS vip_since
+ORDER BY r.since
+LIMIT 3",Unsupported: date arithmetic (duration.inSeconds().years > 3) and relation attribute r.since does not exist in schema (vip_status has no attributes)
+141,List the first 3 streams that have a game and team name starting with the same letter.,"MATCH (s:Stream)-[:PLAYS]->(g:Game), (s)-[:HAS_TEAM]->(t:Team)
+WHERE toLower(substring(g.name, 0, 1)) = toLower(substring(t.name, 0, 1))
+RETURN s.name AS stream_name, g.name AS game_name, t.name AS team_name
+ORDER BY s.createdAt
+LIMIT 3",Unsupported: substring() string function has no TypeQL equivalent. Cannot dynamically compare first characters of two different attributes.
+151,List the first 5 streams that have been moderated by the same user for over 5 years.,"MATCH (u:User)-[mod:MODERATOR]->(s:Stream)
+WHERE datetime() - mod.since > duration('P5Y')
+RETURN s.name AS stream_name, s.url AS stream_url, u.name AS moderator_name
+ORDER BY mod.since
+LIMIT 5",Unsupported: date arithmetic (datetime() - mod.since > duration) is not available in TypeQL
+156,List the first 5 games with streams that have been active for over 10 years.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
+WHERE datetime().epochMillis - s.createdAt.epochMillis > 10 * 365 * 24 * 60 * 60 * 1000
+RETURN DISTINCT g.name
+LIMIT 5",Unsupported: date arithmetic (datetime().epochMillis subtraction to compute duration)
+282,Show the 3 streams that have the longest descriptions.,"MATCH (s:Stream)
+RETURN s.name, s.description
+ORDER BY size(s.description) DESC
+LIMIT 3",Cypher uses size() for string length which is unsupported in TypeQL
+360,"Which streams have the longest moderator chains (a moderator, who is also a moderator, and so on)?","MATCH path = (s:Stream)-[:MODERATOR*]->(u:User)
+WITH s, length(path) AS chainLength
+ORDER BY chainLength DESC
+LIMIT 1
+RETURN s.name AS streamName, chainLength",Unsupported: variable-length path traversal ([:MODERATOR*]) and length(path) for measuring chain depth. TypeQL has no recursive/transitive path support.
+383,Which 3 streams have the most complex descriptions based on word count?,"MATCH (s:Stream)
+WITH s, size(split(s.description, "" "")) AS wordCount
+ORDER BY wordCount DESC
+LIMIT 3
+RETURN s.name AS streamName, s.description AS description, wordCount",Unsupported: split() and size() string functions have no TypeQL equivalent. Cannot compute word count from description.
+419,What are the first 3 streams that have a chatter with a description longer than 50 words?,"MATCH (s:Stream)-[:CHATTER]->(u:User)
+WHERE size(split(s.description, "" "")) > 50
+RETURN s
+ORDER BY s.createdAt ASC
+LIMIT 3",Unsupported feature: split() string function used for word count has no TypeQL equivalent
+543,Which streams were created in 2019 and have a description longer than 50 characters?,"MATCH (s:Stream)
+WHERE s.createdAt >= datetime('2019-01-01T00:00:00Z') AND s.createdAt < datetime('2020-01-01T00:00:00Z')
+  AND size(s.description) > 50
+RETURN s.id, s.name, s.description, s.createdAt",Unsupported feature: size() for string length has no TypeQL equivalent
