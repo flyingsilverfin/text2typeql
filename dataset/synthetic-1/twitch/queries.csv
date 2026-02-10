@@ -5411,3 +5411,17 @@ reduce $count = count($s) groupby $g;
 sort $count desc;
 limit 3;
 fetch { ""game"": $g.name, ""stream_count"": $count };"
+322,Name the first 5 streams that have a game with the shortest name.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
+RETURN s.name AS stream, g.name AS game
+ORDER BY size(g.name)
+LIMIT 5","match
+$s isa stream, has name $sn;
+game_play (streaming_channel: $s, played_game: $g);
+$g has name $gn;
+let $len = len($gn);
+sort $len asc;
+limit 5;
+fetch {
+  ""stream"": $sn,
+  ""game"": $gn
+};"

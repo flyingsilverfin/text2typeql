@@ -42,10 +42,6 @@ WHERE m.tagline IS NOT NULL
 RETURN m.title, m.tagline, size(split(m.tagline, "" "")) AS tagline_length
 ORDER BY tagline_length DESC
 LIMIT 5",Unsupported features: size() and split() string functions have no TypeQL equivalent
-758,Which 3 videos have the most detailed overviews?,"MATCH (v:Video)
-RETURN v.title, v.overview, size(v.overview) AS overview_length
-ORDER BY overview_length DESC
-LIMIT 3",Unsupported: size() for string length has no TypeQL equivalent
 829,Which 3 movies have the smallest difference between their original and final titles?,"MATCH (m:Movie)
 WITH m, 
      apoc.text.levenshteinDistance(m.original_title, m.title) AS title_difference

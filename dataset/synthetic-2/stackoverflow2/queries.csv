@@ -4387,3 +4387,16 @@ limit 5;
 fetch {
   ""comment"": $c
 };"
+98,Retrieve the top 3 questions with the most detailed body markdown.,"MATCH (q:Question)
+RETURN q.title, q.link, q.body_markdown
+ORDER BY size(q.body_markdown) DESC
+LIMIT 3","match
+$q isa question, has body_markdown $bm;
+let $len = len($bm);
+sort $len desc;
+limit 3;
+fetch {
+  ""title"": $q.title,
+  ""link"": $q.question_link,
+  ""body_markdown"": $bm
+};"

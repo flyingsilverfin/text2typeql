@@ -11384,3 +11384,16 @@ fetch {
   ""title"": $m.title,
   ""release_date"": $rd
 };"
+758,Which 3 videos have the most detailed overviews?,"MATCH (v:Video)
+RETURN v.title, v.overview, size(v.overview) AS overview_length
+ORDER BY overview_length DESC
+LIMIT 3","match
+$v isa video, has overview $o, has title $t;
+let $len = len($o);
+sort $len desc;
+limit 3;
+fetch {
+  ""title"": $t,
+  ""overview"": $o,
+  ""overview_length"": $len
+};"

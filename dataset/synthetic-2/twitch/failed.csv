@@ -16,11 +16,6 @@ WITH s, COUNT(u) AS chatterCount
 ORDER BY chatterCount DESC
 LIMIT 3
 RETURN s.name AS streamName, chatterCount",Unsupported: date arithmetic (datetime() - duration) has no TypeQL equivalent
-121,List the top 3 games played by streams with a description length over 50 characters.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
-WHERE size(s.description) > 50
-RETURN g.name, count(s) AS stream_count
-ORDER BY stream_count DESC
-LIMIT 3",Unsupported: size() string length function has no TypeQL equivalent
 131,Which are the first 3 streams that have had a VIP relationship with the same user for over 3 years?,"MATCH (u:User)-[r:VIP]->(s:Stream)
 WHERE duration.inSeconds(r.since, datetime()).years > 3
 RETURN s.name AS stream_name, r.since AS vip_since
@@ -40,10 +35,6 @@ LIMIT 5",Unsupported: date arithmetic (datetime() - mod.since > duration) is not
 WHERE datetime().epochMillis - s.createdAt.epochMillis > 10 * 365 * 24 * 60 * 60 * 1000
 RETURN DISTINCT g.name
 LIMIT 5",Unsupported: date arithmetic (datetime().epochMillis subtraction to compute duration)
-282,Show the 3 streams that have the longest descriptions.,"MATCH (s:Stream)
-RETURN s.name, s.description
-ORDER BY size(s.description) DESC
-LIMIT 3",Cypher uses size() for string length which is unsupported in TypeQL
 360,"Which streams have the longest moderator chains (a moderator, who is also a moderator, and so on)?","MATCH path = (s:Stream)-[:MODERATOR*]->(u:User)
 WITH s, length(path) AS chainLength
 ORDER BY chainLength DESC
@@ -59,7 +50,3 @@ WHERE size(split(s.description, "" "")) > 50
 RETURN s
 ORDER BY s.createdAt ASC
 LIMIT 3",Unsupported feature: split() string function used for word count has no TypeQL equivalent
-543,Which streams were created in 2019 and have a description longer than 50 characters?,"MATCH (s:Stream)
-WHERE s.createdAt >= datetime('2019-01-01T00:00:00Z') AND s.createdAt < datetime('2020-01-01T00:00:00Z')
-  AND size(s.description) > 50
-RETURN s.id, s.name, s.description, s.createdAt",Unsupported feature: size() for string length has no TypeQL equivalent

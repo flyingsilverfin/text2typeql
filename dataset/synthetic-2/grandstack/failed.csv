@@ -10,12 +10,6 @@ WITH b, avg(r.stars) AS avgRating, collect(r) AS reviews
 ORDER BY avgRating DESC
 LIMIT 1
 RETURN b.name AS businessName, avgRating, reviews","Cypher uses collect(r) to aggregate review objects into a list. TypeQL has no collect() equivalent. Additionally, returning both an aggregation (avg stars) and individual review details requires re-matching after reduce, which is not supported."
-174,Find the top 3 longest reviews for businesses in 'Missoula' and the corresponding businesses names.,"MATCH (b:Business)-[:IN_CATEGORY]->(:Category), (r:Review)-[:REVIEWS]->(b)
-WHERE b.city = 'Missoula'
-WITH r, b
-ORDER BY size(r.text) DESC
-LIMIT 3
-RETURN r.text AS reviewText, b.name AS businessName",Unsupported feature: size() string length function has no TypeQL equivalent. Cannot sort by string length.
 179,Which businesses in 'Missoula' have been reviewed by all listed users and what are the review texts?,"MATCH (b:Business {city: 'Missoula'})<-[:REVIEWS]-(r:Review)<-[:WROTE]-(u:User)
 WITH b, collect(u.userId) AS reviewers, collect(r.text) AS review_texts
 WHERE reviewers = ['u1', 'u2', 'u3', 'u4']
@@ -46,11 +40,6 @@ WITH b, collect(date)[0..3] AS earliestDates
 WHERE size(earliestDates) = 3
 RETURN b.name AS businessName, earliestDates
 LIMIT 3","Unsupported features: collect(), array slicing [0..3], and size() are not available in TypeQL 3.0. The query requires collecting dates into a list, slicing the first 3, and checking the list size."
-238,What are the first 3 businesses with reviews that have a text length greater than 50 characters?,"MATCH (b:Business)<-[:REVIEWS]-(r:Review)
-WHERE size(r.text) > 50
-RETURN b.name, b.address, b.city, b.state, b.businessId
-ORDER BY b.name
-LIMIT 3",Unsupported: size() string length function has no TypeQL equivalent
 356,What are the names of businesses that have a point location latitude greater than 46.87?,"MATCH (b:Business)
 WHERE b.location.latitude > 46.87
 RETURN b.name",Neo4j Point type property access (location.latitude) not supported. Schema stores location as string; no numeric latitude attribute available for comparison.
@@ -60,14 +49,6 @@ RETURN b.name AS businessName, b.location AS location","Cypher uses Neo4j spatia
 513,List all categories for 'Ducky's Car Wash' and its reviews.,"MATCH (b:Business {name: ""Ducky's Car Wash""})-[:IN_CATEGORY]->(c:Category)
 OPTIONAL MATCH (b)<-[:REVIEWS]-(r:Review)
 RETURN c.name AS category, collect(r) AS reviews",Unsupported feature: collect() aggregation is not available in TypeQL
-693,Which businesses have reviews with a text length over 100 characters?,"MATCH (b:Business)<-[:REVIEWS]-(r:Review)
-WHERE size(r.text) > 100
-RETURN b.name AS businessName",Cypher uses size() for string length which is unsupported in TypeQL
-745,Which business has the longest name and what is its location?,"MATCH (b:Business)
-WITH b, size(b.name) AS nameLength
-ORDER BY nameLength DESC
-LIMIT 1
-RETURN b.name AS businessName, b.location AS location",Unsupported feature: size() string length function has no TypeQL equivalent
 766,What are the businesses located at '200 W Pine St' and their reviews?,"MATCH (b:Business {address: '200 W Pine St'})-[:IN_CATEGORY]->(c:Category)
 OPTIONAL MATCH (b)<-[:REVIEWS]-(r:Review)<-[:WROTE]-(u:User)
 RETURN b.name AS businessName, b.address AS address, collect({

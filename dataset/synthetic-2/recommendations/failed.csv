@@ -17,10 +17,6 @@ WHERE apoc.date.fields(m.released).dayOfWeek = 5
 RETURN m.title, m.released
 ORDER BY m.released
 LIMIT 5",Unsupported feature: date arithmetic / day-of-week extraction (apoc.date.fields().dayOfWeek). TypeQL has no equivalent function to compute day of week from a date string.
-33,Which 3 directors have the longest bios in the database?,"MATCH (d:Director)
-RETURN d.name, d.bio
-ORDER BY size(d.bio) DESC
-LIMIT 3",Requires size() string length function which is unsupported in TypeQL
 37,Which 5 movies have the most distinct countries of release listed?,"MATCH (m:Movie)
 WITH m, size(m.countries) AS countryCount
 ORDER BY countryCount DESC
@@ -35,10 +31,6 @@ WITH m, size(m.languages) AS numLanguages
 ORDER BY numLanguages DESC
 LIMIT 3
 RETURN m.title AS title, m.languages AS languages, numLanguages",Unsupported: size() on array property. Neo4j stores languages as a list property and size() counts elements. TypeQL has no equivalent array size function.
-150,Show the top 5 actors with the longest bios.,"MATCH (a:Actor)
-RETURN a.name, a.bio
-ORDER BY size(a.bio) DESC
-LIMIT 5",Cypher uses size() for string length which is unsupported in TypeQL
 151,List the first 5 movies with at least three different languages listed.,"MATCH (m:Movie)
 WHERE size(m.languages) >= 3
 RETURN m.title AS title, m.languages AS languages
@@ -71,9 +63,6 @@ RETURN g.name AS genre, numLanguages",Cypher uses size() on array property (m.la
 RETURN m.title AS title, size(m.countries) AS countryCount
 ORDER BY countryCount DESC
 LIMIT 5","Cypher uses size() on a string property (m.countries) to count list elements. The countries attribute is a single string in the TypeQL schema, not a multi-cardinality attribute. No equivalent TypeQL operation exists to count elements within a string value."
-309,Which movies have a plot description longer than 150 characters?,"MATCH (m:Movie)
-WHERE size(m.plot) > 150
-RETURN m.title AS MovieTitle, m.plot AS PlotDescription",Cypher size() function for string length has no TypeQL equivalent. TypeQL does not support string length operations.
 314,What are the top 5 movies that have the most languages spoken in them?,"MATCH (m:Movie)
 RETURN m.title AS title, size(m.languages) AS languageCount
 ORDER BY languageCount DESC
@@ -107,11 +96,6 @@ RETURN m.title AS MovieTitle, m.languages AS Languages","Unsupported: size() on 
 RETURN m.title, size(m.languages) AS numLanguages
 ORDER BY numLanguages DESC
 LIMIT 3","Cypher size() on list property not supported in TypeQL - languages is a single string attribute, cannot count list elements"
-444,What are the top 5 movies with the most detailed biographies of their directors?,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
-WITH m, d, size(d.bio) AS bioLength
-ORDER BY bioLength DESC
-LIMIT 5
-RETURN m.title AS MovieTitle, d.name AS DirectorName, d.bio AS DirectorBio",Unsupported feature: size() string length function required for sorting by bio length
 447,What are the first 3 movies with a director who has a bio longer than 500 words?,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
 WHERE size(split(d.bio, "" "")) > 500
 RETURN m.title AS MovieTitle, d.name AS DirectorName
@@ -148,18 +132,6 @@ WITH m, size(m.countries) AS countryCount
 ORDER BY countryCount DESC
 LIMIT 3
 RETURN m.title AS title, countryCount","Unsupported: size() on array property. TypeQL countries attribute is a single string, not a list. No way to count list elements."
-513,Which 3 actors have a bio longer than 1000 characters and have acted in more than 5 movies?,"MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)
-WHERE size(a.bio) > 1000
-WITH a, count(m) AS movieCount
-WHERE movieCount > 5
-RETURN a.name AS actorName, movieCount
-ORDER BY movieCount DESC
-LIMIT 3",Unsupported: size() string length function has no TypeQL equivalent
-517,What are the top 5 movies with the most detailed biographies of their directors?,"MATCH (m:Movie)<-[:DIRECTED]-(d:Director)
-WITH m, d, size(d.bio) AS bioLength
-ORDER BY bioLength DESC
-LIMIT 5
-RETURN m.title AS MovieTitle, d.name AS DirectorName, bioLength",Unsupported feature: size() string length function has no TypeQL equivalent. Cannot compute string length for sorting.
 527,List the first 3 movies with the most diverse country production origins.,"MATCH (m:Movie)
 WITH m, size(m.countries) AS country_count
 ORDER BY country_count DESC
@@ -245,14 +217,6 @@ WHERE date(datetime({epochSeconds: r.timestamp})) = date(m.released)
 RETURN u.name AS userName, m.title AS movieTitle, date(datetime({epochSeconds: r.timestamp})) AS ratingDate
 ORDER BY ratingDate
 LIMIT 3","Unsupported: requires epoch-seconds-to-date conversion and string-to-date comparison. TypeQL has no built-in function to convert integer timestamps to dates, and released is a string type."
-705,Which 5 movies have the most detailed (longest) plots?,"MATCH (m:Movie)
-RETURN m.title, m.plot
-ORDER BY size(m.plot) DESC
-LIMIT 5",Cypher uses size(m.plot) for string length - size() is unsupported in TypeQL 3.0
-709,What are the top 5 movies with the longest plots?,"MATCH (m:Movie)
-RETURN m.title AS title, m.plot AS plot
-ORDER BY size(m.plot) DESC
-LIMIT 5",Unsupported: size() string length function not available in TypeQL. Cannot sort by string length.
 710,List the first 3 movies with exactly three languages spoken.,"MATCH (m:Movie)
 WHERE size(m.languages) = 3
 RETURN m.title AS title, m.languages AS languages
@@ -265,10 +229,6 @@ WITH d, collect(m)[0] AS first_movie
 WHERE d.bornIn IS NOT NULL AND d.bornIn = first_movie.countries[0]
 RETURN d.name AS DirectorName, d.bornIn AS Country
 LIMIT 3",Unsupported features: collect() and array indexing [0] have no TypeQL equivalent
-725,Which 5 directors have the longest bios on their profile?,"MATCH (d:Director)
-RETURN d.name, d.bio
-ORDER BY size(d.bio) DESC
-LIMIT 5","Unsupported feature: size() for string length. Cypher uses size(d.bio) to sort by string length, which has no TypeQL equivalent."
 733,Find all movies that have been rated by users born after 1980.,"MATCH (u:User)-[:RATED]->(m:Movie)
 WHERE date(u.born) > date('1980-01-01')
 RETURN m.title AS MovieTitle, m.year AS ReleaseYear, u.name AS UserName",Schema mismatch: user entity does not own born attribute in TypeQL schema (only person does). The Cypher query references a property that does not exist on the User type.
@@ -284,7 +244,3 @@ LIMIT 5","Cypher size() on list property not supported in TypeQL. The languages 
 RETURN m.title AS title, size(m.countries) AS countryCount
 ORDER BY countryCount DESC
 LIMIT 3","Unsupported feature: size() on list property. The countries attribute is a single string in TypeQL schema with no multi-cardinality, so counting individual countries from a list property is not possible."
-765,Which actors have the longest bio in the database?,"MATCH (a:Actor)
-RETURN a.name, a.bio
-ORDER BY size(a.bio) DESC
-LIMIT 1","Cypher uses size(a.bio) for string length sorting, which is unsupported in TypeQL"

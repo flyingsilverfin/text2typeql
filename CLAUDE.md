@@ -337,31 +337,31 @@ pipeline/docs/
 | Database | Total Queries | Converted | Failed |
 |----------|--------------|-----------|--------|
 | twitter | 493 | 491 | 2 |
-| twitch | 561 | 553 | 8 |
-| movies | 729 | 723 | 6 |
+| twitch | 561 | 554 | 7 |
+| movies | 729 | 726 | 3 |
 | neoflix | 915 | 910 | 5 |
 | recommendations | 753 | 741 | 12 |
-| companies | 933 | 929 | 4 |
+| companies | 933 | 930 | 3 |
 | gameofthrones | 392 | 381 | 11 |
-| **Total** | **4776** | **4728** | **48** |
+| **Total** | **4776** | **4733** | **43** |
 
 ### synthetic-2 (gpt4o) -- fully converted
 
 | Database | Valid Queries | Converted | Failed |
 |----------|-------------|-----------|--------|
 | bluesky | 135 | 135 | 0 |
-| buzzoverflow | 592 | 578 | 14 |
-| companies | 966 | 941 | 25 |
+| buzzoverflow | 592 | 584 | 8 |
+| companies | 966 | 942 | 24 |
 | fincen | 614 | 584 | 30 |
 | gameofthrones | 393 | 384 | 9 |
-| grandstack | 807 | 793 | 14 |
+| grandstack | 807 | 797 | 10 |
 | movies | 738 | 728 | 10 |
-| neoflix | 923 | 913 | 10 |
+| neoflix | 923 | 914 | 9 |
 | network | 625 | 613 | 12 |
 | northwind | 807 | 780 | 27 |
 | offshoreleaks | 507 | 493 | 14 |
-| recommendations | 775 | 712 | 63 |
-| stackoverflow2 | 307 | 298 | 9 |
-| twitch | 576 | 563 | 13 |
+| recommendations | 775 | 722 | 53 |
+| stackoverflow2 | 307 | 299 | 8 |
+| twitch | 576 | 566 | 10 |
 | twitter | 502 | 500 | 2 |
-| **Total** | **9267** | **9015** | **252** |
+| **Total** | **9267** | **9041** | **226** |

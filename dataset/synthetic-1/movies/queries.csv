@@ -9892,3 +9892,38 @@ fetch {
   ""movie"": $t,
   ""roleCount"": $count
 };"
+379,Which movies have taglines longer than 30 characters?,"MATCH (m:Movie)
+WHERE m.tagline IS NOT NULL AND size(m.tagline) > 30
+RETURN m.title, m.tagline","match
+$m isa movie, has tagline $t;
+let $len = len($t);
+$len > 30;
+fetch {
+  ""title"": $m.title,
+  ""tagline"": $t
+};"
+408,Who has the longest name among all actors?,"MATCH (p:Person)-[:ACTED_IN]->(:Movie)
+RETURN p.name AS name
+ORDER BY size(p.name) DESC
+LIMIT 1","match
+$p isa person, has name $n;
+acted_in (actor: $p, film: $m);
+let $len = len($n);
+sort $len desc;
+limit 1;
+fetch {
+  ""name"": $n
+};"
+459,Which 3 movies have the longest taglines?,"MATCH (m:Movie)
+WHERE m.tagline IS NOT NULL
+RETURN m.title, m.tagline
+ORDER BY size(m.tagline) DESC
+LIMIT 3","match
+$m isa movie, has tagline $t;
+let $len = len($t);
+sort $len desc;
+limit 3;
+fetch {
+  ""title"": $m.title,
+  ""tagline"": $t
+};"

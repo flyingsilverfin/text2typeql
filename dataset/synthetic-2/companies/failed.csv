@@ -53,11 +53,6 @@ ORDER BY o.name
 LIMIT 3
 MATCH (o)-[:HAS_BOARD_MEMBER]->(p:Person)
 RETURN o.name AS OrganizationName, collect(p.name) AS BoardMembers","Unsupported: Cypher uses collect() to aggregate board members per organization, and requires a subquery pattern (LIMIT organizations first, then expand to board members). TypeQL limit applies to the entire result set, not a subset of variables, and collect() is not supported."
-378,Which 3 organizations have the most detailed organizational summaries?,"MATCH (o:Organization)
-WHERE o.summary IS NOT NULL AND o.summary <> """"
-RETURN o.name, o.summary
-ORDER BY size(o.summary) DESC
-LIMIT 3",Cypher size() string length function has no TypeQL equivalent
 380,Which 3 organizations have the most negative sentiment in recent articles?,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)
 WITH o, a
 ORDER BY a.date DESC

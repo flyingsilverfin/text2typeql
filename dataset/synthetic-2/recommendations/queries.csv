@@ -9611,3 +9611,131 @@ fetch {
   ""title"": $m.title,
   ""revenue"": $r
 };"
+33,Which 3 directors have the longest bios in the database?,"MATCH (d:Director)
+RETURN d.name, d.bio
+ORDER BY size(d.bio) DESC
+LIMIT 3","match
+$d isa person, has bio $b, has name $n;
+directed (director: $d);
+let $len = len($b);
+sort $len desc;
+limit 3;
+fetch {
+  ""name"": $n,
+  ""bio"": $b
+};"
+150,Show the top 5 actors with the longest bios.,"MATCH (a:Actor)
+RETURN a.name, a.bio
+ORDER BY size(a.bio) DESC
+LIMIT 5","match
+$a isa person, has bio $bio;
+acted_in (actor: $a);
+let $len = len($bio);
+sort $len desc;
+limit 5;
+fetch { ""name"": $a.name, ""bio"": $bio };"
+309,Which movies have a plot description longer than 150 characters?,"MATCH (m:Movie)
+WHERE size(m.plot) > 150
+RETURN m.title AS MovieTitle, m.plot AS PlotDescription","match
+$m isa movie, has plot $plot;
+let $len = len($plot);
+$len > 150;
+fetch {
+  ""MovieTitle"": $m.title,
+  ""PlotDescription"": $plot
+};"
+444,What are the top 5 movies with the most detailed biographies of their directors?,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
+WITH m, d, size(d.bio) AS bioLength
+ORDER BY bioLength DESC
+LIMIT 5
+RETURN m.title AS MovieTitle, d.name AS DirectorName, d.bio AS DirectorBio","match
+$d isa person, has bio $bio, has name $dname;
+$m isa movie, has title $mtitle;
+directed (director: $d, film: $m);
+let $len = len($bio);
+sort $len desc;
+limit 5;
+fetch {
+  ""MovieTitle"": $m.title,
+  ""DirectorName"": $d.name,
+  ""DirectorBio"": $d.bio
+};"
+513,Which 3 actors have a bio longer than 1000 characters and have acted in more than 5 movies?,"MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)
+WHERE size(a.bio) > 1000
+WITH a, count(m) AS movieCount
+WHERE movieCount > 5
+RETURN a.name AS actorName, movieCount
+ORDER BY movieCount DESC
+LIMIT 3","match
+$a isa person, has bio $bio;
+acted_in (actor: $a, film: $m);
+let $len = len($bio);
+$len > 1000;
+reduce $movieCount = count($m) groupby $a;
+match $movieCount > 5;
+sort $movieCount desc;
+limit 3;
+fetch { ""actorName"": $a.name, ""movieCount"": $movieCount };"
+517,What are the top 5 movies with the most detailed biographies of their directors?,"MATCH (m:Movie)<-[:DIRECTED]-(d:Director)
+WITH m, d, size(d.bio) AS bioLength
+ORDER BY bioLength DESC
+LIMIT 5
+RETURN m.title AS MovieTitle, d.name AS DirectorName, bioLength","match
+$m isa movie;
+$d isa person, has bio $bio;
+directed (director: $d, film: $m);
+let $bioLength = len($bio);
+sort $bioLength desc;
+limit 5;
+fetch {
+  ""MovieTitle"": $m.title,
+  ""DirectorName"": $d.name,
+  ""bioLength"": $bioLength
+};"
+705,Which 5 movies have the most detailed (longest) plots?,"MATCH (m:Movie)
+RETURN m.title, m.plot
+ORDER BY size(m.plot) DESC
+LIMIT 5","match
+$m isa movie, has plot $plot;
+let $len = len($plot);
+sort $len desc;
+limit 5;
+fetch {
+  ""title"": $m.title,
+  ""plot"": $plot
+};"
+709,What are the top 5 movies with the longest plots?,"MATCH (m:Movie)
+RETURN m.title AS title, m.plot AS plot
+ORDER BY size(m.plot) DESC
+LIMIT 5","match
+$m isa movie, has title $title, has plot $plot;
+let $len = len($plot);
+sort $len desc;
+limit 5;
+fetch {
+  ""title"": $title,
+  ""plot"": $plot
+};"
+725,Which 5 directors have the longest bios on their profile?,"MATCH (d:Director)
+RETURN d.name, d.bio
+ORDER BY size(d.bio) DESC
+LIMIT 5","match
+$d isa person, has bio $bio;
+directed (director: $d);
+let $len = len($bio);
+sort $len desc;
+limit 5;
+fetch { ""name"": $d.name, ""bio"": $bio };"
+765,Which actors have the longest bio in the database?,"MATCH (a:Actor)
+RETURN a.name, a.bio
+ORDER BY size(a.bio) DESC
+LIMIT 1","match
+$a isa person, has bio $b;
+acted_in (actor: $a);
+let $len = len($b);
+sort $len desc;
+limit 1;
+fetch {
+  ""name"": $a.name,
+  ""bio"": $b
+};"

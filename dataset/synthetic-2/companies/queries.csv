@@ -11944,3 +11944,17 @@ fetch {
   ""organizationName"": $o.name,
   ""articleCount"": $articleCount
 };"
+378,Which 3 organizations have the most detailed organizational summaries?,"MATCH (o:Organization)
+WHERE o.summary IS NOT NULL AND o.summary <> """"
+RETURN o.name, o.summary
+ORDER BY size(o.summary) DESC
+LIMIT 3","match
+$o isa organization, has summary $s;
+not { $s == """"; };
+let $len = len($s);
+sort $len desc;
+limit 3;
+fetch {
+  ""name"": $o.name,
+  ""summary"": $s
+};"

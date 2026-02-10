@@ -1,0 +1,9 @@
+original_index,question,cypher,error
+23,List the names of the top 5 users who have the highest scores of being similar to Neo4j.,"MATCH (me:Me {screen_name: 'neo4j'})-[:SIMILAR_TO]->(user:User)
+RETURN user.name, user.screen_name, user.betweenness
+ORDER BY user.betweenness DESC
+LIMIT 5",Semantic mismatch in source Cypher: question asks for highest similar_to scores but Cypher orders by betweenness instead of relation score
+66,Show the first 3 hashtags tagged in tweets that have been retweeted more than 100 times.,"MATCH (t:Tweet)-[:TAGS]->(h:Hashtag)
+WHERE t.favorites > 100
+RETURN h.name
+LIMIT 3",Semantic mismatch in source Cypher: question asks for tweets retweeted >100 times but Cypher filters on favorites >100 instead

@@ -9772,3 +9772,63 @@ $b has city $c;
 select $c;
 distinct;
 fetch { ""city"": $c };"
+174,Find the top 3 longest reviews for businesses in 'Missoula' and the corresponding businesses names.,"MATCH (b:Business)-[:IN_CATEGORY]->(:Category), (r:Review)-[:REVIEWS]->(b)
+WHERE b.city = 'Missoula'
+WITH r, b
+ORDER BY size(r.text) DESC
+LIMIT 3
+RETURN r.text AS reviewText, b.name AS businessName","match
+$b isa business, has city ""Missoula"";
+$r isa review, has text $text;
+reviews (review: $r, reviewed_business: $b);
+let $len = len($text);
+sort $len desc;
+limit 3;
+fetch {
+  ""reviewText"": $text,
+  ""businessName"": $b.name
+};"
+238,What are the first 3 businesses with reviews that have a text length greater than 50 characters?,"MATCH (b:Business)<-[:REVIEWS]-(r:Review)
+WHERE size(r.text) > 50
+RETURN b.name, b.address, b.city, b.state, b.businessId
+ORDER BY b.name
+LIMIT 3","match
+$b isa business;
+$r isa review, has text $t;
+reviews (reviewed_business: $b, review: $r);
+let $len = len($t);
+$len > 50;
+$b has name $name;
+sort $name;
+limit 3;
+fetch {
+  ""name"": $b.name,
+  ""address"": $b.address,
+  ""city"": $b.city,
+  ""state"": $b.state,
+  ""business_id"": $b.business_id
+};"
+693,Which businesses have reviews with a text length over 100 characters?,"MATCH (b:Business)<-[:REVIEWS]-(r:Review)
+WHERE size(r.text) > 100
+RETURN b.name AS businessName","match
+$b isa business;
+$r isa review, has text $t;
+reviews (reviewed_business: $b, review: $r);
+let $len = len($t);
+$len > 100;
+fetch {
+  ""businessName"": $b.name
+};"
+745,Which business has the longest name and what is its location?,"MATCH (b:Business)
+WITH b, size(b.name) AS nameLength
+ORDER BY nameLength DESC
+LIMIT 1
+RETURN b.name AS businessName, b.location AS location","match
+$b isa business, has name $name, has location $loc;
+let $len = len($name);
+sort $len desc;
+limit 1;
+fetch {
+  ""businessName"": $name,
+  ""location"": $loc
+};"

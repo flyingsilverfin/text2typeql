@@ -10,10 +10,6 @@ WITH q, COUNT(a) AS answer_count
 ORDER BY answer_count DESC
 LIMIT 3
 RETURN q.title AS question_title, q.link AS question_link, q.creation_date AS creation_date, answer_count",Unsupported: date extraction from epoch timestamps (date(datetime({epochSeconds: ...}))) not available in TypeQL
-98,Retrieve the top 3 questions with the most detailed body markdown.,"MATCH (q:Question)
-RETURN q.title, q.link, q.body_markdown
-ORDER BY size(q.body_markdown) DESC
-LIMIT 3",Unsupported: size() function for string length not available in TypeQL
 169,Which users have asked the most questions in the last year?,"// Define the current timestamp and the timestamp for one year ago
 WITH timestamp() AS current_time, timestamp() - 31536000 AS one_year_ago
 

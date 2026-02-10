@@ -7344,3 +7344,44 @@ reduce $chatter_count = count($u) groupby $s;
 sort $chatter_count desc;
 limit 5;
 fetch { ""streamName"": $s.name, ""chatterCount"": $chatter_count };"
+121,List the top 3 games played by streams with a description length over 50 characters.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
+WHERE size(s.description) > 50
+RETURN g.name, count(s) AS stream_count
+ORDER BY stream_count DESC
+LIMIT 3","match
+$s isa stream, has description $desc;
+game_play (streaming_channel: $s, played_game: $g);
+$g isa game;
+let $len = len($desc);
+$len > 50;
+reduce $stream_count = count($s) groupby $g;
+sort $stream_count desc;
+limit 3;
+fetch { ""name"": $g.name, ""stream_count"": $stream_count };"
+282,Show the 3 streams that have the longest descriptions.,"MATCH (s:Stream)
+RETURN s.name, s.description
+ORDER BY size(s.description) DESC
+LIMIT 3","match
+$s isa stream, has name $name, has description $desc;
+let $len = len($desc);
+sort $len desc;
+limit 3;
+fetch {
+  ""name"": $name,
+  ""description"": $desc
+};"
+543,Which streams were created in 2019 and have a description longer than 50 characters?,"MATCH (s:Stream)
+WHERE s.createdAt >= datetime(""2019-01-01T00:00:00Z"") AND s.createdAt < datetime(""2020-01-01T00:00:00Z"")
+  AND size(s.description) > 50
+RETURN s.id, s.name, s.description, s.createdAt","match
+$s isa stream, has stream_id $sid, has name $n, has description $desc, has created_at $ca;
+$ca >= 2019-01-01T00:00:00Z;
+$ca < 2020-01-01T00:00:00Z;
+let $len = len($desc);
+$len > 50;
+fetch {
+  ""id"": $sid,
+  ""name"": $n,
+  ""description"": $desc,
+  ""createdAt"": $ca
+};"

@@ -7908,3 +7908,75 @@ fetch {
   ""createdAt"": $ca,
   ""display_name"": $dn
 };"
+36,What are the first 5 questions with the longest text descriptions?,"MATCH (q:Question)
+RETURN q.title, q.text
+ORDER BY size(q.text) DESC
+LIMIT 5","match
+$q isa question, has text $text;
+let $len = len($text);
+sort $len desc;
+limit 5;
+fetch {
+  ""title"": $q.title,
+  ""text"": $text
+};"
+135,What are the top 5 questions with the shortest titles?,"MATCH (q:Question)
+RETURN q.title, q.link
+ORDER BY size(q.title) ASC
+LIMIT 5","match
+$q isa question, has title $title, has link $link;
+let $len = len($title);
+sort $len asc;
+limit 5;
+fetch {
+  ""title"": $title,
+  ""link"": $link
+};"
+138,Identify the first 3 questions with the most detailed descriptions based on the number of characters.,"MATCH (q:Question)
+WITH q, size(q.text) AS descriptionLength
+ORDER BY descriptionLength DESC
+LIMIT 3
+RETURN q.title AS title, q.text AS description, descriptionLength","match
+$q isa question, has text $text, has title $title;
+let $len = len($text);
+sort $len desc;
+limit 3;
+fetch {
+  ""title"": $title,
+  ""description"": $text,
+  ""descriptionLength"": $len
+};"
+177,What are the top 3 longest texts in questions on the platform?,"MATCH (q:Question)
+RETURN q.text
+ORDER BY size(q.text) DESC
+LIMIT 3","match
+$q isa question, has text $t;
+let $len = len($t);
+sort $len desc;
+limit 3;
+fetch {
+  ""text"": $t
+};"
+345,Which questions have a text length greater than 500 characters?,"MATCH (q:Question)
+WHERE size(q.text) > 500
+RETURN q.title, q.text, q.link","match
+$q isa question, has text $t;
+let $len = len($t);
+$len > 500;
+fetch {
+  ""title"": $q.title,
+  ""text"": $t,
+  ""link"": $q.link
+};"
+451,Which questions have a text length greater than 500 characters?,"MATCH (q:Question)
+WHERE size(q.text) > 500
+RETURN q.title AS title, q.text AS text, q.link AS link, q.createdAt AS createdAt","match
+$q isa question, has text $text;
+let $len = len($text);
+$len > 500;
+fetch {
+  ""title"": $q.title,
+  ""text"": $text,
+  ""link"": $q.link,
+  ""createdAt"": $q.created_at
+};"
