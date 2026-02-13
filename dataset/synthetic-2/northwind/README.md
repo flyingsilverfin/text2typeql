@@ -7,91 +7,248 @@
 Products, orders, suppliers, customers, categories.
 
 ## Current Status
-- `queries.csv`: 780 converted queries
-- 27 failed queries
+- `queries.csv`: 783 converted queries
+- 24 failed queries
 
-Total: 780 + 27 = 807 / 807 ✓
+Total: 783 + 24 = 807 / 807 ✓
 
-## Failed Queries
+## Failed Queries (24 total)
+
+All 24 failures involve the `freight` attribute, which is `value string` in the TypeQL schema. The English questions treat freight as a numeric value (comparing, sorting, summing, averaging), but TypeQL cannot cast strings to numbers at runtime. Lexicographic string comparison would give incorrect results (e.g., "9" > "100"). This will be unblocked when **type casting functions** (e.g., `to_double()`) are implemented in TypeQL.
 
 ### Query 66
-**Error:** TypeQL does not support string-to-numeric conversion. The freight attribute is string type but the query requires numeric comparison (toFloat). Lexicographic string comparison would give incorrect results.
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) > 100`).
+```cypher
+MATCH (o:Order)
+WHERE toFloat(o.freight) > 100
+RETURN o.shipName, toFloat(o.freight)
+ORDER BY toFloat(o.freight) DESC
+LIMIT 3
+```
 
 ### Query 78
-**Error:** Schema has freight as string type; TypeQL has no toFloat() conversion function to enable mean() aggregation on string values
+**Reason:** Requires `avg(toFloat(freight))` — numeric aggregation on string attribute.
+```cypher
+MATCH (s:Supplier)-[:SUPPLIES]->(p:Product)<-[:ORDERS]-(o:Order)
+WITH s, o.freight AS freight
+WHERE freight IS NOT NULL
+WITH s, avg(toFloat(freight)) AS avgFreight
+ORDER BY avgFreight DESC
+LIMIT 3
+RETURN s.companyName AS supplierName, avgFreight
+```
 
 ### Query 98
-**Error:** Cannot convert string to numeric for comparison. Schema stores freight as string type, Cypher uses toFloat() for numeric comparison. TypeQL has no string-to-number conversion function.
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) > 1000`).
+```cypher
+MATCH (c:Customer)-[:PURCHASED]->(o:Order)
+WHERE toFloat(o.freight) > 1000
+RETURN c.companyName, c.contactName, c.contactTitle, c.phone, c.address, c.city, c.country
+ORDER BY o.orderDate
+LIMIT 3
+```
 
 ### Query 145
-**Error:** Cannot convert - freight attribute is type string in schema but query requires numeric comparison (toFloat conversion). TypeQL cannot cast string to number.
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) > 100`).
+```cypher
+MATCH (o:Order)-[:ORDERS]->(p:Product)
+WHERE o.shipCity = 'Berlin' AND toFloat(o.freight) > 100
+RETURN o.orderID, o.shipName, o.shipAddress, o.shipCity, o.shipPostalCode, o.shipCountry, o.freight
+ORDER BY o.orderDate
+LIMIT 3
+```
 
 ### Query 148
-**Error:** Unsupported: freight attribute is stored as string type, TypeQL cannot convert string to number for SUM aggregation (toFloat equivalent not supported)
+**Reason:** Requires `SUM(toFloat(freight))` — numeric aggregation on string attribute.
+```cypher
+MATCH (c:Customer)-[:PURCHASED]->(o:Order)
+WITH c, SUM(toFloat(o.freight)) AS totalFreight
+ORDER BY totalFreight DESC
+LIMIT 5
+RETURN c.companyName AS customerName, totalFreight
+```
 
 ### Query 161
-**Error:** Schema has freight as string type but query requires numeric comparison (toFloat). TypeQL has no string-to-number conversion function.
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) > 200`).
+```cypher
+MATCH (o:Order)
+WHERE o.requiredDate < '1997-06-01' AND toFloat(o.freight) > 200
+RETURN o.orderID, o.requiredDate, o.freight
+ORDER BY o.requiredDate
+LIMIT 3
+```
 
 ### Query 167
-**Error:** TypeQL cannot convert string to numeric at runtime - freight is stored as string but Cypher uses toFloat() for numeric comparison
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) < 50`).
+```cypher
+MATCH (o:Order)
+WHERE o.shipCity = 'Reims' AND toFloat(o.freight) < 50
+RETURN o.orderID, o.shipName, o.requiredDate, o.shipCity, o.shipPostalCode, o.shippedDate, o.freight, o.orderDate, o.shipAddress, o.customerID, o.shipCountry, o.shipVia, o.shipRegion
+```
 
 ### Query 176
-**Error:** freight attribute is string type; TypeQL cannot cast strings to numbers for numeric comparison (Cypher uses toFloat())
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) > 50`).
+```cypher
+MATCH (o:Order)-[:ORDERS]->(p:Product)
+WHERE o.shipCountry = 'France' AND toFloat(o.freight) > 50
+RETURN o.orderID, o.shipName, o.shipCity, o.shipPostalCode, o.shipAddress, o.shipCountry, o.freight
+```
 
 ### Query 261
-**Error:** TypeQL cannot sum string attributes - freight is defined as string type and TypeQL has no toFloat() type casting function
-
-### Query 262
-**Error:** Unsupported: collect() and UNWIND for array operations - TypeQL has no array aggregation
+**Reason:** Requires `SUM(toFloat(freight))` — numeric aggregation on string attribute. Same as Query 148.
+```cypher
+MATCH (c:Customer)-[:PURCHASED]->(o:Order)
+WITH c, SUM(toFloat(o.freight)) AS totalFreight
+ORDER BY totalFreight DESC
+LIMIT 5
+RETURN c.companyName AS customerName, totalFreight
+```
 
 ### Query 269
-**Error:** Unsupported: toFloat() conversion - freight is stored as string in schema, TypeQL cannot convert string to number for numeric sorting
+**Reason:** Requires numeric sort on string `freight` (`ORDER BY toFloat(freight)`).
+```cypher
+MATCH (o:Order)
+RETURN o.orderID, o.freight
+ORDER BY toFloat(o.freight) DESC
+LIMIT 3
+```
 
 ### Query 308
-**Error:** TypeQL does not support string-to-number conversion (toFloat). Schema has freight as string type.
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) > 100`).
+```cypher
+MATCH (c:Customer)-[:PURCHASED]->(o:Order)
+WHERE toFloat(o.freight) > 100
+RETURN c.companyName AS customerName, c.contactName AS contactName, c.contactTitle AS contactTitle, o.orderID AS orderID, o.freight AS freightCost
+```
 
 ### Query 322
-**Error:** TypeQL does not support string-to-number casting (toFloat). Schema has freight as string type.
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) < 10`).
+```cypher
+MATCH (o:Order)
+WHERE toFloat(o.freight) < 10
+RETURN o.orderID, o.shipName, o.requiredDate, o.shipCity, o.shipPostalCode, o.shippedDate, o.freight, o.orderDate, o.shipAddress, o.customerID, o.shipCountry, o.shipVia, o.shipRegion
+```
 
 ### Query 375
-**Error:** Schema has freight as string but query requires numeric comparison. Cypher uses toFloat() cast which has no TypeQL equivalent. String comparison would give incorrect alphabetical ordering.
-
-### Query 399
-**Error:** Unsupported: COLLECT(), REDUCE with RANGE, SIZE(), and array indexing [i] for computing cumulative price variation
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) > 100`). Same as Query 66.
+```cypher
+MATCH (o:Order)
+WHERE toFloat(o.freight) > 100
+RETURN o.orderID, o.freight
+ORDER BY toFloat(o.freight) DESC
+LIMIT 3
+```
 
 ### Query 402
-**Error:** TypeQL cannot cast string attributes to numbers. Schema defines freight as string type but query requires numeric comparison via toFloat().
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) > 100`).
+```cypher
+MATCH (o:Order)
+WHERE o.orderDate < '1997-01-01' AND toFloat(o.freight) > 100
+RETURN o.orderID, o.orderDate, o.freight
+```
 
 ### Query 470
-**Error:** Unsupported: toFloat() type conversion. Schema stores freight as string but query requires numeric comparison. TypeQL cannot convert string to number at runtime.
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) > 10`).
+```cypher
+MATCH (c:Customer {companyName: 'Alfreds Futterkiste'})-[:PURCHASED]->(o:Order)
+WHERE toFloat(o.freight) > 10
+RETURN o.orderID, o.orderDate, o.freight
+ORDER BY o.orderDate
+LIMIT 3
+```
 
 ### Query 515
-**Error:** TypeQL does not support string-to-numeric type conversion (toFloat). Schema defines freight as string but sum() requires numeric type.
+**Reason:** Requires `SUM(toFloat(freight))` — numeric aggregation on string attribute. Same as Query 148.
+```cypher
+MATCH (c:Customer)-[:PURCHASED]->(o:Order)
+WITH c, SUM(toFloat(o.freight)) AS totalFreight
+ORDER BY totalFreight DESC
+LIMIT 5
+RETURN c.companyName AS customerName, totalFreight
+```
 
 ### Query 520
-**Error:** TypeQL does not support runtime type conversion. Cypher uses toFloat() to convert string freight to number for comparison, but TypeQL has no equivalent - string comparison would be lexicographic, not numeric.
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) < 15`).
+```cypher
+MATCH (o:Order)
+WHERE toFloat(o.freight) < 15
+RETURN o.orderID, o.freight, o.orderDate
+ORDER BY o.orderDate
+LIMIT 3
+```
 
 ### Query 522
-**Error:** TypeQL cannot convert string to numeric for aggregation. Schema defines freight as string type but query requires AVG(toFloat(freight)). No type casting available in TypeQL.
+**Reason:** Requires `AVG(toFloat(freight))` — numeric aggregation on string attribute. Same as Query 78.
+```cypher
+MATCH (s:Supplier)-[:SUPPLIES]->(p:Product)<-[:ORDERS]-(o:Order)
+WITH s, o.freight AS freight
+WHERE freight IS NOT NULL
+RETURN s.companyName AS supplier, AVG(toFloat(freight)) AS avgFreightCost
+ORDER BY avgFreightCost DESC
+LIMIT 5
+```
 
 ### Query 634
-**Error:** Unsupported: freight is stored as string but query requires numeric comparison (toFloat). TypeQL has no string-to-number conversion function.
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) > 250`).
+```cypher
+MATCH (o:Order)-[:ORDERS]->(p:Product)
+WHERE toFloat(o.freight) > 250
+RETURN p.productName AS productName, o.freight AS freight
+LIMIT 5
+```
 
 ### Query 637
-**Error:** Unsupported: toFloat() string-to-number conversion. TypeQL cannot convert string freight attribute to numeric for comparison.
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) > 25`).
+```cypher
+MATCH (o:Order)
+WHERE o.orderDate STARTS WITH '1997' AND toFloat(o.freight) > 25
+RETURN o.orderID, o.orderDate, o.freight
+ORDER BY o.orderDate
+LIMIT 3
+```
 
 ### Query 672
-**Error:** Unsupported: toFloat() type conversion - freight attribute is string type in schema, TypeQL has no string-to-number conversion function for numeric comparison
-
-### Query 689
-**Error:** Schema mismatch: No employee entity or processed relation in schema. Order has employee_id attribute but no employee entity to return contactName/contactTitle from.
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) < 5`).
+```cypher
+MATCH (o:Order)
+WHERE o.requiredDate STARTS WITH '1998' AND toFloat(o.freight) < 5
+RETURN o.orderID, o.requiredDate, o.freight
+```
 
 ### Query 718
-**Error:** TypeQL cannot cast string to numeric for comparison. Schema defines freight as string, but query requires toFloat() conversion for numeric comparison > 50.
+**Reason:** Requires numeric comparison on string `freight` (`toFloat(freight) > 50`).
+```cypher
+MATCH (o:Order)
+WHERE toFloat(o.freight) > 50
+RETURN o.orderID, o.shipName, o.requiredDate, o.shipCity, o.employeeID, o.shipPostalCode, o.shippedDate, o.freight, o.orderDate, o.shipAddress, o.customerID, o.shipCountry, o.shipVia, o.shipRegion
+```
 
 ### Query 767
-**Error:** Unsupported: freight attribute is string type and TypeQL has no toFloat() or type casting function to convert string to numeric for sum() aggregation
+**Reason:** Requires `SUM(toFloat(freight))` — numeric aggregation on string attribute. Same as Query 148.
+```cypher
+MATCH (c:Customer)-[:PURCHASED]->(o:Order)
+WITH c, SUM(toFloat(o.freight)) AS totalFreight
+ORDER BY totalFreight DESC
+LIMIT 5
+RETURN c.companyName AS customerName, totalFreight
+```
 
 ### Query 789
-**Error:** TypeQL does not support string-to-numeric conversion. The freight attribute is string type but Cypher uses toFloat() for numeric sorting.
+**Reason:** Requires numeric sort on string `freight` (`ORDER BY toFloat(freight)`). Same as Query 269.
+```cypher
+MATCH (o:Order)
+RETURN o.orderID, o.freight
+ORDER BY toFloat(o.freight) DESC
+LIMIT 5
+```
 
+## Resolved Queries
+
+### Query 262 (resolved)
+Previously failed due to `collect()` + `UNWIND` for product co-occurrence. Converted using a self-join on the `orders` relation to find product pairs appearing in the same order, with `$id1 < $id2` to deduplicate pairs.
+
+### Query 399 (resolved)
+Previously failed due to `COLLECT()` + `REDUCE` + `RANGE` + `SIZE()` for computing cumulative price variation. Converted using `max_order_price()` and `min_order_price()` custom functions on the `order_unit_price` attribute of the `orders` relation, computing variation as `$max - $min`.
+
+### Query 689 (resolved)
+Previously failed due to schema mismatch (no `Employee` entity or `PROCESSED` relation). Converted to return distinct `employee_id` values from orders placed by the specified customer, which is the closest available data in the schema.

@@ -9746,3 +9746,64 @@ fetch {
   ""companyName"": $c.company_name,
   ""contactName"": $c.contact_name
 };"
+262,Which 3 products are most frequently ordered together?,"MATCH (o:Order)-[r:ORDERS]->(p:Product)
+WITH o, collect(p.productID) AS products
+UNWIND products AS product1
+UNWIND products AS product2
+WITH product1, product2, count(*) AS frequency
+WHERE product1 < product2
+RETURN product1, product2, frequency
+ORDER BY frequency DESC
+LIMIT 3","match
+orders (order: $o, product: $p1);
+orders (order: $o, product: $p2);
+$p1 has product_id $id1;
+$p2 has product_id $id2;
+$id1 < $id2;
+reduce $freq = count($o) groupby $p1, $p2;
+sort $freq desc;
+limit 3;
+fetch {
+  ""product1"": $p1.product_name,
+  ""product2"": $p2.product_name,
+  ""frequency"": $freq
+};"
+399,Which 3 products have the most variations in unit price among orders?,"MATCH (p:Product)<-[:ORDERS]-(o:Order)
+WITH p.productID AS productID, p.productName AS productName, o.unitPrice AS unitPrice
+ORDER BY productID, unitPrice
+WITH productID, productName, COLLECT(unitPrice) AS prices
+WITH productID, productName, REDUCE(s = 0, i IN RANGE(1, SIZE(prices) - 1) | s + ABS(TOFLOAT(prices[i]) - TOFLOAT(prices[i-1]))) AS priceVariation
+ORDER BY priceVariation DESC
+LIMIT 3
+RETURN productName, priceVariation","with fun max_order_price($p: product) -> double:
+  match
+    $rel isa orders (product: $p);
+    $rel has order_unit_price $up;
+  return max($up);
+with fun min_order_price($p: product) -> double:
+  match
+    $rel isa orders (product: $p);
+    $rel has order_unit_price $up;
+  return min($up);
+match
+$p isa product;
+let $max = max_order_price($p);
+let $min = min_order_price($p);
+let $variation = $max - $min;
+sort $variation desc;
+limit 3;
+fetch {
+  ""productName"": $p.product_name,
+  ""priceVariation"": $variation
+};"
+689,Who are the employees that processed orders for 'Rattlesnake Canyon Grocery'?,"MATCH (c:Customer {companyName: 'Rattlesnake Canyon Grocery'})-[:PURCHASED]->(o:Order)
+MATCH (e:Employee)-[:PROCESSED]->(o)
+RETURN DISTINCT e.employeeID, e.contactName, e.contactTitle","match
+$c isa customer, has company_name ""Rattlesnake Canyon Grocery"";
+purchased (customer: $c, order: $o);
+$o has employee_id $eid;
+select $eid;
+distinct;
+fetch {
+  ""employeeId"": $eid
+};"
