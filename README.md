@@ -107,11 +107,11 @@ In each case the TypeQL was written to correctly answer the English question. De
 
 ## Failed Queries
 
-152 of 14,043 source queries (1.1%) cannot be expressed in TypeQL 3.0 (43 from synthetic-1, 109 from synthetic-2). They require features not yet supported: `split()`/`size()` for string/list operations, array indexing, epoch timestamp conversion, date component extraction (year/month/day-of-week), `collect()` aggregation, variable-length paths, and substring matching. Each is documented with its original Cypher and the specific missing capability in the per-domain READMEs.
+152 of 14,043 source queries (1.1%) cannot be expressed in TypeQL 3.0 (43 from synthetic-1, 109 from synthetic-2). They require features not yet supported: `split()`/`size()` for string/list operations, array indexing, epoch timestamp conversion, date component extraction (year/month/day-of-week), `collect()` aggregation, and substring matching. Each is documented with its original Cypher and the specific missing capability in the per-domain READMEs.
 
 ## TODO
 
-- [ ] Merge synthetic-2 queries into all_queries.csv
+- [x] Merge synthetic-2 queries into all_queries.csv
 - [ ] Standardize use of `_` in TypeQL variable names across all queries
 - [ ] Regularize synthetic-1 TypeQL queries to use updated relation syntax: `reltype (role: $var)` instead of `$r (role: $var) isa reltype`
 

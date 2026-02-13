@@ -171,9 +171,8 @@ Some Cypher patterns have no TypeQL equivalent:
 - `collect()` -- No list aggregation
 - Date component extraction (year, month, day-of-week)
 - Epoch timestamp conversion (`datetime({epochSeconds: ...})`)
-- Variable-length paths (`[:REL*]` transitive closure)
 
-Note: TypeDB 3.8 added `len()` for string length and datetime arithmetic (`$a - $b` for duration between two datetimes), which resolved many previously-failed queries.
+Note: TypeDB 3.8 added `len()` for string length and datetime arithmetic (`$a - $b` for duration between two datetimes), which resolved many previously-failed queries. Recursive stream functions (`with fun f($x: type) -> { type }`) now handle variable-length paths (`[:REL*]` transitive closure).
 
 ### Schema Naming Convention
 

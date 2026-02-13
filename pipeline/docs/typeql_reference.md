@@ -148,6 +148,47 @@ match $u isa user;
 let $count = follower_count($u);
 ```
 
+### Recursive Stream Functions (Transitive Closure)
+
+Stream functions return zero or more results (indicated by `{ }` in the return type).
+Combined with recursion, they replace Cypher's variable-length paths (`[:REL*]`).
+
+```typeql
+# Basic transitive closure: find all previous versions
+with fun all_previous($v: version) -> { version }:
+  match
+    {
+      previous (newer_version: $v, older_version: $prev);
+    } or {
+      let $mid in all_previous($v);
+      previous (newer_version: $mid, older_version: $prev);
+    };
+  return { $prev };
+
+# Usage: let $prev in all_previous($start);
+
+# Include starting node with identity base case ($dep is $sw)
+with fun all_reachable($sw: software) -> { software }:
+  match
+    { $dep is $sw; } or
+    { depends_on (dependent: $sw, dependency: $dep); $dep isa software; } or
+    { let $mid in all_reachable($sw); depends_on (dependent: $mid, dependency: $dep); $dep isa software; };
+  return { $dep };
+
+# Count distinct stream results with a wrapper function
+with fun chain_size($o: organization) -> integer:
+  match let $s in supply_chain($o);
+  select $s;
+  distinct;
+  return count;
+```
+
+Key points:
+- TypeDB tables recursive functions to break cycles (left-recursive is efficient)
+- Results are returned breadth-first (closest nodes first)
+- `let $var in function($arg);` accesses stream elements in the main query
+- Function parameters must be typed to a specific entity type (no generic `entity` type)
+
 ## Variable Scoping in Disjunctions
 
 **CRITICAL**: Variables inside disjunction branches are scoped!
@@ -181,6 +222,7 @@ reduce $count = count($rel);  # Works
 | `HAVING count > N` | `reduce $c = count ...; match $c > N;` |
 | `size(n.prop)` (string) | `let $len = len($prop);` |
 | `a.prop + ' text'` | `let $s = $prop + " text";` |
+| `(a)-[:REL*]->(b)` | Recursive stream function (see above) |
 | `CONTAINS 'x'` | `$p contains "x";` |
 | `STARTS WITH 'x'` | `$p like "^x.*";` |
 
