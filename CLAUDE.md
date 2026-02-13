@@ -230,6 +230,8 @@ reduce $count = count($rel) groupby $comm;  # Works - $rel bound outside disjunc
 | `size(n.prop)` (string) | `let $len = len($prop); $len > N;` |
 | `a.prop + ' text'` | `let $s = $prop + " text";` |
 | `(a)-[:REL*]->(b)` | Recursive stream function (see below) |
+| `collect(n.prop)` | Fetch subquery: `"key": [ match ...; fetch { ... }; ]` |
+| `timestamp()` (epoch int) | `max()` aggregate as proxy + integer arithmetic |
 
 ## Database Names
 

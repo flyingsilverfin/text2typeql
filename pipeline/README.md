@@ -116,14 +116,14 @@ pipeline/
 
 | Category | Count | Description |
 |----------|-------|-------------|
-| String functions | ~30 | `split()`, `substring()`, regex, word counting |
-| Date component extraction | ~20 | Year, month, day-of-week from datetime |
-| Variable-length paths | ~7 | Transitive closure `[:REL*]` (8 resolved via recursive stream functions) |
-| Epoch timestamp conversion | ~10 | `datetime({epochSeconds: ...})` |
-| `collect()` aggregation | ~5 | No list collection equivalent (8 grandstack resolved via functions/flat rows) |
-| Type casting | ~1 | `toFloat()`, `toInteger()` on strings (northwind freight resolved via schema fix) |
-| Schema hallucinations | ~5 | Cypher references non-existent properties |
-| Other | ~27 | `UNWIND`, complex patterns, modulo, levenshtein |
+| String functions | ~25 | `split()`, `substring()`, regex, word counting |
+| Date component extraction | ~15 | Year, month, day-of-week from datetime |
+| Schema mismatches | ~10 | Cypher references non-existent properties or wrong relation targets |
+| Epoch timestamp conversion | ~5 | `datetime({epochSeconds: ...})` (integer arithmetic resolved some) |
+| Dynamic string comparison | ~3 | `CONTAINS` between two variables (like requires literal) |
+| Other | ~3 | Complex patterns, modulo, levenshtein |
+
+Previously resolved categories: `collect()` → fetch subqueries, variable-length paths → recursive stream functions, `size()` → `len()`, type casting → schema fixes, `timestamp()` → max aggregate + integer arithmetic.
 
 ## Key Scripts
 
@@ -168,11 +168,16 @@ python3 pipeline/scripts/merge_dataset.py
 Some Cypher patterns have no TypeQL equivalent:
 - `split()`, `substring()` -- No string splitting or slicing
 - `array[-1]` -- No array index access
-- `collect()` -- No list aggregation
 - Date component extraction (year, month, day-of-week)
-- Epoch timestamp conversion (`datetime({epochSeconds: ...})`)
+- `datetime({epochSeconds: N})` -- Epoch-to-datetime conversion (integer arithmetic works for relative comparisons)
+- Dynamic `CONTAINS` between two variables -- `like` requires a literal pattern
 
-Note: TypeDB 3.8 added `len()` for string length and datetime arithmetic (`$a - $b` for duration between two datetimes), which resolved many previously-failed queries. Recursive stream functions (`with fun f($x: type) -> { type }`) now handle variable-length paths (`[:REL*]` transitive closure).
+Resolved in recent passes:
+- `collect()` → **fetch subqueries** (`"key": [ match ...; fetch { ... }; ]`)
+- `[:REL*]` → **recursive stream functions** (`with fun f($x: type) -> { type }:`)
+- `size()` on strings → `len()` (TypeDB 3.8+)
+- `timestamp()` → `max()` aggregate as proxy + integer arithmetic
+- Datetime arithmetic → `$a - $b` for duration between datetimes (TypeDB 3.8+)
 
 ### Schema Naming Convention
 

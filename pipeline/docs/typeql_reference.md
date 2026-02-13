@@ -81,10 +81,16 @@ fetch { "title": $m.title, "year": $m.released };
 # Multi-cardinality (array)
 fetch { "emails": [ $p.email ] };
 
-# Subquery
+# Fetch subquery (replaces collect() - collects related data as nested array)
 fetch {
   "name": $p.name,
-  "movie_count": (match acted_in (actor: $p, film: $m); reduce $c = count($m);)
+  "movies": [
+    match
+      acted_in (actor: $p, film: $m);
+    fetch {
+      "title": $m.title
+    };
+  ]
 };
 ```
 
@@ -225,12 +231,15 @@ reduce $count = count($rel);  # Works
 | `(a)-[:REL*]->(b)` | Recursive stream function (see above) |
 | `CONTAINS 'x'` | `$p contains "x";` |
 | `STARTS WITH 'x'` | `$p like "^x.*";` |
+| `collect(n.prop)` | Fetch subquery: `"key": [ match ...; fetch { ... }; ]` |
+| `timestamp()` (epoch) | `max()` aggregate as proxy + integer arithmetic |
 
-## Unsupported (Record in failed.csv)
+## Unsupported (Document in README)
 
-- `collect()` - array aggregation
 - `array[N]` - array indexing
 - `split()` - string splitting
 - `left()` / `substring()` - substring extraction
+- `datetime({epochSeconds: N})` - epoch-to-datetime conversion (integer epoch arithmetic works though)
+- Dynamic `CONTAINS` between two variables (like requires literal pattern)
 
-Note: `size()` for **string length** is now supported via `len()` (TypeDB 3.8+). Only `size()` on collections/lists remains unsupported.
+Note: `size()` for **string length** is now supported via `len()` (TypeDB 3.8+). `collect()` is now handled via **fetch subqueries** (`"key": [ match ...; fetch { ... }; ]`).
