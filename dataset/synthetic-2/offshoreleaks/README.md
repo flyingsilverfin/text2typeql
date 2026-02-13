@@ -7,10 +7,10 @@
 Entities, officers, intermediaries, addresses.
 
 ## Current Status
-- `queries.csv`: 497 converted queries
-- 10 failed queries
+- `queries.csv`: 498 converted queries
+- 9 failed queries
 
-Total: 497 + 10 = 507 / 507 ✓
+Total: 498 + 9 = 507 / 507 ✓
 
 ## Failed Queries
 
@@ -28,9 +28,6 @@ Total: 497 + 10 = 507 / 507 ✓
 
 ### Query 168
 **Error:** Schema mismatch: offshore_entity does not play any role in the similar relation, and other entity does not have address attribute. The similar relation only connects intermediary and officer entities.
-
-### Query 324
-**Error:** Schema mismatch: officer entity does not have status attribute in TypeQL schema
 
 ### Query 372
 **Error:** Requires substring() to extract year from date - TypeQL has no date component extraction or string substring functions
@@ -54,6 +51,9 @@ Previously failed due to `collect()` + `size()`. Converted using `address_count(
 
 ### Query 476 (resolved)
 Previously failed due to `split()` + `size()` on semicolon-delimited string. Reinterpreted using TypeQL multi-cardinality: count distinct `former_name` attributes > 1.
+
+### Query 324 (resolved)
+Previously failed due to officer entity missing `status` attribute. Added `owns status` to officer entity in schema, then converted using simple attribute filter.
 
 ### Query 491 (resolved)
 Previously failed due to `STARTS WITH 'FEB-2013'` string pattern matching on dates. Converted using date range comparison: `$d >= 2013-02-01; $d < 2013-03-01;`.

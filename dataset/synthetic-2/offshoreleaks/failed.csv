@@ -18,9 +18,6 @@ RETURN e.name AS entity_name, e.incorporation_date, e.struck_off_date","Unsuppor
 168,"Identify entities that have a similar name and address as 'HOTFOCUS CO., LTD.'.","MATCH (e:Entity)-[:similar]->(o:Other)
 WHERE e.name = 'HOTFOCUS CO., LTD.'
 RETURN o.name AS similar_name, o.address AS similar_address","Schema mismatch: offshore_entity does not play any role in the similar relation, and other entity does not have address attribute. The similar relation only connects intermediary and officer entities."
-324,Identify all officers with a status of 'ACTIVE'.,"MATCH (o:Officer)
-WHERE o.status = 'ACTIVE'
-RETURN o.name, o.node_id, o.countries, o.country_codes, o.sourceID",Schema mismatch: officer entity does not have status attribute in TypeQL schema
 372,Find entities that have been both struck off and inactivated in the same year.,"MATCH (e:Entity)
 WHERE e.struck_off_date IS NOT NULL AND e.inactivation_date IS NOT NULL
 AND substring(e.struck_off_date, -4) = substring(e.inactivation_date, -4)

@@ -4725,3 +4725,14 @@ reduce $count = count($e);
 fetch {
   ""inactivatedEntities"": $count
 };"
+324,Identify all officers with a status of 'ACTIVE'.,"MATCH (o:Officer)
+WHERE o.status = 'ACTIVE'
+RETURN o.name, o.node_id, o.countries, o.country_codes, o.sourceID","match
+$o isa officer, has status ""ACTIVE"";
+fetch {
+  ""name"": $o.name,
+  ""nodeId"": $o.node_id,
+  ""countries"": $o.countries,
+  ""countryCodes"": $o.country_codes,
+  ""sourceId"": $o.source_id
+};"

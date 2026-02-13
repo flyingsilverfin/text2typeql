@@ -160398,6 +160398,17 @@ reduce $count = count($e);
 fetch {
   ""inactivatedEntities"": $count
 };"
+synthetic-2,offshoreleaks,324,Identify all officers with a status of 'ACTIVE'.,"MATCH (o:Officer)
+WHERE o.status = 'ACTIVE'
+RETURN o.name, o.node_id, o.countries, o.country_codes, o.sourceID","match
+$o isa officer, has status ""ACTIVE"";
+fetch {
+  ""name"": $o.name,
+  ""nodeId"": $o.node_id,
+  ""countries"": $o.countries,
+  ""countryCodes"": $o.country_codes,
+  ""sourceId"": $o.source_id
+};"
 synthetic-2,stackoverflow2,0,What are the titles of the top 5 questions with the highest view count?,"MATCH (q:Question)
 RETURN q.title
 ORDER BY q.view_count DESC
