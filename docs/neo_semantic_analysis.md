@@ -1,5 +1,7 @@
 # Semantic Analysis: Errors in Original Neo4j Cypher Queries
 
+> **Note:** This document catalogues 38 errors that were manually identified and verified during conversion. A subsequent [automated scan](neo_semantic_analysis/) of all 13,939 query pairs found **597 semantic errors (4.3%)** across six categories — see the [full automated analysis](neo_semantic_analysis/README.md) for the comprehensive results.
+
 This document catalogues errors in the original Neo4j Cypher queries from the [text2cypher](https://github.com/neo4j-labs/text2cypher) benchmark that were discovered during conversion to TypeQL. In each case, the Cypher query does not correctly answer the English question it was generated for — but because Neo4j's property graph model lacks a strong type system, these errors went undetected in the original dataset.
 
 The errors fall into two broad categories:
