@@ -1,6 +1,6 @@
 # Text2TypeQL
 
-11,968 natural-language questions paired with validated TypeQL 3.0 queries across 15 domains (4,728 from synthetic-1, 7,240 from synthetic-2), with 1,853 more pending conversion.
+13,883 natural-language questions paired with validated TypeQL 3.0 queries across 15 domains (4,733 from synthetic-1, 9,150 from synthetic-2).
 
 ## Overview
 
@@ -18,8 +18,8 @@ Two Neo4j text2cypher source datasets are used:
 
 | Source | Neo4j Directory | Databases | Valid Queries | Status |
 |--------|----------------|-----------|---------------|--------|
-| `synthetic-1` | `synthetic_opus_demodbs` | 7 | 4,776 | 4,728 converted |
-| `synthetic-2` | `synthetic_gpt4o_demodbs` | 15 | 9,267 | 7,240 converted (12/15 complete) |
+| `synthetic-1` | `synthetic_opus_demodbs` | 7 | 4,776 | 4,733 converted (43 failed) |
+| `synthetic-2` | `synthetic_gpt4o_demodbs` | 15 | 9,267 | 9,150 converted (117 failed) |
 
 ## Domains
 
@@ -28,34 +28,34 @@ Two Neo4j text2cypher source datasets are used:
 | Domain | Queries | Description |
 |--------|---------|-------------|
 | [twitter](dataset/synthetic-1/twitter/) | 491 | Users, tweets, hashtags, retweets, follows |
-| [twitch](dataset/synthetic-1/twitch/) | 553 | Streamers, games, teams, subscriptions |
-| [movies](dataset/synthetic-1/movies/) | 723 | Actors, directors, producers, reviews, roles |
+| [twitch](dataset/synthetic-1/twitch/) | 554 | Streamers, games, teams, subscriptions |
+| [movies](dataset/synthetic-1/movies/) | 726 | Actors, directors, producers, reviews, roles |
 | [neoflix](dataset/synthetic-1/neoflix/) | 910 | Movies, ratings, genres, subscriptions |
 | [recommendations](dataset/synthetic-1/recommendations/) | 741 | Users, movies, genres, ratings, actors |
-| [companies](dataset/synthetic-1/companies/) | 929 | Organizations, subsidiaries, CEOs, articles |
+| [companies](dataset/synthetic-1/companies/) | 930 | Organizations, subsidiaries, CEOs, articles |
 | [gameofthrones](dataset/synthetic-1/gameofthrones/) | 381 | Characters, houses, battles, interactions |
-| **Total** | **4,728** | + 48 documented failures |
+| **Total** | **4,733** | + 43 documented failures |
 
-### synthetic-2 (12/15 databases complete)
+### synthetic-2 (fully converted)
 
 | Domain | Total | Converted | Description |
 |--------|-------|-----------|-------------|
 | [bluesky](dataset/synthetic-2/bluesky/) | 135 | 135 | Social network posts and interactions |
-| [buzzoverflow](dataset/synthetic-2/buzzoverflow/) | 592 | 578 | Q&A platform (Stack Overflow-like) |
-| [companies](dataset/synthetic-2/companies/) | 966 | 941 | Organizations, subsidiaries, CEOs, articles |
-| [fincen](dataset/synthetic-2/fincen/) | 614 | 584 | Financial crime reports and filings |
+| [buzzoverflow](dataset/synthetic-2/buzzoverflow/) | 592 | 585 | Q&A platform (Stack Overflow-like) |
+| [companies](dataset/synthetic-2/companies/) | 966 | 965 | Organizations, subsidiaries, CEOs, articles |
+| [fincen](dataset/synthetic-2/fincen/) | 614 | 609 | Financial crime reports and filings |
 | [gameofthrones](dataset/synthetic-2/gameofthrones/) | 393 | 384 | Characters, houses, battles, interactions |
-| [grandstack](dataset/synthetic-2/grandstack/) | 807 | 793 | Movie reviews (GRANDstack demo) |
-| [movies](dataset/synthetic-2/movies/) | 738 | 728 | Actors, directors, producers, reviews, roles |
-| [neoflix](dataset/synthetic-2/neoflix/) | 923 | 913 | Movies, ratings, genres, subscriptions |
+| [grandstack](dataset/synthetic-2/grandstack/) | 807 | 797 | Movie reviews (GRANDstack demo) |
+| [movies](dataset/synthetic-2/movies/) | 738 | 737 | Actors, directors, producers, reviews, roles |
+| [neoflix](dataset/synthetic-2/neoflix/) | 923 | 916 | Movies, ratings, genres, subscriptions |
 | [network](dataset/synthetic-2/network/) | 625 | 613 | Computer network topology |
 | [northwind](dataset/synthetic-2/northwind/) | 807 | 780 | Products, orders, suppliers (Northwind) |
 | [offshoreleaks](dataset/synthetic-2/offshoreleaks/) | 507 | 493 | Offshore financial entities |
-| [stackoverflow2](dataset/synthetic-2/stackoverflow2/) | 307 | 298 | Q&A platform variant |
-| [recommendations](dataset/synthetic-2/recommendations/) | 775 | -- | Users, movies, genres, ratings, actors |
-| [twitch](dataset/synthetic-2/twitch/) | 576 | -- | Streamers, games, teams, subscriptions |
-| [twitter](dataset/synthetic-2/twitter/) | 502 | -- | Users, tweets, hashtags, retweets, follows |
-| **Total** | **9,267** | **7,240** | + 174 documented failures |
+| [recommendations](dataset/synthetic-2/recommendations/) | 775 | 764 | Users, movies, genres, ratings, actors |
+| [stackoverflow2](dataset/synthetic-2/stackoverflow2/) | 307 | 299 | Q&A platform variant |
+| [twitch](dataset/synthetic-2/twitch/) | 576 | 571 | Streamers, games, teams, subscriptions |
+| [twitter](dataset/synthetic-2/twitter/) | 502 | 502 | Users, tweets, hashtags, retweets, follows |
+| **Total** | **9,267** | **9,150** | + 117 documented failures |
 
 ## Data Format
 
@@ -107,11 +107,10 @@ In each case the TypeQL was written to correctly answer the English question. De
 
 ## Failed Queries
 
-48 of 4,776 source queries (1%) from synthetic-1 cannot yet be expressed in TypeQL 3.0. They require features not yet supported: `size()` for string/list length, array indexing, epoch timestamp conversion, duration and date arithmetic, date component extraction, and `collect()` aggregation. Each is documented with its original Cypher and the specific missing capability in the per-domain READMEs.
+160 of 14,043 source queries (1.1%) cannot be expressed in TypeQL 3.0 (43 from synthetic-1, 117 from synthetic-2). They require features not yet supported: `split()`/`size()` for string/list operations, array indexing, epoch timestamp conversion, date component extraction (year/month/day-of-week), `collect()` aggregation, variable-length paths, and substring matching. Each is documented with its original Cypher and the specific missing capability in the per-domain READMEs.
 
 ## TODO
 
-- [ ] Complete synthetic-2 conversion (3 databases remaining: recommendations, twitch, twitter)
 - [ ] Merge synthetic-2 queries into all_queries.csv
 - [ ] Standardize use of `_` in TypeQL variable names across all queries
 - [ ] Regularize synthetic-1 TypeQL queries to use updated relation syntax: `reltype (role: $var)` instead of `$r (role: $var) isa reltype`
@@ -131,7 +130,7 @@ See [pipeline/](pipeline/) for the tooling used to produce this dataset, includi
   title  = {Text2TypeQL: Natural Language to TypeQL 3.0 Query Dataset},
   year   = {2025},
   url    = {https://github.com/typedb-osi/text2typeql},
-  note   = {11,968 validated query pairs across 15 domains, derived from Neo4j Labs text2cypher}
+  note   = {13,883 validated query pairs across 15 domains, derived from Neo4j Labs text2cypher}
 }
 ```
 

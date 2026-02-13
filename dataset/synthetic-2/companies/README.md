@@ -7,15 +7,12 @@
 Companies, people, investments, locations.
 
 ## Current Status
-- `queries.csv`: 964 converted queries
-- 2 failed queries
+- `queries.csv`: 965 converted queries
+- 1 failed queries
 
-Total: 964 + 2 = 966 / 966 ✓
+Total: 965 + 1 = 966 / 966 ✓
 
 ## Failed Queries
-
-### Query 593
-**Error:** Requires current date (`datetime().year`) for "changed CEO in the past year" — TypeQL has no `now()` function.
 
 ### Query 662
 **Error:** Variable-length path `[:HAS_SUPPLIER*]` (transitive closure) not supported in TypeQL.
@@ -40,6 +37,9 @@ Several queries used Cypher `WITH...ORDER BY...LIMIT` subquery patterns (get N e
 ### Queries converted with hardcoded dates
 
 Queries 637 and 723 ask about CEO tenure "over a decade". The Cypher references `Person.startDate` (which doesn't exist in Neo4j), but the TypeQL schema correctly models `start-date` as an attribute of the `ceo_of` relation. The date threshold was hardcoded to `2012-01-01` based on the dataset creation date (~2022).
+
+### Query 593: hardcoded date cutoff
+"Organizations that changed CEO in the past year" — Cypher uses `datetime().year - 1`. Converted with hardcoded cutoff `start-date >= 2021-01-01T00:00:00` on the `ceo_of` relation.
 
 ### Query 18: reinterpreted MENTIONS target
 

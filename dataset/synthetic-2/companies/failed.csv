@@ -1,7 +1,4 @@
 original_index,question,cypher,error
-593,Name the organizations that have changed their CEO in the past year.,"MATCH (o:Organization)-[:HAS_CEO]->(p:Person)
-WHERE datetime().year - 1 <= datetime(p.startDate).year
-RETURN o.name AS organizationName",Unsupported: date arithmetic (datetime().year - 1) not available in TypeQL
 662,Which 3 organizations have the most complex supply chains according to the database?,"MATCH (o:Organization)-[:HAS_SUPPLIER*]->(s:Organization)
 WITH o, COUNT(DISTINCT s) AS supplierCount
 RETURN o.name AS organization, supplierCount

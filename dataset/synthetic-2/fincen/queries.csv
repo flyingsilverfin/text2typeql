@@ -8058,3 +8058,275 @@ fetch {
   ""originator_bank_country"": $obc,
   ""beneficiary_bank_country"": $bbc
 };"
+6,Find the top 5 originator banks with filings that have the shortest duration between begin and end dates.,"MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)
+WITH f, e, duration.between(f.begin, f.end) AS duration
+ORDER BY duration ASC
+LIMIT 5
+RETURN e.name AS originator_bank, duration","match
+$f isa filing, has period_begin $b, has period_end $e;
+originator (filing: $f, originating_entity: $ent);
+$ent has name $name;
+let $diff = $e - $b;
+sort $diff asc;
+limit 5;
+fetch { ""originator_bank"": $name, ""duration"": $diff };"
+23,What are the first 3 filings with the shortest duration between begin and end dates?,"MATCH (f:Filing)
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration
+LIMIT 3
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration AS Duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff asc;
+limit 3;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+48,What are the top 3 filings with the longest duration between begin and end dates?,"MATCH (f:Filing)
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration DESC
+LIMIT 3
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration AS Duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff desc;
+limit 3;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+52,Which 3 filings have involved entities with the longest relationships based on begin and end dates?,"MATCH (f:Filing)-[:BENEFITS|:CONCERNS|:ORIGINATOR]->(e:Entity)
+WITH f, e, duration.between(f.begin, f.end) AS relationship_duration
+ORDER BY relationship_duration DESC
+LIMIT 3
+RETURN f.sar_id AS filing_id, f.begin AS begin_date, f.end AS end_date, relationship_duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+$rel isa $t (filing: $f, $ent);
+{ $t label benefits; } or { $t label concerns; } or { $t label originator; };
+$ent isa fincen_entity;
+let $diff = $e - $b;
+sort $diff desc;
+limit 3;
+fetch { ""filing_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+75,Which 3 entities have been the originator in the filings with the longest durations from beginning to end date?,"MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)
+WITH e, f, duration.inSeconds(f.begin, f.end) AS duration
+ORDER BY duration DESC
+LIMIT 3
+RETURN e.name AS entity_name, duration","match
+$f isa filing, has period_begin $b, has period_end $e;
+originator (filing: $f, originating_entity: $ent);
+$ent has name $name;
+let $diff = $e - $b;
+sort $diff desc;
+limit 3;
+fetch { ""entity_name"": $name, ""duration"": $diff };"
+87,Find the top 5 filings with the shortest durations where the originator bank's country is 'Singapore'.,"MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)-[:COUNTRY]->(c:Country {name: 'Singapore'})
+WITH f, duration.inSeconds(datetime(f.begin), datetime(f.end)) AS duration
+ORDER BY duration ASC
+LIMIT 5
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration AS Duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+originator (filing: $f, originating_entity: $ent);
+entity_country (fincen_entity: $ent, country: $c);
+$c has name ""Singapore"";
+let $diff = $e - $b;
+sort $diff asc;
+limit 5;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+116,"Which 3 filings have the longest duration from 'begin' to 'end' where the amount is over 500,000?","MATCH (f:Filing)
+WHERE f.amount > 500000
+RETURN f.sar_id, f.begin, f.end, f.amount, duration.between(f.begin, f.end) AS duration
+ORDER BY duration DESC
+LIMIT 3","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid, has amount $a;
+$a > 500000;
+let $diff = $e - $b;
+sort $diff desc;
+limit 3;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""amount"": $a, ""duration"": $diff };"
+145,What are the top 5 filings by duration (from 'begin' to 'end')?,"MATCH (f:Filing)
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration DESC
+LIMIT 5
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration AS Duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff desc;
+limit 5;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+149,List the top 5 filings with the shortest duration between 'begin' and 'end'.,"MATCH (f:Filing)
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration ASC
+LIMIT 5
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration AS Duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff asc;
+limit 5;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+167,Find the top 5 Filings with the shortest duration between begin and end dates.,"MATCH (f:Filing)
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration ASC
+LIMIT 5
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration AS Duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff asc;
+limit 5;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+187,Display the top 5 longest Filings by duration between begin and end dates.,"MATCH (f:Filing)
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration DESC
+LIMIT 5
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration AS Duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff desc;
+limit 5;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+205,List the top 3 longest Filings in terms of duration from the begin to the end date.,"MATCH (f:Filing)
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration DESC
+LIMIT 3
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration AS Duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff desc;
+limit 3;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+222,List the top 5 filings with the shortest duration between begin and end in 2005.,"MATCH (f:Filing)
+WHERE f.begin >= datetime('2005-01-01T00:00:00Z') AND f.end <= datetime('2005-12-31T23:59:59Z')
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration ASC
+LIMIT 5
+RETURN f.sar_id AS SAR_ID, f.begin AS Begin_Date, f.end AS End_Date, duration AS Duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+$b >= 2005-01-01T00:00:00;
+$e <= 2005-12-31T23:59:59;
+let $diff = $e - $b;
+sort $diff asc;
+limit 5;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+226,Which three filings had the longest duration from begin to end in 2009?,"MATCH (f:Filing)
+WHERE f.begin >= datetime('2009-01-01T00:00:00Z') AND f.end <= datetime('2009-12-31T23:59:59Z')
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration DESC
+LIMIT 3
+RETURN f.sar_id, f.begin, f.end, duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+$b >= 2009-01-01T00:00:00;
+$e <= 2009-12-31T23:59:59;
+let $diff = $e - $b;
+sort $diff desc;
+limit 3;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+242,Which 3 filings have the shortest duration from begin to end date?,"MATCH (f:Filing)
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration ASC
+LIMIT 3
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration AS Duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff asc;
+limit 3;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+319,Which 5 filings have the longest duration from begin to end date?,"MATCH (f:Filing)
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration DESC
+LIMIT 5
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff desc;
+limit 5;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+354,Which 3 filings have the longest duration from beginning to end date and involve an originator bank from 'USA'?,"MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)-[:COUNTRY]->(c:Country {code: 'USA'})
+WITH f, duration.inDays(f.begin, f.end) AS duration
+ORDER BY duration DESC
+LIMIT 3
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+originator (filing: $f, originating_entity: $ent);
+entity_country (fincen_entity: $ent, country: $c);
+$c has code ""USA"";
+let $diff = $e - $b;
+sort $diff desc;
+limit 3;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+427,List the 3 filings with the shortest duration from beginning to end.,"MATCH (f:Filing)
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration ASC
+LIMIT 3
+RETURN f.sar_id AS SAR_ID, f.begin AS Begin_Date, f.end AS End_Date, duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff asc;
+limit 3;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+477,Which 3 filings have the shortest duration from begin to end date?,"MATCH (f:Filing)
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration ASC
+LIMIT 3
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration AS Duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff asc;
+limit 3;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+508,Which 3 filings have the longest duration from begin to end date?,"MATCH (f:Filing)
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration DESC
+LIMIT 3
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration AS Duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff desc;
+limit 3;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+542,Which filings have the longest duration from begin to end date?,"MATCH (f:Filing)
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration DESC
+RETURN f.sar_id AS filing_id, f.begin AS begin_date, f.end AS end_date, duration
+LIMIT 1","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff desc;
+limit 1;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+566,What are the top 5 filings by the shortest duration from begin to end date?,"MATCH (f:Filing)
+WITH f, duration.inSeconds(f.begin, f.end) AS duration
+ORDER BY duration ASC
+LIMIT 5
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff asc;
+limit 5;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+577,What are the top 5 filings with the shortest duration between begin and end dates?,"MATCH (f:Filing)
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration ASC
+LIMIT 5
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration AS Duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff asc;
+limit 5;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"
+611,Which filings have the shortest duration from begin to end date involving a beneficiary bank from 'United Kingdom'?,"MATCH (f:Filing)
+WHERE f.beneficiary_bank_country = 'United Kingdom'
+WITH f, duration.between(f.begin, f.end) AS duration
+ORDER BY duration ASC
+LIMIT 1
+RETURN f","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid, has beneficiary_bank_country $bbc;
+$bbc == ""United Kingdom"";
+let $diff = $e - $b;
+sort $diff asc;
+limit 1;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e };"
+612,What are the top 5 filings by the longest duration from begin to end date?,"MATCH (f:Filing)
+WITH f, duration.inDays(datetime(f.begin), datetime(f.end)) AS duration
+ORDER BY duration DESC
+LIMIT 5
+RETURN f.sar_id AS SAR_ID, f.begin AS BeginDate, f.end AS EndDate, duration","match
+$f isa filing, has period_begin $b, has period_end $e, has sar_id $sid;
+let $diff = $e - $b;
+sort $diff desc;
+limit 5;
+fetch { ""sar_id"": $sid, ""begin"": $b, ""end"": $e, ""duration"": $diff };"

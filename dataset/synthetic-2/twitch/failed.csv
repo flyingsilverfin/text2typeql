@@ -4,12 +4,6 @@ WHERE l.name STARTS WITH g.name[0]
 RETURN s.name AS stream_name, l.name AS language_name, g.name AS game_name
 ORDER BY s.createdAt
 LIMIT 5",Unsupported: string indexing (g.name[0]) to extract first character. TypeQL has no substring/character extraction functions.
-120,Which 3 streams had the most chatters in the past month?,"MATCH (s:Stream)<-[:CHATTER]-(u:User)
-WHERE s.createdAt >= datetime() - duration('P1M')
-WITH s, COUNT(u) AS chatterCount
-ORDER BY chatterCount DESC
-LIMIT 3
-RETURN s.name AS streamName, chatterCount",Unsupported: date arithmetic (datetime() - duration) has no TypeQL equivalent
 131,Which are the first 3 streams that have had a VIP relationship with the same user for over 3 years?,"MATCH (u:User)-[r:VIP]->(s:Stream)
 WHERE duration.inSeconds(r.since, datetime()).years > 3
 RETURN s.name AS stream_name, r.since AS vip_since

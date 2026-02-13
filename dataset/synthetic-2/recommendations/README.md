@@ -7,10 +7,10 @@
 Movies, users, ratings, genres.
 
 ## Current Status
-- `queries.csv`: 763 converted queries
-- 12 failed queries
+- `queries.csv`: 764 converted queries
+- 11 failed queries
 
-Total: 763 + 12 = 775 / 775 ✓
+Total: 764 + 11 = 775 / 775 ✓
 
 ## Failed Queries
 
@@ -32,9 +32,6 @@ Total: 763 + 12 = 775 / 775 ✓
 ### Query 481
 **Error:** Unsupported: `split()` for counting quote characters in plot text has no TypeQL equivalent.
 
-### Query 529
-**Error:** Requires current date (`date().year - 5`) — TypeQL has no `now()` function.
-
 ### Query 537
 **Error:** Unsupported: `split()` and `size()` for word counting in plot text has no TypeQL equivalent.
 
@@ -49,3 +46,8 @@ Total: 763 + 12 = 775 / 775 ✓
 
 ### Query 733
 **Error:** Unsupported: `date(u.born)` — TypeQL cannot extract date from a string birth year for comparison.
+
+## Conversion Notes
+
+### Query 529: hardcoded date cutoff
+"Top 5 movies released in the last 5 years" — Cypher uses `date().year - 5`. Converted with hardcoded cutoff `released >= 2017-01-01` (dataset is from ~2022).

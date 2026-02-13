@@ -83,46 +83,47 @@ pipeline/
 | Database | Valid | Failed | Total |
 |----------|-------|--------|-------|
 | twitter | 491 | 2 | 493 |
-| twitch | 553 | 8 | 561 |
-| movies | 723 | 6 | 729 |
+| twitch | 554 | 7 | 561 |
+| movies | 726 | 3 | 729 |
 | neoflix | 910 | 5 | 915 |
 | recommendations | 741 | 12 | 753 |
-| companies | 929 | 4 | 933 |
+| companies | 930 | 3 | 933 |
 | gameofthrones | 381 | 11 | 392 |
-| **Total** | **4,728** | **48** | **4,776** |
+| **Total** | **4,733** | **43** | **4,776** |
 
-### synthetic-2 (gpt4o) -- 12/15 databases fully converted
+### synthetic-2 (gpt4o) -- All 15 databases fully converted
 
 | Database | Total | Converted | Failed | Status |
 |----------|-------|-----------|--------|--------|
 | bluesky | 135 | 135 | 0 | ✓ complete |
-| buzzoverflow | 592 | 578 | 14 | ✓ complete |
-| companies | 966 | 941 | 25 | ✓ complete |
-| fincen | 614 | 584 | 30 | ✓ complete |
+| buzzoverflow | 592 | 585 | 7 | ✓ complete |
+| companies | 966 | 965 | 1 | ✓ complete |
+| fincen | 614 | 609 | 5 | ✓ complete |
 | gameofthrones | 393 | 384 | 9 | ✓ complete |
-| grandstack | 807 | 793 | 14 | ✓ complete |
-| movies | 738 | 728 | 10 | ✓ complete |
-| neoflix | 923 | 913 | 10 | ✓ complete |
+| grandstack | 807 | 797 | 10 | ✓ complete |
+| movies | 738 | 737 | 1 | ✓ complete |
+| neoflix | 923 | 916 | 7 | ✓ complete |
 | network | 625 | 613 | 12 | ✓ complete |
 | northwind | 807 | 780 | 27 | ✓ complete |
 | offshoreleaks | 507 | 493 | 14 | ✓ complete |
-| stackoverflow2 | 307 | 298 | 9 | ✓ complete |
-| recommendations | 775 | -- | -- | pending |
-| twitch | 576 | -- | -- | pending |
-| twitter | 502 | -- | -- | pending |
-| **Total** | **9,267** | **7,240** | **174** | **80%** |
+| recommendations | 775 | 764 | 11 | ✓ complete |
+| stackoverflow2 | 307 | 299 | 8 | ✓ complete |
+| twitch | 576 | 571 | 5 | ✓ complete |
+| twitter | 502 | 502 | 0 | ✓ complete |
+| **Total** | **9,267** | **9,150** | **117** | **100%** |
 
-### Failed Query Categories
+### Failed Query Categories (117 remaining in synthetic-2)
 
 | Category | Count | Description |
 |----------|-------|-------------|
-| `size()` function | ~15 | String/list length not supported |
+| String functions | ~30 | `split()`, `substring()`, regex, word counting |
+| Date component extraction | ~20 | Year, month, day-of-week from datetime |
+| Variable-length paths | ~15 | Transitive closure `[:REL*]` |
+| Epoch timestamp conversion | ~10 | `datetime({epochSeconds: ...})` |
 | `collect()` aggregation | ~5 | No list collection equivalent |
-| Array operations | ~8 | Array indexing, iteration |
-| String functions | ~5 | `split()`, `left()`, regex not supported |
-| Date/duration arithmetic | ~5 | Duration calculations, epoch conversion |
-| Schema mismatches | ~5 | Cypher assumes features not in schema |
-| Other | ~5 | `UNWIND`, complex patterns |
+| Type casting | ~5 | `toFloat()`, `toInteger()` on strings |
+| Schema hallucinations | ~5 | Cypher references non-existent properties |
+| Other | ~27 | `UNWIND`, complex patterns, modulo, levenshtein |
 
 ## Key Scripts
 
@@ -165,10 +166,14 @@ python3 pipeline/scripts/merge_dataset.py
 ## Known Limitations / Future Work
 
 Some Cypher patterns have no TypeQL equivalent:
-- `size(property)` -- No string/list length function
+- `split()`, `substring()` -- No string splitting or slicing
 - `array[-1]` -- No array index access
 - `collect()` -- No list aggregation
-- Date/duration arithmetic
+- Date component extraction (year, month, day-of-week)
+- Epoch timestamp conversion (`datetime({epochSeconds: ...})`)
+- Variable-length paths (`[:REL*]` transitive closure)
+
+Note: TypeDB 3.8 added `len()` for string length and datetime arithmetic (`$a - $b` for duration between two datetimes), which resolved many previously-failed queries.
 
 ### Schema Naming Convention
 

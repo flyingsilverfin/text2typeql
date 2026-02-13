@@ -7,21 +7,18 @@
 Streams, users, games, teams, follows.
 
 ## Current Status
-- `queries.csv`: 570 converted queries
-- 6 failed queries
+- `queries.csv`: 571 converted queries
+- 5 failed queries
 
-Total: 570 + 6 = 576 / 576 ✓
+Total: 571 + 5 = 576 / 576 ✓
 
 ## Failed Queries
 
 ### Query 92
 **Error:** Unsupported: Cypher `g.name[0]` (string indexing) for comparing first letters of language and game names has no TypeQL equivalent.
 
-### Query 120
-**Error:** Requires current date (`datetime() - duration('P1M')`) for "past month" — TypeQL has no `now()` function.
-
 ### Query 131
-**Error:** Requires date arithmetic (`duration.inSeconds(r.since, datetime()).years > 3`) — TypeQL has no `now()` function.
+**Error:** Cypher `r.since` references non-existent property on VIP relationship (Neo4j schema has no `rel_props`). Cannot compute VIP duration.
 
 ### Query 141
 **Error:** Unsupported: Cypher `substring()` for comparing first letters of game and team names has no TypeQL equivalent.
@@ -31,3 +28,8 @@ Total: 570 + 6 = 576 / 576 ✓
 
 ### Query 419
 **Error:** Unsupported: Cypher `split()` and `size()` for word counting has no TypeQL equivalent.
+
+## Conversion Notes
+
+### Query 120: hardcoded date cutoff
+"Most chatters in the past month" — Cypher uses `datetime() - duration('P1M')`. Converted with hardcoded cutoff `>= 2021-04-01T00:00:00` (dataset max stream date is 2021-05-09).

@@ -166,7 +166,10 @@ try { $p has nickname $n; };
 
 - `size(string)` → `let $len = len($str);` (string length)
 - String concatenation → `let $s = $a + " " + $b;`
+- Datetime subtraction → `let $diff = $end_dt - $begin_dt;` (two datetime vars → duration, sortable)
+- Inline date arithmetic → `$r >= 2022-01-01T00:00:00 - P365D;` (date literal minus duration in filters)
+- Note: `let $x = $datetime_var - P365D;` does NOT work (datetime var minus duration literal)
 
 ## Unsupported (→ failed.csv)
 
-`collect()`, `array[N]`, `split()`, `left()`, `substring()`
+`collect()`, `array[N]`, `split()`, `left()`, `substring()`, date component extraction (year/month/day-of-week), epoch timestamp conversion, variable-length paths `[:REL*]`

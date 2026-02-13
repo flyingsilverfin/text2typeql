@@ -1,11 +1,4 @@
 original_index,question,cypher,error
-34,Identify the first 5 users who asked questions that were tagged with 'graphql' and answered within the same month.,"MATCH (u:User)-[:ASKED]->(q:Question)-[:TAGGED]->(t:Tag {name: 'graphql'})
-WHERE q.answered = true
-WITH u, q, date(q.createdAt) AS questionDate
-WHERE questionDate.month = date().month AND questionDate.year = date().year
-RETURN u.display_name AS userName, q.title AS questionTitle, q.createdAt AS questionDate
-ORDER BY q.createdAt
-LIMIT 5",Unsupported: date component extraction (month/year from datetime) required to filter questions answered within the same month
 60,What are the top 5 questions with the most complex text content?,"MATCH (q:Question)
 WITH q, size(split(q.text, ' ')) AS wordCount
 ORDER BY wordCount DESC

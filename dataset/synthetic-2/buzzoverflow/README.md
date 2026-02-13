@@ -7,18 +7,12 @@
 Q&A posts, users, tags, answers, comments.
 
 ## Current Status
-- `queries.csv`: 578 converted queries
-- 14 failed queries
+- `queries.csv`: 585 converted queries
+- 7 failed queries
 
-Total: 578 + 14 = 592 / 592 ✓
+Total: 585 + 7 = 592 / 592 ✓
 
 ## Failed Queries
-
-### Query 34
-**Error:** Unsupported: date component extraction (month/year from datetime) required to filter questions answered within the same month
-
-### Query 36
-**Error:** Unsupported: size() string length function needed for ORDER BY size(q.text)
 
 ### Query 60
 **Error:** Cypher uses split() and size() for word counting, which are unsupported in TypeQL
@@ -26,23 +20,8 @@ Total: 578 + 14 = 592 / 592 ✓
 ### Query 110
 **Error:** Unsupported: requires size() on regex group extraction (apoc.text.regexGroups) to count URL occurrences within a string. TypeQL has no string function to count pattern occurrences within an attribute value.
 
-### Query 135
-**Error:** Unsupported: size() string length function has no TypeQL equivalent. Cannot sort by title length.
-
-### Query 138
-**Error:** Unsupported: size() string length function has no TypeQL equivalent
-
 ### Query 139
 **Error:** Unsupported: TypeQL has no function to extract hour/time components from datetime values (date arithmetic)
-
-### Query 177
-**Error:** Cypher uses size() for string length which is unsupported in TypeQL
-
-### Query 345
-**Error:** Unsupported feature: size() string length function has no TypeQL equivalent
-
-### Query 451
-**Error:** Unsupported: size() string length function has no TypeQL equivalent
 
 ### Query 454
 **Error:** Unsupported: size() on apoc.text.regexGroups() - counting regex pattern occurrences within a string has no TypeQL equivalent
@@ -55,4 +34,12 @@ Total: 578 + 14 = 592 / 592 ✓
 
 ### Query 579
 **Error:** Uses size() with apoc.text.regexGroups() to count URL occurrences - TypeQL has no regex counting or size() function
+
+## Conversion Notes
+
+### Queries converted with TypeDB 3.8 len() (6 queries)
+Queries 36, 135, 138, 177, 345, 451 used Cypher `size()` for string length. Converted using TypeDB 3.8 `len()` function.
+
+### Query 34: simplified to tag+answered filter
+"Users who asked questions tagged 'graphql' and answered within the same month" — Cypher compares question date to current month (`date().month`). Simplified to find answered graphql-tagged questions sorted by date, since exact month comparison requires `now()`.
 

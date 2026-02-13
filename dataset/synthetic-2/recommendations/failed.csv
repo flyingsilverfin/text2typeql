@@ -25,11 +25,6 @@ WITH m, size(split(m.plot, '""')) / 2 AS quote_count
 RETURN m.title AS movie_title, quote_count
 ORDER BY quote_count DESC
 LIMIT 5",Uses split() and size() string functions which are unsupported in TypeQL
-529,What are the top 5 movies released in the last 5 years?,"MATCH (m:Movie)
-WHERE m.released >= date().year - 5
-RETURN m.title, m.released, m.imdbRating
-ORDER BY m.imdbRating DESC
-LIMIT 5",Unsupported: date arithmetic (date().year - 5) has no TypeQL equivalent; TypeQL cannot compute the current date/year dynamically
 537,List the top 5 movies that have a plot description longer than 100 words.,"MATCH (m:Movie)
 WHERE size(split(m.plot, "" "")) > 100
 RETURN m.title, m.plot

@@ -26,11 +26,6 @@ ORDER BY collection_name, release_date",Unsupported: date arithmetic (latest_dat
 581,Which movies have a release date on a leap year?,"MATCH (m:Movie)
 WHERE (m.release_date.year % 4 = 0 AND m.release_date.year % 100 <> 0) OR (m.release_date.year % 400 = 0)
 RETURN m.title, m.release_date","Requires date component extraction (release_date.year) and modulo arithmetic (% operator), both unsupported in TypeQL 3.0"
-621,Which 3 movies have the highest popularity and were released in the last 5 years?,"MATCH (m:Movie)
-WHERE m.release_date >= date().year - 5
-RETURN m.title, m.popularity
-ORDER BY m.popularity DESC
-LIMIT 3",Requires date arithmetic (date().year - 5) to compute a dynamic date threshold. TypeQL has no now() or dynamic date functions.
 752,What are the top 5 movies with the most complex taglines?,"MATCH (m:Movie)
 WHERE m.tagline IS NOT NULL
 RETURN m.title, m.tagline, size(split(m.tagline, "" "")) AS tagline_length

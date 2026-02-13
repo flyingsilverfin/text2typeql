@@ -7431,3 +7431,16 @@ $s isa stream, has description $d;
 sort $d desc;
 limit 3;
 fetch { ""stream"": $s.name, ""description"": $d };"
+120,Which 3 streams had the most chatters in the past month?,"MATCH (s:Stream)<-[:CHATTER]-(u:User)
+WHERE s.createdAt >= datetime() - duration('P1M')
+WITH s, COUNT(u) AS chatterCount
+ORDER BY chatterCount DESC
+LIMIT 3
+RETURN s.name AS streamName, chatterCount","match
+$s isa stream, has name $n, has created_at $ca;
+chat_activity (channel_with_chatters: $s, chatting_user: $u);
+$ca >= 2021-04-01T00:00:00;
+reduce $count = count($u) groupby $s, $n;
+sort $count desc;
+limit 3;
+fetch { ""stream"": $n, ""chatters"": $count };"

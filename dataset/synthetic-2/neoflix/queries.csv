@@ -11414,3 +11414,13 @@ limit 3;
 fetch {
   ""name"": $p.person_name
 };"
+621,Which 3 movies have the highest popularity and were released in the last 5 years?,"MATCH (m:Movie)
+WHERE m.release_date >= date().year - 5
+RETURN m.title, m.popularity
+ORDER BY m.popularity DESC
+LIMIT 3","match
+$m isa movie, has title $t, has popularity $pop, has release_date $rd;
+$rd >= 2017-01-01;
+sort $pop desc;
+limit 3;
+fetch { ""title"": $t, ""popularity"": $pop };"

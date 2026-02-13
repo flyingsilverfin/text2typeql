@@ -350,18 +350,18 @@ pipeline/docs/
 | Database | Valid Queries | Converted | Failed |
 |----------|-------------|-----------|--------|
 | bluesky | 135 | 135 | 0 |
-| buzzoverflow | 592 | 584 | 8 |
-| companies | 966 | 964 | 2 |
-| fincen | 614 | 584 | 30 |
+| buzzoverflow | 592 | 585 | 7 |
+| companies | 966 | 965 | 1 |
+| fincen | 614 | 609 | 5 |
 | gameofthrones | 393 | 384 | 9 |
 | grandstack | 807 | 797 | 10 |
 | movies | 738 | 737 | 1 |
-| neoflix | 923 | 915 | 8 |
+| neoflix | 923 | 916 | 7 |
 | network | 625 | 613 | 12 |
 | northwind | 807 | 780 | 27 |
 | offshoreleaks | 507 | 493 | 14 |
-| recommendations | 775 | 763 | 12 |
+| recommendations | 775 | 764 | 11 |
 | stackoverflow2 | 307 | 299 | 8 |
-| twitch | 576 | 570 | 6 |
+| twitch | 576 | 571 | 5 |
 | twitter | 502 | 502 | 0 |
-| **Total** | **9267** | **9120** | **147** |
+| **Total** | **9267** | **9150** | **117** |

@@ -12179,3 +12179,10 @@ RETURN org.name AS Organization, orgCountry.name AS OrganizationCountry, ceo.nam
   (organization: $o, ceo: $ceo) isa ceo_of;
   $city isa city; (organization: $o, city: $city) isa located_in;
 (child: $city, parent: $country) isa location-contains; (parent: $ceo, child: $parent) isa parent_of; fetch { ""organization"": $o.name, ""ceo"": $ceo.name, ""country"": $country.country_name };"
+593,Name the organizations that have changed their CEO in the past year.,"MATCH (o:Organization)-[:HAS_CEO]->(p:Person)
+WHERE datetime().year - 1 <= datetime(p.startDate).year
+RETURN o.name AS organizationName","match
+$rel isa ceo_of (organization: $o, ceo: $p);
+$rel has start-date $sd;
+$sd >= 2021-01-01T00:00:00;
+fetch { ""organization"": $o.name, ""ceo"": $p.name };"

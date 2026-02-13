@@ -269,6 +269,8 @@ fetch {
 8. **Tuple groupby** - `reduce $c = count groupby $a, $b;` for grouping by multiple variables
 9. **String length** (TypeDB 3.8+) - `let $len = len($str);` for `size()` on strings
 10. **String concatenation** (TypeDB 3.8+) - `let $s = $a + " " + $b;` for building strings
+11. **Datetime subtraction** (TypeDB 3.8+) - `let $diff = $end - $begin;` for duration between two datetime values, supports `sort $diff`
+12. **Inline date arithmetic** (TypeDB 3.8+) - `$r >= 2022-01-01T00:00:00 - P365D;` for date literal minus duration in filters
 
 ## Important Scoping Rules
 
