@@ -9845,13 +9845,15 @@ fetch {
 WHERE toFloat(o.freight) > 1000
 RETURN c.companyName, c.contactName, c.contactTitle, c.phone, c.address, c.city, c.country
 ORDER BY o.orderDate
-LIMIT 3","match
+LIMIT 3","with fun total_freight($c: customer) -> double:
+  match
+    purchased (customer: $c, order: $o);
+    $o has freight $f;
+  return sum($f);
+match
 $c isa customer;
-purchased (customer: $c, order: $o);
-$o has freight $f, has order_date $od;
-$f > 1000.0;
-sort $od asc;
-limit 3;
+let $total = total_freight($c);
+$total > 1000.0;
 fetch {
   ""companyName"": $c.company_name,
   ""contactName"": $c.contact_name,
@@ -9859,7 +9861,8 @@ fetch {
   ""phone"": $c.phone,
   ""address"": $c.address,
   ""city"": $c.city,
-  ""country"": $c.country
+  ""country"": $c.country,
+  ""totalFreight"": $total
 };"
 145,List the first 3 orders shipped to Berlin with a freight cost over $100.,"MATCH (o:Order)-[:ORDERS]->(p:Product)
 WHERE o.shipCity = 'Berlin' AND toFloat(o.freight) > 100
