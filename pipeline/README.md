@@ -107,12 +107,12 @@ pipeline/
 | northwind | 807 | 807 | 0 | ✓ complete |
 | offshoreleaks | 507 | 498 | 9 | ✓ complete |
 | recommendations | 775 | 764 | 11 | ✓ complete |
-| stackoverflow2 | 307 | 305 | 2 | ✓ complete |
-| twitch | 576 | 571 | 5 | ✓ complete |
+| stackoverflow2 | 307 | 306 | 1 | ✓ complete |
+| twitch | 576 | 572 | 4 | ✓ complete |
 | twitter | 502 | 502 | 0 | ✓ complete |
-| **Total** | **9,267** | **9,204** | **63** | **100%** |
+| **Total** | **9,267** | **9,206** | **61** | **100%** |
 
-### Failed Query Categories (63 remaining in synthetic-2)
+### Failed Query Categories (61 remaining in synthetic-2)
 
 | Category | Count | Description |
 |----------|-------|-------------|

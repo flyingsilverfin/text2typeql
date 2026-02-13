@@ -1,6 +1,6 @@
 # Text2TypeQL
 
-13,937 natural-language questions paired with validated TypeQL 3.0 queries across 15 domains (4,733 from synthetic-1, 9,204 from synthetic-2).
+13,939 natural-language questions paired with validated TypeQL 3.0 queries across 15 domains (4,733 from synthetic-1, 9,206 from synthetic-2).
 
 ## Overview
 
@@ -19,7 +19,7 @@ Two Neo4j text2cypher source datasets are used:
 | Source | Neo4j Directory | Databases | Valid Queries | Status |
 |--------|----------------|-----------|---------------|--------|
 | `synthetic-1` | `synthetic_opus_demodbs` | 7 | 4,776 | 4,733 converted (43 failed) |
-| `synthetic-2` | `synthetic_gpt4o_demodbs` | 15 | 9,267 | 9,204 converted (63 failed) |
+| `synthetic-2` | `synthetic_gpt4o_demodbs` | 15 | 9,267 | 9,206 converted (61 failed) |
 
 ## Domains
 
@@ -52,10 +52,10 @@ Two Neo4j text2cypher source datasets are used:
 | [northwind](dataset/synthetic-2/northwind/) | 807 | 807 | Products, orders, suppliers (Northwind) |
 | [offshoreleaks](dataset/synthetic-2/offshoreleaks/) | 507 | 498 | Offshore financial entities |
 | [recommendations](dataset/synthetic-2/recommendations/) | 775 | 764 | Users, movies, genres, ratings, actors |
-| [stackoverflow2](dataset/synthetic-2/stackoverflow2/) | 307 | 305 | Q&A platform variant |
-| [twitch](dataset/synthetic-2/twitch/) | 576 | 571 | Streamers, games, teams, subscriptions |
+| [stackoverflow2](dataset/synthetic-2/stackoverflow2/) | 307 | 306 | Q&A platform variant |
+| [twitch](dataset/synthetic-2/twitch/) | 576 | 572 | Streamers, games, teams, subscriptions |
 | [twitter](dataset/synthetic-2/twitter/) | 502 | 502 | Users, tweets, hashtags, retweets, follows |
-| **Total** | **9,267** | **9,204** | + 63 documented failures |
+| **Total** | **9,267** | **9,206** | + 61 documented failures |
 
 ## Data Format
 
@@ -107,7 +107,7 @@ In each case the TypeQL was written to correctly answer the English question. De
 
 ## Failed Queries
 
-106 of 14,043 source queries (0.8%) cannot be expressed in TypeQL 3.0 (43 from synthetic-1, 63 from synthetic-2). They require features not yet supported: `split()`/`size()` for string/list operations, array indexing, epoch timestamp conversion, date component extraction (year/month/day-of-week), `collect()` aggregation, and substring matching. Each is documented with its original Cypher and the specific missing capability in the per-domain READMEs.
+104 of 14,043 source queries (0.7%) cannot be expressed in TypeQL 3.0 (43 from synthetic-1, 61 from synthetic-2). They require features not yet supported: `split()`/`size()` for string/list operations, array indexing, epoch timestamp conversion, date component extraction (year/month/day-of-week), `collect()` aggregation, and substring matching. Each is documented with its original Cypher and the specific missing capability in the per-domain READMEs.
 
 ## TODO
 

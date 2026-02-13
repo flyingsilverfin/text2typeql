@@ -7,10 +7,10 @@
 Questions, answers, comments, tags, users.
 
 ## Current Status
-- `queries.csv`: 305 converted queries
-- 2 failed queries
+- `queries.csv`: 306 converted queries
+- 1 failed query
 
-Total: 305 + 2 = 307 / 307 ✓
+Total: 306 + 1 = 307 / 307 ✓
 
 ## Schema Changes
 
@@ -62,6 +62,9 @@ Previously failed due to `collect()`. Converted using fetch subquery to collect 
 
 ### Query 261 (resolved)
 Previously failed due to nested subqueries/CTEs. Converted using custom function `comment_count_on_top_questions()` with chained match-sort-limit-match pipeline.
+
+### Query 169 (resolved)
+Previously failed due to `timestamp()` for current time. Converted using `max_creation_date()` custom function as proxy for "now", then integer subtraction of 31536000 (one year in seconds).
 
 ### Query 288 (resolved)
 Previously failed due to `collect()`. Converted using fetch subquery to collect tags as nested array.

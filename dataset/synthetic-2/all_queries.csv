@@ -14079,6 +14079,31 @@ reduce $count = count($u) groupby $s, $n;
 sort $count desc;
 limit 3;
 fetch { ""stream"": $n, ""chatters"": $count };"
+twitch,360,"Which streams have the longest moderator chains (a moderator, who is also a moderator, and so on)?","MATCH path = (s:Stream)-[:MODERATOR*]->(u:User)
+WITH s, length(path) AS chainLength
+ORDER BY chainLength DESC
+LIMIT 1
+RETURN s.name AS streamName, chainLength","with fun all_chain_members($s: stream) -> { stream }:
+  match
+    {
+      moderation (moderated_channel: $s, moderating_channel: $next);
+    } or {
+      let $mid in all_chain_members($s);
+      moderation (moderated_channel: $mid, moderating_channel: $next);
+    };
+  return { $next };
+match
+$s isa stream;
+let $member in all_chain_members($s);
+select $s, $member;
+distinct;
+reduce $chain_length = count($member) groupby $s;
+sort $chain_length desc;
+limit 1;
+fetch {
+  ""streamName"": $s.name,
+  ""chainLength"": $chain_length
+};"
 movies,0,Name the first 3 people born before 1970 who produced a movie released after 2000.,"MATCH (p:Person)-[:PRODUCED]->(m:Movie)
 WHERE p.born < 1970 AND m.released > 2000
 RETURN p.name
@@ -115254,4 +115279,37 @@ fetch {
       ""name"": $t.name
     };
   ]
+};"
+stackoverflow2,169,Which users have asked the most questions in the last year?,"// Define the current timestamp and the timestamp for one year ago
+WITH timestamp() AS current_time, timestamp() - 31536000 AS one_year_ago
+
+// Match users who have asked questions in the last year
+MATCH (u:User)-[:ASKED]->(q:Question)
+WHERE q.creation_date >= one_year_ago
+
+// Count the number of questions each user has asked
+WITH u, COUNT(q) AS question_count
+
+// Order by the number of questions in descending order and limit to the top users
+ORDER BY question_count DESC
+LIMIT 10
+
+// Return the users and their question counts
+RETURN u.display_name AS user, question_count","with fun max_creation_date() -> integer:
+  match
+    $q isa question, has creation_date $cd;
+  return max($cd);
+match
+$u isa user;
+asked (asker: $u, question: $q);
+$q has creation_date $cd;
+let $max_date = max_creation_date();
+let $threshold = $max_date - 31536000;
+$cd >= $threshold;
+reduce $question_count = count($q) groupby $u;
+sort $question_count desc;
+limit 10;
+fetch {
+  ""user"": $u.display_name,
+  ""question_count"": $question_count
 };"

@@ -25,7 +25,7 @@ Pipeline to convert Neo4j text2cypher datasets to TypeQL format for training tex
 
 Two source datasets:
 - **synthetic-1**: `datasets/synthetic_opus_demodbs/` -- 7 databases, 4,776 valid queries (4,733 converted, 43 failed)
-- **synthetic-2**: `datasets/synthetic_gpt4o_demodbs/` -- 15 databases, 9,267 valid queries (9,204 converted, 63 failed)
+- **synthetic-2**: `datasets/synthetic_gpt4o_demodbs/` -- 15 databases, 9,267 valid queries (9,206 converted, 61 failed)
 
 ## Important: Sequential Processing
 
@@ -378,7 +378,7 @@ pipeline/docs/
 | northwind | 807 | 807 | 0 |
 | offshoreleaks | 507 | 498 | 9 |
 | recommendations | 775 | 764 | 11 |
-| stackoverflow2 | 307 | 305 | 2 |
-| twitch | 576 | 571 | 5 |
+| stackoverflow2 | 307 | 306 | 1 |
+| twitch | 576 | 572 | 4 |
 | twitter | 502 | 502 | 0 |
-| **Total** | **9267** | **9204** | **63** |
+| **Total** | **9267** | **9206** | **61** |
