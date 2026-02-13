@@ -97,28 +97,28 @@ pipeline/
 |----------|-------|-----------|--------|--------|
 | bluesky | 135 | 135 | 0 | ✓ complete |
 | buzzoverflow | 592 | 585 | 7 | ✓ complete |
-| companies | 966 | 965 | 1 | ✓ complete |
+| companies | 966 | 966 | 0 | ✓ complete |
 | fincen | 614 | 609 | 5 | ✓ complete |
 | gameofthrones | 393 | 384 | 9 | ✓ complete |
 | grandstack | 807 | 797 | 10 | ✓ complete |
 | movies | 738 | 737 | 1 | ✓ complete |
 | neoflix | 923 | 916 | 7 | ✓ complete |
-| network | 625 | 613 | 12 | ✓ complete |
+| network | 625 | 620 | 5 | ✓ complete |
 | northwind | 807 | 780 | 27 | ✓ complete |
 | offshoreleaks | 507 | 493 | 14 | ✓ complete |
 | recommendations | 775 | 764 | 11 | ✓ complete |
 | stackoverflow2 | 307 | 299 | 8 | ✓ complete |
 | twitch | 576 | 571 | 5 | ✓ complete |
 | twitter | 502 | 502 | 0 | ✓ complete |
-| **Total** | **9,267** | **9,150** | **117** | **100%** |
+| **Total** | **9,267** | **9,158** | **109** | **100%** |
 
-### Failed Query Categories (117 remaining in synthetic-2)
+### Failed Query Categories (109 remaining in synthetic-2)
 
 | Category | Count | Description |
 |----------|-------|-------------|
 | String functions | ~30 | `split()`, `substring()`, regex, word counting |
 | Date component extraction | ~20 | Year, month, day-of-week from datetime |
-| Variable-length paths | ~15 | Transitive closure `[:REL*]` |
+| Variable-length paths | ~7 | Transitive closure `[:REL*]` (8 resolved via recursive stream functions) |
 | Epoch timestamp conversion | ~10 | `datetime({epochSeconds: ...})` |
 | `collect()` aggregation | ~5 | No list collection equivalent |
 | Type casting | ~5 | `toFloat()`, `toInteger()` on strings |

@@ -1,6 +1,1 @@
 original_index,question,cypher,error
-662,Which 3 organizations have the most complex supply chains according to the database?,"MATCH (o:Organization)-[:HAS_SUPPLIER*]->(s:Organization)
-WITH o, COUNT(DISTINCT s) AS supplierCount
-RETURN o.name AS organization, supplierCount
-ORDER BY supplierCount DESC
-LIMIT 3",Variable-length path traversal (transitive closure) not supported in TypeQL. Cypher uses [:HAS_SUPPLIER*] to match arbitrary-depth paths.

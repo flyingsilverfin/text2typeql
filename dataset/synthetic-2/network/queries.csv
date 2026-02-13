@@ -6428,3 +6428,147 @@ runs (host_machine: $m, running_process: $app);
 fetch {
   ""startTime"": $app.start_time
 };"
+1,What are the previous versions of the software running on 'DC1-RCK-1-1-M-1'?,"MATCH (dc:DataCenter)-[:CONTAINS]->(rack:Rack)-[:HOLDS]->(machine:Machine {name: 'DC1-RCK-1-1-M-1'})-[:RUNS]->(software:Software)
+MATCH (software)-[:VERSION]->(currentVersion:Version)
+MATCH (currentVersion)-[:PREVIOUS*]->(previousVersion:Version)
+RETURN DISTINCT previousVersion.name AS PreviousVersions","with fun all_previous($v: version) -> { version }:
+  match
+    {
+      previous (newer_version: $v, older_version: $prev);
+    } or {
+      let $mid in all_previous($v);
+      previous (newer_version: $mid, older_version: $prev);
+    };
+  return { $prev };
+match
+$m isa machine, has name ""DC1-RCK-1-1-M-1"";
+runs (host_machine: $m, running_process: $proc);
+instance_of (running_instance: $proc, template: $sw);
+$sw isa software;
+has_version (versioned_software: $sw, release_version: $cv);
+let $pv in all_previous($cv);
+select $pv;
+distinct;
+fetch {
+  ""PreviousVersions"": $pv.name
+};"
+201,What are the previous versions of version 7.1 in the software dependency chain?,"MATCH (v:Version {name: '7.1'})-[:PREVIOUS*]->(prev:Version)
+RETURN prev.name AS previous_versions","with fun all_previous($v: version) -> { version }:
+  match
+    {
+      previous (newer_version: $v, older_version: $prev);
+    } or {
+      let $mid in all_previous($v);
+      previous (newer_version: $mid, older_version: $prev);
+    };
+  return { $prev };
+match
+$v isa version, has name ""7.1"";
+let $prev in all_previous($v);
+fetch {
+  ""previous_versions"": $prev.name
+};"
+228,What are the first 5 previous versions of version '7.1'?,"MATCH (v:Version {name: '7.1'})-[:PREVIOUS*1..5]->(prev:Version)
+RETURN prev.name
+LIMIT 5","with fun all_previous($v: version) -> { version }:
+  match
+    {
+      previous (newer_version: $v, older_version: $prev);
+    } or {
+      let $mid in all_previous($v);
+      previous (newer_version: $mid, older_version: $prev);
+    };
+  return { $prev };
+match
+$v isa version, has name ""7.1"";
+let $prev in all_previous($v);
+limit 5;
+fetch {
+  ""name"": $prev.name
+};"
+259,List the first 5 previous versions that the version '7.1' depends on.,"MATCH (v:Version {name: '7.1'})-[:PREVIOUS*1..5]->(prev:Version)
+RETURN prev.name
+LIMIT 5","with fun all_previous($v: version) -> { version }:
+  match
+    {
+      previous (newer_version: $v, older_version: $prev);
+    } or {
+      let $mid in all_previous($v);
+      previous (newer_version: $mid, older_version: $prev);
+    };
+  return { $prev };
+match
+$v isa version, has name ""7.1"";
+let $prev in all_previous($v);
+limit 5;
+fetch {
+  ""name"": $prev.name
+};"
+397,What are the total dependencies of the application 'crm' including indirect dependencies?,"MATCH (app:Application {name: 'crm'})-[:DEPENDS_ON*]->(dependency)
+RETURN DISTINCT dependency.name AS DependencyName","with fun all_reachable($sw: software) -> { software }:
+  match
+    {
+      $dep is $sw;
+    } or {
+      depends_on (dependent: $sw, dependency: $dep);
+      $dep isa software;
+    } or {
+      let $mid in all_reachable($sw);
+      depends_on (dependent: $mid, dependency: $dep);
+      $dep isa software;
+    };
+  return { $dep };
+match
+$app isa application, has name ""crm"";
+depends_on (dependent: $app, dependency: $sw);
+$sw isa software;
+let $dep in all_reachable($sw);
+select $dep;
+distinct;
+fetch {
+  ""DependencyName"": $dep.name
+};"
+560,List the first 3 previous versions of the version named '7.1' and their software dependencies.,"MATCH (v:Version {name: '7.1'})-[:PREVIOUS*1..3]->(prev:Version)
+OPTIONAL MATCH (prev)<-[:VERSION]-(s:Software)
+RETURN prev.name AS PreviousVersion, collect(s.name) AS SoftwareDependencies
+LIMIT 3","with fun all_previous($v: version) -> { version }:
+  match
+    {
+      previous (newer_version: $v, older_version: $prev);
+    } or {
+      let $mid in all_previous($v);
+      previous (newer_version: $mid, older_version: $prev);
+    };
+  return { $prev };
+match
+$v isa version, has name ""7.1"";
+let $prev in all_previous($v);
+try {
+  has_version (versioned_software: $sw, release_version: $prev);
+  $sw has name $sw_name;
+};
+limit 3;
+fetch {
+  ""PreviousVersion"": $prev.name,
+  ""SoftwareDependency"": $sw_name
+};"
+603,Identify all previous versions of the version named '7.1' that are used by a software.,"MATCH (v:Version {name: '7.1'})-[:PREVIOUS*]->(prev:Version)<-[:VERSION]-(s:Software)
+RETURN DISTINCT prev.name AS PreviousVersions","with fun all_previous($v: version) -> { version }:
+  match
+    {
+      previous (newer_version: $v, older_version: $prev);
+    } or {
+      let $mid in all_previous($v);
+      previous (newer_version: $mid, older_version: $prev);
+    };
+  return { $prev };
+match
+$v isa version, has name ""7.1"";
+let $prev in all_previous($v);
+has_version (versioned_software: $sw, release_version: $prev);
+$sw isa software;
+select $prev;
+distinct;
+fetch {
+  ""PreviousVersions"": $prev.name
+};"

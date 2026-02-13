@@ -257,6 +257,52 @@ fetch {
 
 ---
 
+## Companies Dataset (synthetic-2)
+
+### Index 662: Recursive transitive closure (variable-length path)
+
+**Question:** Which 3 organizations have the most complex supply chains according to the database?
+
+**Cypher:**
+```cypher
+MATCH (o:Organization)-[:HAS_SUPPLIER*]->(s:Organization)
+WITH o, COUNT(DISTINCT s) AS supplierCount
+RETURN o.name AS organization, supplierCount
+ORDER BY supplierCount DESC
+LIMIT 3
+```
+
+**TypeQL (validated):**
+```typeql
+with fun supply_chain($o: organization) -> { organization }:
+  match
+    {
+      supplies (supplier: $s, customer: $o);
+    } or {
+      let $mid in supply_chain($o);
+      supplies (supplier: $s, customer: $mid);
+    };
+  return { $s };
+with fun supply_chain_size($o: organization) -> integer:
+  match let $s in supply_chain($o);
+  select $s;
+  distinct;
+  return count;
+match
+$o isa organization;
+let $count = supply_chain_size($o);
+sort $count desc;
+limit 3;
+fetch {
+  "organization": $o.name,
+  "supply_chain_size": $count
+};
+```
+
+**Key pattern:** Recursive stream function replaces Cypher `[:REL*]` variable-length paths. The stream function `supply_chain` returns all reachable nodes via base case (direct relation) + recursive case (disjunction). A second function counts distinct results. TypeDB tables recursive calls to break cycles.
+
+---
+
 ## Key TypeQL Features Used
 
 1. **Custom functions (`with fun`)** - Define reusable query logic (indices 136, 330)
@@ -271,6 +317,7 @@ fetch {
 10. **String concatenation** (TypeDB 3.8+) - `let $s = $a + " " + $b;` for building strings
 11. **Datetime subtraction** (TypeDB 3.8+) - `let $diff = $end - $begin;` for duration between two datetime values, supports `sort $diff`
 12. **Inline date arithmetic** (TypeDB 3.8+) - `$r >= 2022-01-01T00:00:00 - P365D;` for date literal minus duration in filters
+13. **Recursive stream functions** - `with fun f($x: type) -> { type }:` for transitive closure (replaces Cypher `[:REL*]`). Uses `let $var in f($arg);` to access stream, `{ base } or { let $mid in f($arg); recursive; };` for recursion
 
 ## Important Scoping Rules
 
@@ -322,3 +369,4 @@ $rel isa interacts ($role: $c);
 | 49 | ✓ Validated | Chained reduce for HAVING-style filter |
 | 81 | ✓ Validated | Type variables with disjunction |
 | 85 | ✓ Validated | Chained reduce with arithmetic |
+| s2/companies 662 | ✓ Validated | Recursive stream function for transitive closure |

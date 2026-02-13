@@ -7,15 +7,17 @@
 Companies, people, investments, locations.
 
 ## Current Status
-- `queries.csv`: 965 converted queries
-- 1 failed queries
+- `queries.csv`: 966 converted queries
+- 0 failed queries
 
-Total: 965 + 1 = 966 / 966 ✓
+Total: 966 + 0 = 966 / 966 ✓
 
 ## Failed Queries
 
-### Query 662
-**Error:** Variable-length path `[:HAS_SUPPLIER*]` (transitive closure) not supported in TypeQL.
+None.
+
+### Query 662 (resolved)
+Previously failed due to variable-length path `[:HAS_SUPPLIER*]`. Converted using recursive stream functions to traverse the supply chain transitively and count distinct supplier nodes.
 
 ## Conversion Notes
 

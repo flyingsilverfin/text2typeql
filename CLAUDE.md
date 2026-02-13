@@ -162,6 +162,22 @@ $rel isa $t;
 # Relation role inference - omit roles to match all permutations
 $rel isa interacts ($c);  # Matches $c in ANY role (character1 or character2)
 
+# Recursive stream function - transitive closure (replaces [:REL*])
+with fun supply_chain($o: organization) -> { organization }:
+  match
+    {
+      supplies (supplier: $s, customer: $o);
+    } or {
+      let $mid in supply_chain($o);
+      supplies (supplier: $s, customer: $mid);
+    };
+  return { $s };
+with fun supply_chain_size($o: organization) -> integer:
+  match let $s in supply_chain($o);
+  select $s;
+  distinct;
+  return count;
+
 # Symmetric/bidirectional matching - omit roles for both players
 subsidiary_of ($o1, $o2);  # Matches ($o1 as parent, $o2 as child) OR ($o1 as child, $o2 as parent)
 # Replaces: { subsidiary_of (parent: $o1, subsidiary: $o2); } or { subsidiary_of (parent: $o2, subsidiary: $o1); };
@@ -213,6 +229,7 @@ reduce $count = count($rel) groupby $comm;  # Works - $rel bound outside disjunc
 | `ORDER BY a / b` | `let $ratio = $a / $b; sort $ratio;` |
 | `size(n.prop)` (string) | `let $len = len($prop); $len > N;` |
 | `a.prop + ' text'` | `let $s = $prop + " text";` |
+| `(a)-[:REL*]->(b)` | Recursive stream function (see below) |
 
 ## Database Names
 
@@ -351,17 +368,17 @@ pipeline/docs/
 |----------|-------------|-----------|--------|
 | bluesky | 135 | 135 | 0 |
 | buzzoverflow | 592 | 585 | 7 |
-| companies | 966 | 965 | 1 |
+| companies | 966 | 966 | 0 |
 | fincen | 614 | 609 | 5 |
 | gameofthrones | 393 | 384 | 9 |
 | grandstack | 807 | 797 | 10 |
 | movies | 738 | 737 | 1 |
 | neoflix | 923 | 916 | 7 |
-| network | 625 | 613 | 12 |
+| network | 625 | 620 | 5 |
 | northwind | 807 | 780 | 27 |
 | offshoreleaks | 507 | 493 | 14 |
 | recommendations | 775 | 764 | 11 |
 | stackoverflow2 | 307 | 299 | 8 |
 | twitch | 576 | 571 | 5 |
 | twitter | 502 | 502 | 0 |
-| **Total** | **9267** | **9150** | **117** |
+| **Total** | **9267** | **9158** | **109** |

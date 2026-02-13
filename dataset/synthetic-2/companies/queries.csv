@@ -12186,3 +12186,30 @@ $rel isa ceo_of (organization: $o, ceo: $p);
 $rel has start-date $sd;
 $sd >= 2021-01-01T00:00:00;
 fetch { ""organization"": $o.name, ""ceo"": $p.name };"
+662,Which 3 organizations have the most complex supply chains according to the database?,"MATCH (o:Organization)-[:HAS_SUPPLIER*]->(s:Organization)
+WITH o, COUNT(DISTINCT s) AS supplierCount
+RETURN o.name AS organization, supplierCount
+ORDER BY supplierCount DESC
+LIMIT 3","with fun supply_chain($o: organization) -> { organization }:
+  match
+    {
+      supplies (supplier: $s, customer: $o);
+    } or {
+      let $mid in supply_chain($o);
+      supplies (supplier: $s, customer: $mid);
+    };
+  return { $s };
+with fun supply_chain_size($o: organization) -> integer:
+  match let $s in supply_chain($o);
+  select $s;
+  distinct;
+  return count;
+match
+$o isa organization;
+let $count = supply_chain_size($o);
+sort $count desc;
+limit 3;
+fetch {
+  ""organization"": $o.name,
+  ""supply_chain_size"": $count
+};"
