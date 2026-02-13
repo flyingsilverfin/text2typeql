@@ -105,14 +105,14 @@ pipeline/
 | neoflix | 923 | 916 | 7 | ✓ complete |
 | network | 625 | 620 | 5 | ✓ complete |
 | northwind | 807 | 807 | 0 | ✓ complete |
-| offshoreleaks | 507 | 493 | 14 | ✓ complete |
+| offshoreleaks | 507 | 497 | 10 | ✓ complete |
 | recommendations | 775 | 764 | 11 | ✓ complete |
 | stackoverflow2 | 307 | 299 | 8 | ✓ complete |
 | twitch | 576 | 571 | 5 | ✓ complete |
 | twitter | 502 | 502 | 0 | ✓ complete |
-| **Total** | **9,267** | **9,193** | **74** | **100%** |
+| **Total** | **9,267** | **9,197** | **70** | **100%** |
 
-### Failed Query Categories (74 remaining in synthetic-2)
+### Failed Query Categories (70 remaining in synthetic-2)
 
 | Category | Count | Description |
 |----------|-------|-------------|

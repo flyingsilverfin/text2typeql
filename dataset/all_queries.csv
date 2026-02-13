@@ -160334,6 +160334,70 @@ same_company_as (company1: $e1, company2: $e2);
 fetch {
   ""name"": $e2.name
 };"
+synthetic-2,offshoreleaks,103,Who are the officers serving as intermediaries for more than one entity?,"MATCH (o:Officer)-[:officer_of]->(e:Entity)
+WITH o, COUNT(DISTINCT e) AS entityCount
+WHERE entityCount > 1
+MATCH (o)-[:intermediary_of]->(e2:Entity)
+RETURN o.name AS OfficerName, COLLECT(DISTINCT e2.name) AS Entities","with fun entity_count($i: intermediary) -> integer:
+  match
+    intermediary_of (intermediary: $i, offshore_entity: $e);
+  select $e;
+  distinct;
+  return count;
+match
+$i isa intermediary;
+let $count = entity_count($i);
+$count > 1;
+intermediary_of (intermediary: $i, offshore_entity: $e);
+fetch {
+  ""officerName"": $i.name,
+  ""entityName"": $e.name
+};"
+synthetic-2,offshoreleaks,370,Identify entities with multiple addresses and list the addresses.,"MATCH (e:Entity)-[:registered_address]->(a:Address)
+WITH e, collect(a.address) AS addresses
+WHERE size(addresses) > 1
+RETURN e.name AS entity_name, addresses","with fun address_count($e: offshore_entity) -> integer:
+  match
+    registered_address (registrant: $e, registered_addr: $a);
+  select $a;
+  distinct;
+  return count;
+match
+$e isa offshore_entity;
+let $count = address_count($e);
+$count > 1;
+registered_address (registrant: $e, registered_addr: $a);
+fetch {
+  ""entityName"": $e.name,
+  ""address"": $a.address
+};"
+synthetic-2,offshoreleaks,476,List the entities that have multiple former names and provide all names.,"MATCH (e:Entity)
+WHERE size(split(e.former_name, "";"")) > 1
+RETURN e.name AS current_name, e.former_name AS former_names","with fun former_name_count($e: offshore_entity) -> integer:
+  match
+    $e has former_name $fn;
+  select $fn;
+  distinct;
+  return count;
+match
+$e isa offshore_entity;
+let $count = former_name_count($e);
+$count > 1;
+$e has former_name $fn;
+fetch {
+  ""currentName"": $e.name,
+  ""formerName"": $fn
+};"
+synthetic-2,offshoreleaks,491,How many entities were inactivated in February 2013?,"MATCH (e:Entity)
+WHERE e.inactivation_date STARTS WITH 'FEB-2013'
+RETURN count(e) AS inactivated_entities","match
+$e isa offshore_entity, has inactivation_date $d;
+$d >= 2013-02-01;
+$d < 2013-03-01;
+reduce $count = count($e);
+fetch {
+  ""inactivatedEntities"": $count
+};"
 synthetic-2,stackoverflow2,0,What are the titles of the top 5 questions with the highest view count?,"MATCH (q:Question)
 RETURN q.title
 ORDER BY q.view_count DESC

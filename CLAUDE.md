@@ -376,9 +376,9 @@ pipeline/docs/
 | neoflix | 923 | 916 | 7 |
 | network | 625 | 620 | 5 |
 | northwind | 807 | 807 | 0 |
-| offshoreleaks | 507 | 493 | 14 |
+| offshoreleaks | 507 | 497 | 10 |
 | recommendations | 775 | 764 | 11 |
 | stackoverflow2 | 307 | 299 | 8 |
 | twitch | 576 | 571 | 5 |
 | twitter | 502 | 502 | 0 |
-| **Total** | **9267** | **9193** | **74** |
+| **Total** | **9267** | **9197** | **70** |
