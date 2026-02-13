@@ -375,10 +375,10 @@ pipeline/docs/
 | movies | 738 | 737 | 1 |
 | neoflix | 923 | 916 | 7 |
 | network | 625 | 620 | 5 |
-| northwind | 807 | 783 | 24 |
+| northwind | 807 | 807 | 0 |
 | offshoreleaks | 507 | 493 | 14 |
 | recommendations | 775 | 764 | 11 |
 | stackoverflow2 | 307 | 299 | 8 |
 | twitch | 576 | 571 | 5 |
 | twitter | 502 | 502 | 0 |
-| **Total** | **9267** | **9169** | **98** |
+| **Total** | **9267** | **9193** | **74** |
