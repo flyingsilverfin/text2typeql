@@ -7385,3 +7385,49 @@ fetch {
   ""description"": $desc,
   ""createdAt"": $ca
 };"
+77,List the first 5 streams that have been in the same language and game for over 5 years.,"MATCH (s:Stream)-[:PLAYS]->(g:Game), (s)-[:HAS_LANGUAGE]->(l:Language)
+WHERE datetime() - s.createdAt > duration({years: 5})
+WITH s, g, l
+ORDER BY s.createdAt
+LIMIT 5
+RETURN s.name AS stream_name, g.name AS game_name, l.name AS language_name, s.createdAt AS stream_created_at","match
+  $s isa stream, has name $sn, has created_at $ca;
+  language_usage (channel: $s, used_language: $l);
+  $l has name $ln;
+  game_play (streaming_channel: $s, played_game: $g);
+  $g has name $gn;
+  $ca < 2016-01-01T00:00:00;
+sort $ca asc;
+limit 5;
+fetch { ""stream"": $sn, ""language"": $ln, ""game"": $gn };"
+151,List the first 5 streams that have been moderated by the same user for over 5 years.,"MATCH (u:User)-[mod:MODERATOR]->(s:Stream)
+WHERE datetime() - mod.since > duration('P5Y')
+RETURN s.name AS stream_name, s.url AS stream_url, u.name AS moderator_name
+ORDER BY mod.since
+LIMIT 5","match
+  $s isa stream, has name $sn, has created_at $sca;
+  moderation (moderated_channel: $s, moderating_channel: $m);
+  $m has name $mn, has created_at $mca;
+  $mca < 2016-01-01T00:00:00;
+sort $sca asc;
+limit 5;
+fetch { ""stream"": $sn, ""moderator"": $mn };"
+156,List the first 5 games with streams that have been active for over 10 years.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
+WHERE datetime().epochMillis - s.createdAt.epochMillis > 10 * 365 * 24 * 60 * 60 * 1000
+RETURN DISTINCT g.name
+LIMIT 5","match
+  $g isa game, has name $gn;
+  game_play (streaming_channel: $s, played_game: $g);
+  $s has created_at $ca;
+  $ca < 2011-01-01T00:00:00;
+limit 5;
+fetch { ""game"": $gn };"
+383,Which 3 streams have the most complex descriptions based on word count?,"MATCH (s:Stream)
+WITH s, size(split(s.description, "" "")) AS wordCount
+ORDER BY wordCount DESC
+LIMIT 3
+RETURN s.name AS streamName, s.description AS description, wordCount","match
+$s isa stream, has description $d;
+sort $d desc;
+limit 3;
+fetch { ""stream"": $s.name, ""description"": $d };"

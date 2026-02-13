@@ -7,99 +7,28 @@
 Companies, people, investments, locations.
 
 ## Current Status
-- `queries.csv`: 949 converted queries
-- 17 failed queries
+- `queries.csv`: 964 converted queries
+- 2 failed queries
 
-Total: 949 + 17 = 966 / 966 ✓
+Total: 964 + 2 = 966 / 966 ✓
 
 ## Failed Queries
 
-### Cypher references non-existent Neo4j schema elements (11 queries)
+### Query 593
+**Error:** Requires current date (`datetime().year`) for "changed CEO in the past year" — TypeQL has no `now()` function.
 
-These queries contain Cypher that references labels, properties, or relationships that don't exist in the Neo4j schema (`neo4j_schema.json`). The LLM hallucinated schema elements based on world knowledge rather than the actual data model.
-
-#### Query 18
-**Cypher error:** `Article-[:MENTIONS]->Person` — Neo4j MENTIONS relationship only goes `Article→Organization`. Person is not a valid target for MENTIONS.
-```cypher
-MATCH (a1:Article)-[:MENTIONS]->(ceo)
-```
-
-#### Query 29
-**Cypher error:** `IN_COUNTRY {capital: true}` — the IN_COUNTRY relationship has no properties in the Neo4j schema (`rel_props` is empty).
-```cypher
-MATCH (capital:City)-[:IN_COUNTRY {capital: true}]->(co)
-```
-
-#### Query 210
-**Cypher error:** Same as Query 29 — `IN_COUNTRY {capital: true}` references a non-existent relationship property.
-
-#### Query 246
-**Cypher error:** `HAS_PARENT|HAS_CHILD*0..->Country` — these relationships only connect `Person→Person`. There is no path from Person to Country in the schema.
-```cypher
-(ceo)-[:HAS_PARENT|HAS_CHILD*0..]->(ceoCountry:Country)
-```
-
-#### Query 280
-**Cypher error:** `r.since` on HAS_COMPETITOR — the Neo4j schema has no relationship properties at all (`rel_props` is empty). The `since` property is hallucinated.
-```cypher
-MATCH (o1:Organization)-[r:HAS_COMPETITOR]->(o2:Organization)
-WHERE r.since <= date().year - 5
-```
-
-#### Query 410
-**Cypher error:** `country.capital` — the Country node has no `capital` property (valid: `name`, `id`, `summary`).
-```cypher
-WHERE city.name = country.capital
-```
-
-#### Query 611
-**Cypher error:** Same as Query 280 — `r.since` on HAS_COMPETITOR is hallucinated.
-
-#### Query 682
-**Cypher error:** Same as Query 410 — `country.capital` doesn't exist.
-
-#### Query 721
-**Cypher error:** `ceo.gender` — Person has no `gender` property (valid: `name`, `id`, `summary`).
-```cypher
-WHERE category.name = "Healthcare" AND ceo.gender = "Female"
-```
-
-#### Query 929
-**Cypher error:** `IN_COUNTRY {isCapital: true}` — same issue as Query 29, non-existent relationship property.
-
-#### Query 944
-**Cypher error:** `HAS_NATIONALITY` — this relationship type doesn't exist in the Neo4j schema.
-```cypher
-(ceo)-[:HAS_NATIONALITY]->(ceoCountry:Country)
-```
-
-### Unsupported TypeQL features (6 queries)
-
-These queries require features that TypeQL does not support.
-
-#### Query 337
-**Error:** Requires current date (`datetime().year`) for "changed CEOs in the last year" — TypeQL has no `now()` function.
-
-#### Query 341
-**Error:** Requires current date (`date() - duration({days: 30})`) for "recent articles" — TypeQL has no `now()` function.
-
-#### Query 380
-**Error:** `COLLECT(a)[..3]` array slicing — TypeQL has no per-group top-N or array slicing.
-
-#### Query 484
-**Error:** `split()` function and array indexing for extracting last name from full name — TypeQL has no string split function.
-
-#### Query 593
-**Error:** Same as Query 337 — requires `datetime().year` for "changed CEO in the past year".
-
-#### Query 662
-**Error:** `[:HAS_SUPPLIER*]` variable-length path traversal (transitive closure) — TypeQL does not support unbounded path traversal.
+### Query 662
+**Error:** Variable-length path `[:HAS_SUPPLIER*]` (transitive closure) not supported in TypeQL.
 
 ## Conversion Notes
 
+### Queries converted from s1 equivalent (14 queries)
+
+14 queries that were originally marked as failed had exact matches in synthetic-1/companies that were successfully converted. The s1 TypeQL was reused since both datasets share the identical schema. Many of these had Cypher that referenced non-existent Neo4j schema elements (capital city properties, gender, nationality), but s1 found valid TypeQL reinterpretations.
+
 ### Queries converted with approximations
 
-Several queries used Cypher `WITH...ORDER BY...LIMIT` subquery patterns (get N entities first, then expand). These were converted to flat TypeQL joins with a single `sort`/`limit` at the end, which limits result rows rather than the intermediate entity set. This approximation was validated against the same pattern used in synthetic-1 (queries 5, 687).
+Several queries used Cypher `WITH...ORDER BY...LIMIT` subquery patterns (get N entities first, then expand). These were converted to flat TypeQL joins with a single `sort`/`limit` at the end, which limits result rows rather than the intermediate entity set.
 
 | Index | Pattern | Approximation |
 |-------|---------|---------------|
@@ -111,6 +40,10 @@ Several queries used Cypher `WITH...ORDER BY...LIMIT` subquery patterns (get N e
 ### Queries converted with hardcoded dates
 
 Queries 637 and 723 ask about CEO tenure "over a decade". The Cypher references `Person.startDate` (which doesn't exist in Neo4j), but the TypeQL schema correctly models `start-date` as an attribute of the `ceo_of` relation. The date threshold was hardcoded to `2012-01-01` based on the dataset creation date (~2022).
+
+### Query 18: reinterpreted MENTIONS target
+
+"CEO with a name mentioned in at least two different articles" — Cypher uses `Article-[:MENTIONS]->Person` but MENTIONS only targets Organization. Reinterpreted as organization (with CEO) mentioned in 2+ articles, matching s1 query 929 which has the identical question.
 
 ### Query 598: collect() dropped
 

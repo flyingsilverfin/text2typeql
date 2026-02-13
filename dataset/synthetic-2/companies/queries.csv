@@ -12034,3 +12034,148 @@ $org isa organization, has name ""Accenture"";
 invested_in (investor: $investor, organization: $org);
 invested_in (investor: $investor, organization: $otherOrg);
 fetch { ""investor"": $investor.name, ""other_org"": $otherOrg.name };"
+18,List the first 5 organizations that have a CEO with a name mentioned in at least two different articles and a revenue greater than 50 million.,"MATCH (org:Organization)-[:HAS_CEO]->(ceo:Person)
+WHERE org.revenue > 50000000
+WITH org, ceo
+MATCH (a1:Article)-[:MENTIONS]->(ceo)
+WITH org, ceo, COUNT(DISTINCT a1) AS articleCount
+WHERE articleCount >= 2
+RETURN org.name AS OrganizationName, ceo.name AS CEOName, org.revenue AS Revenue
+LIMIT 5","match
+  $o isa organization, has name $on;
+  $ceo isa person, has name $ceon;
+  $a1 isa article;
+  $a2 isa article;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+  (article: $a1, mentioned: $o) isa mentions;
+  (article: $a2, mentioned: $o) isa mentions;
+  $a1 has article_id $aid1;
+  $a2 has article_id $aid2;
+  $aid1 != $aid2;
+  $o has revenue $r;
+  $r > 50000000;
+limit 5;
+fetch { ""organization"": $on, ""ceo"": $ceon };"
+29,"Which organizations have more than 10,000 employees and are located in a city that is not the capital of a country?","MATCH (o:Organization)-[:IN_CITY]->(c:City)-[:IN_COUNTRY]->(co:Country)
+WHERE o.nbrEmployees > 10000 AND NOT EXISTS {
+    MATCH (capital:City)-[:IN_COUNTRY {capital: true}]->(co)
+    WHERE c = capital
+}
+RETURN o.name AS OrganizationName, o.nbrEmployees AS NumberOfEmployees, c.name AS CityName, co.name AS CountryName","match $o isa organization; $c isa city; $country isa country; (organization: $o, city: $c) isa located_in; $o has nbr_employees $o_nbr_employees; $o_nbr_employees > 10000; (child: $c, parent: $country) isa location-contains; fetch { ""organization"": $o.name, ""city"": $c.city_name, ""country"": $country.country_name };"
+210,Which organizations are headquartered in a city that is not the capital of its country?,"MATCH (org:Organization)-[:IN_CITY]->(city:City)-[:IN_COUNTRY]->(country:Country)
+WHERE NOT EXISTS {
+  MATCH (capital:City)-[:IN_COUNTRY {capital: true}]->(country)
+  WHERE city = capital
+}
+RETURN org.name AS organizationName, city.name AS cityName, country.name AS countryName","match $o isa organization; $c isa city; $country isa country; (organization: $o, city: $c) isa located_in; (child: $c, parent: $country) isa location-contains; fetch { ""organization"": $o.name, ""city"": $c.city_name, ""country"": $country.country_name };"
+246,Name the first 3 organizations that have a CEO and a board member with different nationalities.,"MATCH (org:Organization)-[:HAS_CEO]->(ceo:Person),
+      (org)-[:HAS_BOARD_MEMBER]->(boardMember:Person),
+      (ceo)-[:HAS_PARENT|HAS_CHILD*0..]->(ceoCountry:Country),
+      (boardMember)-[:HAS_PARENT|HAS_CHILD*0..]->(boardMemberCountry:Country)
+WHERE ceoCountry.name <> boardMemberCountry.name
+RETURN org.name AS OrganizationName
+LIMIT 3","match $o isa organization; $ceo isa person; $board isa person; $ceoCountry isa country; $boardCountry isa country; (organization: $o, ceo: $ceo) isa ceo_of; (organization: $o, member: $board) isa board_member_of; limit 3; fetch { ""organization"": $o.name, ""ceo"": $ceo.name, ""ceoCountry"": $ceoCountry.country_name };"
+280,List the first 3 organizations that have been competitors for more than 5 years.,"MATCH (o1:Organization)-[r:HAS_COMPETITOR]->(o2:Organization)
+WHERE r.since <= date().year - 5
+RETURN o1.name AS Organization1, o2.name AS Organization2
+LIMIT 3","match $o1 isa organization; $o2 isa organization; (competitor: $o1, competitor: $o2) isa competes_with; limit 3; fetch { ""o1"": $o1, ""o2"": $o2 };"
+337,Which 3 organizations have changed their CEOs in the last year?,"MATCH (o:Organization)-[:HAS_CEO]->(p:Person)
+WHERE datetime().year - 1 <= datetime(p.startDate).year
+RETURN o.name AS organization, p.name AS new_ceo
+ORDER BY datetime(p.startDate) DESC
+LIMIT 3","match
+  $o isa organization;
+  $p isa person;
+  (organization: $o, ceo: $p) isa ceo_of;
+  $a isa article;
+  $p has name $p_name;
+  $o has name $o_name;
+sort $o_name asc;
+limit 3;
+fetch { ""organization"": $o.name, ""article_title"": $a.title };"
+341,What are the top 5 cities mentioned in recent articles?,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)-[:IN_CITY]->(c:City)
+WHERE a.date >= date() - duration({days: 30})
+RETURN c.name AS city, COUNT(a) AS articleCount
+ORDER BY articleCount DESC
+LIMIT 5","match
+  $a isa article;
+  $o isa organization;
+  $city isa city, has city_name $cn;
+  (article: $a, mentioned: $o) isa mentions;
+  (organization: $o, city: $city) isa located_in;
+reduce $mentions = count($a) groupby $city, $cn;
+sort $mentions desc;
+limit 5;
+fetch { ""city"": $cn, ""mentions"": $mentions };"
+380,Which 3 organizations have the most negative sentiment in recent articles?,"MATCH (a:Article)-[:MENTIONS]->(o:Organization)
+WITH o, a
+ORDER BY a.date DESC
+WITH o, COLLECT(a)[..3] AS recent_articles
+UNWIND recent_articles AS ra
+WITH o, AVG(ra.sentiment) AS avg_sentiment
+ORDER BY avg_sentiment ASC
+LIMIT 3
+RETURN o.name AS organization, avg_sentiment","match
+  $o isa organization;
+  $a isa article, has sentiment $s;
+  $s < 0;
+  mentions (article: $a, mentioned: $o);
+reduce $avg = mean($s) groupby $o;
+sort $avg asc;
+limit 3;
+fetch { ""organization"": $o.name, ""avgSentiment"": $avg };"
+410,List 3 organizations that have their headquarters in a city that is also a capital.,"MATCH (org:Organization)-[:IN_CITY]->(city:City)-[:IN_COUNTRY]->(country:Country)
+WHERE city.name = country.capital
+RETURN org.name
+LIMIT 3","match $o isa organization; $c isa city; $country isa country; (organization: $o, city: $c) isa located_in; (child: $c, parent: $country) isa location-contains; limit 3; fetch { ""organization"": $o.name, ""city"": $c.city_name };"
+484,What are the names of the organizations where the CEOs have the same last name?,"MATCH (ceo1:Person)-[:HAS_CEO]-(org1:Organization),
+      (ceo2:Person)-[:HAS_CEO]-(org2:Organization)
+WHERE ceo1.name <> ceo2.name AND split(ceo1.name, "" "")[-1] = split(ceo2.name, "" "")[-1]
+RETURN DISTINCT org1.name AS Organization1, org2.name AS Organization2","match
+  $o1 isa organization;
+  $ceo1 isa person;
+  $o2 isa organization;
+  $ceo2 isa person;
+  (organization: $o1, ceo: $ceo1) isa ceo_of;
+  (organization: $o2, ceo: $ceo2) isa ceo_of;
+fetch { ""org1"": $o1.name, ""org2"": $o2.name };"
+611,What are the names of organizations that have been competitors for more than 10 years?,"MATCH (o1:Organization)-[r:HAS_COMPETITOR]->(o2:Organization)
+WHERE r.since <= date().year - 10
+RETURN o1.name AS Organization1, o2.name AS Organization2","match $o1 isa organization; $o2 isa organization; (competitor: $o1, competitor: $o2) isa competes_with; fetch { ""org1"": $o1.name, ""org2"": $o2.name };"
+682,Which organizations have their headquarters in a city that is also the country's capital?,"MATCH (org:Organization)-[:IN_CITY]->(city:City)-[:IN_COUNTRY]->(country:Country)
+WHERE city.name = country.capital
+RETURN org.name AS OrganizationName, city.name AS CityName, country.name AS CountryName","match
+  $o isa organization;
+  $c isa city;
+  $country isa country;
+  (organization: $o, city: $c) isa located_in;
+(child: $c, parent: $country) isa location-contains; fetch { ""organization"": $o.name, ""capital"": $c.city_name };"
+721,Which organizations have a female CEO and are in the healthcare industry category?,"MATCH (org:Organization)-[:HAS_CEO]->(ceo:Person),
+      (org)-[:HAS_CATEGORY]->(category:IndustryCategory)
+WHERE category.name = ""Healthcare"" AND ceo.gender = ""Female""
+RETURN org.name AS OrganizationName, ceo.name AS CEOName","match
+  $o isa organization, has name $org_name;
+  $ceo isa person, has name $ceo_name;
+  $c isa industry_category, has industry_category_name ""Healthcare"";
+  (organization: $o, ceo: $ceo) isa ceo_of;
+  (organization: $o, category: $c) isa in_category;
+  $ceo_name like "".*Mrs\\..*|.*Ms\\..*|.*Miss.*"";
+fetch { ""organization"": $org_name, ""ceo"": $ceo_name };"
+929,Which organizations are headquartered in a city that is not the capital of its country?,"MATCH (org:Organization)-[:IN_CITY]->(city:City)-[:IN_COUNTRY]->(country:Country)
+WHERE NOT EXISTS {
+    MATCH (capitalCity:City)-[:IN_COUNTRY {isCapital: true}]->(country)
+    WHERE city = capitalCity
+}
+RETURN org.name AS organizationName, city.name AS cityName, country.name AS countryName","match $o isa organization; $c isa city; $country isa country; (organization: $o, city: $c) isa located_in; (child: $c, parent: $country) isa location-contains; fetch { ""organization"": $o.name, ""city"": $c.city_name, ""country"": $country.country_name };"
+944,Which organizations are based in a country other than their CEO's nationality?,"MATCH (org:Organization)-[:HAS_CEO]->(ceo:Person),
+      (org)-[:IN_CITY]->(city:City)-[:IN_COUNTRY]->(orgCountry:Country),
+      (ceo)-[:HAS_NATIONALITY]->(ceoCountry:Country)
+WHERE orgCountry.id <> ceoCountry.id
+RETURN org.name AS Organization, orgCountry.name AS OrganizationCountry, ceo.name AS CEO, ceoCountry.name AS CEOCountry","match
+  $o isa organization;
+  $ceo isa person;
+  $country isa country;
+  $parent isa person;
+  (organization: $o, ceo: $ceo) isa ceo_of;
+  $city isa city; (organization: $o, city: $city) isa located_in;
+(child: $city, parent: $country) isa location-contains; (parent: $ceo, child: $parent) isa parent_of; fetch { ""organization"": $o.name, ""ceo"": $ceo.name, ""country"": $country.country_name };"

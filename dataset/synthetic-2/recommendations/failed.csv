@@ -1,142 +1,30 @@
 original_index,question,cypher,error
-7,List the top 5 genres of movies with the most language diversity.,"MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)
-WITH g.name AS genre, size(m.languages) AS languageCount
-RETURN genre, sum(languageCount) AS totalLanguages
-ORDER BY totalLanguages DESC
-LIMIT 5",Unsupported feature: size() on array/collection property. TypeQL has no equivalent for counting elements in a list-valued property or splitting strings.
-14,Which 5 movies have been released in the most number of countries?,"MATCH (m:Movie)
-RETURN m.title AS title, size(m.countries) AS country_count
-ORDER BY country_count DESC
-LIMIT 5","Cypher uses size() on a property to count list elements. TypeQL does not support size() and the countries attribute is a single string, not multi-cardinality."
-28,What are the top 3 movies based on the number of different languages they have been released in?,"MATCH (m:Movie)
-RETURN m.title AS title, size(m.languages) AS languageCount
-ORDER BY languageCount DESC
-LIMIT 3","Cypher uses size() on a list property (m.languages) which has no TypeQL equivalent. The languages attribute is single-cardinality string in the TypeQL schema, so counting individual language entries from a list is not supported."
 29,List the first 5 movies that were released on a Friday.,"MATCH (m:Movie)
 WHERE apoc.date.fields(m.released).dayOfWeek = 5
 RETURN m.title, m.released
 ORDER BY m.released
 LIMIT 5",Unsupported feature: date arithmetic / day-of-week extraction (apoc.date.fields().dayOfWeek). TypeQL has no equivalent function to compute day of week from a date string.
-37,Which 5 movies have the most distinct countries of release listed?,"MATCH (m:Movie)
-WITH m, size(m.countries) AS countryCount
-ORDER BY countryCount DESC
-LIMIT 5
-RETURN m.title AS title, countryCount",Unsupported: size() on list property. Neo4j countries is a list but TypeQL stores it as a single string attribute. Cannot count array elements in TypeQL.
-91,List the 5 movies with the most languages spoken.,"MATCH (m:Movie)
-RETURN m.title, size(m.languages) AS numLanguages
-ORDER BY numLanguages DESC
-LIMIT 5","Unsupported: size() on list property. Neo4j stores languages as an array property; TypeQL schema has languages as a single string attribute with no multi-cardinality, so counting elements is not possible."
-138,Which three movies have the most diverse set of spoken languages?,"MATCH (m:Movie)
-WITH m, size(m.languages) AS numLanguages
-ORDER BY numLanguages DESC
-LIMIT 3
-RETURN m.title AS title, m.languages AS languages, numLanguages",Unsupported: size() on array property. Neo4j stores languages as a list property and size() counts elements. TypeQL has no equivalent array size function.
-151,List the first 5 movies with at least three different languages listed.,"MATCH (m:Movie)
-WHERE size(m.languages) >= 3
-RETURN m.title AS title, m.languages AS languages
-ORDER BY m.title
-LIMIT 5","Cypher uses size() on array property which is unsupported in TypeQL. The languages attribute is a single string value in the TypeQL schema, not a multi-cardinality attribute, so counting elements is not possible."
-163,What are the first 3 movies that have been released in exactly three different countries?,"MATCH (m:Movie)
-WHERE size(m.countries) = 3
-RETURN m.title AS title, m.released AS releaseDate
-ORDER BY m.released
-LIMIT 3","Unsupported: size() on collection/array property. The countries attribute is a single string in the TypeQL schema (no multi-cardinality), so counting distinct country values is not possible."
-173,What are the top 5 movies with the most distinct countries of origin?,"MATCH (m:Movie)
-WITH m, size(m.countries) AS countryCount
-ORDER BY countryCount DESC
-LIMIT 5
-RETURN m.title AS title, countryCount","Cypher uses size() on array property m.countries. TypeQL schema has countries as a single string attribute (not multi-cardinality), so counting list elements is not supported."
-178,Which 3 movies have the highest number of languages spoken?,"MATCH (m:Movie)
-RETURN m.title, size(m.languages) AS numLanguages
-ORDER BY numLanguages DESC
-LIMIT 3","Unsupported: size() on property list. The languages attribute is a single string in TypeQL schema (not multi-cardinality), and size() for counting list elements has no TypeQL equivalent."
-280,Show the top 5 movies with the most languages spoken.,"MATCH (m:Movie)
-RETURN m.title AS title, size(m.languages) AS languageCount
-ORDER BY languageCount DESC
-LIMIT 5","Cypher uses size() on a list property (m.languages) which has no TypeQL equivalent. The languages attribute is a single string in the TypeQL schema, not multi-cardinality, so counting elements is not possible."
-289,What are the first 5 genres associated with movies having the most languages available?,"MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)
-WITH m, g, size(m.languages) AS numLanguages
-ORDER BY numLanguages DESC
-LIMIT 5
-RETURN g.name AS genre, numLanguages",Cypher uses size() on array property (m.languages) which is unsupported in TypeQL. The languages attribute is a single string in the schema with no equivalent array length operation available.
-298,What are the top 5 movies with the most countries listed in their production?,"MATCH (m:Movie)
-RETURN m.title AS title, size(m.countries) AS countryCount
-ORDER BY countryCount DESC
-LIMIT 5","Cypher uses size() on a string property (m.countries) to count list elements. The countries attribute is a single string in the TypeQL schema, not a multi-cardinality attribute. No equivalent TypeQL operation exists to count elements within a string value."
-314,What are the top 5 movies that have the most languages spoken in them?,"MATCH (m:Movie)
-RETURN m.title AS title, size(m.languages) AS languageCount
-ORDER BY languageCount DESC
-LIMIT 5","Unsupported feature: size() on list property. The languages attribute is a single string in TypeQL schema, and size()/split() operations are not supported in TypeQL."
-363,Which 5 movies have the most diverse language offerings?,"MATCH (m:Movie)
-WITH m, size(m.languages) AS languageCount
-ORDER BY languageCount DESC
-LIMIT 5
-RETURN m.title AS title, languageCount",Unsupported: size() function on property array. TypeQL has no equivalent for counting elements in a stored list/array property.
 396,Identify directors who directed a movie in the year they were born.,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
 WHERE d.born IS NOT NULL AND m.year = date(d.born).year
 RETURN d.name AS DirectorName, m.title AS MovieTitle, d.born AS BirthYear, m.year AS MovieYear",Unsupported: date component extraction (date(d.born).year). TypeQL has no function to extract year from a date value.
 408,Which actors have acted in movies that were released on their birthday?,"MATCH (a:Actor)-[:ACTED_IN]->(m:Movie)
 WHERE date(m.released) = date(a.born)
 RETURN a.name AS actorName, m.title AS movieTitle, a.born AS birthDate, m.released AS releaseDate",Requires date() type casting to compare string (released) with date (born) attributes. TypeQL does not support cross-type comparison or string-to-date casting.
-415,List the top 5 movies with the most countries available in their languages list.,"MATCH (m:Movie)
-RETURN m.title AS title, size(m.countries) AS countryCount
-ORDER BY countryCount DESC
-LIMIT 5",Unsupported feature: size() on collection/array attribute. TypeQL has no equivalent for counting elements in a list-valued property.
-421,What are the top 5 movies with the most languages available?,"MATCH (m:Movie)
-RETURN m.title AS title, size(m.languages) AS language_count
-ORDER BY language_count DESC
-LIMIT 5","Unsupported: size() on array property. Languages is a single string attribute in TypeQL schema, cannot count individual language values."
-434,Identify movies that have languages lists containing more than 5 languages.,"MATCH (m:Movie)
-WHERE size(m.languages) > 5
-RETURN m.title AS title, m.languages AS languages","Unsupported feature: size() on list property. The languages attribute is a single string value in the schema, and TypeQL has no size() function to count elements within a stored list/array."
-436,List the movies that have been released in at least three different languages.,"MATCH (m:Movie)
-WHERE size(m.languages) >= 3
-RETURN m.title AS MovieTitle, m.languages AS Languages","Unsupported: size() on array property. The languages attribute is a single string in the TypeQL schema, not a multi-cardinality attribute. Cannot count individual language values within a string."
-440,What are the first 3 movies with the highest number of languages available?,"MATCH (m:Movie)
-RETURN m.title, size(m.languages) AS numLanguages
-ORDER BY numLanguages DESC
-LIMIT 3","Cypher size() on list property not supported in TypeQL - languages is a single string attribute, cannot count list elements"
 447,What are the first 3 movies with a director who has a bio longer than 500 words?,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
 WHERE size(split(d.bio, "" "")) > 500
 RETURN m.title AS MovieTitle, d.name AS DirectorName
 ORDER BY m.released
 LIMIT 3",Unsupported: Cypher uses split() to count words in a string. TypeQL has no split() or word-count function.
-453,Which 5 movies had their entire plot translated into more than one language?,"MATCH (m:Movie)
-WHERE size(m.languages) > 1
-RETURN m.title AS MovieTitle, m.languages AS TranslatedLanguages
-ORDER BY size(m.languages) DESC
-LIMIT 5","Unsupported: size() function on list property. The languages attribute is a single string in the TypeQL schema (not multi-cardinality), and size() is not available in TypeQL."
 455,What are the top 5 movies with the smallest gap between release and rating date?,"MATCH (u:User)-[r:RATED]->(m:Movie)
 WITH m, r, duration.inDays(date(m.released), date(datetime({epochSeconds: r.timestamp}))) AS gap
 RETURN m.title AS movieTitle, gap
 ORDER BY gap ASC
 LIMIT 5","Unsupported: date arithmetic (duration.inDays, epoch seconds to date conversion) not available in TypeQL 3.0"
-457,Which 5 directors have directed the same movie?,"MATCH (d1:Director)-[:DIRECTED]->(m:Movie)<-[:DIRECTED]-(d2:Director)
-WHERE d1 <> d2
-WITH m, collect(d1.name) AS directors
-WHERE size(directors) >= 5
-RETURN m.title AS movieTitle, directors
-LIMIT 5",Uses collect() and size() which are unsupported in TypeQL
 481,Which 5 movies have the most quotes listed in their plots?,"MATCH (m:Movie)
 WITH m, size(split(m.plot, '""')) / 2 AS quote_count
 RETURN m.title AS movie_title, quote_count
 ORDER BY quote_count DESC
 LIMIT 5",Uses split() and size() string functions which are unsupported in TypeQL
-494,Which top 5 movies have the most diverse range of spoken languages?,"MATCH (m:Movie)
-WITH m, size(m.languages) AS numLanguages
-ORDER BY numLanguages DESC
-LIMIT 5
-RETURN m.title AS title, m.languages AS languages, numLanguages","Unsupported: size() on array property. The languages attribute is a single string in TypeQL (not multi-cardinality), and there is no size() function to count elements in an array/list."
-512,Which three movies have the most different countries listed?,"MATCH (m:Movie)
-WITH m, size(m.countries) AS countryCount
-ORDER BY countryCount DESC
-LIMIT 3
-RETURN m.title AS title, countryCount","Unsupported: size() on array property. TypeQL countries attribute is a single string, not a list. No way to count list elements."
-527,List the first 3 movies with the most diverse country production origins.,"MATCH (m:Movie)
-WITH m, size(m.countries) AS country_count
-ORDER BY country_count DESC
-LIMIT 3
-RETURN m.title AS title, m.countries AS countries",Cypher uses size() on a string property (m.countries) which is unsupported in TypeQL. No equivalent function exists.
 529,What are the top 5 movies released in the last 5 years?,"MATCH (m:Movie)
 WHERE m.released >= date().year - 5
 RETURN m.title, m.released, m.imdbRating
@@ -147,100 +35,19 @@ WHERE size(split(m.plot, "" "")) > 100
 RETURN m.title, m.plot
 ORDER BY size(split(m.plot, "" "")) DESC
 LIMIT 5",Unsupported: split() and size() string/array functions have no TypeQL equivalent. Cannot count words in a string.
-554,What are the top 5 most recent movies in the database and their genres?,"MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)
-RETURN m.title AS movieTitle, m.released AS releaseDate, collect(g.name) AS genres
-ORDER BY m.released DESC
-LIMIT 5",collect() is unsupported in TypeQL - cannot aggregate genre names into an array per movie
-556,What are the top 5 movies with the highest number of countries represented in their languages list?,"MATCH (m:Movie)
-WITH m, size(m.countries) AS countryCount
-ORDER BY countryCount DESC
-LIMIT 5
-RETURN m.title AS title, countryCount","Cypher size() on list property (m.countries) has no TypeQL equivalent. The countries attribute is a single string value in the schema, not multi-cardinality, so counting elements is not possible."
-564,What are the top 5 movies with the most languages and at least one genre being 'Action'?,"MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)
-WHERE g.name = 'Action'
-WITH m, size(m.languages) AS numLanguages
-ORDER BY numLanguages DESC
-LIMIT 5
-RETURN m.title AS title, numLanguages","Unsupported: size() on array property. The languages attribute is a single string in the TypeQL schema (not multi-cardinality), and TypeQL has no size() function to count elements in a stored list/array."
 609,Find all users who rated a movie on its release date.,"MATCH (u:User)-[r:RATED]->(m:Movie)
 WHERE date(datetime({epochSeconds: r.timestamp})) = date(m.released)
 RETURN u.name AS userName, m.title AS movieTitle, r.rating AS rating",Unsupported: requires epoch-seconds-to-date conversion (date arithmetic). TypeQL cannot convert integer timestamps to date values for comparison.
-610,List the movies that have been released in more than 5 countries.,"MATCH (m:Movie)
-WHERE size(m.countries) > 5
-RETURN m.title AS MovieTitle, size(m.countries) AS NumberOfCountries","Cypher uses size() on countries property which is unsupported in TypeQL. The countries attribute is a single string in the schema with no multi-cardinality, so array-length operations cannot be replicated."
-627,What are the top 3 movies with the most diverse set of spoken languages?,"MATCH (m:Movie)
-WITH m, size(m.languages) AS numLanguages
-ORDER BY numLanguages DESC
-LIMIT 3
-RETURN m.title AS title, m.languages AS languages, numLanguages","Unsupported: size() on array property. The languages attribute is a single string in the TypeQL schema (no multi-cardinality), so counting individual languages from an array is not possible."
-632,What are the first 3 movies with a main actor over the age of 50 at the time of filming?,"MATCH (a:Actor)-[r:ACTED_IN]->(m:Movie)
-WHERE r.role CONTAINS ""main""
-WITH a, m, r, date(m.released) AS releaseDate, date(a.born) AS birthDate
-WHERE duration.inDays(birthDate, releaseDate).years > 50
-RETURN m.title AS MovieTitle, m.released AS ReleaseDate, a.name AS ActorName, duration.inDays(birthDate, releaseDate).years AS ActorAge
-ORDER BY m.released
-LIMIT 3",date arithmetic (duration.inDays to compute age from date difference) is unsupported in TypeQL
-636,What are the first 3 movies with a majority of non-English languages?,"MATCH (m:Movie)
-WHERE size([lang IN m.languages WHERE lang <> 'English']) > size(m.languages) / 2
-RETURN m.title AS movieTitle, m.languages AS languages
-ORDER BY m.title
-LIMIT 3",Unsupported: size() on list comprehension and array element filtering are not available in TypeQL
-644,Which three directors have directed movies in more than one language?,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
-WHERE size(m.languages) > 1
-WITH d, count(DISTINCT m) AS movieCount
-WHERE movieCount > 1
-RETURN d.name AS Director, movieCount
-ORDER BY movieCount DESC
-LIMIT 3","Unsupported feature: size() on list property. The Cypher uses size(m.languages) > 1 to check if a movie has multiple languages stored as a list, but TypeQL languages attribute is a single string with no list size operation available."
-649,List the top 3 movies that have multiple languages but a single country of origin.,"MATCH (m:Movie)
-WHERE size(m.languages) > 1 AND size(m.countries) = 1
-RETURN m.title AS title, size(m.languages) AS numLanguages
-ORDER BY numLanguages DESC
-LIMIT 3",Unsupported: size() on list properties. Schema defines languages and countries as single-valued string attributes; cannot count multi-valued list entries in TypeQL.
 676,List the top 3 movies with a released date on a Friday.,"MATCH (m:Movie)
 WHERE date(m.released).dayOfWeek = 5
 RETURN m.title, m.released
 ORDER BY m.imdbRating DESC
 LIMIT 3",Unsupported: date arithmetic (dayOfWeek) - released is a string attribute and TypeQL has no date parsing or day-of-week functions
-682,What are the top 5 movies with the highest number of countries involved?,"MATCH (m:Movie)
-WITH m, size(m.countries) AS countryCount
-ORDER BY countryCount DESC
-LIMIT 5
-RETURN m.title AS title, countryCount","Unsupported: size() on list property. In the schema, countries is a single string attribute, not multi-cardinality. TypeQL has no split() or array size function to count elements within a string."
-694,What are the top 5 movies with the most languages spoken?,"MATCH (m:Movie)
-WITH m, size(m.languages) AS numLanguages
-ORDER BY numLanguages DESC
-LIMIT 5
-RETURN m.title AS title, numLanguages","Unsupported: size() on list property. The languages attribute is single-valued string (not multi-cardinality), so counting individual languages from a comma-separated string is not possible in TypeQL (no split() or size() support)."
 703,List the first 3 users who rated a movie on its release day.,"MATCH (u:User)-[r:RATED]->(m:Movie)
 WHERE date(datetime({epochSeconds: r.timestamp})) = date(m.released)
 RETURN u.name AS userName, m.title AS movieTitle, date(datetime({epochSeconds: r.timestamp})) AS ratingDate
 ORDER BY ratingDate
 LIMIT 3","Unsupported: requires epoch-seconds-to-date conversion and string-to-date comparison. TypeQL has no built-in function to convert integer timestamps to dates, and released is a string type."
-710,List the first 3 movies with exactly three languages spoken.,"MATCH (m:Movie)
-WHERE size(m.languages) = 3
-RETURN m.title AS title, m.languages AS languages
-ORDER BY m.title
-LIMIT 3","Unsupported: size() on array property. In the schema, languages is a single string attribute, not multi-cardinality. Cannot count individual language values within a single string."
-711,Which 3 directors were born in the same country they directed their first movie?,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
-WITH d, m
-ORDER BY m.year ASC
-WITH d, collect(m)[0] AS first_movie
-WHERE d.bornIn IS NOT NULL AND d.bornIn = first_movie.countries[0]
-RETURN d.name AS DirectorName, d.bornIn AS Country
-LIMIT 3",Unsupported features: collect() and array indexing [0] have no TypeQL equivalent
 733,Find all movies that have been rated by users born after 1980.,"MATCH (u:User)-[:RATED]->(m:Movie)
 WHERE date(u.born) > date('1980-01-01')
 RETURN m.title AS MovieTitle, m.year AS ReleaseYear, u.name AS UserName",Schema mismatch: user entity does not own born attribute in TypeQL schema (only person does). The Cypher query references a property that does not exist on the User type.
-743,What are the top 3 movies with the most countries listed in their release?,"MATCH (m:Movie)
-RETURN m.title AS title, size(m.countries) AS countryCount
-ORDER BY countryCount DESC
-LIMIT 3","Unsupported feature: size() on property. The countries attribute is a single string in the TypeQL schema (not multi-cardinality), so counting list elements from a Neo4j list property cannot be replicated."
-748,What are the top 5 movies by number of languages spoken in them?,"MATCH (m:Movie)
-RETURN m.title AS title, size(m.languages) AS numLanguages
-ORDER BY numLanguages DESC
-LIMIT 5","Cypher size() on list property not supported in TypeQL. The languages attribute is single-valued string in TypeQL schema, and there is no equivalent to count elements within a list/array property value."
-761,What are the top 3 movies with the highest number of countries involved in their production?,"MATCH (m:Movie)
-RETURN m.title AS title, size(m.countries) AS countryCount
-ORDER BY countryCount DESC
-LIMIT 3","Unsupported feature: size() on list property. The countries attribute is a single string in TypeQL schema with no multi-cardinality, so counting individual countries from a list property is not possible."

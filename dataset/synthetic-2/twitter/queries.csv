@@ -6610,3 +6610,27 @@ limit 3;
 fetch {
   ""source_name"": $source.source_name
 };"
+23,List the names of the top 5 users who have the highest scores of being similar to Neo4j.,"MATCH (me:Me {screen_name: 'neo4j'})-[:SIMILAR_TO]->(user:User)
+RETURN user.name, user.screen_name, user.betweenness
+ORDER BY user.betweenness DESC
+LIMIT 5","match
+  $me isa me, has name ""Neo4j"";
+  $s isa similar_to (source_user: $u, similar_user: $me), has score $score;
+  $u has name $name;
+sort $score desc;
+limit 5;
+fetch { ""name"": $name, ""similarity"": $score };"
+66,Show the first 3 hashtags tagged in tweets that have been retweeted more than 100 times.,"MATCH (t:Tweet)-[:TAGS]->(h:Hashtag)
+WHERE t.favorites > 100
+RETURN h.name
+LIMIT 3","match
+$tweet isa tweet;
+retweets (original_tweet: $tweet, retweeting_tweet: $retweet);
+reduce $count = count groupby $tweet;
+match
+$count > 100;
+tags (tagged_tweet: $tweet, tag: $hashtag);
+limit 3;
+fetch {
+  ""hashtag"": $hashtag.hashtag_name
+};"

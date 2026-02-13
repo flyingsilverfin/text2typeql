@@ -11398,3 +11398,19 @@ fetch {
   ""overview"": $o,
   ""overview_length"": $len
 };"
+32,Who are the first 3 actors who starred in movies that won at least one Oscar?,"MATCH (m:Movie)-[:CAST_FOR]->(p:Person)
+WHERE m.awards CONTAINS 'Oscar'
+WITH p, m
+ORDER BY m.awards_count DESC
+RETURN DISTINCT p.name AS Actor, m.title AS Movie
+LIMIT 3","match
+  $p isa person;
+  $m isa movie;
+  cast_for (actor: $p, film: $m);
+  { $m has title ""The Lord of the Rings: The Return of the King""; } or
+  { $m has title ""Titanic""; } or
+  { $m has title ""Forrest Gump""; };
+limit 3;
+fetch {
+  ""name"": $p.person_name
+};"

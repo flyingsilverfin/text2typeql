@@ -1,10 +1,4 @@
 original_index,question,cypher,error
-32,Who are the first 3 actors who starred in movies that won at least one Oscar?,"MATCH (m:Movie)-[:CAST_FOR]->(p:Person)
-WHERE m.awards CONTAINS 'Oscar'
-WITH p, m
-ORDER BY m.awards_count DESC
-RETURN DISTINCT p.name AS Actor, m.title AS Movie
-LIMIT 3",Cypher references non-existent properties: m.awards and m.awards_count do not exist in the neoflix schema. No equivalent attributes available.
 40,Name the top 5 movies with the most detailed overviews (measured by word count).,"MATCH (m:Movie)
 WITH m, size(split(m.overview, "" "")) AS word_count
 ORDER BY word_count DESC

@@ -351,17 +351,17 @@ pipeline/docs/
 |----------|-------------|-----------|--------|
 | bluesky | 135 | 135 | 0 |
 | buzzoverflow | 592 | 584 | 8 |
-| companies | 966 | 949 | 17 |
+| companies | 966 | 964 | 2 |
 | fincen | 614 | 584 | 30 |
 | gameofthrones | 393 | 384 | 9 |
 | grandstack | 807 | 797 | 10 |
-| movies | 738 | 728 | 10 |
-| neoflix | 923 | 914 | 9 |
+| movies | 738 | 737 | 1 |
+| neoflix | 923 | 915 | 8 |
 | network | 625 | 613 | 12 |
 | northwind | 807 | 780 | 27 |
 | offshoreleaks | 507 | 493 | 14 |
-| recommendations | 775 | 722 | 53 |
+| recommendations | 775 | 763 | 12 |
 | stackoverflow2 | 307 | 299 | 8 |
-| twitch | 576 | 566 | 10 |
-| twitter | 502 | 500 | 2 |
-| **Total** | **9267** | **9048** | **219** |
+| twitch | 576 | 570 | 6 |
+| twitter | 502 | 502 | 0 |
+| **Total** | **9267** | **9120** | **147** |

@@ -9739,3 +9739,595 @@ fetch {
   ""name"": $a.name,
   ""bio"": $b
 };"
+7,List the top 5 genres of movies with the most language diversity.,"MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)
+WITH g.name AS genre, size(m.languages) AS languageCount
+RETURN genre, sum(languageCount) AS totalLanguages
+ORDER BY totalLanguages DESC
+LIMIT 5","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+in_genre (film: $m, genre: $g);
+let $lang_count = language_count($m);
+reduce $avg_langs = mean($lang_count) groupby $g;
+sort $avg_langs desc;
+limit 5;
+fetch { ""genre"": $g.name, ""avgLanguages"": $avg_langs };"
+14,Which 5 movies have been released in the most number of countries?,"MATCH (m:Movie)
+RETURN m.title AS title, size(m.countries) AS country_count
+ORDER BY country_count DESC
+LIMIT 5","with fun country_count($m: movie) -> integer:
+  match $m has countries $c;
+  return count;
+
+match
+$m isa movie;
+let $ctry_count = country_count($m);
+$ctry_count > 0;
+sort $ctry_count desc;
+limit 5;
+fetch { ""title"": $m.title, ""numCountries"": $ctry_count };"
+28,What are the top 3 movies based on the number of different languages they have been released in?,"MATCH (m:Movie)
+RETURN m.title AS title, size(m.languages) AS languageCount
+ORDER BY languageCount DESC
+LIMIT 3","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 3;
+fetch { ""title"": $m.title, ""languageCount"": $lang_count };"
+37,Which 5 movies have the most distinct countries of release listed?,"MATCH (m:Movie)
+WITH m, size(m.countries) AS countryCount
+ORDER BY countryCount DESC
+LIMIT 5
+RETURN m.title AS title, countryCount","with fun country_count($m: movie) -> integer:
+  match $m has countries $c;
+  return count;
+
+match
+$m isa movie;
+let $ctry_count = country_count($m);
+$ctry_count > 0;
+sort $ctry_count desc;
+limit 5;
+fetch { ""title"": $m.title, ""numCountries"": $ctry_count };"
+91,List the 5 movies with the most languages spoken.,"MATCH (m:Movie)
+RETURN m.title, size(m.languages) AS numLanguages
+ORDER BY numLanguages DESC
+LIMIT 5","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 5;
+fetch { ""title"": $m.title, ""languageCount"": $lang_count };"
+138,Which three movies have the most diverse set of spoken languages?,"MATCH (m:Movie)
+WITH m, size(m.languages) AS numLanguages
+ORDER BY numLanguages DESC
+LIMIT 3
+RETURN m.title AS title, m.languages AS languages, numLanguages","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 3;
+fetch { ""title"": $m.title, ""languageCount"": $lang_count };"
+151,List the first 5 movies with at least three different languages listed.,"MATCH (m:Movie)
+WHERE size(m.languages) >= 3
+RETURN m.title AS title, m.languages AS languages
+ORDER BY m.title
+LIMIT 5","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count >= 3;
+limit 5;
+fetch { ""title"": $m.title };"
+163,What are the first 3 movies that have been released in exactly three different countries?,"MATCH (m:Movie)
+WHERE size(m.countries) = 3
+RETURN m.title AS title, m.released AS releaseDate
+ORDER BY m.released
+LIMIT 3","with fun country_count($m: movie) -> integer:
+  match $m has countries $c;
+  return count;
+
+match
+$m isa movie, has released $rel;
+let $ctry_count = country_count($m);
+$ctry_count == 3;
+sort $rel;
+limit 3;
+fetch { ""title"": $m.title, ""released"": $rel };"
+173,What are the top 5 movies with the most distinct countries of origin?,"MATCH (m:Movie)
+WITH m, size(m.countries) AS countryCount
+ORDER BY countryCount DESC
+LIMIT 5
+RETURN m.title AS title, countryCount","with fun country_count($m: movie) -> integer:
+  match $m has countries $c;
+  return count;
+
+match
+$m isa movie;
+let $ctry_count = country_count($m);
+$ctry_count > 0;
+sort $ctry_count desc;
+limit 5;
+fetch { ""title"": $m.title, ""numCountries"": $ctry_count };"
+178,Which 3 movies have the highest number of languages spoken?,"MATCH (m:Movie)
+RETURN m.title, size(m.languages) AS numLanguages
+ORDER BY numLanguages DESC
+LIMIT 3","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 3;
+fetch { ""title"": $m.title, ""languageCount"": $lang_count };"
+280,Show the top 5 movies with the most languages spoken.,"MATCH (m:Movie)
+RETURN m.title AS title, size(m.languages) AS languageCount
+ORDER BY languageCount DESC
+LIMIT 5","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie, has languages $lang;
+let $lang_count = language_count($m);
+sort $lang_count desc;
+limit 5;
+fetch { ""title"": $m.title, ""languageCount"": $lang_count };"
+289,What are the first 5 genres associated with movies having the most languages available?,"MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)
+WITH m, g, size(m.languages) AS numLanguages
+ORDER BY numLanguages DESC
+LIMIT 5
+RETURN g.name AS genre, numLanguages","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+in_genre (film: $m, genre: $g);
+let $lang_count = language_count($m);
+reduce $max_langs = max($lang_count) groupby $g;
+sort $max_langs desc;
+limit 5;
+fetch { ""genre"": $g.name, ""maxLanguages"": $max_langs };"
+298,What are the top 5 movies with the most countries listed in their production?,"MATCH (m:Movie)
+RETURN m.title AS title, size(m.countries) AS countryCount
+ORDER BY countryCount DESC
+LIMIT 5","match
+$m isa movie, has title $t, has countries $c;
+reduce $count = count($c) groupby $m, $t;
+sort $count desc;
+limit 5;
+fetch { ""title"": $t, ""country_count"": $count };"
+314,What are the top 5 movies that have the most languages spoken in them?,"MATCH (m:Movie)
+RETURN m.title AS title, size(m.languages) AS languageCount
+ORDER BY languageCount DESC
+LIMIT 5","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 5;
+fetch { ""title"": $m.title, ""languageCount"": $lang_count };"
+363,Which 5 movies have the most diverse language offerings?,"MATCH (m:Movie)
+WITH m, size(m.languages) AS languageCount
+ORDER BY languageCount DESC
+LIMIT 5
+RETURN m.title AS title, languageCount","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 5;
+fetch { ""title"": $m.title, ""languageCount"": $lang_count };"
+415,List the top 5 movies with the most countries available in their languages list.,"MATCH (m:Movie)
+RETURN m.title AS title, size(m.countries) AS countryCount
+ORDER BY countryCount DESC
+LIMIT 5","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 5;
+fetch { ""title"": $m.title, ""languageCount"": $lang_count };"
+421,What are the top 5 movies with the most languages available?,"MATCH (m:Movie)
+RETURN m.title AS title, size(m.languages) AS language_count
+ORDER BY language_count DESC
+LIMIT 5","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 5;
+fetch { ""title"": $m.title, ""languageCount"": $lang_count };"
+434,Identify movies that have languages lists containing more than 5 languages.,"MATCH (m:Movie)
+WHERE size(m.languages) > 5
+RETURN m.title AS title, m.languages AS languages","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 5;
+fetch { ""title"": $m.title };"
+436,List the movies that have been released in at least three different languages.,"MATCH (m:Movie)
+WHERE size(m.languages) >= 3
+RETURN m.title AS MovieTitle, m.languages AS Languages","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count >= 3;
+fetch { ""title"": $m.title };"
+440,What are the first 3 movies with the highest number of languages available?,"MATCH (m:Movie)
+RETURN m.title, size(m.languages) AS numLanguages
+ORDER BY numLanguages DESC
+LIMIT 3","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 3;
+fetch { ""title"": $m.title };"
+453,Which 5 movies had their entire plot translated into more than one language?,"MATCH (m:Movie)
+WHERE size(m.languages) > 1
+RETURN m.title AS MovieTitle, m.languages AS TranslatedLanguages
+ORDER BY size(m.languages) DESC
+LIMIT 5","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 1;
+limit 5;
+fetch { ""title"": $m.title };"
+457,Which 5 directors have directed the same movie?,"MATCH (d1:Director)-[:DIRECTED]->(m:Movie)<-[:DIRECTED]-(d2:Director)
+WHERE d1 <> d2
+WITH m, collect(d1.name) AS directors
+WHERE size(directors) >= 5
+RETURN m.title AS movieTitle, directors
+LIMIT 5","match directed (director: $d1, film: $m); directed (director: $d2, film: $m); not { $d1 is $d2; }; $d1 has name $n1; $d2 has name $n2; $m has title $t; limit 5; fetch { ""director1"": $n1, ""director2"": $n2, ""movie"": $t };"
+494,Which top 5 movies have the most diverse range of spoken languages?,"MATCH (m:Movie)
+WITH m, size(m.languages) AS numLanguages
+ORDER BY numLanguages DESC
+LIMIT 5
+RETURN m.title AS title, m.languages AS languages, numLanguages","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 5;
+fetch { ""title"": $m.title, ""languageCount"": $lang_count };"
+512,Which three movies have the most different countries listed?,"MATCH (m:Movie)
+WITH m, size(m.countries) AS countryCount
+ORDER BY countryCount DESC
+LIMIT 3
+RETURN m.title AS title, countryCount","with fun country_count($m: movie) -> integer:
+  match $m has countries $c;
+  return count;
+
+match
+$m isa movie;
+let $ctry_count = country_count($m);
+$ctry_count > 0;
+sort $ctry_count desc;
+limit 3;
+fetch { ""title"": $m.title, ""numCountries"": $ctry_count };"
+527,List the first 3 movies with the most diverse country production origins.,"MATCH (m:Movie)
+WITH m, size(m.countries) AS country_count
+ORDER BY country_count DESC
+LIMIT 3
+RETURN m.title AS title, m.countries AS countries","with fun country_count($m: movie) -> integer:
+  match $m has countries $c;
+  return count;
+
+match
+$m isa movie;
+let $ctry_count = country_count($m);
+$ctry_count > 0;
+sort $ctry_count desc;
+limit 3;
+fetch { ""title"": $m.title, ""numCountries"": $ctry_count };"
+554,What are the top 5 most recent movies in the database and their genres?,"MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)
+RETURN m.title AS movieTitle, m.released AS releaseDate, collect(g.name) AS genres
+ORDER BY m.released DESC
+LIMIT 5","match $m isa movie, has title $t, has year $y; in_genre (film: $m, genre: $g); $g has name $gn; sort $y desc; limit 5; fetch { ""movie"": $t, ""year"": $y, ""genre"": $gn };"
+556,What are the top 5 movies with the highest number of countries represented in their languages list?,"MATCH (m:Movie)
+WITH m, size(m.countries) AS countryCount
+ORDER BY countryCount DESC
+LIMIT 5
+RETURN m.title AS title, countryCount","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 5;
+fetch { ""title"": $m.title, ""languageCount"": $lang_count };"
+564,What are the top 5 movies with the most languages and at least one genre being 'Action'?,"MATCH (m:Movie)-[:IN_GENRE]->(g:Genre)
+WHERE g.name = 'Action'
+WITH m, size(m.languages) AS numLanguages
+ORDER BY numLanguages DESC
+LIMIT 5
+RETURN m.title AS title, numLanguages","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+$g isa genre, has name ""Action"";
+in_genre (film: $m, genre: $g);
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 5;
+fetch { ""title"": $m.title };"
+610,List the movies that have been released in more than 5 countries.,"MATCH (m:Movie)
+WHERE size(m.countries) > 5
+RETURN m.title AS MovieTitle, size(m.countries) AS NumberOfCountries","with fun country_count($m: movie) -> integer:
+  match $m has countries $c;
+  return count;
+
+match
+$m isa movie;
+let $ctry_count = country_count($m);
+$ctry_count > 5;
+fetch { ""title"": $m.title };"
+627,What are the top 3 movies with the most diverse set of spoken languages?,"MATCH (m:Movie)
+WITH m, size(m.languages) AS numLanguages
+ORDER BY numLanguages DESC
+LIMIT 3
+RETURN m.title AS title, m.languages AS languages, numLanguages","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 3;
+fetch { ""title"": $m.title, ""languageCount"": $lang_count };"
+632,What are the first 3 movies with a main actor over the age of 50 at the time of filming?,"MATCH (a:Actor)-[r:ACTED_IN]->(m:Movie)
+WHERE r.role CONTAINS ""main""
+WITH a, m, r, date(m.released) AS releaseDate, date(a.born) AS birthDate
+WHERE duration.inDays(birthDate, releaseDate).years > 50
+RETURN m.title AS MovieTitle, m.released AS ReleaseDate, a.name AS ActorName, duration.inDays(birthDate, releaseDate).years AS ActorAge
+ORDER BY m.released
+LIMIT 3","match
+$m isa movie, has year $y;
+$p isa person, has born $b;
+acted_in (actor: $p, film: $m);
+let $threshold = $y - 50;
+$b < $threshold;
+$m has released $rel;
+sort $rel asc;
+limit 3;
+fetch { ""title"": $m.title, ""actor"": $p.name };"
+636,What are the first 3 movies with a majority of non-English languages?,"MATCH (m:Movie)
+WHERE size([lang IN m.languages WHERE lang <> 'English']) > size(m.languages) / 2
+RETURN m.title AS movieTitle, m.languages AS languages
+ORDER BY m.title
+LIMIT 3","with fun non_english_count($m: movie) -> integer:
+  match $m has languages $l; $l != ""English"";
+  return count;
+
+with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $ne = non_english_count($m);
+let $total = language_count($m);
+$total > 0;
+let $half = $total / 2;
+$ne > $half;
+limit 3;
+fetch { ""title"": $m.title };"
+644,Which three directors have directed movies in more than one language?,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
+WHERE size(m.languages) > 1
+WITH d, count(DISTINCT m) AS movieCount
+WHERE movieCount > 1
+RETURN d.name AS Director, movieCount
+ORDER BY movieCount DESC
+LIMIT 3","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$p isa person;
+$m isa movie;
+directed (director: $p, film: $m);
+let $lang_count = language_count($m);
+$lang_count > 1;
+reduce $num_multilingual = count($m) groupby $p;
+match
+$num_multilingual > 1;
+sort $num_multilingual desc;
+limit 3;
+fetch { ""director"": $p.name, ""num_multilingual_movies"": $num_multilingual };"
+649,List the top 3 movies that have multiple languages but a single country of origin.,"MATCH (m:Movie)
+WHERE size(m.languages) > 1 AND size(m.countries) = 1
+RETURN m.title AS title, size(m.languages) AS numLanguages
+ORDER BY numLanguages DESC
+LIMIT 3","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+with fun country_count($m: movie) -> integer:
+  match $m has countries $c;
+  return count;
+
+match
+$m isa movie, has imdb_rating $r;
+let $lang_count = language_count($m);
+let $ctry_count = country_count($m);
+$lang_count > 1;
+$ctry_count == 1;
+sort $r desc;
+limit 3;
+fetch { ""title"": $m.title };"
+682,What are the top 5 movies with the highest number of countries involved?,"MATCH (m:Movie)
+WITH m, size(m.countries) AS countryCount
+ORDER BY countryCount DESC
+LIMIT 5
+RETURN m.title AS title, countryCount","with fun country_count($m: movie) -> integer:
+  match $m has countries $c;
+  return count;
+
+match
+$m isa movie;
+let $ctry_count = country_count($m);
+$ctry_count > 0;
+sort $ctry_count desc;
+limit 5;
+fetch { ""title"": $m.title, ""numCountries"": $ctry_count };"
+694,What are the top 5 movies with the most languages spoken?,"MATCH (m:Movie)
+WITH m, size(m.languages) AS numLanguages
+ORDER BY numLanguages DESC
+LIMIT 5
+RETURN m.title AS title, numLanguages","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 5;
+fetch { ""title"": $m.title, ""languageCount"": $lang_count };"
+710,List the first 3 movies with exactly three languages spoken.,"MATCH (m:Movie)
+WHERE size(m.languages) = 3
+RETURN m.title AS title, m.languages AS languages
+ORDER BY m.title
+LIMIT 3","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count == 3;
+limit 3;
+fetch { ""title"": $m.title };"
+711,Which 3 directors were born in the same country they directed their first movie?,"MATCH (d:Director)-[:DIRECTED]->(m:Movie)
+WITH d, m
+ORDER BY m.year ASC
+WITH d, collect(m)[0] AS first_movie
+WHERE d.bornIn IS NOT NULL AND d.bornIn = first_movie.countries[0]
+RETURN d.name AS DirectorName, d.bornIn AS Country
+LIMIT 3","with fun first_movie_year($d: person) -> integer:
+  match 
+    directed (director: $d, film: $m);
+    $m has year $y;
+  return min($y);
+match
+$d isa person, has born_in $b, has name $n;
+directed (director: $d, film: $m);
+$m has countries $c, has year $y, has title $t;
+$b == $c;
+let $first_year = first_movie_year($d);
+$y == $first_year;
+sort $y asc;
+limit 3;
+fetch { ""director"": $n, ""bornCountry"": $b, ""firstMovie"": $t };"
+743,What are the top 3 movies with the most countries listed in their release?,"MATCH (m:Movie)
+RETURN m.title AS title, size(m.countries) AS countryCount
+ORDER BY countryCount DESC
+LIMIT 3","with fun country_count($m: movie) -> integer:
+  match $m has countries $c;
+  return count;
+
+match
+$m isa movie;
+let $ctry_count = country_count($m);
+$ctry_count > 0;
+sort $ctry_count desc;
+limit 3;
+fetch { ""title"": $m.title, ""numCountries"": $ctry_count };"
+748,What are the top 5 movies by number of languages spoken in them?,"MATCH (m:Movie)
+RETURN m.title AS title, size(m.languages) AS numLanguages
+ORDER BY numLanguages DESC
+LIMIT 5","with fun language_count($m: movie) -> integer:
+  match $m has languages $l;
+  return count;
+
+match
+$m isa movie;
+let $lang_count = language_count($m);
+$lang_count > 0;
+sort $lang_count desc;
+limit 5;
+fetch { ""title"": $m.title, ""languageCount"": $lang_count };"
+761,What are the top 3 movies with the highest number of countries involved in their production?,"MATCH (m:Movie)
+RETURN m.title AS title, size(m.countries) AS countryCount
+ORDER BY countryCount DESC
+LIMIT 3","with fun country_count($m: movie) -> integer:
+  match $m has countries $c;
+  return count;
+
+match
+$m isa movie;
+let $ctry_count = country_count($m);
+$ctry_count > 0;
+sort $ctry_count desc;
+limit 3;
+fetch { ""title"": $m.title, ""numCountries"": $ctry_count };"
