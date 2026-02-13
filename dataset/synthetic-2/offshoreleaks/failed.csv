@@ -35,9 +35,3 @@ RETURN i.name AS IntermediaryName, i.countries AS IntermediaryCountry, a.address
 472,"List the entities that have a similar name and address as 'NINGBO SUNRISE ENTERPRISES UNITED CO., LTD.'","MATCH (e:Entity)-[:similar]->(o:Other)
 WHERE o.name = 'NINGBO SUNRISE ENTERPRISES UNITED CO., LTD.'
 RETURN e.name AS EntityName, e.address AS EntityAddress","Schema mismatch: Cypher references Entity-[:similar]->Other relationship but in TypeQL schema, offshore_entity and other do not play similar roles. Only intermediary and officer can participate in similar relations."
-476,List the entities that have multiple former names and provide all names.,"MATCH (e:Entity)
-WHERE size(split(e.former_name, "";"")) > 1
-RETURN e.name AS current_name, e.former_name AS former_names",Unsupported: split() and size() string functions not available in TypeQL
-491,How many entities were inactivated in February 2013?,"MATCH (e:Entity)
-WHERE e.inactivation_date STARTS WITH 'FEB-2013'
-RETURN count(e) AS inactivated_entities",TypeQL date type does not support string pattern matching (STARTS WITH). Cannot extract month/year from date values.

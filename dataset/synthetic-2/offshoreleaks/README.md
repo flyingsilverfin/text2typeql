@@ -7,10 +7,10 @@
 Entities, officers, intermediaries, addresses.
 
 ## Current Status
-- `queries.csv`: 495 converted queries
-- 12 failed queries
+- `queries.csv`: 497 converted queries
+- 10 failed queries
 
-Total: 495 + 12 = 507 / 507 ✓
+Total: 497 + 10 = 507 / 507 ✓
 
 ## Failed Queries
 
@@ -44,9 +44,17 @@ Total: 495 + 12 = 507 / 507 ✓
 ### Query 472
 **Error:** Schema mismatch: Cypher references Entity-[:similar]->Other relationship but in TypeQL schema, offshore_entity and other do not play similar roles. Only intermediary and officer can participate in similar relations.
 
-### Query 476
-**Error:** Unsupported: split() and size() string functions not available in TypeQL
+## Resolved Queries
 
-### Query 491
-**Error:** TypeQL date type does not support string pattern matching (STARTS WITH). Cannot extract month/year from date values.
+### Query 103 (resolved)
+Previously failed due to schema mismatch (officer vs intermediary types). Reinterpreted from English: intermediaries connected to >1 offshore entity, using `entity_count()` custom function.
+
+### Query 370 (resolved)
+Previously failed due to `collect()` + `size()`. Converted using `address_count()` function counting distinct postal_address entities per offshore_entity via `registered_address` relation.
+
+### Query 476 (resolved)
+Previously failed due to `split()` + `size()` on semicolon-delimited string. Reinterpreted using TypeQL multi-cardinality: count distinct `former_name` attributes > 1.
+
+### Query 491 (resolved)
+Previously failed due to `STARTS WITH 'FEB-2013'` string pattern matching on dates. Converted using date range comparison: `$d >= 2013-02-01; $d < 2013-03-01;`.
 
