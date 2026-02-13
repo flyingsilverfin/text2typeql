@@ -1,7 +1,0 @@
-original_index,question,cypher,error
-356,What are the names of businesses that have a point location latitude greater than 46.87?,"MATCH (b:Business)
-WHERE b.location.latitude > 46.87
-RETURN b.name",Neo4j Point type property access (location.latitude) not supported. Schema stores location as string; no numeric latitude attribute available for comparison.
-460,Which businesses have a POINT location with a latitude greater than 37 degrees?,"MATCH (b:Business)
-WHERE b.location.latitude > 37
-RETURN b.name AS businessName, b.location AS location","Cypher uses Neo4j spatial POINT type with .latitude sub-property access. TypeQL schema stores location as string; no way to extract latitude from a string attribute (no split, substring, or point type support)."
