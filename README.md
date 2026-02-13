@@ -10,7 +10,7 @@ Foundation models generate SQL and Cypher reasonably well thanks to large public
 
 The dataset was produced by converting Neo4j Labs' [text2cypher](https://github.com/neo4j-labs/text2cypher) dataset, which itself was generated using AI. It was created using agents operating under a detailed TypeQL 3.0 reference, with every query validated against a live TypeDB instance and semantically reviewed to verify it correctly answers the English question. About 5-10% of remaining queries were then manually prompted with extra information.
 
-Interestingly, the generation of TypeQL, which also relied on semantic validation against the schema, highlighted at least 30 cases in the synthetic-1 dataset across four databases (Twitter, Twitch, Companies, Recommendations), i.e. ~0.6% where Neo4j queries were incorrect against their own schema - but because it lacks a strong type system like TypeDB's, these were never found. Semantic review was completed for both datasets.
+Interestingly, the generation of TypeQL, which also relied on semantic validation against the schema, highlighted at least 37 cases across both datasets where Neo4j queries were incorrect against their own schema — but because Neo4j lacks a strong type system like TypeDB's, these were never found. These include wrong properties (using `favorites` when the question asks about retweets), reversed relation directions, non-existent attributes, and schema hallucinations. Semantic review was completed for all 22 databases. See the [full analysis](docs/neo_semantic_analysis.md).
 
 ## Source Datasets
 
@@ -97,13 +97,17 @@ movies = pd.read_csv("dataset/synthetic-1/movies/queries.csv")
 
 ## What the Type System Caught
 
-TypeDB's strict type system exposed roughly 30 queries (there may be more) across four databases where the original Cypher does not correctly answer the English question. Three patterns recurred:
+TypeDB's strict type system and semantic review exposed 37 queries across both datasets where the original Cypher does not correctly answer the English question. Two categories:
 
-- **Wrong property**: Twitter queries checking `favorites` when the question asks about retweets. TypeQL's explicit `retweets` relation forces correct semantics.
-- **Wrong direction**: Companies queries reversing supplier/customer direction. TypeQL's `supplies (supplier: $x, customer: $y)` makes the reversal visible.
-- **Wrong traversal**: Twitter queries returning tweets by the user instead of tweets by followers. TypeQL's role-based syntax eliminates the ambiguity.
+**Semantic errors** (32 queries across 5 databases):
+- **Wrong property** (10): Twitter queries checking `favorites` when the question asks about retweets. TypeQL's explicit `retweets` relation forces correct semantics.
+- **Wrong direction** (10): Companies queries reversing supplier/customer direction, Twitter queries returning tweets by the wrong user. TypeQL's explicit role assignments (`supplier:`, `customer:`, `author:`) make direction unambiguous.
+- **Type mismatches** (5): Twitch queries using wrong entity types in relations (Stream in a User-only role). TypeQL's role constraints reject this at validation time.
+- **Other** (7): Wrong sort criteria, hardcoded workarounds, data/question contradictions, non-existent attributes.
 
-In each case the TypeQL was written to correctly answer the English question. Details are in each domain's README.
+**Schema hallucinations** (5 queries across 4 databases): The LLM that generated the Cypher referenced properties or relationships that don't exist in the schema. Neo4j's schemaless model allows these to parse silently; TypeDB rejects them.
+
+In each case the TypeQL was written to correctly answer the English question. See the [full analysis](docs/neo_semantic_analysis.md) and each domain's README.
 
 ## Failed Queries
 
