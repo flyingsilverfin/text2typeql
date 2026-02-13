@@ -24,8 +24,8 @@ Pipeline to convert Neo4j text2cypher datasets to TypeQL format for training tex
 **Source**: https://github.com/neo4j-labs/text2cypher
 
 Two source datasets:
-- **synthetic-1**: `datasets/synthetic_opus_demodbs/` -- 7 databases, 4,776 valid queries (4,728 converted)
-- **synthetic-2**: `datasets/synthetic_gpt4o_demodbs/` -- 15 databases, 9,267 valid queries (7,240 converted, 174 failed, 1,853 pending)
+- **synthetic-1**: `datasets/synthetic_opus_demodbs/` -- 7 databases, 4,776 valid queries (4,733 converted, 43 failed)
+- **synthetic-2**: `datasets/synthetic_gpt4o_demodbs/` -- 15 databases, 9,267 valid queries (9,193 converted, 74 failed)
 
 ## Important: Sequential Processing
 

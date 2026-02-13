@@ -104,15 +104,15 @@ pipeline/
 | movies | 738 | 737 | 1 | ✓ complete |
 | neoflix | 923 | 916 | 7 | ✓ complete |
 | network | 625 | 620 | 5 | ✓ complete |
-| northwind | 807 | 780 | 27 | ✓ complete |
+| northwind | 807 | 807 | 0 | ✓ complete |
 | offshoreleaks | 507 | 493 | 14 | ✓ complete |
 | recommendations | 775 | 764 | 11 | ✓ complete |
 | stackoverflow2 | 307 | 299 | 8 | ✓ complete |
 | twitch | 576 | 571 | 5 | ✓ complete |
 | twitter | 502 | 502 | 0 | ✓ complete |
-| **Total** | **9,267** | **9,166** | **101** | **100%** |
+| **Total** | **9,267** | **9,193** | **74** | **100%** |
 
-### Failed Query Categories (101 remaining in synthetic-2)
+### Failed Query Categories (74 remaining in synthetic-2)
 
 | Category | Count | Description |
 |----------|-------|-------------|
@@ -121,7 +121,7 @@ pipeline/
 | Variable-length paths | ~7 | Transitive closure `[:REL*]` (8 resolved via recursive stream functions) |
 | Epoch timestamp conversion | ~10 | `datetime({epochSeconds: ...})` |
 | `collect()` aggregation | ~5 | No list collection equivalent (8 grandstack resolved via functions/flat rows) |
-| Type casting | ~5 | `toFloat()`, `toInteger()` on strings |
+| Type casting | ~1 | `toFloat()`, `toInteger()` on strings (northwind freight resolved via schema fix) |
 | Schema hallucinations | ~5 | Cypher references non-existent properties |
 | Other | ~27 | `UNWIND`, complex patterns, modulo, levenshtein |
 
