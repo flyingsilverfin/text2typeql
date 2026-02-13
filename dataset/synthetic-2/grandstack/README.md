@@ -12,13 +12,25 @@ Businesses, reviews, users, categories.
 
 Total: 805 + 2 = 807 / 807 ✓
 
-## Failed Queries
+## Failed Queries (2 total)
+
+Both failures involve Neo4j's spatial `POINT` type with sub-property access (`.latitude`). TypeQL does not yet support structured/composite value types. This will be unblocked when **structs** are implemented in TypeQL, allowing typed composite attributes with named fields.
 
 ### Query 356
-**Error:** Neo4j Point type property access (location.latitude) not supported. Schema stores location as string; no numeric latitude attribute available for comparison.
+**Reason:** Neo4j Point type — `location.latitude` sub-property access not supported in TypeQL. Requires struct types to model Point with latitude/longitude fields.
+```cypher
+MATCH (b:Business)
+WHERE b.location.latitude > 46.87
+RETURN b.name
+```
 
 ### Query 460
-**Error:** Cypher uses Neo4j spatial POINT type with .latitude sub-property access. TypeQL schema stores location as string; no way to extract latitude from a string attribute (no split, substring, or point type support).
+**Reason:** Neo4j Point type — `location.latitude` sub-property access not supported in TypeQL. Requires struct types to model Point with latitude/longitude fields.
+```cypher
+MATCH (b:Business)
+WHERE b.location.latitude > 37
+RETURN b.name AS businessName, b.location AS location
+```
 
 ## Resolved Queries
 

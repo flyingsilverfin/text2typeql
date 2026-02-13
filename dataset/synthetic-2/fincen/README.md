@@ -12,22 +12,64 @@ Financial filings, banks, countries.
 
 Total: 609 + 5 = 614 / 614 ✓
 
-## Failed Queries
+## Failed Queries (5 total)
 
 ### Query 20
-**Error:** Requires string-to-float conversion (toFloat) and abs() function on computed difference - both unsupported in TypeQL
+**Reason:** Requires `toFloat()` for string-to-numeric casting and `abs()` on computed differences. TypeQL cannot cast string attributes to numeric types.
+```cypher
+MATCH (f:Filing)
+WITH f,
+     toFloat(f.origin_lat) AS origin_lat,
+     toFloat(f.beneficiary_lat) AS beneficiary_lat,
+     abs(toFloat(f.origin_lat) - toFloat(f.beneficiary_lat)) AS lat_diff
+ORDER BY lat_diff DESC
+LIMIT 3
+RETURN f.sar_id AS filing_id, f.originator_bank AS originator_bank, f.beneficiary_bank AS beneficiary_bank, lat_diff
+```
 
 ### Query 374
-**Error:** Duration of "exactly one month" — months have variable days (28-31), so duration equality comparison is not expressible in TypeQL
+**Reason:** Requires `duration.inMonths()` for exact month-duration comparison. Months have variable days (28-31), so "exactly one month" is not expressible as a fixed duration in TypeQL.
+```cypher
+MATCH (f:Filing)
+WHERE duration.inMonths(datetime(f.begin), datetime(f.end)).months = 1
+RETURN f
+ORDER BY f.begin
+LIMIT 3
+```
 
 ### Query 405
-**Error:** Date arithmetic/extraction unsupported: query requires filtering by month component (Q4 = months 10-12) of datetime values across arbitrary years. TypeQL does not support datetime component extraction functions.
+**Reason:** Requires datetime component extraction (`date().month`) to filter by Q4 (months 10-12) across arbitrary years. TypeQL has no function to extract month components from datetime values.
+```cypher
+MATCH (f:Filing)-[:ORIGINATOR]->(e:Entity)-[:COUNTRY]->(c:Country)
+WHERE (f.begin >= datetime({year: 2000, month: 10, day: 1}) AND f.begin <= datetime({year: 2000, month: 12, day: 31}))
+   OR (f.begin >= datetime({year: 2001, month: 10, day: 1}) AND f.begin <= datetime({year: 2001, month: 12, day: 31}))
+   -- ... repeated for years 2000-2017
+RETURN c.name AS country, COUNT(f) AS filings
+ORDER BY filings DESC
+LIMIT 5
+```
 
 ### Query 434
-**Error:** TypeQL cannot cast string attributes to numeric types. origin_lat and beneficiary_lat are string-typed in the schema, so arithmetic (subtraction, abs) cannot be performed on them.
+**Reason:** Same as Query 20 — requires `toFloat()` for string-to-numeric casting and `abs()` on computed latitude differences. Schema stores lat/lon as strings.
+```cypher
+MATCH (f:Filing)
+WITH f,
+     toFloat(f.origin_lat) AS origin_lat,
+     toFloat(f.beneficiary_lat) AS beneficiary_lat,
+     abs(toFloat(f.origin_lat) - toFloat(f.beneficiary_lat)) AS lat_diff
+ORDER BY lat_diff DESC
+LIMIT 3
+RETURN f.sar_id AS filing_id, lat_diff
+```
 
 ### Query 550
-**Error:** Cypher uses substring() to extract and compare month portions of two string attributes. TypeQL has no substring function or equivalent string slicing capability.
+**Reason:** Requires `substring()` to extract and compare month portions of two string attributes. TypeQL has no substring or string slicing functions.
+```cypher
+MATCH (f:Filing)
+WHERE f.begin_date_format STARTS WITH '2015' AND f.end_date_format STARTS WITH '2015'
+  AND substring(f.begin_date_format, 5, 2) = substring(f.end_date_format, 5, 2)
+RETURN f
+```
 
 ## Conversion Notes
 
