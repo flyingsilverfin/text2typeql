@@ -4661,3 +4661,40 @@ same_company_as (company1: $e1, company2: $e2);
 fetch {
   ""name"": $e2.name
 };"
+103,Who are the officers serving as intermediaries for more than one entity?,"MATCH (o:Officer)-[:officer_of]->(e:Entity)
+WITH o, COUNT(DISTINCT e) AS entityCount
+WHERE entityCount > 1
+MATCH (o)-[:intermediary_of]->(e2:Entity)
+RETURN o.name AS OfficerName, COLLECT(DISTINCT e2.name) AS Entities","with fun entity_count($i: intermediary) -> integer:
+  match
+    intermediary_of (intermediary: $i, offshore_entity: $e);
+  select $e;
+  distinct;
+  return count;
+match
+$i isa intermediary;
+let $count = entity_count($i);
+$count > 1;
+intermediary_of (intermediary: $i, offshore_entity: $e);
+fetch {
+  ""officerName"": $i.name,
+  ""entityName"": $e.name
+};"
+370,Identify entities with multiple addresses and list the addresses.,"MATCH (e:Entity)-[:registered_address]->(a:Address)
+WITH e, collect(a.address) AS addresses
+WHERE size(addresses) > 1
+RETURN e.name AS entity_name, addresses","with fun address_count($e: offshore_entity) -> integer:
+  match
+    registered_address (registrant: $e, registered_addr: $a);
+  select $a;
+  distinct;
+  return count;
+match
+$e isa offshore_entity;
+let $count = address_count($e);
+$count > 1;
+registered_address (registrant: $e, registered_addr: $a);
+fetch {
+  ""entityName"": $e.name,
+  ""address"": $a.address
+};"

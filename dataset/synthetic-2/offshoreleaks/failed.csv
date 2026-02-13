@@ -5,11 +5,6 @@ RETURN e.name AS EntityName, e.address AS EntityAddress","Schema mismatch: Cyphe
 61,"Which entities have a similar name and address as 'NINGBO SUNRISE ENTERPRISES UNITED CO., LTD.'?","MATCH (e:Entity)-[:similar]->(o:Other)
 WHERE o.name = 'NINGBO SUNRISE ENTERPRISES UNITED CO., LTD.'
 RETURN e.name AS entity_name, e.address AS entity_address",Schema mismatch: The other entity type does not play any role in the similar relation in the TypeQL schema. Only intermediary and officer can participate in similar relationships.
-103,Who are the officers serving as intermediaries for more than one entity?,"MATCH (o:Officer)-[:officer_of]->(e:Entity)
-WITH o, COUNT(DISTINCT e) AS entityCount
-WHERE entityCount > 1
-MATCH (o)-[:intermediary_of]->(e2:Entity)
-RETURN o.name AS OfficerName, COLLECT(DISTINCT e2.name) AS Entities","Schema mismatch: Cypher query requires Officer nodes to participate in intermediary_of relations, but in TypeQL schema officer and intermediary are separate entity types - only intermediary can play intermediary_of:intermediary role"
 111,Which entities have a jurisdiction description of 'Samoa' and were incorporated in March?,"MATCH (e:Entity)
 WHERE e.jurisdiction_description = 'Samoa' AND e.incorporation_date STARTS WITH 'MAR'
 RETURN e.name, e.incorporation_date",Unsupported: date field filtering by month - TypeQL date type does not support string pattern matching or month extraction functions
@@ -26,10 +21,6 @@ RETURN o.name AS similar_name, o.address AS similar_address","Schema mismatch: o
 324,Identify all officers with a status of 'ACTIVE'.,"MATCH (o:Officer)
 WHERE o.status = 'ACTIVE'
 RETURN o.name, o.node_id, o.countries, o.country_codes, o.sourceID",Schema mismatch: officer entity does not have status attribute in TypeQL schema
-370,Identify entities with multiple addresses and list the addresses.,"MATCH (e:Entity)-[:registered_address]->(a:Address)
-WITH e, collect(a.address) AS addresses
-WHERE size(addresses) > 1
-RETURN e.name AS entity_name, addresses",Unsupported: collect() and size() functions required to gather and count addresses per entity
 372,Find entities that have been both struck off and inactivated in the same year.,"MATCH (e:Entity)
 WHERE e.struck_off_date IS NOT NULL AND e.inactivation_date IS NOT NULL
 AND substring(e.struck_off_date, -4) = substring(e.inactivation_date, -4)

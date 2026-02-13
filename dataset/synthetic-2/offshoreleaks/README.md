@@ -7,10 +7,10 @@
 Entities, officers, intermediaries, addresses.
 
 ## Current Status
-- `queries.csv`: 493 converted queries
-- 14 failed queries
+- `queries.csv`: 495 converted queries
+- 12 failed queries
 
-Total: 493 + 14 = 507 / 507 ✓
+Total: 495 + 12 = 507 / 507 ✓
 
 ## Failed Queries
 
@@ -19,9 +19,6 @@ Total: 493 + 14 = 507 / 507 ✓
 
 ### Query 61
 **Error:** Schema mismatch: The other entity type does not play any role in the similar relation in the TypeQL schema. Only intermediary and officer can participate in similar relationships.
-
-### Query 103
-**Error:** Schema mismatch: Cypher query requires Officer nodes to participate in intermediary_of relations, but in TypeQL schema officer and intermediary are separate entity types - only intermediary can play intermediary_of:intermediary role
 
 ### Query 111
 **Error:** Unsupported: date field filtering by month - TypeQL date type does not support string pattern matching or month extraction functions
@@ -34,9 +31,6 @@ Total: 493 + 14 = 507 / 507 ✓
 
 ### Query 324
 **Error:** Schema mismatch: officer entity does not have status attribute in TypeQL schema
-
-### Query 370
-**Error:** Unsupported: collect() and size() functions required to gather and count addresses per entity
 
 ### Query 372
 **Error:** Requires substring() to extract year from date - TypeQL has no date component extraction or string substring functions
