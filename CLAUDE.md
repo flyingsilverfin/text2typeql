@@ -351,7 +351,7 @@ pipeline/docs/
 |----------|-------------|-----------|--------|
 | bluesky | 135 | 135 | 0 |
 | buzzoverflow | 592 | 584 | 8 |
-| companies | 966 | 942 | 24 |
+| companies | 966 | 949 | 17 |
 | fincen | 614 | 584 | 30 |
 | gameofthrones | 393 | 384 | 9 |
 | grandstack | 807 | 797 | 10 |
@@ -364,4 +364,4 @@ pipeline/docs/
 | stackoverflow2 | 307 | 299 | 8 |
 | twitch | 576 | 566 | 10 |
 | twitter | 502 | 500 | 2 |
-| **Total** | **9267** | **9041** | **226** |
+| **Total** | **9267** | **9048** | **219** |
