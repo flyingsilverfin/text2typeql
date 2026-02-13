@@ -1,0 +1,26 @@
+original_index,question,cypher,error
+92,Which are the first 5 streams that have a language and a game both starting with the same letter?,"MATCH (s:Stream)-[:HAS_LANGUAGE]->(l:Language), (s)-[:PLAYS]->(g:Game)
+WHERE l.name STARTS WITH g.name[0]
+RETURN s.name AS stream_name, l.name AS language_name, g.name AS game_name
+ORDER BY s.createdAt
+LIMIT 5",Unsupported: string indexing (g.name[0]) to extract first character. TypeQL has no substring/character extraction functions.
+131,Which are the first 3 streams that have had a VIP relationship with the same user for over 3 years?,"MATCH (u:User)-[r:VIP]->(s:Stream)
+WHERE duration.inSeconds(r.since, datetime()).years > 3
+RETURN s.name AS stream_name, r.since AS vip_since
+ORDER BY r.since
+LIMIT 3",Unsupported: date arithmetic (duration.inSeconds().years > 3) and relation attribute r.since does not exist in schema (vip_status has no attributes)
+141,List the first 3 streams that have a game and team name starting with the same letter.,"MATCH (s:Stream)-[:PLAYS]->(g:Game), (s)-[:HAS_TEAM]->(t:Team)
+WHERE toLower(substring(g.name, 0, 1)) = toLower(substring(t.name, 0, 1))
+RETURN s.name AS stream_name, g.name AS game_name, t.name AS team_name
+ORDER BY s.createdAt
+LIMIT 3",Unsupported: substring() string function has no TypeQL equivalent. Cannot dynamically compare first characters of two different attributes.
+360,"Which streams have the longest moderator chains (a moderator, who is also a moderator, and so on)?","MATCH path = (s:Stream)-[:MODERATOR*]->(u:User)
+WITH s, length(path) AS chainLength
+ORDER BY chainLength DESC
+LIMIT 1
+RETURN s.name AS streamName, chainLength",Unsupported: variable-length path traversal ([:MODERATOR*]) and length(path) for measuring chain depth. TypeQL has no recursive/transitive path support.
+419,What are the first 3 streams that have a chatter with a description longer than 50 words?,"MATCH (s:Stream)-[:CHATTER]->(u:User)
+WHERE size(split(s.description, "" "")) > 50
+RETURN s
+ORDER BY s.createdAt ASC
+LIMIT 3",Unsupported feature: split() string function used for word count has no TypeQL equivalent

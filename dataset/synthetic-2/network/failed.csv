@@ -1,0 +1,15 @@
+original_index,question,cypher,error
+347,How many machines are there in rack 'DC1-RCK-4-9' and what types are they?,"MATCH (rack:Rack {name: 'DC1-RCK-4-9'})-[:HOLDS]->(machine:Machine)-[:TYPE]->(type:Type)
+RETURN COUNT(machine) AS machine_count, COLLECT(DISTINCT type.type) AS machine_types",Cypher uses COLLECT(DISTINCT ...) which maps to collect() - unsupported in TypeQL 3.0
+382,How many machines are in rack 3 and what are their names?,"MATCH (rack:Rack {rack: 3})-[:HOLDS]->(machine:Machine)
+RETURN count(machine) AS machine_count, collect(machine.name) AS machine_names",Cypher uses collect() which is unsupported in TypeQL 3.0
+525,Find the top 3 racks by zone that contain the most machines.,"MATCH (r:Rack)-[:HOLDS]->(m:Machine)
+WITH r.zone AS zone, r.name AS rackName, COUNT(m) AS machineCount
+ORDER BY zone, machineCount DESC
+WITH zone, COLLECT({rackName: rackName, machineCount: machineCount}) AS racksByZone
+RETURN zone, racksByZone[0..3] AS top3RacksByZone","Unsupported: requires COLLECT() and array slicing [0..3] for per-zone top-3 ranking, which TypeQL does not support"
+527,List all versions that are previous to version named '7.1' and their dependencies.,"MATCH (v:Version {name: '7.1'})<-[:PREVIOUS]-(prev:Version)
+OPTIONAL MATCH (prev)-[:DEPENDS_ON]->(dep:Version)
+RETURN prev.name AS PreviousVersion, collect(dep.name) AS Dependencies","collect() is unsupported in TypeQL. Additionally, version entity cannot play depends_on:dependent role per schema, so the OPTIONAL MATCH dependency pattern is not expressible."
+623,What are the names and IPs of all interfaces connected to network '10.2'?,"MATCH (network:Network {ip: '10.2'})-[:ROUTES]->(interface:Interface)
+RETURN interface.ip AS ip, interface.name AS name",Schema mismatch: interface entity does not have name attribute in TypeQL schema. Cypher references interface.name which does not exist.
