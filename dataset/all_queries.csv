@@ -164810,3 +164810,120 @@ fetch {
   ""link"": $q.question_link,
   ""body_markdown"": $bm
 };"
+synthetic-2,stackoverflow2,91,Display the top 3 most frequently commented-on answers.,"MATCH (a:Answer)<-[:COMMENTED_ON]-(c:Comment)
+WITH a, COUNT(c) AS comment_count
+ORDER BY comment_count DESC
+LIMIT 3
+RETURN a.link AS answer_link, a.title AS answer_title, comment_count","match
+$a isa answer;
+commented_on (comment: $c, question: $a);
+reduce $comment_count = count($c) groupby $a;
+sort $comment_count desc;
+limit 3;
+fetch {
+  ""answer_link"": $a.answer_link,
+  ""answer_title"": $a.title,
+  ""comment_count"": $comment_count
+};"
+synthetic-2,stackoverflow2,253,List the 3 questions with the highest scores and their associated tags.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, t
+ORDER BY q.view_count DESC
+LIMIT 3
+RETURN q.title AS question_title, q.view_count AS view_count, collect(t.name) AS tags","match
+$q isa question, has view_count $vc;
+sort $vc desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""view_count"": $vc,
+  ""tags"": [
+    match
+      tagged (question: $q, tag: $t);
+    fetch {
+      ""name"": $t.name
+    };
+  ]
+};"
+synthetic-2,stackoverflow2,259,List the top 5 questions with the most answers and their tags.,"MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, COUNT(t) AS tagCount
+ORDER BY q.answer_count DESC, tagCount DESC
+LIMIT 5
+MATCH (q)-[:TAGGED]->(t:Tag)
+RETURN q.title AS question_title, q.answer_count AS number_of_answers, COLLECT(t.name) AS tags","match
+$q isa question, has answer_count $ac;
+sort $ac desc;
+limit 5;
+fetch {
+  ""question_title"": $q.title,
+  ""number_of_answers"": $ac,
+  ""tags"": [
+    match
+      tagged (question: $q, tag: $t);
+    fetch {
+      ""name"": $t.name
+    };
+  ]
+};"
+synthetic-2,stackoverflow2,260,"For the top 3 questions with the lowest view counts, list their associated tags.","MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, t
+ORDER BY q.view_count ASC
+LIMIT 3
+RETURN q.title AS question_title, q.view_count AS view_count, collect(t.name) AS tags","match
+$q isa question, has view_count $vc;
+sort $vc asc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""view_count"": $vc,
+  ""tags"": [
+    match
+      tagged (question: $q, tag: $t);
+    fetch {
+      ""name"": $t.name
+    };
+  ]
+};"
+synthetic-2,stackoverflow2,261,Who are the top 3 users who commented the most on the highest viewed questions?,"MATCH (q:Question)-[:COMMENTED_ON]-(c:Comment)<-[:COMMENTED]-(u:User)
+WITH q, u, COUNT(c) AS comment_count
+ORDER BY q.view_count DESC
+LIMIT 3
+WITH u, SUM(comment_count) AS total_comments
+RETURN u.display_name AS user, total_comments
+ORDER BY total_comments DESC
+LIMIT 3","with fun comment_count_on_top_questions($u: user) -> integer:
+  match
+    $q isa question, has view_count $vc;
+    sort $vc desc;
+    limit 3;
+    match
+      commented_on (comment: $c, question: $q);
+      commented (commenter: $u, comment: $c);
+    return count;
+match
+$u isa user;
+let $total = comment_count_on_top_questions($u);
+$total > 0;
+sort $total desc;
+limit 3;
+fetch {
+  ""user"": $u.display_name,
+  ""total_comments"": $total
+};"
+synthetic-2,stackoverflow2,288,"For the 3 questions with the most answers, list their associated tags.","MATCH (q:Question)-[:TAGGED]->(t:Tag)
+WITH q, t
+ORDER BY q.answer_count DESC
+LIMIT 3
+RETURN q.title AS question_title, collect(t.name) AS tags","match
+$q isa question, has answer_count $ac;
+sort $ac desc;
+limit 3;
+fetch {
+  ""question_title"": $q.title,
+  ""tags"": [
+    match
+      tagged (question: $q, tag: $t);
+    fetch {
+      ""name"": $t.name
+    };
+  ]
+};"
