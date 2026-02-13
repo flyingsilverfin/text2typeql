@@ -138718,6 +138718,180 @@ fetch {
   ""businessName"": $name,
   ""location"": $loc
 };"
+synthetic-2,grandstack,26,Which user has reviewed the most categories of businesses and what are those categories?,"MATCH (u:User)-[:WROTE]->(r:Review)-[:REVIEWS]->(b:Business)-[:IN_CATEGORY]->(c:Category)
+WITH u, collect(DISTINCT c.name) AS categories
+RETURN u.name AS user, categories, size(categories) AS categoryCount
+ORDER BY categoryCount DESC
+LIMIT 1","with fun category_count($u: user) -> integer:
+  match
+    wrote (author: $u, review: $r);
+    reviews (review: $r, reviewed_business: $b);
+    in_category (business: $b, category: $c);
+  select $c;
+  distinct;
+  return count;
+match
+$u isa user;
+let $count = category_count($u);
+wrote (author: $u, review: $r);
+reviews (review: $r, reviewed_business: $b);
+in_category (business: $b, category: $c);
+sort $count desc;
+fetch {
+  ""user"": $u.name,
+  ""category"": $c.name,
+  ""categoryCount"": $count
+};"
+synthetic-2,grandstack,36,Which business in 'San Mateo' has the highest average review star rating and what are its reviews?,"MATCH (b:Business {city: 'San Mateo'})<-[:REVIEWS]-(r:Review)
+WITH b, avg(r.stars) AS avgRating, collect(r) AS reviews
+ORDER BY avgRating DESC
+LIMIT 1
+RETURN b.name AS businessName, avgRating, reviews","with fun avg_stars($b: business) -> double:
+  match
+    reviews (review: $r, reviewed_business: $b);
+    $r has stars $s;
+  return mean($s);
+match
+$b isa business, has city ""San Mateo"";
+let $avg = avg_stars($b);
+reviews (review: $r, reviewed_business: $b);
+sort $avg desc;
+fetch {
+  ""businessName"": $b.name,
+  ""avgRating"": $avg,
+  ""reviewText"": $r.text,
+  ""reviewStars"": $r.stars,
+  ""reviewDate"": $r.date
+};"
+synthetic-2,grandstack,179,Which businesses in 'Missoula' have been reviewed by all listed users and what are the review texts?,"MATCH (b:Business {city: 'Missoula'})<-[:REVIEWS]-(r:Review)<-[:WROTE]-(u:User)
+WITH b, collect(u.userId) AS reviewers, collect(r.text) AS review_texts
+WHERE reviewers = ['u1', 'u2', 'u3', 'u4']
+RETURN b.name AS business_name, review_texts","with fun reviewed_by($b: business, $u: user) -> integer:
+  match
+    wrote (author: $u, review: $r);
+    reviews (review: $r, reviewed_business: $b);
+  return count;
+match
+$b isa business, has city ""Missoula"";
+$u1 isa user, has user_id ""u1"";
+$u2 isa user, has user_id ""u2"";
+$u3 isa user, has user_id ""u3"";
+$u4 isa user, has user_id ""u4"";
+let $c1 = reviewed_by($b, $u1); $c1 > 0;
+let $c2 = reviewed_by($b, $u2); $c2 > 0;
+let $c3 = reviewed_by($b, $u3); $c3 > 0;
+let $c4 = reviewed_by($b, $u4); $c4 > 0;
+reviews (review: $r, reviewed_business: $b);
+fetch {
+  ""business_name"": $b.name,
+  ""review_text"": $r.text
+};"
+synthetic-2,grandstack,202,Show the top 3 business names in San Mateo along with their categories.,"MATCH (b:Business)-[:IN_CATEGORY]->(c:Category)
+WHERE b.city = 'San Mateo'
+RETURN b.name AS businessName, collect(c.name) AS categories
+ORDER BY b.name
+LIMIT 3","match
+$b isa business, has city ""San Mateo"", has name $bn;
+in_category (business: $b, category: $c);
+sort $bn asc;
+limit 3;
+fetch {
+  ""businessName"": $bn,
+  ""category"": $c.name
+};"
+synthetic-2,grandstack,219,List the top 3 businesses with reviews from the latest three different users.,"MATCH (u:User)-[:WROTE]->(r:Review)-[:REVIEWS]->(b:Business)
+WITH u, r, b
+ORDER BY r.date DESC
+WITH u, r, b, COLLECT(DISTINCT u.userId) AS latestUsers
+WHERE SIZE(latestUsers) >= 3
+WITH u, r, b, latestUsers[0..3] AS topUsers
+WHERE u.userId IN topUsers
+RETURN b.name AS businessName, COUNT(r) AS reviewCount
+ORDER BY reviewCount DESC
+LIMIT 3","with fun latest_review_date($u: user) -> datetime:
+  match
+    wrote (author: $u, review: $r);
+    $r has date $d;
+  return max($d);
+match
+$u isa user;
+let $latest = latest_review_date($u);
+sort $latest desc;
+limit 3;
+match
+wrote (author: $u, review: $r);
+reviews (review: $r, reviewed_business: $b);
+reduce $review_count = count($r) groupby $b;
+sort $review_count desc;
+limit 3;
+fetch {
+  ""businessName"": $b.name,
+  ""reviewCount"": $review_count
+};"
+synthetic-2,grandstack,229,Find the top 3 businesses that have reviews from the earliest three different dates.,"MATCH (b:Business)<-[:REVIEWS]-(r:Review)
+WITH b, r
+ORDER BY r.date ASC
+WITH b, collect(r.date) AS reviewDates
+UNWIND reviewDates AS date
+WITH b, date
+ORDER BY date ASC
+WITH b, collect(date)[0..3] AS earliestDates
+WHERE size(earliestDates) = 3
+RETURN b.name AS businessName, earliestDates
+LIMIT 3","with fun distinct_date_count($b: business) -> integer:
+  match
+    reviews (review: $r, reviewed_business: $b);
+    $r has date $d;
+  select $d;
+  distinct;
+  return count;
+match
+$b isa business;
+let $dc = distinct_date_count($b);
+$dc >= 3;
+reviews (review: $r, reviewed_business: $b);
+$r has date $d;
+sort $d asc;
+limit 3;
+fetch {
+  ""businessName"": $b.name,
+  ""reviewDate"": $d
+};"
+synthetic-2,grandstack,513,List all categories for 'Ducky's Car Wash' and its reviews.,"MATCH (b:Business {name: ""Ducky's Car Wash""})-[:IN_CATEGORY]->(c:Category)
+OPTIONAL MATCH (b)<-[:REVIEWS]-(r:Review)
+RETURN c.name AS category, collect(r) AS reviews","match
+$b isa business, has name ""Ducky's Car Wash"";
+in_category (business: $b, category: $c);
+try {
+  reviews (review: $r, reviewed_business: $b);
+};
+fetch {
+  ""category"": $c.name,
+  ""review_text"": $r.text,
+  ""review_stars"": $r.stars
+};"
+synthetic-2,grandstack,766,What are the businesses located at '200 W Pine St' and their reviews?,"MATCH (b:Business {address: '200 W Pine St'})-[:IN_CATEGORY]->(c:Category)
+OPTIONAL MATCH (b)<-[:REVIEWS]-(r:Review)<-[:WROTE]-(u:User)
+RETURN b.name AS businessName, b.address AS address, collect({
+    reviewText: r.text, 
+    reviewStars: r.stars, 
+    reviewDate: r.date, 
+    reviewerName: u.name
+}) AS reviews","match
+$b isa business, has address ""200 W Pine St"";
+in_category (business: $b, category: $c);
+try {
+  reviews (review: $r, reviewed_business: $b);
+  wrote (author: $u, review: $r);
+};
+fetch {
+  ""businessName"": $b.name,
+  ""address"": $b.address,
+  ""reviewText"": $r.text,
+  ""reviewStars"": $r.stars,
+  ""reviewDate"": $r.date,
+  ""reviewerName"": $u.name
+};"
 synthetic-2,network,0,How many different types of software are running on machines in zone 4?,"MATCH (z:Zone {zone: 4})-[:ROUTES]->(:Interface)<-[:ROUTES]-(:Switch)<-[:HOLDS]-(r:Rack {zone: 4})-[:HOLDS]->(m:Machine)-[:RUNS]->(s:Software)
 RETURN COUNT(DISTINCT s.name) AS numberOfSoftwareTypes","match
 $r isa rack, has zone 4;

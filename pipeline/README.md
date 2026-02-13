@@ -100,7 +100,7 @@ pipeline/
 | companies | 966 | 966 | 0 | ✓ complete |
 | fincen | 614 | 609 | 5 | ✓ complete |
 | gameofthrones | 393 | 384 | 9 | ✓ complete |
-| grandstack | 807 | 797 | 10 | ✓ complete |
+| grandstack | 807 | 805 | 2 | ✓ complete |
 | movies | 738 | 737 | 1 | ✓ complete |
 | neoflix | 923 | 916 | 7 | ✓ complete |
 | network | 625 | 620 | 5 | ✓ complete |
@@ -110,9 +110,9 @@ pipeline/
 | stackoverflow2 | 307 | 299 | 8 | ✓ complete |
 | twitch | 576 | 571 | 5 | ✓ complete |
 | twitter | 502 | 502 | 0 | ✓ complete |
-| **Total** | **9,267** | **9,158** | **109** | **100%** |
+| **Total** | **9,267** | **9,166** | **101** | **100%** |
 
-### Failed Query Categories (109 remaining in synthetic-2)
+### Failed Query Categories (101 remaining in synthetic-2)
 
 | Category | Count | Description |
 |----------|-------|-------------|
@@ -120,7 +120,7 @@ pipeline/
 | Date component extraction | ~20 | Year, month, day-of-week from datetime |
 | Variable-length paths | ~7 | Transitive closure `[:REL*]` (8 resolved via recursive stream functions) |
 | Epoch timestamp conversion | ~10 | `datetime({epochSeconds: ...})` |
-| `collect()` aggregation | ~5 | No list collection equivalent |
+| `collect()` aggregation | ~5 | No list collection equivalent (8 grandstack resolved via functions/flat rows) |
 | Type casting | ~5 | `toFloat()`, `toInteger()` on strings |
 | Schema hallucinations | ~5 | Cypher references non-existent properties |
 | Other | ~27 | `UNWIND`, complex patterns, modulo, levenshtein |

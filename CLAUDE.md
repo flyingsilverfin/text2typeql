@@ -371,7 +371,7 @@ pipeline/docs/
 | companies | 966 | 966 | 0 |
 | fincen | 614 | 609 | 5 |
 | gameofthrones | 393 | 384 | 9 |
-| grandstack | 807 | 797 | 10 |
+| grandstack | 807 | 805 | 2 |
 | movies | 738 | 737 | 1 |
 | neoflix | 923 | 916 | 7 |
 | network | 625 | 620 | 5 |
@@ -381,4 +381,4 @@ pipeline/docs/
 | stackoverflow2 | 307 | 299 | 8 |
 | twitch | 576 | 571 | 5 |
 | twitter | 502 | 502 | 0 |
-| **Total** | **9267** | **9158** | **109** |
+| **Total** | **9267** | **9166** | **101** |
