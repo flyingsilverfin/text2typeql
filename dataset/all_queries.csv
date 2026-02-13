@@ -138733,10 +138733,14 @@ LIMIT 1","with fun category_count($u: user) -> integer:
 match
 $u isa user;
 let $count = category_count($u);
+reduce $max_count = max($count);
+match
+$u isa user;
+let $count = category_count($u);
+$count == $max_count;
 wrote (author: $u, review: $r);
 reviews (review: $r, reviewed_business: $b);
 in_category (business: $b, category: $c);
-sort $count desc;
 fetch {
   ""user"": $u.name,
   ""category"": $c.name,
@@ -138754,8 +138758,12 @@ RETURN b.name AS businessName, avgRating, reviews","with fun avg_stars($b: busin
 match
 $b isa business, has city ""San Mateo"";
 let $avg = avg_stars($b);
+reduce $max_avg = max($avg);
+match
+$b isa business, has city ""San Mateo"";
+let $avg = avg_stars($b);
+$avg == $max_avg;
 reviews (review: $r, reviewed_business: $b);
-sort $avg desc;
 fetch {
   ""businessName"": $b.name,
   ""avgRating"": $avg,
@@ -138845,14 +138853,22 @@ LIMIT 3","with fun distinct_date_count($b: business) -> integer:
   select $d;
   distinct;
   return count;
+with fun earliest_review_date($b: business) -> datetime:
+  match
+    reviews (review: $r, reviewed_business: $b);
+    $r has date $d;
+  return min($d);
 match
 $b isa business;
 let $dc = distinct_date_count($b);
 $dc >= 3;
+let $earliest = earliest_review_date($b);
+sort $earliest asc;
+limit 3;
+match
 reviews (review: $r, reviewed_business: $b);
 $r has date $d;
 sort $d asc;
-limit 3;
 fetch {
   ""businessName"": $b.name,
   ""reviewDate"": $d
@@ -138879,7 +138895,6 @@ RETURN b.name AS businessName, b.address AS address, collect({
     reviewerName: u.name
 }) AS reviews","match
 $b isa business, has address ""200 W Pine St"";
-in_category (business: $b, category: $c);
 try {
   reviews (review: $r, reviewed_business: $b);
   wrote (author: $u, review: $r);
