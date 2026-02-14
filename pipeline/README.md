@@ -47,7 +47,6 @@ python pipeline/main.py convert-schema movies --source synthetic-2
 ```
 pipeline/
   main.py                 # CLI entry point (--source option on all commands)
-  mcp_server.py           # MCP server for tool integration
   requirements.txt        # Python dependencies
   src/                    # Pipeline source code
     config.py             # Path, source, and connection configuration

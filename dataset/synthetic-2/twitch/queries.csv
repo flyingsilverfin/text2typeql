@@ -867,6 +867,21 @@ fetch {
   ""stream_name"": $s.name,
   ""stream_url"": $s.url
 };"
+77,List the first 5 streams that have been in the same language and game for over 5 years.,"MATCH (s:Stream)-[:PLAYS]->(g:Game), (s)-[:HAS_LANGUAGE]->(l:Language)
+WHERE datetime() - s.createdAt > duration({years: 5})
+WITH s, g, l
+ORDER BY s.createdAt
+LIMIT 5
+RETURN s.name AS stream_name, g.name AS game_name, l.name AS language_name, s.createdAt AS stream_created_at","match
+  $s isa stream, has name $sn, has created_at $ca;
+  language_usage (channel: $s, used_language: $l);
+  $l has name $ln;
+  game_play (streaming_channel: $s, played_game: $g);
+  $g has name $gn;
+  $ca < 2016-01-01T00:00:00;
+sort $ca asc;
+limit 5;
+fetch { ""stream"": $sn, ""language"": $ln, ""game"": $gn };"
 78,"What are the descriptions of the first 3 streams with fewer than 100,000 followers?","MATCH (s:Stream)
 WHERE s.followers < 100000
 RETURN s.description
@@ -1501,6 +1516,33 @@ moderation (moderated_channel: $s, moderating_user: $u);
 sort $ca;
 limit 5;
 fetch { ""name"": $un };"
+120,Which 3 streams had the most chatters in the past month?,"MATCH (s:Stream)<-[:CHATTER]-(u:User)
+WHERE s.createdAt >= datetime() - duration('P1M')
+WITH s, COUNT(u) AS chatterCount
+ORDER BY chatterCount DESC
+LIMIT 3
+RETURN s.name AS streamName, chatterCount","match
+$s isa stream, has name $n, has created_at $ca;
+chat_activity (channel_with_chatters: $s, chatting_user: $u);
+$ca >= 2021-04-01T00:00:00;
+reduce $count = count($u) groupby $s, $n;
+sort $count desc;
+limit 3;
+fetch { ""stream"": $n, ""chatters"": $count };"
+121,List the top 3 games played by streams with a description length over 50 characters.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
+WHERE size(s.description) > 50
+RETURN g.name, count(s) AS stream_count
+ORDER BY stream_count DESC
+LIMIT 3","match
+$s isa stream, has description $desc;
+game_play (streaming_channel: $s, played_game: $g);
+$g isa game;
+let $len = len($desc);
+$len > 50;
+reduce $stream_count = count($s) groupby $g;
+sort $stream_count desc;
+limit 3;
+fetch { ""name"": $g.name, ""stream_count"": $stream_count };"
 122,"Which users are chatters in the most streams, listing the first 5.","MATCH (u:User)-[:CHATTER]->(s:Stream)
 WITH u, COUNT(s) AS streamCount
 ORDER BY streamCount DESC
@@ -1926,6 +1968,18 @@ reduce $count = count($l) groupby $s;
 sort $count desc;
 limit 3;
 fetch { ""url"": $s.url };"
+151,List the first 5 streams that have been moderated by the same user for over 5 years.,"MATCH (u:User)-[mod:MODERATOR]->(s:Stream)
+WHERE datetime() - mod.since > duration('P5Y')
+RETURN s.name AS stream_name, s.url AS stream_url, u.name AS moderator_name
+ORDER BY mod.since
+LIMIT 5","match
+  $s isa stream, has name $sn, has created_at $sca;
+  moderation (moderated_channel: $s, moderating_channel: $m);
+  $m has name $mn, has created_at $mca;
+  $mca < 2016-01-01T00:00:00;
+sort $sca asc;
+limit 5;
+fetch { ""stream"": $sn, ""moderator"": $mn };"
 152,Who are the first 3 VIPs in streams with a total view count exceeding 10 million?,"MATCH (s:Stream)-[:VIP]->(u:User)
 WHERE s.total_view_count > 10000000
 RETURN u.name AS VIP_Name, s.name AS Stream_Name
@@ -1990,6 +2044,16 @@ $s2 has created_at $ca;
 sort $ca asc;
 limit 3;
 fetch { ""stream"": $s2.name };"
+156,List the first 5 games with streams that have been active for over 10 years.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
+WHERE datetime().epochMillis - s.createdAt.epochMillis > 10 * 365 * 24 * 60 * 60 * 1000
+RETURN DISTINCT g.name
+LIMIT 5","match
+  $g isa game, has name $gn;
+  game_play (streaming_channel: $s, played_game: $g);
+  $s has created_at $ca;
+  $ca < 2011-01-01T00:00:00;
+limit 5;
+fetch { ""game"": $gn };"
 157,Who are the first 3 users who have VIP status in streams playing 'Rust'?,"MATCH (s:Stream)-[:PLAYS]->(g:Game {name: 'Rust'})
 MATCH (s)-[:VIP]->(u:User)
 RETURN u.name
@@ -3574,6 +3638,18 @@ fetch {
   ""total_views"": $tvc,
   ""stream_url"": $s.url
 };"
+282,Show the 3 streams that have the longest descriptions.,"MATCH (s:Stream)
+RETURN s.name, s.description
+ORDER BY size(s.description) DESC
+LIMIT 3","match
+$s isa stream, has name $name, has description $desc;
+let $len = len($desc);
+sort $len desc;
+limit 3;
+fetch {
+  ""name"": $name,
+  ""description"": $desc
+};"
 283,List the URLs of the 3 newest streams in the database.,"MATCH (s:Stream)
 RETURN s.url
 ORDER BY s.createdAt DESC
@@ -4578,6 +4654,31 @@ RETURN count(s) AS numberOfStreams","match
 $s isa stream, has description $d;
 $d like "".*strategy.*"";
 reduce $count = count($s);"
+360,"Which streams have the longest moderator chains (a moderator, who is also a moderator, and so on)?","MATCH path = (s:Stream)-[:MODERATOR*]->(u:User)
+WITH s, length(path) AS chainLength
+ORDER BY chainLength DESC
+LIMIT 1
+RETURN s.name AS streamName, chainLength","with fun all_chain_members($s: stream) -> { stream }:
+  match
+    {
+      moderation (moderated_channel: $s, moderating_channel: $next);
+    } or {
+      let $mid in all_chain_members($s);
+      moderation (moderated_channel: $mid, moderating_channel: $next);
+    };
+  return { $next };
+match
+$s isa stream;
+let $member in all_chain_members($s);
+select $s, $member;
+distinct;
+reduce $chain_length = count($member) groupby $s;
+sort $chain_length desc;
+limit 1;
+fetch {
+  ""streamName"": $s.name,
+  ""chainLength"": $chain_length
+};"
 361,Identify the streams that have the most moderators.,"MATCH (s:Stream)-[:MODERATOR]->(u:User)
 WITH s, COUNT(u) AS moderator_count
 ORDER BY moderator_count DESC
@@ -4848,6 +4949,15 @@ distinct;
 fetch {
   ""language"": $l.name
 };"
+383,Which 3 streams have the most complex descriptions based on word count?,"MATCH (s:Stream)
+WITH s, size(split(s.description, "" "")) AS wordCount
+ORDER BY wordCount DESC
+LIMIT 3
+RETURN s.name AS streamName, s.description AS description, wordCount","match
+$s isa stream, has description $d;
+sort $d desc;
+limit 3;
+fetch { ""stream"": $s.name, ""description"": $d };"
 384,Which 3 users are VIPs in the most number of different users' streams?,"MATCH (vipUser:User)-[:VIP]->(stream:Stream)
 WITH vipUser, count(DISTINCT stream) AS streamCount
 ORDER BY streamCount DESC
@@ -6908,6 +7018,21 @@ fetch {
   ""name"": $s.name,
   ""followers"": $f
 };"
+543,Which streams were created in 2019 and have a description longer than 50 characters?,"MATCH (s:Stream)
+WHERE s.createdAt >= datetime(""2019-01-01T00:00:00Z"") AND s.createdAt < datetime(""2020-01-01T00:00:00Z"")
+  AND size(s.description) > 50
+RETURN s.id, s.name, s.description, s.createdAt","match
+$s isa stream, has stream_id $sid, has name $n, has description $desc, has created_at $ca;
+$ca >= 2019-01-01T00:00:00Z;
+$ca < 2020-01-01T00:00:00Z;
+let $len = len($desc);
+$len > 50;
+fetch {
+  ""id"": $sid,
+  ""name"": $n,
+  ""description"": $desc,
+  ""createdAt"": $ca
+};"
 544,Find the streams that are moderated by users named 'itsbigchase'.,"MATCH (u:User {name: 'itsbigchase'})-[:MODERATOR]->(s:Stream)
 RETURN s.id, s.name, s.description, s.url, s.createdAt, s.followers, s.total_view_count","match
 $u isa user, has name ""itsbigchase"";
@@ -7344,128 +7469,3 @@ reduce $chatter_count = count($u) groupby $s;
 sort $chatter_count desc;
 limit 5;
 fetch { ""streamName"": $s.name, ""chatterCount"": $chatter_count };"
-121,List the top 3 games played by streams with a description length over 50 characters.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
-WHERE size(s.description) > 50
-RETURN g.name, count(s) AS stream_count
-ORDER BY stream_count DESC
-LIMIT 3","match
-$s isa stream, has description $desc;
-game_play (streaming_channel: $s, played_game: $g);
-$g isa game;
-let $len = len($desc);
-$len > 50;
-reduce $stream_count = count($s) groupby $g;
-sort $stream_count desc;
-limit 3;
-fetch { ""name"": $g.name, ""stream_count"": $stream_count };"
-282,Show the 3 streams that have the longest descriptions.,"MATCH (s:Stream)
-RETURN s.name, s.description
-ORDER BY size(s.description) DESC
-LIMIT 3","match
-$s isa stream, has name $name, has description $desc;
-let $len = len($desc);
-sort $len desc;
-limit 3;
-fetch {
-  ""name"": $name,
-  ""description"": $desc
-};"
-543,Which streams were created in 2019 and have a description longer than 50 characters?,"MATCH (s:Stream)
-WHERE s.createdAt >= datetime(""2019-01-01T00:00:00Z"") AND s.createdAt < datetime(""2020-01-01T00:00:00Z"")
-  AND size(s.description) > 50
-RETURN s.id, s.name, s.description, s.createdAt","match
-$s isa stream, has stream_id $sid, has name $n, has description $desc, has created_at $ca;
-$ca >= 2019-01-01T00:00:00Z;
-$ca < 2020-01-01T00:00:00Z;
-let $len = len($desc);
-$len > 50;
-fetch {
-  ""id"": $sid,
-  ""name"": $n,
-  ""description"": $desc,
-  ""createdAt"": $ca
-};"
-77,List the first 5 streams that have been in the same language and game for over 5 years.,"MATCH (s:Stream)-[:PLAYS]->(g:Game), (s)-[:HAS_LANGUAGE]->(l:Language)
-WHERE datetime() - s.createdAt > duration({years: 5})
-WITH s, g, l
-ORDER BY s.createdAt
-LIMIT 5
-RETURN s.name AS stream_name, g.name AS game_name, l.name AS language_name, s.createdAt AS stream_created_at","match
-  $s isa stream, has name $sn, has created_at $ca;
-  language_usage (channel: $s, used_language: $l);
-  $l has name $ln;
-  game_play (streaming_channel: $s, played_game: $g);
-  $g has name $gn;
-  $ca < 2016-01-01T00:00:00;
-sort $ca asc;
-limit 5;
-fetch { ""stream"": $sn, ""language"": $ln, ""game"": $gn };"
-151,List the first 5 streams that have been moderated by the same user for over 5 years.,"MATCH (u:User)-[mod:MODERATOR]->(s:Stream)
-WHERE datetime() - mod.since > duration('P5Y')
-RETURN s.name AS stream_name, s.url AS stream_url, u.name AS moderator_name
-ORDER BY mod.since
-LIMIT 5","match
-  $s isa stream, has name $sn, has created_at $sca;
-  moderation (moderated_channel: $s, moderating_channel: $m);
-  $m has name $mn, has created_at $mca;
-  $mca < 2016-01-01T00:00:00;
-sort $sca asc;
-limit 5;
-fetch { ""stream"": $sn, ""moderator"": $mn };"
-156,List the first 5 games with streams that have been active for over 10 years.,"MATCH (s:Stream)-[:PLAYS]->(g:Game)
-WHERE datetime().epochMillis - s.createdAt.epochMillis > 10 * 365 * 24 * 60 * 60 * 1000
-RETURN DISTINCT g.name
-LIMIT 5","match
-  $g isa game, has name $gn;
-  game_play (streaming_channel: $s, played_game: $g);
-  $s has created_at $ca;
-  $ca < 2011-01-01T00:00:00;
-limit 5;
-fetch { ""game"": $gn };"
-383,Which 3 streams have the most complex descriptions based on word count?,"MATCH (s:Stream)
-WITH s, size(split(s.description, "" "")) AS wordCount
-ORDER BY wordCount DESC
-LIMIT 3
-RETURN s.name AS streamName, s.description AS description, wordCount","match
-$s isa stream, has description $d;
-sort $d desc;
-limit 3;
-fetch { ""stream"": $s.name, ""description"": $d };"
-120,Which 3 streams had the most chatters in the past month?,"MATCH (s:Stream)<-[:CHATTER]-(u:User)
-WHERE s.createdAt >= datetime() - duration('P1M')
-WITH s, COUNT(u) AS chatterCount
-ORDER BY chatterCount DESC
-LIMIT 3
-RETURN s.name AS streamName, chatterCount","match
-$s isa stream, has name $n, has created_at $ca;
-chat_activity (channel_with_chatters: $s, chatting_user: $u);
-$ca >= 2021-04-01T00:00:00;
-reduce $count = count($u) groupby $s, $n;
-sort $count desc;
-limit 3;
-fetch { ""stream"": $n, ""chatters"": $count };"
-360,"Which streams have the longest moderator chains (a moderator, who is also a moderator, and so on)?","MATCH path = (s:Stream)-[:MODERATOR*]->(u:User)
-WITH s, length(path) AS chainLength
-ORDER BY chainLength DESC
-LIMIT 1
-RETURN s.name AS streamName, chainLength","with fun all_chain_members($s: stream) -> { stream }:
-  match
-    {
-      moderation (moderated_channel: $s, moderating_channel: $next);
-    } or {
-      let $mid in all_chain_members($s);
-      moderation (moderated_channel: $mid, moderating_channel: $next);
-    };
-  return { $next };
-match
-$s isa stream;
-let $member in all_chain_members($s);
-select $s, $member;
-distinct;
-reduce $chain_length = count($member) groupby $s;
-sort $chain_length desc;
-limit 1;
-fetch {
-  ""streamName"": $s.name,
-  ""chainLength"": $chain_length
-};"
