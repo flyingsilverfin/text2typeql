@@ -1,22 +1,24 @@
-# Lessons from text2typeql - why TypeQL > Cypher and Agents still need supervision
+# Agentic lessons - cost, context, correctness
 
 We recently announced our text2typeql dataset. It contains 14,000 pairs of English questions and TypeQL queries generated to conform to the question.
 
-The creation of this dataset had two auxiliary lessons:
-1. We really came to see how TypeQL, using TypeDB's strict schema, is a superior target for query generation than Cypher with Neo4j
-2. We learned a lot about how to orchestrate automated agentic work to be as reliable as possible
+The creation of this dataset for TypeQL on its own yielded many iterative lessons in using an agentic system to automate and orchestrate work to be as reliable and cost effective as possible.
 
-Let's start by doing a quick dive into how we automated the creation of this dataset using Claude.
+Let's dive into how we automated the creation of this dataset using Claude, and what we learned along the way.
 
 ## Creating text2typeql
 
-### Schema conversion
+The source dataset is Neo4j's text2cypher. It contains synthetically generated datasets, each of which contains multiple domains. Each domain has natural language queries and a sort of soft database "schema". In their repository, they also provide converted Cypher queries against each of the natural language queries.
 
-The source dataset, Neo4j's text2cypher, contains multiple synthetic datasets, with a kind of "schema" provided in JSON in each dataset. Critically, Neo4j is 'schema optional' - any data can be added at any time! Neo4j 'schemas', when they do exist, are simple constructs like key constraints, uniqueness and existence constraints, and indexes - hence my use of quotes. These aren't tools designed to allow the build and validation of expressive, advanced data models.
+### Prerequisite: schema conversion
 
-Still, the JSON provided helped Claude generate starting schemas for each dataset. We then manually reviewed the schemas for expressivity, and sense-checked them. In general, they were good! However, we were still able to simplify them by applying subtyping in some places, or relaxed/tightened cardinality constraints in the schema.
+/// todo perhaps we can incorporate this intent somewhere here: Node labels became entity types, relationship types became relation types with explicit roles, and properties became attributes. TypeQL's richer type system sometimes required extending schemas beyond the Neo4j originals -- adding explicit entity subtypes, key constraints, or role distinctions to capture semantics that Cypher leaves implicit in property values or query-time conventions.
 
-Example Neo4j schema snippet from the `companies` dataset:
+The schemas provided with each domain are simple JSON descriptions of the data. Critically, Neo4j itself 'schema optional' - any data can be added at any time! Neo4j 'schemas', when they do exist, are simple constructs like key constraints, uniqueness and existence constraints, and indexes - hence my use of quotes. These aren't tools designed to build and validate of expressive, advanced data models.
+
+Still, the JSON provided helped Claude (Opus 4.5) generate starting schemas for each dataset. We then manually reviewed the schemas for expressivity, and sense-checked them. In general, they were good! However, we were still able to simplify them by applying subtyping in some places, or relaxed/tightened cardinality constraints in the schema to match what we undestood the intended semantics were. Interestingly, most of the time Claude did a decent job guessing what was required, simply from general language semantics of the domain's labels.
+
+Here's an example Neo4j schema snippet from the `companies` dataset:
 
 ```cypher
 "node_props": {
@@ -72,15 +74,15 @@ relation parent_of,
     relates child;
 ```
 
-We have found, and keep finding, that keeping a human in the loop is best for building efficient, optimized schemas and embedding human domain knowledge. You tend to know your problem better than any LLM - help it out by tweaking the schema or giving it the context on what you want!
+We have found, and continue to find elsewhere as well, that keeping a human in the loop is best for building efficient, optimized schemas and embedding hard-won human domain knowledge. You tend to know your problem better than any LLM - help it out by tweaking the schema or giving it the context precisely describing what you want!
 
 Because TypeDB uses a strict schema, you just have to encode your domain knowledge once, and then your system will have those patterns and requirements enforced forever.
 
 ### Query conversion: attempt 1
 
-The first approach to automate query conversion was to have Claude write a script which handled the conversion of a row of data, build a prompt, fired it off to an LLM provider's API, and then parse the output back out. 
+Schemas completed, the first approach to automate query conversion was to have Claude write a script which handled the conversion of a row of data, build a prompt, fired it off to an LLM provider's API, and then parse the output back out. 
 
-Ttake advantage of TypeDB's schema and close the loop, the produced query would be validated against a running TypeDB loaded with the schema. Any errors were fed back into the prompt and re-submitted, up to 3 times. Voilà!
+To advantage of TypeDB's schema and close the loop, the script would take the output query and validate it against a running TypeDB loaded with the schema. Any errors were fed back into the prompt and re-submitted, up to 3 times. Voilà! A self-correcting loop!
 
 But... this gets really expensive really fast. And we had thousands of queries to convert, with thousands of API calls. No thanks!
 
@@ -90,17 +92,89 @@ The obviously savings exist by leveraging the much more cost effective Claude Co
 
 Of course, Anthropic is very unfriendly here and has not implemented sampling in Claude Code. I think this is actually kind of terrible - their pricing already has rate limits at multiple levels: presumably to ensure they have a reasonable cost basis. That's fine - but let me burn my tokens however works for me please! 
 
-Any anyway, we'll just find ways to work around this restriction...
+And anyway, we'll just find ways to work around this restriction...
 
 ### Query conversion: attempt 3
 
-To me this was the most interesting attempt, and caught me out right when I thought I was done!
+To me this was the most interesting attempt, and caught me out - right when I thought I was done!
 
-Instead of handing off the work to another API or sampling, I asked Claude to do the conversion itself. In fact - was downright eagerly doing so as soon as the API-based program failed to convert a query anyway. 
+Instead of handing off the work to another API or sampling, I asked Claude to do the conversion itself. In fact - it was already eagerly doing so as soon as the API-based program failed to convert a query before. 
 
-This ran successfull and cost effectively for hours, occasionally hitting the 5-hour rate limits.
+This ran successfull and cost effectively for hours, occasionally hitting the 5-hour rate limits. Converting queries in batches helped make the process even faster. 
 
-But the story when looking into the _quality_ of the generated TypeQL was horrible!
+But the story changed  when looking into the _quality_ of the generated TypeQL - it was horrible! A spot check showed that many of the generated queries were duplicates, or didn't really answer the question. 
+
+Here's an example from the `movies` dataset:
+
+English:
+```
+Find all movies where Nancy Meyers was involved either by acting, directing, producing, or writing.
+```
+
+TypeQL:
+```typeql
+match
+  $p isa person, has name "Nancy Meyers";
+  $m has title $title;
+fetch { "movie": $title };
+```
+
+It's a "correct" query that type checks in TypeDB -  it finds a person called `Nancy Meyers` and some movie - but it's completely missing the relations!
+
+Retrying this query again in a clean context was successful however. It feels like an indicator that having a lot of queries, conversions, failed attempts, etc, in the context as it gets longer and longer leads to deteriorating quality. In general, longer context = less accurate instruction following and higher chance of confusion.
+
+### Query conversion: attempt 4
+
+Luckily there's a great way to manage context: subagents. A small context lends itself to much cleaner, reproducible behaviours.
+
+Here's a snippet from the subagent I defined to handle the conversion:
+
+```
+convert-query-runner.md
+
+Use this agent when you need to convert a single Cypher query from the Neo4j dataset to TypeQL format with full validation.
+
+...
+
+# Conversion Steps
+Step 1: Check if Already Processed
+  ...
+Step 2: Get the Query
+  ...
+Step 3: Load Schema
+  ...Reads the schema file for the current domain...
+Step 4: Convert to TypeQL
+  ...
+Step 5: Validate Against TypeDB
+  ... Uses predefined python script to submit to a running TypeDB server...
+Step 6: Semantic Review
+  ...
+Step 7: Write Result
+  ...
+```
+
+This approach incorporates all the key learnings: 
+- a subagent has a clean, more reproducible context that reduces output variance
+- every generated query is executed against a live TypeDB instance to verify parsing and type-checking
+  - This step catches syntax errors, incorrect role names, missing attributes, and type mismatches that were syntactically plausible but semantically invalid against the loaded schema. These errors helps the subagent fix the query autonomously.
+- every generated query is verified by the LLM to ensure it actually answers the English question -- not just that it is valid TypeQL.
+  - This caught wrong sort directions, incorrect aggregation targets, and cases where optional-match semantics required `try {}` blocks rather than mandatory patterns.
+
+Ultimately, this approach was highly successful at converting the bulk of the queries, and was amenable to parallelization across datasets.
+
+## Tidying up
+
+The conversion process produces a leftover set of `failed.csv` query lines. This is where a human can step in, providing tips for writing TypeQL queries the LLM didn't know, pointing to documentation pages, and extending the schema with new structures.
+
+Lastly, one sanity check - submitting each query for another semantic review against the english question, and validating it against TypeDB.
+
+## Lessons in Claude
+
+1. Manage your context - subagents are excellent for this
+2. Give the agent validation loops. TypeDB allows validating your queries against your schema for both syntactic, and some level of semantic correctness (we'll talk more about this in a follow up blog post!)
+3. Have the agent review its own work
+
+
 
 ---
 TODO continue
